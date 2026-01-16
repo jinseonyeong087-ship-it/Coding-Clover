@@ -33,6 +33,7 @@
 /student/courses/{courseId} → 강좌 상세
 /student/courses/{courseId}/lectures → 강의 목록
 /student/lectures/{lectureId} → 강의 시청
+/student/lectures/{courseAdd} → 강의 신청
 
 ### 📌 코딩 연습
 /student/practice            → 실습 문제 목록
