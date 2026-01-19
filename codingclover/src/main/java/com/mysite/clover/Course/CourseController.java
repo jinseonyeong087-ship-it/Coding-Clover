@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.Users.UsersRepository;
-import com.mysite.clover.Users.UsersService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +24,6 @@ public class CourseController {
 
     // 서비스 객체 주입
     private final CourseService cs;
-    private final UsersService us;
     private final UsersRepository ur;
 
     // 강좌 목록
@@ -63,6 +61,7 @@ public class CourseController {
         cs.create(
                 courseForm.getTitle(),
                 courseForm.getDescription(),
+                courseForm.getLevel(),
                 courseForm.getPrice(),
                 user
         );

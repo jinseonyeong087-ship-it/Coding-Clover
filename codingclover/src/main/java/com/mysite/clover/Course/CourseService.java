@@ -47,10 +47,7 @@ public class CourseService {
     course.setCreatedAt(LocalDateTime.now());
 
     // 제안 상태 설정
-    course.setProposalStatus
-
-    // 대기 중으로 설정
-    ("PENDING");
+    course.setProposalStatus("PENDING");
 
     // 강좌 저장
     cr.save(course);

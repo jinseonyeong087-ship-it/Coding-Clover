@@ -19,9 +19,9 @@ public class CourseForm {
 
     // 강좌 가격
     @NotNull(message = "가격 필수")
-    private Integer price;
+    private int price;
 
     // 강좌 난이도
     @NotNull(message = "난이도 필수")
-    private Integer level;
+    private int level;
 }

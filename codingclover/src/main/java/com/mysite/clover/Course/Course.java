@@ -32,20 +32,21 @@ public class Course {
 
     // 제안 상태
     @Column(nullable = false)
-    private String proposalStatus;
+    private String proposalStatus = "PENDING";
 
     // 거절 사유
-    @Enumerated(EnumType.STRING)
     private String proposalRejectReason;
 
     // 승인한 사용자
     @ManyToOne
+    @JoinColumn(name = "approved_by")
     private Users approvedBy;
     // 승인 일시
     private LocalDateTime approvedAt;
-    
+
     // 생성한 사용자
     @ManyToOne
+    @JoinColumn(name = "created_by", nullable = false)
     private Users createdBy;
     // 생성 일시
     private LocalDateTime createdAt;

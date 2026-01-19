@@ -6,9 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CourseRepository extends JpaRepository<Course, Long> {
 
-    // 전체 강좌
-    List<Course> findAll();
-
     // 강사별 강좌
     List<Course> findByCreatedBy_UserId(Long userId);
 }
