@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 // const BASE_URL = 'coding-clover-db.cdu22ui02zs2.ap-northeast-2.rds.amazonaws.com';
 // const BASE_URL = 'https://API 서버 기본 주소 넣기';
@@ -255,7 +254,7 @@ const Register = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    placeholder="8자 이상의 비밀번호"
+                    placeholder="8자 이상의 비밀번호를 입력해 주세요."
                     maxLength={255}
                   />
                   {errors.password && (
@@ -318,4 +317,4 @@ const Register = () => {
   );
 };
 
-export default Signup;
+export default Register;

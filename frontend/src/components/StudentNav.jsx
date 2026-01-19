@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import MainLogin from '../pages/MainLogin';
 import Home from '../pages/Home';
@@ -28,12 +29,12 @@ function StudentNav() {
 
                 <div className="collapse navbar-collapse" id="navbarNav">
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">전체 강좌</a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="#!">초급</a></li>
-                                <li><a class="dropdown-item" href="#!">중급</a></li>
-                                <li><a class="dropdown-item" href="#!">고급</a></li>
+                        <li className="nav-item dropdown">
+                            <a className="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">전체 강좌</a>
+                            <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li><a className="dropdown-item" href="#!">초급</a></li>
+                                <li><a className="dropdown-item" href="#!">중급</a></li>
+                                <li><a className="dropdown-item" href="#!">고급</a></li>
                             </ul>
                         </li>
                         <li className="nav-item">
