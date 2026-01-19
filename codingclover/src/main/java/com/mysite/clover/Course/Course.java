@@ -13,10 +13,12 @@ import lombok.Setter;
 @Entity
 public class Course {
 
+    // 강좌 ID
     @Id
+    // 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long courseId;
-
+    // 강좌 제목
     private String title;
 
     @Column(columnDefinition = "TEXT")
