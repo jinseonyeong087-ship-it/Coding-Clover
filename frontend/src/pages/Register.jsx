@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 // const BASE_URL = 'coding-clover-db.cdu22ui02zs2.ap-northeast-2.rds.amazonaws.com';
 // const BASE_URL = 'https://API 서버 기본 주소 넣기';
 
-const Signup = () => {
+const Register = () => {
   const [formData, setFormData] = useState({
     loginId: '',
     password: '',

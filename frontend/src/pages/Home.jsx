@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import StudentNav from '../components/StudentNav';
 import Tail from '../components/Tail';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Link } from 'react-router-dom';
 
 function Home() {
   let [activeTab, setActiveTab] = useState('basic');
@@ -99,9 +101,9 @@ function Home() {
                   <div className="card h-100 shadow-sm">
                     <div className="card-body">
                       <p className="fw-bold text-dark mb-3">{item.title}</p>
-                      <a href="#" className={`btn btn-sm btn-outline-${item.variant}`}>
+                      <Link href="#" className={`btn btn-sm btn-outline-${item.variant}`}>
                         자세히 보기
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -120,18 +122,18 @@ function Home() {
                   <div className="card h-100 shadow-sm">
                     <div className="card-body">
                       <p className="fw-bold text-dark mb-3">{course.title}</p>
-                      <a href="#" className={`btn btn-sm btn-outline-${course.variant}`}>
+                      <Link href="#" className={`btn btn-sm btn-outline-${course.variant}`}>
                         수강신청
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
             <div className="d-flex justify-content-end align-items-center mt-4">
-              <a href="#" className="btn btn-outline-primary btn-sm">
+              <Link className="btn btn-outline-primary btn-sm">
                 전체 보기 <i className="bi bi-arrow-right"></i>
-              </a>
+              </Link>
             </div>
           </div>
       <Tail></Tail>
