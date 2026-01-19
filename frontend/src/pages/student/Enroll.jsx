@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// import 'bootstrap/dist/css/bootstrap.min.css';
 import MainNav from '../../components/StudentNav';
 import Tail from '../../components/Tail';
 
@@ -12,16 +11,18 @@ function Enroll() {
     thumbnail_url: ''
   });
 
+  <script src="http://localhost:8097"></script>
+
   return (
     <>
       <MainNav></MainNav>
-      <View>
-        강좌명 : <input>{course.title}</input>
-        강사명 : <input>{course.create_by}</input>
-        난이도 : <input>{course.level}</input>
-        목  차 : <input>{course.description}</input>
-        썸네일 : <input>{course.thumbnail_url}</input>
-      </View>
+      <div>
+        <p>강좌명 : </p><input>{setCourse.title}</input>
+        <p>강사명 : </p><input>{setCourse.create_by}</input>
+        <p>난이도 : </p><input>{setCourse.level}</input>
+        <p>목  차 : </p><input>{setCourse.description}</input>
+        <p>썸네일 : </p><input>{setCourse.thumbnail_url}</input>
+      </div>
       <Tail></Tail>
     </>
     

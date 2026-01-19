@@ -19,6 +19,7 @@ git status         pull 이후 변경사항 재확인
 최근 커밋과 현재 파일의 차이점 보는 명령어
 git diff               j/k로 스크롤바 조작, q 연타해서 종료
 git diff 커밋아이디     특정 커밋과 차이점 확인
+q                      git diff 이후 나오기
 
 커밋 아이디 확인하는 방법
 git log --oneline --all    명령어 입력 후 노란색으로 표시되는 글자
