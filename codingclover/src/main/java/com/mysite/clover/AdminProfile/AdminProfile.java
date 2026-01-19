@@ -22,7 +22,7 @@ public class AdminProfile {
     @Column(name = "user_id")
     private long userId;
 
-  //포린키
+  //1:1 Users와 매핑
   @OneToOne
     @MapsId  // userId를 Users의 PK와 매핑
     @JoinColumn(name = "user_id")
