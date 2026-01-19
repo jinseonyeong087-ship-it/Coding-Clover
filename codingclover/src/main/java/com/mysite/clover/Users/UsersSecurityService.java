@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class UsersSecurityService implements UserDetailsService {
 
-  private final UsersRopository usersRepository;
+  private final UsersRepository usersRepository;
 
   @Override
   public UserDetails loadUserByUsername(String loginId) throws UsernameNotFoundException {

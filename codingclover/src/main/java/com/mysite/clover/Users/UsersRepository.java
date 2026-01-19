@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UsersRopository extends JpaRepository<Users, Long> {
+public interface UsersRepository extends JpaRepository<Users, Long> {
 
   // 로그인 조회 (LoginId로 조회함)
   Optional<Users> findByLoginId(String LoginId);
