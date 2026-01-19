@@ -4,9 +4,9 @@
   "settings": {
     "width": 2000,
     "height": 2000,
-    "scrollTop": -725.0764,
-    "scrollLeft": -377.9754,
-    "zoomLevel": 0.31,
+    "scrollTop": 0,
+    "scrollLeft": -800,
+    "zoomLevel": 0.97,
     "show": 431,
     "database": 4,
     "databaseName": "",
@@ -166,12 +166,18 @@
         "columnIds": [
           "JwWjOu0tt1CL46uNgW3zr",
           "2n5SUtUGzWQxpUDtISVzZ",
-          "fi9Ct5KlnlJdCfGxTXGmT"
+          "fi9Ct5KlnlJdCfGxTXGmT",
+          "oOCU2evhGq2EEGquoY2d0",
+          "9BDFVSnxa8tG4LXO6xdqs",
+          "F6YAA8rS6gmFvvrQ2qXfM"
         ],
         "seqColumnIds": [
           "JwWjOu0tt1CL46uNgW3zr",
           "2n5SUtUGzWQxpUDtISVzZ",
-          "fi9Ct5KlnlJdCfGxTXGmT"
+          "fi9Ct5KlnlJdCfGxTXGmT",
+          "oOCU2evhGq2EEGquoY2d0",
+          "9BDFVSnxa8tG4LXO6xdqs",
+          "F6YAA8rS6gmFvvrQ2qXfM"
         ],
         "ui": {
           "x": 1349.9153,
@@ -182,7 +188,7 @@
           "color": ""
         },
         "meta": {
-          "updateAt": 1768739821261,
+          "updateAt": 1768829661294,
           "createAt": 1768738466815
         }
       },
@@ -4188,6 +4194,66 @@
           "updateAt": 1768752460982,
           "createAt": 1768752446200
         }
+      },
+      "oOCU2evhGq2EEGquoY2d0": {
+        "id": "oOCU2evhGq2EEGquoY2d0",
+        "tableId": "kZ_G1NxdDY9I3cixVe0X_",
+        "name": "status",
+        "comment": "강사 신청 상태",
+        "dataType": "ENUM",
+        "default": "'APPLIED'",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 81,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1768829651015,
+          "createAt": 1768829597126
+        }
+      },
+      "9BDFVSnxa8tG4LXO6xdqs": {
+        "id": "9BDFVSnxa8tG4LXO6xdqs",
+        "tableId": "kZ_G1NxdDY9I3cixVe0X_",
+        "name": "applied_at",
+        "comment": "강사 신청 일시",
+        "dataType": "DATETIME",
+        "default": "CURRENT_TIMESTAMP",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 81,
+          "widthDataType": 60,
+          "widthDefault": 122
+        },
+        "meta": {
+          "updateAt": 1768829654148,
+          "createAt": 1768829597311
+        }
+      },
+      "F6YAA8rS6gmFvvrQ2qXfM": {
+        "id": "F6YAA8rS6gmFvvrQ2qXfM",
+        "tableId": "kZ_G1NxdDY9I3cixVe0X_",
+        "name": "approved_at",
+        "comment": "관리자 승인 일시",
+        "dataType": "DATETIME",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 68,
+          "widthComment": 93,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1768829657494,
+          "createAt": 1768829597632
+        }
       }
     },
     "relationshipEntities": {
@@ -4239,7 +4305,7 @@
             "JwWjOu0tt1CL46uNgW3zr"
           ],
           "x": 1349.9153,
-          "y": 241.8816,
+          "y": 277.8816,
           "direction": 1
         },
         "meta": {
