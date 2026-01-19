@@ -1,10 +1,13 @@
 package com.mysite.clover.AdminProfile;
 
+import com.mysite.clover.Users.Users;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,9 +19,14 @@ import lombok.Setter;
 public class AdminProfile {
 
   @Id // PK
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // AI
     @Column(name = "user_id")
     private long userId;
+
+  //포린키
+  @OneToOne
+    @MapsId  // userId를 Users의 PK와 매핑
+    @JoinColumn(name = "user_id")
+    private Users user;
 
   
   // 소속 부서
