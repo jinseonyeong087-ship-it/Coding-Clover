@@ -1,5 +1,7 @@
 import React from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import MainLogin from '../pages/MainLogin';
+import Home from '../pages/Home';
 
 function StudentNav() {
     const tabs = [
@@ -11,54 +13,43 @@ function StudentNav() {
     return (
         <nav className="navbar navbar-expand-lg navbar-light bg-light sticky-top">
             <div className="container-fluid">
-                <a className="navbar-brand fw-bold text-primary" href="#">
+                <Link className="navbar-brand fw-bold text-primary" onClick={() => { <Home /> }}>
                     <i className="bi bi-code-square"></i> Coding-Clover
-                </a>
+                </Link>
 
                 <button
                     className="navbar-toggler"
                     type="button"
-                    // data-bs-toggle="collapse"
-                    // data-bs-target="#navbarNav"
+                // data-bs-toggle="collapse"
+                // data-bs-target="#navbarNav"
                 >
                     <span className="navbar-toggler-icon"></span>
                 </button>
 
                 <div className="collapse navbar-collapse" id="navbarNav">
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li className="nav-item dropdown">
-                            <a
-                                className="nav-link dropdown-toggle"
-                                href="#"
-                                role="button"
-                                data-bs-toggle="dropdown"
-                            >
-                                레벨별 강좌
-                            </a>
-                            <ul className="dropdown-menu">
-                                {tabs.map((tab) => (
-                                    <li key={tab.id}>
-                                        <a className="dropdown-item" href="#">
-                                            <i className={`bi bi-${tab.icon}`}></i> {tab.label}
-                                        </a>
-                                    </li>
-                                ))}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">전체 강좌</a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="#!">초급</a></li>
+                                <li><a class="dropdown-item" href="#!">중급</a></li>
+                                <li><a class="dropdown-item" href="#!">고급</a></li>
                             </ul>
                         </li>
                         <li className="nav-item">
-                            <a className="nav-link" href="#">
+                            <Link className="nav-link" href="#">
                                 <i className="bi bi-chat-dots"></i> Q&A
-                            </a>
+                            </Link>
                         </li>
                         <li className="nav-item">
-                            <a className="nav-link" href="#">
+                            <Link className="nav-link" href="#">
                                 <i className="bi bi-people"></i> 커뮤니티
-                            </a>
+                            </Link>
                         </li>
                         <li className="nav-item">
-                            <a className="nav-link" href="#">
+                            <Link className="nav-link" href="#">
                                 <i className="bi bi-megaphone"></i> 공지사항
-                            </a>
+                            </Link>
                         </li>
                     </ul>
 
@@ -67,9 +58,9 @@ function StudentNav() {
                         <button className="btn btn-outline-secondary me-2" type="button">
                             <i className="bi bi-search"></i>
                         </button>
-                        <a className="btn btn-primary" onClick={()=>{<MainLogin />}}>
-                            <i className="bi bi-box-arrow-in-right"></i> 로그인
-                        </a>
+                        <Link className="btn btn-primary" onClick={() => { <MainLogin /> }}>
+                            <i className="bi bi-box-arrow-in-right"></i>로그인
+                        </Link>                    
                     </div>
                 </div>
             </div>

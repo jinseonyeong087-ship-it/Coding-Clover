@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import StudentNav from '../components/StudentNav';
 import Tail from '../components/Tail';
+import { BrowserRouter } from 'react-router-dom';
 
 function Home() {
   let [activeTab, setActiveTab] = useState('basic');
-// 레벨  1 2 3이었으
+  // 레벨  1 2 3이었으
   let course = {
     basic: [
       { title: 'HTML/CSS 올인원', variant: 'warning' },
@@ -58,83 +59,81 @@ function Home() {
 
   return (
     <>
-      <StudentNav></StudentNav>
-
-      {/* 히어로 섹션 */}
-      <div style={heroStyle}>
-        <div className="container">
-          <h1 className="display-4">코딩의 세계에 오신 것을 환영합니다</h1>
-          <p className="lead">신규 가입 시 첫 강좌 무료!</p>
-          <div className="mt-4">
-            <a href="#" className="btn btn-light btn-lg me-3">
-              <i className="bi bi-book"></i> 수강신청하기
-            </a>
-            <a href="#" className="btn btn-outline-light btn-lg">
-              <i className="bi bi-play-circle"></i> 강좌 둘러보기
-            </a>
+        <StudentNav></StudentNav>
+          {/* 히어로 섹션 */}
+          <div style={heroStyle}>
+            <div className="container">
+              <h1 className="display-4">코딩의 세계에 오신 것을 환영합니다</h1>
+              <p className="lead">신규 가입 시 첫 강좌 무료!</p>
+              <div className="mt-4">
+                <a href="#" className="btn btn-light btn-lg me-3">
+                  <i className="bi bi-book"></i> 수강신청하기
+                </a>
+                <a href="#" className="btn btn-outline-light btn-lg">
+                  <i className="bi bi-play-circle"></i> 강좌 둘러보기
+                </a>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* 인기 강좌 섹션 */}
-      <div className="container my-5">
-        <h2 className="mb-4">인기 강좌</h2>
+          {/* 인기 강좌 섹션 */}
+          <div className="container my-5">
+            <h2 className="mb-4">인기 강좌</h2>
 
-        <ul className="nav nav-tabs mb-4">
-          {tabs.map((tab) => (
-            <li className="nav-item" key={tab.id}>
-              <button
-                className={`nav-link ${activeTab === tab.id ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                <i className={`bi bi-${tab.icon}`}></i> {tab.label}
-              </button>
-            </li>
-          ))}
-        </ul>
+            <ul className="nav nav-tabs mb-4">
+              {tabs.map((tab) => (
+                <li className="nav-item" key={tab.id}>
+                  <button
+                    className={`nav-link ${activeTab === tab.id ? 'active' : ''}`}
+                    onClick={() => setActiveTab(tab.id)}
+                  >
+                    <i className={`bi bi-${tab.icon}`}></i> {tab.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
 
-        <div className="row g-4">
-          {course[activeTab].map((item, index) => (
-            <div className="col-md-3" key={index}>
-              <div className="card h-100 shadow-sm">
-                <div className="card-body">
-                  <p className="fw-bold text-dark mb-3">{item.title}</p>
-                  <a href="#" className={`btn btn-sm btn-outline-${item.variant}`}>
-                    자세히 보기
-                  </a>
+            <div className="row g-4">
+              {course[activeTab].map((item, index) => (
+                <div className="col-md-3" key={index}>
+                  <div className="card h-100 shadow-sm">
+                    <div className="card-body">
+                      <p className="fw-bold text-dark mb-3">{item.title}</p>
+                      <a href="#" className={`btn btn-sm btn-outline-${item.variant}`}>
+                        자세히 보기
+                      </a>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      {/* 수강 신청 섹션 */}
-      <div className="container my-5">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="mb-0">수강 신청</h2>
-        </div>
-        <div className="row g-4">
-          {enrollment.map((course, index) => (
-            <div className="col-md-4" key={index}>
-              <div className="card h-100 shadow-sm">
-                <div className="card-body">
-                  <p className="fw-bold text-dark mb-3">{course.title}</p>
-                  <a href="#" className={`btn btn-sm btn-outline-${course.variant}`}>
-                    수강신청
-                  </a>
+          {/* 수강 신청 섹션 */}
+          <div className="container my-5">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h2 className="mb-0">수강 신청</h2>
+            </div>
+            <div className="row g-4">
+              {enrollment.map((course, index) => (
+                <div className="col-md-4" key={index}>
+                  <div className="card h-100 shadow-sm">
+                    <div className="card-body">
+                      <p className="fw-bold text-dark mb-3">{course.title}</p>
+                      <a href="#" className={`btn btn-sm btn-outline-${course.variant}`}>
+                        수강신청
+                      </a>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <div className="d-flex justify-content-end align-items-center mt-4">
-          <a href="#" className="btn btn-outline-primary btn-sm">
-            전체 보기 <i className="bi bi-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-
+            <div className="d-flex justify-content-end align-items-center mt-4">
+              <a href="#" className="btn btn-outline-primary btn-sm">
+                전체 보기 <i className="bi bi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
       <Tail></Tail>
     </>
   );
