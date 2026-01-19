@@ -9,15 +9,19 @@ import lombok.Setter;
 @Setter
 public class CourseForm {
 
+    // 강좌 제목
     @NotEmpty(message = "제목은 필수")
     private String title;
 
+    // 강좌 설명
     @NotEmpty(message = "설명은 필수")
     private String description;
 
+    // 강좌 가격
     @NotNull(message = "가격 필수")
     private Integer price;
 
+    // 강좌 난이도
     @NotNull(message = "난이도 필수")
     private Integer level;
 }

@@ -15,35 +15,40 @@ public class Course {
 
     // 강좌 ID
     @Id
-    // 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long courseId;
     // 강좌 제목
     private String title;
 
+    // 강좌 설명
     @Column(columnDefinition = "TEXT")
     private String description;
-
+    // 난이도
     private int level;
-
+    // 가격
     private int price;
-
+    // 썸네일 이미지 URL
     private String thumbnailUrl;
 
-    @Enumerated(EnumType.STRING)
-    private CourseProposalStatus proposalStatus;
+    // 제안 상태
+    @Column(nullable = false)
+    private String proposalStatus;
 
+    // 거절 사유
+    @Enumerated(EnumType.STRING)
     private String proposalRejectReason;
 
+    // 승인한 사용자
     @ManyToOne
     private Users approvedBy;
-
+    // 승인 일시
     private LocalDateTime approvedAt;
-
+    
+    // 생성한 사용자
     @ManyToOne
     private Users createdBy;
-
+    // 생성 일시
     private LocalDateTime createdAt;
-
+    // 수정 일시
     private LocalDateTime updatedAt;
 }
