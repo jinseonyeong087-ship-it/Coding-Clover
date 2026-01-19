@@ -3,6 +3,7 @@ import Home from './Home';
 import StudentNav from '../components/StudentNav';
 import InstructorMain from './instructor/InstructorMain';
 import Tail from '../components/Tail';
+import Signup from './SignUp';
 
 // Users 엔티티의 UsersRole enum과 일치
 const UsersRole = {
@@ -87,6 +88,9 @@ const MainLogin = () => {
                 />
                 <button type="submit" onClick={handleLogin}>
                     로그인
+                </button>
+                <button onClick={()=>{<Signup />}}>
+                    회원가입
                 </button>
             </div>
             <Tail />

@@ -1,4 +1,5 @@
 import React from 'react';
+import MainLogin from '../pages/MainLogin';
 
 function StudentNav() {
     const tabs = [
@@ -66,8 +67,8 @@ function StudentNav() {
                         <button className="btn btn-outline-secondary me-2" type="button">
                             <i className="bi bi-search"></i>
                         </button>
-                        <a href="#" className="btn btn-primary">
-                            <i className="bi bi-box-arrow-in-right"></i> 로그아웃으로
+                        <a className="btn btn-primary" onClick={()=>{<MainLogin />}}>
+                            <i className="bi bi-box-arrow-in-right"></i> 로그인
                         </a>
                     </div>
                 </div>
