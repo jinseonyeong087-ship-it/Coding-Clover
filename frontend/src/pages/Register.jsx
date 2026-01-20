@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-
-// const BASE_URL = 'coding-clover-db.cdu22ui02zs2.ap-northeast-2.rds.amazonaws.com';
-// const BASE_URL = 'https://API 서버 기본 주소 넣기';
+import StudentNav from '../components/StudentNav';
+import Tail from '../components/Tail';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/RadioGroup';
+import { cn } from '@/lib/utils';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -10,21 +15,19 @@ const Register = () => {
     passwordConfirm: '',
     name: '',
     email: '',
-    role: 'STUDENT' // 기본값: 수강생
+    role: 'STUDENT'
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 입력값 변경 핸들러
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-    
-    // 해당 필드의 에러 메시지 제거
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -33,37 +36,45 @@ const Register = () => {
     }
   };
 
-  // 유효성 검사
+  const handleRoleChange = (value) => {
+    setFormData(prev => ({
+      ...prev,
+      role: value
+    }));
+
+    if (errors.role) {
+      setErrors(prev => ({
+        ...prev,
+        role: ''
+      }));
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
-    // 로그인 ID 검사
     if (!formData.loginId.trim()) {
       newErrors.loginId = '아이디를 입력해주세요.';
     } else if (formData.loginId.length < 4 || formData.loginId.length > 50) {
       newErrors.loginId = 'ID는 4자 이상이여야 합니다.';
     }
 
-    // 비밀번호 검사
     if (!formData.password) {
       newErrors.password = '비밀번호를 입력해주세요.';
     } else if (formData.password.length < 8) {
       newErrors.password = '비밀번호는 8자 이상이어야 합니다.';
     }
 
-    // 비밀번호 확인
     if (!formData.passwordConfirm) {
       newErrors.passwordConfirm = '비밀번호 확인을 입력해주세요.';
     } else if (formData.password !== formData.passwordConfirm) {
       newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
     }
 
-    // 이름 검사
     if (!formData.name.trim()) {
       newErrors.name = '이름을 입력해주세요.';
     }
 
-    // 이메일 검사
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim()) {
       newErrors.email = '이메일을 입력해주세요.';
@@ -71,7 +82,6 @@ const Register = () => {
       newErrors.email = '올바른 이메일 형식이 아닙니다.';
     }
 
-    // 역할 선택 검사
     if (!formData.role) {
       newErrors.role = '회원 유형을 선택해주세요.';
     }
@@ -80,7 +90,6 @@ const Register = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // 폼 제출 핸들러
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -91,7 +100,6 @@ const Register = () => {
     setIsSubmitting(true);
 
     try {
-      // API 호출 (실제 백엔드 엔드포인트로 수정 필요)
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
@@ -108,8 +116,6 @@ const Register = () => {
 
       if (response.ok) {
         alert('회원가입이 완료되었습니다!');
-        // 로그인 페이지로 이동 또는 다른 처리
-        // window.location.href = '/login';
       } else {
         const errorData = await response.json();
         alert(errorData.message || '회원가입에 실패했습니다.');
@@ -123,196 +129,248 @@ const Register = () => {
   };
 
   return (
-    <div className="container py-5">
-      <div className="row justify-content-center">
-        <div className="col-md-8 col-lg-6">
-          <div className="card shadow-sm">
-            <div className="card-body p-4">
-              <h2 className="card-title text-center mb-4">회원가입</h2>
-              
-              <form onSubmit={handleSubmit}>
-                {/* 회원 유형 선택 */}
-                <div className="mb-4">
-                  <label className="form-label fw-bold">
-                    회원 유형 선택 <span className="text-danger">*</span>
-                  </label>
-                  <div className="d-flex gap-3">
-                    <div className="form-check flex-fill">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="role"
-                        id="roleStudent"
-                        value="STUDENT"
-                        checked={formData.role === 'STUDENT'}
-                        onChange={handleChange}
-                      />
-                      <label className="form-check-label w-100" htmlFor="roleStudent">
-                        <div className="border rounded p-3 h-100">
-                          <h5 className="mb-2">
-                            <i className="bi bi-person-fill me-2"></i>
-                            수강생
-                          </h5>
-                        </div>
-                      </label>
-                    </div>
-                    
-                    <div className="form-check flex-fill">
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="role"
-                        id="roleInstructor"
-                        value="INSTRUCTOR"
-                        checked={formData.role === 'INSTRUCTOR'}
-                        onChange={handleChange}
-                      />
-                      <label className="form-check-label w-100" htmlFor="roleInstructor">
-                        <div className="border rounded p-3 h-100">
-                          <h5 className="mb-2">
-                            <i className="bi bi-person-badge-fill me-2"></i>
-                            강사
-                          </h5>
-                        </div>
-                      </label>
-                    </div>
+    <div className="min-h-screen flex flex-col bg-background">
+      <StudentNav />
+
+      <main className="flex-1 flex items-center justify-center py-12 px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-2xl font-bold">회원가입</CardTitle>
+            <CardDescription>
+              계정을 생성하여 서비스를 이용하세요
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* 회원 유형 선택 */}
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">
+                  회원 유형 선택 <span className="text-destructive">*</span>
+                </Label>
+                <RadioGroup
+                  value={formData.role}
+                  onValueChange={handleRoleChange}
+                  className="grid grid-cols-2 gap-4"
+                >
+                  <div>
+                    <RadioGroupItem
+                      value="STUDENT"
+                      id="roleStudent"
+                      className="peer sr-only"
+                    />
+                    <Label
+                      htmlFor="roleStudent"
+                      className={cn(
+                        "flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all",
+                        formData.role === 'STUDENT' && "border-primary bg-primary/5"
+                      )}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mb-2 h-6 w-6"
+                      >
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                      <span className="text-sm font-medium">수강생</span>
+                    </Label>
                   </div>
-                  {errors.role && (
-                    <div className="text-danger small mt-1">{errors.role}</div>
-                  )}
-                </div>
 
-                {/* 로그인 ID */}
-                <div className="mb-3">
-                  <label htmlFor="loginId" className="form-label">
-                    로그인 ID <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className={`form-control ${errors.loginId ? 'is-invalid' : ''}`}
-                    id="loginId"
-                    name="loginId"
-                    value={formData.loginId}
-                    onChange={handleChange}
-                    placeholder="아이디를 입력해 주세요."
-                    maxLength={50}
-                  />
-                  {errors.loginId && (
-                    <div className="invalid-feedback">{errors.loginId}</div>
-                  )}
-                </div>
-
-                {/* 이름 */}
-                <div className="mb-3">
-                  <label htmlFor="name" className="form-label">
-                    성명 <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className={`form-control ${errors.name ? 'is-invalid' : ''}`}
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="이름을 입력하세요"
-                    maxLength={50}
-                  />
-                  {errors.name && (
-                    <div className="invalid-feedback">{errors.name}</div>
-                  )}
-                </div>
-
-                {/* 이메일 */}
-                <div className="mb-3">
-                  <label htmlFor="email" className="form-label">
-                    이메일 <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="example@email.com"
-                    maxLength={100}
-                  />
-                  {errors.email && (
-                    <div className="invalid-feedback">{errors.email}</div>
-                  )}
-                </div>
-
-                {/* 비밀번호 */}
-                <div className="mb-3">
-                  <label htmlFor="password" className="form-label">
-                    비밀번호 <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="password"
-                    className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="8자 이상의 비밀번호를 입력해 주세요."
-                    maxLength={255}
-                  />
-                  {errors.password && (
-                    <div className="invalid-feedback">{errors.password}</div>
-                  )}
-                </div>
-
-                {/* 비밀번호 확인 */}
-                <div className="mb-4">
-                  <label htmlFor="passwordConfirm" className="form-label">
-                    비밀번호 확인 <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="password"
-                    className={`form-control ${errors.passwordConfirm ? 'is-invalid' : ''}`}
-                    id="passwordConfirm"
-                    name="passwordConfirm"
-                    value={formData.passwordConfirm}
-                    onChange={handleChange}
-                    placeholder="비밀번호를 다시 입력하세요"
-                  />
-                  {errors.passwordConfirm && (
-                    <div className="invalid-feedback">{errors.passwordConfirm}</div>
-                  )}
-                </div>
-
-                {/* 제출 버튼 */}
-                <div className="d-grid gap-2">
-                  <button
-                    type="submit"
-                    className="btn btn-primary btn-lg"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        처리 중...
-                      </>
-                    ) : (
-                      '가입하기'
-                    )}
-                  </button>
-                </div>
-              </form>
-
-              {/* 로그인 링크 */}
-              <div className="text-center mt-3">
-                <small className="text-muted">
-                  이미 계정이 있으신가요?{' '}
-                  <a href="/login" className="text-decoration-none">
-                    로그인
-                  </a>
-                </small>
+                  <div>
+                    <RadioGroupItem
+                      value="INSTRUCTOR"
+                      id="roleInstructor"
+                      className="peer sr-only"
+                    />
+                    <Label
+                      htmlFor="roleInstructor"
+                      className={cn(
+                        "flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all",
+                        formData.role === 'INSTRUCTOR' && "border-primary bg-primary/5"
+                      )}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mb-2 h-6 w-6"
+                      >
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                      </svg>
+                      <span className="text-sm font-medium">강사</span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+                {errors.role && (
+                  <p className="text-sm text-destructive">{errors.role}</p>
+                )}
               </div>
+
+              {/* 로그인 ID */}
+              <div className="space-y-2">
+                <Label htmlFor="loginId">
+                  로그인 ID <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  id="loginId"
+                  name="loginId"
+                  value={formData.loginId}
+                  onChange={handleChange}
+                  placeholder="아이디를 입력해 주세요"
+                  maxLength={50}
+                  className={cn(errors.loginId && "border-destructive focus-visible:ring-destructive")}
+                />
+                {errors.loginId && (
+                  <p className="text-sm text-destructive">{errors.loginId}</p>
+                )}
+              </div>
+
+              {/* 이름 */}
+              <div className="space-y-2">
+                <Label htmlFor="name">
+                  성명 <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="이름을 입력하세요"
+                  maxLength={50}
+                  className={cn(errors.name && "border-destructive focus-visible:ring-destructive")}
+                />
+                {errors.name && (
+                  <p className="text-sm text-destructive">{errors.name}</p>
+                )}
+              </div>
+
+              {/* 이메일 */}
+              <div className="space-y-2">
+                <Label htmlFor="email">
+                  이메일 <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="example@email.com"
+                  maxLength={100}
+                  className={cn(errors.email && "border-destructive focus-visible:ring-destructive")}
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email}</p>
+                )}
+              </div>
+
+              {/* 비밀번호 */}
+              <div className="space-y-2">
+                <Label htmlFor="password">
+                  비밀번호 <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="8자 이상의 비밀번호를 입력해 주세요"
+                  maxLength={255}
+                  className={cn(errors.password && "border-destructive focus-visible:ring-destructive")}
+                />
+                {errors.password && (
+                  <p className="text-sm text-destructive">{errors.password}</p>
+                )}
+              </div>
+
+              {/* 비밀번호 확인 */}
+              <div className="space-y-2">
+                <Label htmlFor="passwordConfirm">
+                  비밀번호 확인 <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  type="password"
+                  id="passwordConfirm"
+                  name="passwordConfirm"
+                  value={formData.passwordConfirm}
+                  onChange={handleChange}
+                  placeholder="비밀번호를 다시 입력하세요"
+                  className={cn(errors.passwordConfirm && "border-destructive focus-visible:ring-destructive")}
+                />
+                {errors.passwordConfirm && (
+                  <p className="text-sm text-destructive">{errors.passwordConfirm}</p>
+                )}
+              </div>
+
+              {/* 제출 버튼 */}
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    처리 중...
+                  </>
+                ) : (
+                  '가입하기'
+                )}
+              </Button>
+            </form>
+
+            {/* 로그인 링크 */}
+            <div className="mt-6 text-center text-sm text-muted-foreground">
+              이미 계정이 있으신가요?{' '}
+              <a
+                href="/login"
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
+                로그인
+              </a>
             </div>
-          </div>
-        </div>
-      </div>
+          </CardContent>
+        </Card>
+      </main>
+
+      <Tail />
     </div>
   );
 };
