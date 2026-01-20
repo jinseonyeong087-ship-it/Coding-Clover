@@ -1,4 +1,4 @@
-package com.mysite.clover.StudentProfile;
+package com.mysite.clover.InstructorProfile;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,18 +13,18 @@ import com.mysite.clover.Users.UsersRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
-@RequestMapping("/api/student")
+@RequestMapping("/api/instructor")
 @RestController
 @RequiredArgsConstructor
-public class StudentProfileController {
-
-  private final StudentProfileService studentProfileService;
+public class InstructorProfileController {
+  
+  private final InstructorProfileService instructorProfileService;
   private final UsersRepository usersRepository;
 
-  // Spring Security 인증 여부 확인 (@PreAuthorize)
+    // Spring Security 인증 여부 확인 (@PreAuthorize)
   @PreAuthorize("isAuthenticated()")
   @GetMapping("/profile")
-  public StudentProfileDto getStudentProfile(
+  public InstructorProfileDto getInstructorProfile(
       @AuthenticationPrincipal User principal) {
     // 로그인 ID 추출
     String loginId = principal.getUsername();
@@ -33,7 +33,8 @@ public class StudentProfileController {
     Users user = usersRepository.findByLoginId(loginId)
         .orElseThrow(() -> new EntityNotFoundException("사용자 정보 없음"));
 
-    return studentProfileService.getStudentProfile(user.getUserId());
+    return instructorProfileService.getInstructorProfile(user.getUserId());
 
   }
 }
+

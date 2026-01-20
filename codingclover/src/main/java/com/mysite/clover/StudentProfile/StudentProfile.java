@@ -20,7 +20,7 @@ public class StudentProfile {
   
   @Id // PK
     @Column(name = "user_id")
-    private long userId;
+    private Long userId;
 
   //1:1 Users와 매핑
   @OneToOne

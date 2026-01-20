@@ -4,6 +4,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,7 +31,7 @@ public class AdminProfileController {
 
     // Users 조회
     Users user = usersRepository.findByLoginId(loginId)
-        .orElseThrow(() -> new IllegalStateException("사용자 정보 없음"));
+        .orElseThrow(() -> new EntityNotFoundException("사용자 정보 없음"));
 
     // 관리자 권한 검증 (아니면 예외)
     adminProfileService.validateAdmin(user.getUserId());

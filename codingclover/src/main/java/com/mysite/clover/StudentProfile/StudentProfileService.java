@@ -2,6 +2,7 @@ package com.mysite.clover.StudentProfile;
 
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -17,7 +18,7 @@ public class StudentProfileService {
 
         StudentProfile profile = studentProfileRepository
                 .findByUser_UserId(userId)
-                .orElseThrow(() -> new IllegalStateException("수강생 정보가 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("수강생 정보가 없습니다."));
 
         return new StudentProfileDto(
                 profile.getUserId(),

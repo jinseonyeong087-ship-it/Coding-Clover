@@ -7,8 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public class StudentProfileDto {
   
-  private Long userID;
-  private String loginID;
+  private Long userId;
+  private String loginId;
   private String educationLevel;
   private String interestCategory;
 }

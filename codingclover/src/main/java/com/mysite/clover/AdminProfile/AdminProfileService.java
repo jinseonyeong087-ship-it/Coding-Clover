@@ -3,6 +3,7 @@ package com.mysite.clover.AdminProfile;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -30,7 +31,7 @@ public class AdminProfileService {
 
         AdminProfile profile = adminProfileRepository
                 .findByUser_UserId(userId)
-                .orElseThrow(() -> new IllegalStateException("관리자 정보가 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("관리자 정보가 없습니다."));
 
         return new AdminProfileDto(
                 profile.getUserId(),
