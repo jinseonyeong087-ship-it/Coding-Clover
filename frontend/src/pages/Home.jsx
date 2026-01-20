@@ -4,39 +4,24 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import StudentNav from '../components/StudentNav';
 import Tail from '../components/Tail';
 import { BrowserRouter, Link } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { ArrowRight } from "lucide-react"
 
 function Home() {
-  let [activeTab, setActiveTab] = useState('basic');
-  // 레벨  1 2 3이었으
-  let course = {
-    basic: [
-      { title: 'HTML/CSS 올인원', variant: 'warning' },
-      { title: '프로그래밍 첫걸음', variant: 'warning' },
-      { title: 'Git 기초', variant: 'warning' },
-      { title: '웹 개발 기초', variant: 'warning' },
-      { title: 'JavaScript 기초', variant: 'warning' },
-      { title: 'Python 시작하기', variant: 'warning' },
-      { title: 'Java 입문', variant: 'warning' },
-      { title: 'SQL 데이터베이스', variant: 'warning' },
-    ],
-    intermediate: [
-      { title: 'React 사용하기', variant: 'info' },
-      { title: 'Node.js 백엔드', variant: 'info' },
-      { title: 'Spring Boot 실무', variant: 'info' },
-      { title: 'REST API 설계', variant: 'info' },
-    ],
-    advanced: [
-      { title: 'Python으로 AI 만들기', variant: 'success' },
-      { title: '마이크로서비스 아키텍처', variant: 'success' },
-      { title: '클라우드 & DevOps', variant: 'success' },
-      { title: '시스템 설계', variant: 'success' },
-    ],
+  let [activeTab, setActiveTab] = useState('1');
+
+  let level = { 
+    1: '초급',
+    2: '중급',
+    3: '고급'
   };
 
   let tabs = [
-    { id: 'basic', label: '초급' },
-    { id: 'intermediate', label: '중급' },
-    { id: 'advanced', label: '고급' },
+    { id: '1', label: '초급' },
+    { id: '2', label: '중급' },
+    { id: '3', label: '고급' },
   ];
 
   let enrollment = [
@@ -61,7 +46,7 @@ function Home() {
 
   return (
     <>
-        <StudentNav></StudentNav>
+        <StudentNav/>
           {/* 히어로 섹션 */}
           <div style={heroStyle}>
             <div className="container">
@@ -94,48 +79,64 @@ function Home() {
                 </li>
               ))}
             </ul>
+          </div>
 
-            <div className="row g-4">
+            {/* 코딩애플 보면서 만든 거 */}
+            <Tabs defaultValue="1" className="w-[400px]">
+              <TabsList>
+                <TabsTrigger value="1">초급</TabsTrigger>
+                <TabsTrigger value="2">중급</TabsTrigger>
+                <TabsTrigger value="3">고급</TabsTrigger>
+              </TabsList>
+              <TabsContent value="1">"{title}"</TabsContent>
+              <TabsContent value="2">"{title}"</TabsContent>
+              <TabsContent value="3">"{title}"</TabsContent>
+            </Tabs>
+
+            
+            {/* 코딩애플 보면서 만든 거 */}
+
+            {/* <div className="row g-4">
               {course[activeTab].map((item, index) => (
                 <div className="col-md-3" key={index}>
                   <div className="card h-100 shadow-sm">
                     <div className="card-body">
-                      <p className="fw-bold text-dark mb-3">{item.title}</p>
-                      <a href="#" className={`btn btn-sm btn-outline-${item.variant}`}>
+                      <p className="fw-bold text-dark mb-3">"{item.title}"</p>
+                      <a href="#">
                         자세히 보기
                       </a>
                     </div>
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
+            </div> */}
+          {/* </div> */}
 
-          {/* 수강 신청 섹션 */}
-          <div className="container my-5">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h2 className="mb-0">수강 신청</h2>
+          {/* 
+            수강 신청 섹션 
+          <div className="container mx-auto my-12 px-4">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">수강 신청</h2>
             </div>
-            <div className="row g-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {enrollment.map((course, index) => (
-                <div className="col-md-4" key={index}>
-                  <div className="card h-100 shadow-sm">
-                    <div className="card-body">
-                      <p className="fw-bold text-dark mb-3">{course.title}</p>
-                      <a href="#" className={`btn btn-sm btn-outline-${course.variant}`}>
-                        수강신청
-                      </a>
-                    </div>
-                  </div>
-                </div>
+                <Card key={index} className="h-full shadow-sm hover:shadow-md transition-shadow">
+                  <CardContent className="pt-6">
+                    <p className="font-bold text-foreground mb-4">{course.title}</p>
+                    <Button variant="outline" size="sm">
+                      수강신청
+                    </Button>
+                  </CardContent>
+                </Card>
               ))}
             </div>
-            <div className="d-flex justify-content-end align-items-center mt-4">
-              <a className="btn btn-outline-primary btn-sm">
-                전체 보기 <i className="bi bi-arrow-right"></i>
-              </a>
+            <div className="flex justify-end items-center mt-6">
+              <Button variant="outline" size="sm">
+                전체 보기 <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </div>
           </div>
+          */}
       <Tail></Tail>
     </>
   );

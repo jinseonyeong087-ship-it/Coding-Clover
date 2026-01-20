@@ -13,11 +13,18 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<MainLogin />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/auth/login" element={<MainLogin />} />
+        <Route path="/auth/register" element={<Register />} />
+        {/* /auth/oauth 소셜 로그인 */}
+        {/* 초급강좌 <Route path="/courses/level/basic" element={<Basic />} /> */}
+        {/* 중급강좌 <Route path="/courses/level/intermediate" element={<Intermediate />} /> */}
+        {/* 고급강좌 <Route path="/courses/level/advanced" element={<Advanced />} /> */}
         <Route path="/enroll" element={<Enroll />} />
         <Route path="/instructor/dashboard" element={<InstructorMain />} />
         <Route path="/admin/dashboard" element={<AdminMain />} />
+        {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
+        {/*강사 프로필 <Route path="/api/instructor/profile" element={<InstructorProfile />} /> */}
+        {/*수강생 프로필 <Route path="/api/student/profile" element={<StudentProfile />} /> */}
       </Routes>
     </BrowserRouter>
   );
