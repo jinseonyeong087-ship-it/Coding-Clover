@@ -10,32 +10,35 @@ import org.springframework.stereotype.Controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.Users.UsersRepository;
 
-
-@RequestMapping("/admin")
-@Controller
+@RequestMapping("/api/admin")
+@RestController
 @RequiredArgsConstructor
 public class AdminProfileController {
-  
+
   private final AdminProfileService adminProfileService;
   private final UsersRepository usersRepository;
 
-  //Spring Security 인증 여부 확인 (@PreAuthorize)
+  // Spring Security 인증 여부 확인 (@PreAuthorize)
   @PreAuthorize("isAuthenticated()")
-  @GetMapping("/dashboard")
-  public String adminDashboard(@AuthenticationPrincipal User principal) {
-    // Spring Security 인증 객체에서 로그인 ID 추출
+  @GetMapping("/profile")
+  public AdminProfileDto getAdminProfile(
+      @AuthenticationPrincipal User principal) {
+    // 로그인 ID 추출
     String loginId = principal.getUsername();
-    Users user = usersRepository.findByLoginId(loginId)
-            .orElseThrow();
 
-    // admin_profile 기반 관리자 자격 검증 (관리자 아니면 예외 발생)
+    // Users 조회
+    Users user = usersRepository.findByLoginId(loginId)
+        .orElseThrow(() -> new IllegalStateException("사용자 정보 없음"));
+
+    // 관리자 권한 검증 (아니면 예외)
     adminProfileService.validateAdmin(user.getUserId());
-    //관리자만 대시보드 화면 접근 허용
-    return "admin/dashboard";
-}
-  
+
+    // 관리자 프로필 DTO 반환
+    return adminProfileService.getAdminProfile(user.getUserId());
+  }
 }
