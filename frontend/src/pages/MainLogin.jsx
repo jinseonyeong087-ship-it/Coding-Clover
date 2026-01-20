@@ -4,6 +4,10 @@ import StudentNav from '../components/StudentNav';
 import InstructorMain from './instructor/InstructorMain';
 import Tail from '../components/Tail';
 import Register from './Register';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
 
 // Users 엔티티의 UsersRole enum과 일치
 const UsersRole = {
@@ -70,33 +74,54 @@ const MainLogin = () => {
 
     // 로그인 폼
     return (
-        <>
+        <div className="min-h-screen flex flex-col bg-background">
             <StudentNav />
-            <div>
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-                <input
-                    type="text"
-                    value={loginId}
-                    onChange={(e) => setLoginId(e.target.value)}
-                    placeholder="아이디"
-                />
-                <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="비밀번호"
-                />
-                <button type="submit" onClick={handleLogin}>
-                    로그인
-                </button>
-                <button onClick={()=>{<Register />}}>
-                    회원가입
-                </button>
-            </div>
+            <main className="flex-1 flex items-center justify-center py-12 px-4">
+                <Card className="w-full max-w-sm">
+                    <CardHeader className="space-y-1 text-center">
+                        <CardTitle className="text-2xl font-bold">로그인</CardTitle>
+                        <CardDescription>
+                            계정에 로그인하세요
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            {error && (
+                                <p className="text-sm text-destructive text-center">{error}</p>
+                            )}
+                            <div className="space-y-2">
+                                <Label htmlFor="loginId">아이디</Label>
+                                <Input
+                                    id="loginId"
+                                    type="text"
+                                    value={loginId}
+                                    onChange={(e) => setLoginId(e.target.value)}
+                                    placeholder="아이디를 입력하세요"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="password">비밀번호</Label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="비밀번호를 입력하세요"
+                                />
+                            </div>
+                            <Button className="w-full" onClick={handleLogin}>
+                                로그인
+                            </Button>
+                            <Button variant="outline" className="w-full" onClick={()=>{<Register />}}>
+                                회원가입
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </main>
             <Tail />
-        </>
+        </div>
     );
 };
 
 export default MainLogin;
-
