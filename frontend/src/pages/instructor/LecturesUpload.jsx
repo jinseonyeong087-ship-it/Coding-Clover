@@ -30,33 +30,33 @@ function Enroll() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <label className="text-right font-medium">강좌명</label>
-              <Input value={course.title} className="col-span-3" readOnly />
+              <Input value={course.title} className="col-span-3" />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
               <label className="text-right font-medium">강사명</label>
-              <Input value={course.create_by} className="col-span-3" readOnly />
+              <Input value={course.create_by} className="col-span-3" />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
               <label className="text-right font-medium">난이도</label>
-              <Input value={course.level} className="col-span-3" readOnly />
+              <Input value={course.level} className="col-span-3" />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
               <label className="text-right font-medium">목차</label>
-              <Input value={course.description} className="col-span-3" readOnly />
+              <Input value={course.description} className="col-span-3" />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
               <label className="text-right font-medium">썸네일</label>
-              <Input value={course.thumbnail_url} placeholder="이미지 URL" className="col-span-3" readOnly />
+              <Input value={course.thumbnail_url} placeholder="이미지 URL" className="col-span-3" />
             </div>
           </CardContent>
 
           <CardFooter className="flex justify-end gap-3">
-            <Button variant="outline">취소</Button>
-            <Button>수강 신청하기</Button>
+            <Button variant="outline">임시 저장</Button>
+            <Button>개설 신청</Button>
           </CardFooter>
         </Card>
       </section>

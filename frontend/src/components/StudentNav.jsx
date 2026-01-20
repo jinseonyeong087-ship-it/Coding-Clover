@@ -1,69 +1,68 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import MainLogin from '../pages/MainLogin';
-import Home from '../pages/Home';
+import {
+    Menubar,
+    MenubarContent,
+    MenubarGroup,
+    MenubarItem,
+    MenubarMenu,
+    MenubarSeparator,
+    MenubarTrigger,
+} from "@/components/ui/Menubar"
+import { Button } from "@/components/ui/Button"
+import { Input } from "@/components/ui/Input"
+import { Search } from "lucide-react"
 
 function StudentNav() {
-    const tabs = [
-        { id: 'basic', label: '초급', icon: 'star' },
-        { id: 'intermediate', label: '중급', icon: 'star-half' },
-        { id: 'advanced', label: '고급', icon: 'star-fill' },
-    ];
-
     return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-light sticky-top">
-            <div className="container-fluid">
-                <Link className="navbar-brand fw-bold text-primary" onClick={() => { <Home /> }}>
-                    <i className="bi bi-code-square"></i> Coding-Clover
+        <nav className="flex items-center justify-between px-24 py-3 border-b bg-background">
+            {/* 로고 + 메뉴바 */}
+            <div className="flex items-center gap-6">
+                <Link to="/" className="text-xl font-bold text-primary no-underline">
+                    Coding-Clover
                 </Link>
 
-                <button
-                    className="navbar-toggler"
-                    type="button"
-                // data-bs-toggle="collapse"
-                // data-bs-target="#navbarNav"
-                >
-                    <span className="navbar-toggler-icon"></span>
-                </button>
+                <Menubar className="border-none shadow-none bg-transparent">
+                <MenubarMenu>
+                    <MenubarTrigger className="cursor-pointer">전체 강좌</MenubarTrigger>
+                    <MenubarContent>
+                        <MenubarGroup>
+                            <MenubarItem>초급</MenubarItem>
+                            <MenubarItem>중급</MenubarItem>
+                            <MenubarItem>고급</MenubarItem>
+                        </MenubarGroup>
+                    </MenubarContent>
+                </MenubarMenu>
+                <MenubarMenu>
+                    <MenubarTrigger className="cursor-pointer">내 강의실</MenubarTrigger>
+                    <MenubarContent>
+                        <MenubarItem>수강 중인 강좌</MenubarItem>
+                        <MenubarItem>완료한 강좌</MenubarItem>
+                        <MenubarItem>학습 기록</MenubarItem>
+                    </MenubarContent>
+                </MenubarMenu>
+                <MenubarMenu>
+                    <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
+                    <MenubarContent>
+                        <MenubarItem>Q&A</MenubarItem>
+                        <MenubarItem>자유게시판</MenubarItem>
+                    </MenubarContent>
+                </MenubarMenu>
+                </Menubar>
+            </div>
 
-                <div className="collapse navbar-collapse" id="navbarNav">
-                    <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li className="nav-item dropdown">
-                            <a className="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">전체 강좌</a>
-                            <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li><a className="dropdown-item" href="#!">초급</a></li>
-                                <li><a className="dropdown-item" href="#!">중급</a></li>
-                                <li><a className="dropdown-item" href="#!">고급</a></li>
-                            </ul>
-                        </li>
-                        <li className="nav-item">
-                            <Link className="nav-link" href="#">
-                                <i className="bi bi-chat-dots"></i> Q&A
-                            </Link>
-                        </li>
-                        <li className="nav-item">
-                            <Link className="nav-link" href="#">
-                                <i className="bi bi-people"></i> 커뮤니티
-                            </Link>
-                        </li>
-                        <li className="nav-item">
-                            <Link className="nav-link" href="#">
-                                <i className="bi bi-megaphone"></i> 공지사항
-                            </Link>
-                        </li>
-                    </ul>
-
-                    <div className="d-flex">
-                        <input type="search" style={{ width: '300px' }} />
-                        <button className="btn btn-outline-secondary me-2" type="button">
-                            <i className="bi bi-search"></i>
-                        </button>
-                        <Link className="btn btn-primary" onClick={() => { <MainLogin /> }}>
-                            <i className="bi bi-box-arrow-in-right"></i>로그인
-                        </Link>                    
-                    </div>
+            {/* 검색 & 로그인 */}
+            <div className="flex items-center gap-3">
+                <div className="relative">
+                    <Search className="absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="강좌 검색..."
+                        className="pl-9 w-48"
+                    />
                 </div>
+                <Button variant="ghost" size="sm">로그인</Button>
+                <Button size="sm">회원가입</Button>
             </div>
         </nav>
     );

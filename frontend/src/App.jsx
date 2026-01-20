@@ -20,6 +20,7 @@ function App() {
         {/* 중급강좌 <Route path="/courses/level/intermediate" element={<Intermediate />} /> */}
         {/* 고급강좌 <Route path="/courses/level/advanced" element={<Advanced />} /> */}
         <Route path="/enroll" element={<Enroll />} />
+        {/* 디비 연동하고 /student/courses/{courseId}/enroll로 경로수정 */}
         <Route path="/instructor/dashboard" element={<InstructorMain />} />
         <Route path="/admin/dashboard" element={<AdminMain />} />
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
