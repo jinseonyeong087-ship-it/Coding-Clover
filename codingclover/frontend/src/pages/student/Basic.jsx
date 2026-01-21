@@ -24,7 +24,7 @@ function Basic () {
                 </CardContent>
                 <CardFooter>
                   <Button variant="outline" size="sm" className="w-full">
-                    <Link to='/student/courses/courseId'>자세히 보기 <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                    <Link to='/student/courses/courseId/lectures'>자세히 보기 <ArrowRight className="ml-2 h-4 w-4" /></Link>
                     {/* 링크 수정 필요함 */}
                   </Button>
                 </CardFooter>
