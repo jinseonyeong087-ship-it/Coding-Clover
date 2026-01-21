@@ -17,9 +17,9 @@
 /auth/login             → 로그인
 /auth/register          → 회원가입
 /auth/oauth             → 소셜 로그인
-/mypage            → 설정
-/mypage/profile    → 회원 정보 수정
-/mypage/password   → 비밀번호 변경
+/mypage                 → 회원 정보
+/mypage/profile         → 회원 정보 수정
+/mypage/password        → 비밀번호 변경
 
 
 ## 🟩 수강생 영역

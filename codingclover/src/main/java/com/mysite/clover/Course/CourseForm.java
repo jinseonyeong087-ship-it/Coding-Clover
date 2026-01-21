@@ -24,4 +24,7 @@ public class CourseForm {
     // 강좌 난이도
     @NotNull(message = "난이도 필수")
     private int level;
+
+    // 강좌 썸네일 이미지 URL
+    private String thumbnailUrl;
 }

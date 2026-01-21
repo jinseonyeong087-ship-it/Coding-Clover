@@ -23,7 +23,15 @@ public class CourseService {
     }
 
     // 강좌 생성
-    public void create(String title, String description, int level, int price, Users user) {
+    public void create(
+        String title,
+        String description,
+        int level,
+        int price,
+        Users user,
+        CourseProposalStatus status
+) {
+
 
     // 강좌 객체 생성 및 설정
     Course course = new Course();
@@ -47,7 +55,7 @@ public class CourseService {
     course.setCreatedAt(LocalDateTime.now());
 
     // 제안 상태 설정
-    course.setProposalStatus("PENDING");
+    course.setProposalStatus(status);
 
     // 강좌 저장
     cr.save(course);
