@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/courses")
+@RequestMapping("/instructor/course")
 public class CourseController {
 
     private final CourseService cs;
@@ -27,21 +27,28 @@ public class CourseController {
     }
 
     // 강좌 생성 (JSON 요청)
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping
+    /**
+     * @param courseForm
+     * @param principal
+     */
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PostMapping("/new")
     public void create(
             @RequestBody @Valid CourseForm courseForm,
             Principal principal) {
-
+                
         Users user = ur.findByLoginId(principal.getName())
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
 
         cs.create(
-                courseForm.getTitle(),
-                courseForm.getDescription(),
-                courseForm.getLevel(),
-                courseForm.getPrice(),
-                user
+            courseForm.getTitle(),
+            courseForm.getDescription(),
+            courseForm.getLevel(),
+            courseForm.getPrice(),
+            user,                 // created_by
+            CourseProposalStatus.PENDING  
+            //proposal_status
         );
+
     }
 }
