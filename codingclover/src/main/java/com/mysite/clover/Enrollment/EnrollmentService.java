@@ -12,6 +12,7 @@ import com.mysite.clover.Users.Users;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
+/*수강 관련 비즈니스 로직 처리 */
 @Service
 @RequiredArgsConstructor
 public class EnrollmentService {
@@ -138,8 +139,10 @@ public class EnrollmentService {
 
   // 관리자 - 전체 수강 내역 조회
   @Transactional(readOnly = true)
+  //Enrollment + User + Course를 한 번에 조회
   public List<AdminEnrollmentDto> getAllEnrollments() {
     List<Enrollment> enrollments = enrollmentRepository.findAllWithUserAndCourse();
+    //Enrollment 리스트 → AdminEnrollmentDto 리스트로 변환
     return enrollments.stream()
         .map(e -> new AdminEnrollmentDto(
             e.getEnrollmentId(),

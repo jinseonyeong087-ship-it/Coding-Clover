@@ -16,6 +16,7 @@ import com.mysite.clover.Users.Users;
 
 import lombok.RequiredArgsConstructor;
 
+/*REST API 엔드포인트 제공 */
 @RestController
 @RequiredArgsConstructor
 public class EnrollmentController {

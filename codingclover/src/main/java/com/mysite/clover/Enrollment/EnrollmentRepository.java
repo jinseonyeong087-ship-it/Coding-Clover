@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import com.mysite.clover.Course.Course;
 import com.mysite.clover.Users.Users;
 
+/*수강 관련 비즈니스 로직 처리 */
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
   //중복 수강 방지(중복확인)
