@@ -1,11 +1,12 @@
-import React from 'react';
-import { Routes, Route, BrowserRouter } from 'react-router-dom';
-import Home from './pages/Home';
-import MainLogin from './pages/MainLogin';
-import Register from './pages/Register';
-import Enroll from './pages/student/Enroll';
-import InstructorMain from './pages/instructor/InstructorMain';
-import AdminMain from './pages/admin/AdminMain';
+import React from 'react'
+import { Routes, Route, BrowserRouter } from 'react-router-dom'
+import Home from './pages/Home'
+import MainLogin from './pages/MainLogin'
+import Register from './pages/Register'
+import Enroll from './pages/student/Enroll'
+import InstructorMain from './pages/instructor/InstructorMain'
+import AdminMain from './pages/admin/AdminMain'
+import Basic from './pages/student/Basic'
 
 
 function App() {
@@ -16,9 +17,10 @@ function App() {
         <Route path="/auth/login" element={<MainLogin />} />
         <Route path="/auth/register" element={<Register />} />
         {/* /auth/oauth 소셜 로그인 */}
-        {/* 초급강좌 <Route path="/courses/level/basic" element={<Basic />} /> */}
+        <Route path="/courses/level/basic" element={<Basic />} />
         {/* 중급강좌 <Route path="/courses/level/intermediate" element={<Intermediate />} /> */}
         {/* 고급강좌 <Route path="/courses/level/advanced" element={<Advanced />} /> */}
+        <Route path="/auth/register" element={<Lecture />} />
         <Route path="/enroll" element={<Enroll />} />
         {/* 디비 연동하고 /student/courses/{courseId}/enroll로 경로수정 */}
         <Route path="/instructor/dashboard" element={<InstructorMain />} />

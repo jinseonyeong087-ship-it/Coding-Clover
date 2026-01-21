@@ -85,9 +85,18 @@
 /instructor/lectures         → 강의 관리
 /instructor/lectures/upload  → 강의 업로드 요청
 
-/instructor/assignments      → 과제 관리
-/instructor/assignments/new  → 과제 등록
-/instructor/assignments/{id} → 과제 상세
+/instructor/courses/{courseId}/exams
+→ 해당 강좌의 시험 목록
+
+/instructor/courses/{courseId}/exams/{examId}/attempts
+→ 시험 응시자 목록 (점수, 통과 여부)
+
+/instructor/courses/{courseId}/exams/{examId}/attempts/{attemptId}
+→ 특정 수강생 시험 상세 (답안, 채점 결과)
+
+/instructor/exams      → 시험 관리
+/instructor/exams/new  → 시험 등록
+/instructor/exams/{id} → 시험 상세
 
 ### 📌 Q/A / 정산
 /instructor/qna              → 질문 관리
