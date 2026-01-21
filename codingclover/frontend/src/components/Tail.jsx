@@ -9,7 +9,7 @@ function Tail() {
 
     return (
         <footer className="text-center text-muted" style={footerStyle}>
-            <div className="container">
+            <div className="max-w-screen-lg mx-auto px-4">
                 <div className="row">
                     <div className="col-md-12">
                         <h5 className="fw-bold text-dark mb-3">사단법인 네잎 클로버</h5>

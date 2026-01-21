@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import StudentNav from '../components/StudentNav';
 import Tail from '../components/Tail';
 import { Link, useParams  } from 'react-router-dom';
@@ -49,36 +49,40 @@ function Home() {
       {/* 인기 강좌 섹션 */}
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-2xl font-bold mb-6">인기 강좌</h2>
-        <Tabs defaultValue={0} className="w-full">
+        <Tabs defaultValue={1} className="w-full">
           <TabsList>
-            {course.map((item) => (
+            {course.map((item) => {
               return (<TabsTrigger key={item.id} value={item.id}>{item.label}</TabsTrigger>)
-            ))}
+            })}
           </TabsList>
 
-          <TabsContent key={item.id} value={item.id}>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {/* TODO: map함수로 서버에서 데이터 받아오기 */}
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg">강좌명 (서버-디비)</CardTitle>
-                  <CardDescription>초급 · 입문자 추천</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    강좌명 앞에 정의해주고 서버에서 디비받아오기
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Link to="/student/courses/courseId/lectures" variant="outline" size="sm" className="w-full flex items-center justify-center">
-                    자세히 보기 <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </CardFooter>
-              </Card>
-            </div>
-          </TabsContent>
+          {course.map((item)=>{
+                      return(
+                        <TabsContent key={item.id} value={item.id}>
+                          <div className="grid coursesrid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            <Card className="hover:shadow-lg transition-shadow">
+                              <CardHeader>
+                                <CardTitle className="text-lg">{item.title}</CardTitle>
+                                <CardDescription>{item.description}</CardDescription>
+                              </CardHeader>
+                              <CardContent>
+                                <p className="text-sm text-muted-foreground">{item.created_at}</p>
+                              </CardContent>
+                              <CardFooter>
+                                <Button variant="outline" size="sm" className="w-full">
+                                  <Link to="/student/courses/courseId/lectures" variant="outline" size="sm" className="w-full flex items-center justify-center">
+                                    자세히 보기 <ArrowRight className="ml-2 h-4 w-4" />
+                                  </Link>
+                                  {/* 링크 수정 필요함 */}
+                                </Button>
+                              </CardFooter>
+                            </Card>
+                          </div>
+                        </TabsContent>
+                      )
+                    })}
 
-          <TabsContent value="2">
+          {/* <TabsContent value="2">
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
@@ -118,7 +122,7 @@ function Home() {
                 </CardFooter>
               </Card>
             </div>
-          </TabsContent>
+          </TabsContent> */}
         </Tabs>
       </section >
 
