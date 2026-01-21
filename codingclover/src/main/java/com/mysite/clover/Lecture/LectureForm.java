@@ -10,6 +10,10 @@ import lombok.Setter;
 @Setter
 public class LectureForm {
 
+    // 강좌 ID
+    @NotNull
+    private Long courseId;
+
     // 강의 제목
     @NotEmpty(message = "강의 제목은 필수")
     private String title;

@@ -27,7 +27,7 @@ function StudentNav() {
                         <MenubarTrigger className="cursor-pointer">전체 강좌</MenubarTrigger>
                         <MenubarContent>
                             <MenubarGroup>
-                                <MenubarItem>초급</MenubarItem>
+                                <MenubarItem><Link to="/courses/level/basic">초급</Link></MenubarItem>
                                 <MenubarItem>중급</MenubarItem>
                                 <MenubarItem>고급</MenubarItem>
                             </MenubarGroup>
@@ -54,7 +54,7 @@ function StudentNav() {
             {/* 검색 & 로그인 */}
             <div className="flex items-center gap-3">
                 <div className="relative">
-                    <Search className="absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="search"
                         placeholder="강좌 검색..."
