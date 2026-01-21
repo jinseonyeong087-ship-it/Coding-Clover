@@ -37,10 +37,10 @@
 /student/courses/{courseId}/cancel → 수강 취소
 
 ### 📌 코딩 연습
-/student/practice            → 실습 문제 목록
-/student/practice/level/{level} → 레벨별 문제
-/student/practice/{problemId} → 문제 상세
-/student/practice/{problemId}/submit → 코드 제출
+/student/problem            → 코딩 실습 문제 목록
+/student/problem/level/{level} → 코딩 레벨별 문제
+/student/problem/{problemId} → 코딩 문제 상세
+/student/problem/{problemId}/submit → 코딩 코드 제출
 
 ### 📌 시험 / 평가
 /student/exams               → 시험 목록
@@ -127,8 +127,8 @@
 /admin/community             → 커뮤니티 관리
 /admin/reports               → 신고 처리
 
-/admin/exams                 → 시험 관리
-/admin/exams/questions       → 시험 문제 관리
+/admin/problem                 → 코딩연습 관리
+/admin/problem/questions       → 코딩연습 문제 관리
 
 ### 📌 로그 / 공지 / 알림
 /admin/logs                  → 로그 조회
