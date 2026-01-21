@@ -29,8 +29,8 @@ public class JavaNativeExecutor implements CodeExecutor {
       File sourceFile = new File(tempDir.toFile(), "Main.java");
       Files.write(sourceFile.toPath(), request.getCode().getBytes());
 
-      // 3. 컴파일 (javac Main.java)
-      ProcessBuilder compileBuilder = new ProcessBuilder("javac", sourceFile.getAbsolutePath());
+      // 3. 컴파일 (javac -encoding UTF-8 Main.java)
+      ProcessBuilder compileBuilder = new ProcessBuilder("javac", "-encoding", "UTF-8", sourceFile.getAbsolutePath());
       compileBuilder.directory(tempDir.toFile());
       Process compileProcess = compileBuilder.start();
 
@@ -46,8 +46,8 @@ public class JavaNativeExecutor implements CodeExecutor {
             .build();
       }
 
-      // 4. 실행 (java -cp . Main)
-      ProcessBuilder runBuilder = new ProcessBuilder("java", "-cp", ".", "Main");
+      // 4. 실행 (java -Dfile.encoding=UTF-8 -cp . Main)
+      ProcessBuilder runBuilder = new ProcessBuilder("java", "-Dfile.encoding=UTF-8", "-cp", ".", "Main");
       runBuilder.directory(tempDir.toFile());
       Process runProcess = runBuilder.start();
 

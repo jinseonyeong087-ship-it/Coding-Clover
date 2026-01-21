@@ -8,20 +8,25 @@ import InstructorMain from './pages/instructor/InstructorMain'
 import AdminMain from './pages/admin/AdminMain'
 import Basic from './pages/student/Basic'
 import Lecture from './pages/student/Lecture'
+import CodingTest from './pages/CodingTest'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        {/* 임시 코딩 테스트 페이지 */}
+        <Route path="/test/coding" element={<CodingTest />} />
         <Route path="/auth/login" element={<MainLogin />} />
         <Route path="/auth/register" element={<Register />} />
         {/* /auth/oauth 소셜 로그인 */}
         <Route path="/courses/level/basic" element={<Basic />} />
         {/* 중급강좌 <Route path="/courses/level/intermediate" element={<Intermediate />} /> */}
         {/* 고급강좌 <Route path="/courses/level/advanced" element={<Advanced />} /> */}
-        <Route path="/student/courses/courseId" element={<Lecture />} />
-        {/* Lecture링크 수정필요 */}
+        {/* <Route path="/student/courses/courseId" element={<Basic />} /> */}
+        <Route path="/student/courses/courseId/lectures" element={<Lecture />} />
+        {/* 럭쳐 링크 수정 필요함 */}
+
         <Route path="/enroll" element={<Enroll />} />
         {/* 디비 연동하고 /student/courses/{courseId}/enroll로 경로수정 */}
         <Route path="/instructor/dashboard" element={<InstructorMain />} />
