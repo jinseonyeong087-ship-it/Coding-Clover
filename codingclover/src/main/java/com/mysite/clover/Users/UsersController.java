@@ -6,13 +6,12 @@ import java.util.Map;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -24,14 +23,13 @@ public class UsersController {
 
     @PostMapping("/register")
     @ResponseBody // JSON 본문 응답을 위해 필수
-    public ResponseEntity<?> signup(@Valid @RequestBody UserCreateForm userCreateForm, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            Map<String, String> errors = new HashMap<>();
-            bindingResult.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
-            return ResponseEntity.badRequest().body(errors);
-        }
+    public ResponseEntity<?> signup(@RequestBody Map<String, String> userMap) {
+        // 프론트엔드에서 1차 검증한다고 가정하고 백엔드 유효성 검사(BindingResult) 삭제함
 
-        if (!userCreateForm.getPassword().equals(userCreateForm.getPasswordConfirm())) {
+        String password = userMap.get("password");
+        String passwordConfirm = userMap.get("passwordConfirm");
+
+        if (password != null && !password.equals(passwordConfirm)) {
             Map<String, String> errors = new HashMap<>();
             errors.put("passwordConfirm", "비밀번호가 일치하지 않습니다.");
             return ResponseEntity.badRequest().body(errors);
@@ -39,11 +37,11 @@ public class UsersController {
 
         try {
             usersService.create(
-                    userCreateForm.getLoginId(),
-                    userCreateForm.getPassword(),
-                    userCreateForm.getName(),
-                    userCreateForm.getEmail(),
-                    userCreateForm.getRole());
+                    userMap.get("loginId"),
+                    password,
+                    userMap.get("name"),
+                    userMap.get("email"),
+                    userMap.get("role"));
         } catch (DataIntegrityViolationException e) {
             e.printStackTrace();
             Map<String, String> errors = new HashMap<>();
