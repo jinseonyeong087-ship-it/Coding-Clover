@@ -13,7 +13,7 @@ function Tail() {
                 <div className="row">
                     <div className="col-md-12">
                         <h5 className="fw-bold text-dark mb-3">사단법인 네잎 클로버</h5>
-                        <p className="mb-1">대표자 김준서 | 사업자 등록번호 000-00-00000</p>
+                        <p className="mb-1">대표자 박나혜 | 사업자 등록번호 000-00-00000</p>
                         <p className="mb-3">주소 대구광역시 동구 동대구로 566</p>
                         <hr />
                         <p className="small">
