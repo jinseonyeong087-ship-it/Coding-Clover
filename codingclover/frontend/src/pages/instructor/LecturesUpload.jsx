@@ -6,20 +6,25 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 
 function Enroll() {
-  let course = {
-    title: 'React 기초 강좌',
-    create_by: '홍길동',
-    level: '초급',
-    description: '리액트의 기초부터 배우는 강좌입니다.',
+  const course = {
+    title: '',
+    create_by: '',
+    level: '',
+    description: '',
     thumbnail_url: ''
   }
+
+  // 서버 데이터 사용 시
+  // const [course, setCourse] = useState([]);
+
+  // useEffect(()=>{ fetch('/instructor/course/new').then(res=>res.json()).then(data => setCourse(data))})
 
   return (
     <>
       <StudentNav />
 
       <section className="container mx-auto px-4 py-16">
-        <h1 className="text-3xl font-bold mb-8">수강 신청</h1>
+        <h1 className="text-3xl font-bold mb-8">강좌 개설</h1>
 
         <Card className="max-w-2xl mx-auto">
           <CardHeader>

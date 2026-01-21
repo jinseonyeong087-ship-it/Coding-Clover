@@ -8,6 +8,8 @@ function InstructorMain() {
         <>
             {/* 메뉴 컴포넌트 */}
             <InstructorNav></InstructorNav>
+            <p>강사 메인화면</p>
+            <Link to="/instructor/course/new">강좌 개설 신청</Link>
             {/* 풋터 컴포넌트 */}
             <Tail></Tail>
         </>

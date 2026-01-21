@@ -10,6 +10,7 @@ import Level from './pages/student/Level'
 import Lecture from './pages/student/Lecture'
 import CodingTest from './pages/CodingTest'
 import EmailTest from './pages/EmailTest'
+import LecturesUpload from './pages/instructor/LecturesUpload'
 
 function App() {
   return (
@@ -23,12 +24,13 @@ function App() {
         <Route path="/auth/login" element={<MainLogin />} />
         <Route path="/auth/register" element={<Register />} />
         {/* /auth/oauth 소셜 로그인 */}
-        <Route path="/course/level/:levelId" element={<Level />} />
+        <Route path="/course/level/:level" element={<Level />} />
         {/* <Route path="/course/level/2" element={<Intermediate />} /> */}
         {/* <Route path="/course/level/3" element={<Advanced />} /> */}
         {/* <Route path="/student/course/courseId" element={<Basic />} /> */}
         <Route path="/student/course/courseId/lectures" element={<Lecture />} />
         {/* 럭쳐 링크 수정 필요함 */}
+        <Route path="/instructor/course/new" element={<LecturesUpload />} />
 
         <Route path="/enroll" element={<Enroll />} />
         {/* 디비 연동하고 /student/course/{courseId}/enroll로 경로수정 */}
