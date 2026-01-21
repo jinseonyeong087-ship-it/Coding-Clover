@@ -41,6 +41,7 @@
 /student/problem/level/{level} → 코딩 레벨별 문제
 /student/problem/{problemId} → 코딩 문제 상세
 /student/problem/{problemId}/submit → 코딩 코드 제출
+/student/problem/{problemId}/run → 코드 실행
 
 ### 📌 시험 / 평가
 /student/exams               → 시험 목록
