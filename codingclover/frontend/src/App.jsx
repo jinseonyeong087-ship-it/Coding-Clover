@@ -7,7 +7,7 @@ import Enroll from './pages/student/Enroll'
 import InstructorMain from './pages/instructor/InstructorMain'
 import AdminMain from './pages/admin/AdminMain'
 import Basic from './pages/student/Basic'
-
+import Lecture from './pages/student/Lecture'
 
 function App() {
   return (
@@ -20,7 +20,8 @@ function App() {
         <Route path="/courses/level/basic" element={<Basic />} />
         {/* 중급강좌 <Route path="/courses/level/intermediate" element={<Intermediate />} /> */}
         {/* 고급강좌 <Route path="/courses/level/advanced" element={<Advanced />} /> */}
-        <Route path="/auth/register" element={<Lecture />} />
+        <Route path="/student/courses/courseId" element={<Lecture />} />
+        {/* Lecture링크 수정필요 */}
         <Route path="/enroll" element={<Enroll />} />
         {/* 디비 연동하고 /student/courses/{courseId}/enroll로 경로수정 */}
         <Route path="/instructor/dashboard" element={<InstructorMain />} />
