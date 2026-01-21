@@ -72,12 +72,13 @@ public class Enrollment {
 
   // 수강 신청 시 사용하는 생성자
   public Enrollment(Users user, Course course) {
-    user = user;
-    course = course;
-    enrolledAt = LocalDateTime.now();
-    status = EnrollmentStatus.ENROLLED;
-    initialLevel = 1; // 초기 레벨 설정
-    currentLevel = 1; // 초기 레벨 설정
+    this.user = user;
+    this.course = course;
+    this.enrolledAt = LocalDateTime.now();
+    this.status = EnrollmentStatus.ENROLLED;
+    // 강좌의 레벨에 맞춰서 초기 레벨 설정
+    this.initialLevel = course.getLevel();
+    this.currentLevel = course.getLevel();
   }
 
   public void cancel(Users actor) {
