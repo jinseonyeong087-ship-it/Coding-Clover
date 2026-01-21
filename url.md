@@ -37,11 +37,10 @@
 /student/courses/{courseId}/cancel → 수강 취소
 
 ### 📌 코딩 연습
-/student/problem            → 코딩 실습 문제 목록
-/student/problem/level/{level} → 코딩 레벨별 문제
-/student/problem/{problemId} → 코딩 문제 상세
-/student/problem/{problemId}/submit → 코딩 코드 제출
-/student/problem/{problemId}/run → 코드 실행
+/student/practice            → 실습 문제 목록
+/student/practice/level/{level} → 레벨별 문제
+/student/practice/{problemId} → 문제 상세
+/student/practice/{problemId}/submit → 코드 제출
 
 ### 📌 시험 / 평가
 /student/exams               → 시험 목록
@@ -85,6 +84,15 @@
 ### 📌 강의 / 과제 관리
 /instructor/lectures         → 강의 관리
 /instructor/lectures/upload  → 강의 업로드 요청
+
+/instructor/courses/{courseId}/exams
+→ 해당 강좌의 시험 목록
+
+/instructor/courses/{courseId}/exams/{examId}/attempts
+→ 시험 응시자 목록 (점수, 통과 여부)
+
+/instructor/courses/{courseId}/exams/{examId}/attempts/{attemptId}
+→ 특정 수강생 시험 상세 (답안, 채점 결과)
 
 /instructor/exams      → 시험 관리
 /instructor/exams/new  → 시험 등록
