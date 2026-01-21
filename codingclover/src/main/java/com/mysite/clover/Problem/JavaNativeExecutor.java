@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
@@ -24,17 +25,16 @@ public class JavaNativeExecutor implements CodeExecutor {
       tempDir = Files.createTempDirectory("java-exec-");
 
       // 2. 소스 파일(Main.java) 생성
-      // 사용자의 코드는 반드시 "public class Main"이어야 한다고 가정하거나,
-      // 아니면 클래스명을 파싱해야 함. 여기서는 Main으로 가정.
       File sourceFile = new File(tempDir.toFile(), "Main.java");
-      Files.write(sourceFile.toPath(), request.getCode().getBytes());
+      // 여기서 UTF-8로 저장해야 컴파일러가 깨지지 않음
+      Files.write(sourceFile.toPath(), request.getCode().getBytes(StandardCharsets.UTF_8));
 
       // 3. 컴파일 (javac -encoding UTF-8 Main.java)
       ProcessBuilder compileBuilder = new ProcessBuilder("javac", "-encoding", "UTF-8", sourceFile.getAbsolutePath());
       compileBuilder.directory(tempDir.toFile());
       Process compileProcess = compileBuilder.start();
 
-      // 컴파일 에러 캡처
+      // 컴파일 에러 캡처 (UTF-8로 읽기)
       String compileError = readStream(compileProcess.getErrorStream());
       boolean compiled = compileProcess.waitFor(5, TimeUnit.SECONDS);
 
@@ -46,8 +46,8 @@ public class JavaNativeExecutor implements CodeExecutor {
             .build();
       }
 
-      // 4. 실행 (java -Dfile.encoding=UTF-8 -cp . Main)
-      ProcessBuilder runBuilder = new ProcessBuilder("java", "-Dfile.encoding=UTF-8", "-cp", ".", "Main");
+      // 4. 실행 (java -cp . Main) -> 윈도우 기본 인코딩 사용
+      ProcessBuilder runBuilder = new ProcessBuilder("java", "-cp", ".", "Main");
       runBuilder.directory(tempDir.toFile());
       Process runProcess = runBuilder.start();
 
@@ -59,14 +59,14 @@ public class JavaNativeExecutor implements CodeExecutor {
       }
 
       // 실행 결과 캡처
-      // 3초 타임아웃 (무한루프 방지)
-      boolean finished = runProcess.waitFor(3, TimeUnit.SECONDS);
+      // 10초 타임아웃 (무한루프 방지)
+      boolean finished = runProcess.waitFor(10, TimeUnit.SECONDS);
 
       if (!finished) {
         runProcess.destroy(); // 강제 종료
         return ExecutionResponse.builder()
             .output("")
-            .error("시간 초과 (3초)")
+            .error("시간 초과 (10초)")
             .executionTime(System.currentTimeMillis() - startTime)
             .build();
       }
@@ -94,7 +94,8 @@ public class JavaNativeExecutor implements CodeExecutor {
   }
 
   private String readStream(java.io.InputStream stream) throws IOException {
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
+    // 윈도우(MS949) 환경에 맞춰서 읽기
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "MS949"))) {
       return reader.lines().collect(Collectors.joining("\n"));
     }
   }
