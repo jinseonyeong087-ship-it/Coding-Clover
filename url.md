@@ -37,6 +37,7 @@
 /student/lecture/{lectureId} → 강의 시청
 /student/course/{courseId}/enroll → 수강 신청
 /student/course/{courseId}/cancel → 수강 취소
+/student/enrollments            → 내 수강 내역 조회
 
 ### 📌 코딩 연습
 /student/problem                 → 문제 목록
@@ -75,6 +76,10 @@
 /instructor/course          → 강좌 관리
 /instructor/course/new      → 강좌 개설 요청
 /instructor/course/{id}     → 강좌 상세
+
+### 📌 수강생 관리
+/instructor/enrollment                    → 내 강좌 수강생 현황
+/instructor/course/{courseId}/enrollment  → 특정 강좌 수강생 목록
 
 ### 📌 강의 / 과제 관리
 /instructor/lecture         → 강의 관리
@@ -116,6 +121,10 @@
 /admin/course/{id}/approve  → 승인
 /admin/course/{id}/reject   → 반려
 /admin/course/{id}/close    → 강좌 신규 모집 종료
+
+### 📌 수강 관리
+/admin/enrollment          → 전체 수강 내역 관리
+/admin/enrollment/{id}/cancel → 수강 강제 취소
 
 /admin/lectures              → 강의 관리
 /admin/lectures/{id}/inactive → 문제 있는 강의 차단

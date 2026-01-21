@@ -25,30 +25,68 @@ import lombok.Setter;
 @Table(name = "enrollment")
 public class Enrollment {
 
-  @Id
+  @Id // PK
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "enrollment_id")
   private Long enrollmentId;
 
+  // 수강생
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false)
   private Users user;
 
+  // 강좌
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "course_id", nullable = false)
   private Course course;
 
+  // 수강일
   @Column(name = "enrolled_at", nullable = false, updatable = false)
   private LocalDateTime enrolledAt;
 
+  // 상태 수강중/수강완료/수강취소
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)
   private EnrollmentStatus status = EnrollmentStatus.ENROLLED;
 
+  // 수강 시작 시 진단/선택 레벨
+  @Column(name = "initial_level", nullable = false)
+  private Integer initialLevel;
+
+  // 현재 도달한 학습 레벨
+  @Column(name = "current_level", nullable = false)
+  private Integer currentLevel;
+
+  // 수강취소자
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "cancelled_by")
   private Users cancelledBy;
 
+  // 수강취소일
   @Column(name = "cancelled_at")
   private LocalDateTime cancelledAt;
+
+  // JPA 기본 생성자
+  protected Enrollment() {
+  }
+
+  // 수강 신청 시 사용하는 생성자
+  public Enrollment(Users user, Course course) {
+    user = user;
+    course = course;
+    enrolledAt = LocalDateTime.now();
+    status = EnrollmentStatus.ENROLLED;
+    initialLevel = 1; // 초기 레벨 설정
+    currentLevel = 1; // 초기 레벨 설정
+  }
+
+  public void cancel(Users actor) {
+    status = EnrollmentStatus.CANCELLED;
+    cancelledBy = actor;
+    cancelledAt = LocalDateTime.now();
+  }
+
+public void complete() {
+    status = EnrollmentStatus.COMPLETED;
+}
 }
