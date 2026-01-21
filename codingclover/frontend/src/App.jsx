@@ -23,9 +23,9 @@ function App() {
         <Route path="/auth/login" element={<MainLogin />} />
         <Route path="/auth/register" element={<Register />} />
         {/* /auth/oauth 소셜 로그인 */}
-        <Route path="/course/level/1" element={<Level />} />
-        <Route path="/course/level/2" element={<Intermediate />} />
-        <Route path="/course/level/3" element={<Advanced />} />
+        <Route path="/course/level/:levelId" element={<Level />} />
+        {/* <Route path="/course/level/2" element={<Intermediate />} /> */}
+        {/* <Route path="/course/level/3" element={<Advanced />} /> */}
         {/* <Route path="/student/course/courseId" element={<Basic />} /> */}
         <Route path="/student/course/courseId/lectures" element={<Lecture />} />
         {/* 럭쳐 링크 수정 필요함 */}

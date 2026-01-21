@@ -1,13 +1,25 @@
 import React from 'react';
 import StudentNav from '../components/StudentNav';
 import Tail from '../components/Tail';
-import { Link } from 'react-router-dom';
+import { Link, useParams  } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
 import { ArrowRight, BookOpen, PlayCircle } from "lucide-react";
 
 function Home() {
+
+  const [course, setCourse] = useState([
+    { id: 1, title: "초급강좌", label: "초급", description: "초보를위한어쩌구", created_at: "26.02.13" },
+    { id: 2, title: "중급강좌", label: "중급", description: "이거알면중타는감", created_at: "26.02.13" },
+    { id: 3, title: "고급강좌", label: "고급", description: "회사가서 써먹어라", created_at: "26.02.13" }
+  ])
+
+  // 서버 데이터 사용 시
+  // const [course, setCourse] = useState([]);
+
+  // useEffect(()=>{ fetch('/course').then(res=>res.json()).then(data => setCourse(data))})
+
   return (
     <>
       <StudentNav />
@@ -37,14 +49,14 @@ function Home() {
       {/* 인기 강좌 섹션 */}
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-2xl font-bold mb-6">인기 강좌</h2>
-        <Tabs defaultValue="1" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="1">초급</TabsTrigger>
-            <TabsTrigger value="2">중급</TabsTrigger>
-            <TabsTrigger value="3">고급</TabsTrigger>
+        <Tabs defaultValue={0} className="w-full">
+          <TabsList>
+            {course.map((item) => (
+              return (<TabsTrigger key={item.id} value={item.id}>{item.label}</TabsTrigger>)
+            ))}
           </TabsList>
 
-          <TabsContent value="1">
+          <TabsContent key={item.id} value={item.id}>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {/* TODO: map함수로 서버에서 데이터 받아오기 */}
               <Card className="hover:shadow-lg transition-shadow">
@@ -108,7 +120,7 @@ function Home() {
             </div>
           </TabsContent>
         </Tabs>
-      </section>
+      </section >
 
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-2xl font-bold mb-6">수강 신청하기</h2>

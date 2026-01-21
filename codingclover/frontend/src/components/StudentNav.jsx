@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import {
     Menubar,
     MenubarContent,
@@ -14,6 +14,15 @@ import { Input } from "@/components/ui/Input"
 import { Search } from "lucide-react"
 
 function StudentNav() {
+
+    const { levelId } = useParams();
+
+    const [course, setCourse] = useState([
+        { id: 1, label:"초급" }, 
+        { id: 2, label:"중급" }, 
+        { id: 3, label:"고급" }
+    ])
+
     return (
         <nav className="flex items-center justify-between px-24 py-3 border-b bg-background">
             {/* 로고 + 메뉴바 */}
@@ -27,7 +36,7 @@ function StudentNav() {
                         <MenubarTrigger className="cursor-pointer">전체 강좌</MenubarTrigger>
                         <MenubarContent>
                             <MenubarGroup>
-                                <MenubarItem><Link to="/course/level/1">초급</Link></MenubarItem>
+                                <MenubarItem><Link to="/course/level/:levelId">초급</Link></MenubarItem>
                                 <MenubarItem><Link to="/course/level/2">중급</Link></MenubarItem>
                                 <MenubarItem><Link to="/course/level/3">고급</Link></MenubarItem>
                             </MenubarGroup>

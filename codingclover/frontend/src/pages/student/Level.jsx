@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useParams } from 'react';
 import StudentNav from '@/components/StudentNav';
 import Tail from '@/components/Tail';
 import { Link } from 'react-router-dom';
@@ -14,6 +14,8 @@ function Level() {
     { id: 2, title:"중급강좌", label:"중급", description: "이거알면중타는감", created_at:"26.02.13" }, 
     { id: 3, title:"고급강좌", label:"고급", description: "회사가서 써먹어라", created_at:"26.02.13" }
   ])
+
+  
 
   // 서버 데이터 사용 시
   // const [course, setCourse] = useState([]);
