@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/lectures")
+@RequestMapping("/api/courses")
 public class LectureController {
 
     private final LectureService lectureService;
@@ -23,7 +23,7 @@ public class LectureController {
     private final UsersRepository usersRepository;
 
     // ✅ 강좌별 강의 목록
-    @GetMapping("/course/{courseId}")
+    @GetMapping("/{courseId}/lectures")
     public List<Lecture> listByCourse(@PathVariable Long courseId) {
         Course course = courseService.getCourse(courseId);
         return lectureService.getListByCourse(course);
@@ -31,7 +31,7 @@ public class LectureController {
 
     // ✅ 강의 생성 (강사용)
     @PreAuthorize("hasRole('INSTRUCTOR')")
-    @PostMapping("/create/{courseId}")
+    @PostMapping("/{courseId}/lectures")
     public void createLecture(
             @PathVariable Long courseId,
             @RequestBody LectureRequest dto,
