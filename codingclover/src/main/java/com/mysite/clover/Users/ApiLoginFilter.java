@@ -38,7 +38,9 @@ public class ApiLoginFilter extends AbstractAuthenticationProcessingFilter {
           "Authentication Content-Type not supported: " + request.getContentType());
     }
 
-    Map<String, String> loginData = objectMapper.readValue(request.getInputStream(), Map.class);
+    Map<String, String> loginData = objectMapper.readValue(request.getInputStream(),
+        new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {
+        });
 
     String loginId = loginData.get("loginId");
     String password = loginData.get("password");
