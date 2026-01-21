@@ -9,6 +9,7 @@ import AdminMain from './pages/admin/AdminMain'
 import Basic from './pages/student/Basic'
 import Lecture from './pages/student/Lecture'
 import CodingTest from './pages/CodingTest'
+import EmailTest from './pages/EmailTest'
 
 function App() {
   return (
@@ -17,6 +18,8 @@ function App() {
         <Route path="/" element={<Home />} />
         {/* 임시 코딩 테스트 페이지 */}
         <Route path="/test/coding" element={<CodingTest />} />
+        {/* 이메일 발송 테스트 페이지 */}
+        <Route path="/test/email" element={<EmailTest />} />
         <Route path="/auth/login" element={<MainLogin />} />
         <Route path="/auth/register" element={<Register />} />
         {/* /auth/oauth 소셜 로그인 */}
