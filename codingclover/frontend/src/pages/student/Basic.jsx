@@ -7,59 +7,57 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
 import { ArrowRight, BookOpen, PlayCircle } from "lucide-react";
 
-function setGrade() {
-  if (grade === 0) {
-    return <div>초급 페이지 컴포</div>
-  } else if (grade === 1) {
-    return <div>중급 페이지 컴포</div>
-  } else if (grade === 2) {
-    return <div>고급 페이지 컴포</div>
-  }
-}
-
 function Basic() {
 
-  // let [grade, setGrade] = useState(0)
-
-
+  let course = [
+    { id: 1, title:"초급강좌", label:"초급", description: "초보를위한어쩌구", created_at:"26.02.13" }, 
+    { id: 2, title:"중급강좌", label:"중급", description: "이거알면중타는감", created_at:"26.02.13" }, 
+    { id: 3, title:"고급강좌", label:"고급", description: "회사가서 써먹어라", created_at:"26.02.13" }
+  ]
 
   return (
     <>
       <StudentNav />
       <section className="container mx-auto px-4 py-16">
-        <Tabs>
+        <Tabs defaultValue={0}>
           <div className='flex items-center gap-10'>
-            <h2 className="text-2xl font-bold mb-6">초급</h2>
-
+            {course.map((item)=>(
+                <h2 className="text-2xl font-bold mb-6" defaultValue={0}>
+                  {item.label}
+                </h2>
+            ))}
+            
             <TabsList className="mb-6">
-              <TabsTrigger value="1">초급</TabsTrigger>
-              <TabsTrigger value="2">중급</TabsTrigger>
-              <TabsTrigger value="3">고급</TabsTrigger>
+              {course.map((item)=>(
+                <TabsTrigger defaultValue={0}>
+                  {item.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
+                
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {/* TODO: map함수로 서버에서 데이터 받아오기 */}
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-lg">강좌명 (서버-디비)</CardTitle>
-                <CardDescription>초급 · 입문자 추천</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  강좌명 앞에 정의해주고 서버에서 디비받아오기
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" size="sm" className="w-full">
-                  <Link to="/student/courses/courseId/lectures" variant="outline" size="sm" className="w-full flex items-center justify-center">
-                    자세히 보기 <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                  {/* 링크 수정 필요함 */}
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
+              <TabsContent defaultValue={0}>
+                <div className="grid coursesrid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {/* 이것도 맵 */}
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg">{ course.map((item)=>{item.title}) }</CardTitle>
+                      <CardDescription>{ course.map((item)=>{item.description}) }</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">{ course.map((item)=>{item.created_at}) }  </p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Link to="/student/courses/courseId/lectures" variant="outline" size="sm" className="w-full flex items-center justify-center">
+                          자세히 보기 <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                        {/* 링크 수정 필요함 */}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </div>
+              </TabsContent>
         </Tabs >
       </section>
       <Tail />

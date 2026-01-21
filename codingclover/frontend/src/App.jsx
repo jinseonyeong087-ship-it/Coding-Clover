@@ -20,9 +20,9 @@ function App() {
         <Route path="/auth/login" element={<MainLogin />} />
         <Route path="/auth/register" element={<Register />} />
         {/* /auth/oauth 소셜 로그인 */}
-        <Route path="/courses/level/basic" element={<Basic />} />
-        {/* 중급강좌 <Route path="/courses/level/intermediate" element={<Intermediate />} /> */}
-        {/* 고급강좌 <Route path="/courses/level/advanced" element={<Advanced />} /> */}
+        <Route path="/courses/level/1" element={<Basic />} />
+        {/* 중급강좌 <Route path="/courses/level/2" element={<Intermediate />} /> */}
+        {/* 고급강좌 <Route path="/courses/level/3" element={<Advanced />} /> */}
         {/* <Route path="/student/courses/courseId" element={<Basic />} /> */}
         <Route path="/student/courses/courseId/lectures" element={<Lecture />} />
         {/* 럭쳐 링크 수정 필요함 */}
