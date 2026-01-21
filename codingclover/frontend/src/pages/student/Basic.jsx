@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import StudentNav from '@/components/StudentNav';
 import Tail from '@/components/Tail';
 import { Link } from 'react-router-dom';
@@ -9,11 +9,16 @@ import { ArrowRight, BookOpen, PlayCircle } from "lucide-react";
 
 function Basic() {
 
-  let course = [
+  let [course, setCourse] = useState[
     { id: 1, title:"초급강좌", label:"초급", description: "초보를위한어쩌구", created_at:"26.02.13" }, 
     { id: 2, title:"중급강좌", label:"중급", description: "이거알면중타는감", created_at:"26.02.13" }, 
     { id: 3, title:"고급강좌", label:"고급", description: "회사가서 써먹어라", created_at:"26.02.13" }
   ]
+
+  // 서버 데이터 사용 시
+  // const [course, setCourse] = useState([]);
+
+  // useEffect(()=>{ fetch(')})
 
   return (
     <>
@@ -36,16 +41,16 @@ function Basic() {
             </TabsList>
                 
           </div>
-              <TabsContent defaultValue={0}>
+          {course.map((item)=>{
+            <TabsContent defaultValue={0}>
                 <div className="grid coursesrid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {/* 이것도 맵 */}
                   <Card className="hover:shadow-lg transition-shadow">
                     <CardHeader>
-                      <CardTitle className="text-lg">{ course.map((item)=>{item.title}) }</CardTitle>
-                      <CardDescription>{ course.map((item)=>{item.description}) }</CardDescription>
+                      <CardTitle className="text-lg">{item.title}</CardTitle>
+                      <CardDescription>{item.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground">{ course.map((item)=>{item.created_at}) }  </p>
+                      <p className="text-sm text-muted-foreground">{item.created_at}</p>
                     </CardContent>
                     <CardFooter>
                       <Button variant="outline" size="sm" className="w-full">
@@ -58,6 +63,8 @@ function Basic() {
                   </Card>
                 </div>
               </TabsContent>
+          })}
+              
         </Tabs >
       </section>
       <Tail />
