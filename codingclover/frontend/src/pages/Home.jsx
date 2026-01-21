@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import StudentNav from '../components/StudentNav';
 import Tail from '../components/Tail';
-import { Link, useParams  } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
@@ -56,73 +56,31 @@ function Home() {
             })}
           </TabsList>
 
-          {course.map((item)=>{
-                      return(
-                        <TabsContent key={item.id} value={item.id}>
-                          <div className="grid coursesrid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                            <Card className="hover:shadow-lg transition-shadow">
-                              <CardHeader>
-                                <CardTitle className="text-lg">{item.title}</CardTitle>
-                                <CardDescription>{item.description}</CardDescription>
-                              </CardHeader>
-                              <CardContent>
-                                <p className="text-sm text-muted-foreground">{item.created_at}</p>
-                              </CardContent>
-                              <CardFooter>
-                                <Button variant="outline" size="sm" className="w-full">
-                                  <Link to="/student/courses/courseId/lectures" variant="outline" size="sm" className="w-full flex items-center justify-center">
-                                    자세히 보기 <ArrowRight className="ml-2 h-4 w-4" />
-                                  </Link>
-                                  {/* 링크 수정 필요함 */}
-                                </Button>
-                              </CardFooter>
-                            </Card>
-                          </div>
-                        </TabsContent>
-                      )
-                    })}
-
-          {/* <TabsContent value="2">
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg">중급 강좌</CardTitle>
-                  <CardDescription>중급 · 기본기 필요</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    맵 함수 배워서 전체에 써먹기ㅠ
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Link to="/student/courses/courseId/lectures" variant="outline" size="sm" className="w-full flex items-center justify-center">
-                    자세히 보기 <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </CardFooter>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="3">
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg">고급 강좌</CardTitle>
-                  <CardDescription>고급 · 실무 경험 권장</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    고급 컴포넌트
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Link to="/student/courses/courseId/lectures" variant="outline" size="sm" className="w-full flex items-center justify-center">
-                    자세히 보기 <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </CardFooter>
-              </Card>
-            </div>
-          </TabsContent> */}
+          {course.map((item) => {
+            return (
+              <TabsContent key={item.id} value={item.id}>
+                <div className="grid coursesrid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg">{item.title}</CardTitle>
+                      <CardDescription>{item.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">{item.created_at}</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Link to="/student/courses/courseId/lectures" variant="outline" size="sm" className="w-full flex items-center justify-center">
+                          자세히 보기 <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                        {/* 링크 수정 필요함 */}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </div>
+              </TabsContent>
+            )
+          })}
         </Tabs>
       </section >
 
