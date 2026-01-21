@@ -5,8 +5,8 @@ import Tail from "@/components/Tail";
 function Lecture() {
     <>
     <StudentNav />
-    "강좌에 들어와서 강좌의 강의 목차를 보여주는 페이지
-    그리고 강의 동영상도 있음 될듯"
+    "강좌에 들어와서 강좌의 강의 상세를 보여주는 페이지
+    필요한 것: 다른 강의로 이동할 수 있는 목록, 동영상, 문제 출제 페이지 있을 자리"
     <Tail />
 
     </>
