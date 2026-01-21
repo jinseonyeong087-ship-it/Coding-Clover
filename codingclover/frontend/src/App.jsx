@@ -7,7 +7,7 @@ import Enroll from './pages/student/Enroll'
 import InstructorMain from './pages/instructor/InstructorMain'
 import AdminMain from './pages/admin/AdminMain'
 import Basic from './pages/student/Basic'
-
+import Lecture from './pages/student/Lecture'
 import CodingTest from './pages/CodingTest'
 
 function App() {
@@ -23,6 +23,7 @@ function App() {
         <Route path="/courses/level/basic" element={<Basic />} />
         {/* 중급강좌 <Route path="/courses/level/intermediate" element={<Intermediate />} /> */}
         {/* 고급강좌 <Route path="/courses/level/advanced" element={<Advanced />} /> */}
+        {/* <Route path="/student/courses/courseId" element={<Basic />} /> */}
         <Route path="/student/courses/courseId/lectures" element={<Lecture />} />
         {/* 럭쳐 링크 수정 필요함 */}
 
