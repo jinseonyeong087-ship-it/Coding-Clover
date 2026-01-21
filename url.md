@@ -85,9 +85,9 @@
 /instructor/lectures         → 강의 관리
 /instructor/lectures/upload  → 강의 업로드 요청
 
-/instructor/assignments      → 과제 관리
-/instructor/assignments/new  → 과제 등록
-/instructor/assignments/{id} → 과제 상세
+/instructor/exams      → 시험 관리
+/instructor/exams/new  → 시험 등록
+/instructor/exams/{id} → 시험 상세
 
 ### 📌 Q/A / 정산
 /instructor/qna              → 질문 관리
