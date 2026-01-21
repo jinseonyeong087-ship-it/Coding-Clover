@@ -7,5 +7,8 @@ public enum CourseProposalStatus {
     // 승인됨
     APPROVED,
     // 거절됨
-    REJECTED
+    // 거절됨
+    REJECTED,
+    // 마감됨
+    CLOSED
 }
