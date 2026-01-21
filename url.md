@@ -41,6 +41,7 @@
 /student/practice/level/{level} → 레벨별 문제
 /student/practice/{problemId} → 문제 상세
 /student/practice/{problemId}/submit → 코드 제출
+/student/practice/{problemId}/run → 코드 실행
 
 ### 📌 시험 / 평가
 /student/exams               → 시험 목록
