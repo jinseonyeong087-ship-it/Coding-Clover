@@ -17,7 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class ApiLoginFilter extends AbstractAuthenticationProcessingFilter {
 
-  private static final String DEFAULT_LOGIN_REQUEST_URL = "/api/auth/login";
+  private static final String DEFAULT_LOGIN_REQUEST_URL = "/auth/login";
   private static final String HTTP_METHOD = "POST";
   private static final String CONTENT_TYPE = "application/json";
 

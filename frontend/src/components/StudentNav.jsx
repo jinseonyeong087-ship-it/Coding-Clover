@@ -23,31 +23,31 @@ function StudentNav() {
                 </Link>
 
                 <Menubar className="border-none shadow-none bg-transparent">
-                <MenubarMenu>
-                    <MenubarTrigger className="cursor-pointer">전체 강좌</MenubarTrigger>
-                    <MenubarContent>
-                        <MenubarGroup>
-                            <MenubarItem>초급</MenubarItem>
-                            <MenubarItem>중급</MenubarItem>
-                            <MenubarItem>고급</MenubarItem>
-                        </MenubarGroup>
-                    </MenubarContent>
-                </MenubarMenu>
-                <MenubarMenu>
-                    <MenubarTrigger className="cursor-pointer">내 강의실</MenubarTrigger>
-                    <MenubarContent>
-                        <MenubarItem>수강 중인 강좌</MenubarItem>
-                        <MenubarItem>완료한 강좌</MenubarItem>
-                        <MenubarItem>학습 기록</MenubarItem>
-                    </MenubarContent>
-                </MenubarMenu>
-                <MenubarMenu>
-                    <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
-                    <MenubarContent>
-                        <MenubarItem>Q&A</MenubarItem>
-                        <MenubarItem>자유게시판</MenubarItem>
-                    </MenubarContent>
-                </MenubarMenu>
+                    <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer">전체 강좌</MenubarTrigger>
+                        <MenubarContent>
+                            <MenubarGroup>
+                                <MenubarItem>초급</MenubarItem>
+                                <MenubarItem>중급</MenubarItem>
+                                <MenubarItem>고급</MenubarItem>
+                            </MenubarGroup>
+                        </MenubarContent>
+                    </MenubarMenu>
+                    <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer">내 강의실</MenubarTrigger>
+                        <MenubarContent>
+                            <MenubarItem>수강 중인 강좌</MenubarItem>
+                            <MenubarItem>완료한 강좌</MenubarItem>
+                            <MenubarItem>학습 기록</MenubarItem>
+                        </MenubarContent>
+                    </MenubarMenu>
+                    <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
+                        <MenubarContent>
+                            <MenubarItem>Q&A</MenubarItem>
+                            <MenubarItem>자유게시판</MenubarItem>
+                        </MenubarContent>
+                    </MenubarMenu>
                 </Menubar>
             </div>
 

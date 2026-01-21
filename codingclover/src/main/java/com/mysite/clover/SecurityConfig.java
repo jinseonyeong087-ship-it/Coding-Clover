@@ -14,6 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysite.clover.Users.ApiLoginFail;
@@ -36,17 +39,32 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf((csrf) -> csrf.disable())
         .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
             .requestMatchers(new AntPathRequestMatcher("/**")).permitAll())
-        .formLogin((formLogin) -> formLogin.disable()) // 기본 폼 로그인 비활성화
-        .addFilterBefore(apiLoginFilter(), UsernamePasswordAuthenticationFilter.class) // JSON 필터 추가
+        .formLogin((formLogin) -> formLogin.disable())
+        .addFilterBefore(apiLoginFilter(), UsernamePasswordAuthenticationFilter.class)
         .logout((logout) -> logout
-            .logoutRequestMatcher(new AntPathRequestMatcher("/api/auth/logout")) /// auth/logout -> /api/auth/logout 통일
+            .logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout"))
             .logoutSuccessUrl("/")
             .invalidateHttpSession(true));
 
     return http.build();
+  }
+
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.addAllowedOrigin("http://localhost:5173");
+    configuration.addAllowedOrigin("http://localhost:5174");
+    configuration.addAllowedMethod("*");
+    configuration.addAllowedHeader("*");
+    configuration.setAllowCredentials(true);
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
   }
 
   @Bean

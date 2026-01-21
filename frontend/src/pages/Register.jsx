@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/Label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/RadioGroup';
 import { cn } from '@/lib/utils';
 
-const Register = () => {
+const Register = ({ onToLogin }) => {
   const [formData, setFormData] = useState({
     loginId: '',
     password: '',
@@ -100,7 +100,7 @@ const Register = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch('/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -108,6 +108,7 @@ const Register = () => {
         body: JSON.stringify({
           loginId: formData.loginId,
           password: formData.password,
+          passwordConfirm: formData.passwordConfirm,
           name: formData.name,
           email: formData.email,
           role: formData.role
@@ -116,6 +117,7 @@ const Register = () => {
 
       if (response.ok) {
         alert('회원가입이 완료되었습니다!');
+        if (onToLogin) onToLogin();
       } else {
         const errorData = await response.json();
         alert(errorData.message || '회원가입에 실패했습니다.');
@@ -359,12 +361,13 @@ const Register = () => {
             {/* 로그인 링크 */}
             <div className="mt-6 text-center text-sm text-muted-foreground">
               이미 계정이 있으신가요?{' '}
-              <a
-                href="/login"
-                className="font-medium text-primary underline-offset-4 hover:underline"
+              <button
+                type="button"
+                onClick={onToLogin}
+                className="font-medium text-primary underline-offset-4 hover:underline bg-transparent border-none p-0 cursor-pointer"
               >
                 로그인
-              </a>
+              </button>
             </div>
           </CardContent>
         </Card>

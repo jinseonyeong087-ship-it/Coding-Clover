@@ -22,6 +22,7 @@ const MainLogin = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState(null);
     const [error, setError] = useState('');
+    const [isRegistering, setIsRegistering] = useState(false);
 
     const handleLogin = async () => {
         setError('');
@@ -32,8 +33,8 @@ const MainLogin = () => {
         }
 
         try {
-            // TODO: 실제 로그인 API 호출
-            const response = await fetch('/api/auth/login', {
+            // 실제 로그인 API 호출
+            const response = await fetch('/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -45,7 +46,15 @@ const MainLogin = () => {
             });
 
             if (!response.ok) {
-                throw new Error('로그인에 실패했습니다.');
+                // 에러 메시지 파싱 시도
+                let errorMessage = '로그인에 실패했습니다.';
+                try {
+                    const errorData = await response.json();
+                    if (errorData.message) errorMessage = errorData.message;
+                } catch (e) {
+                    // JSON 파싱 실패 시 기본 메시지 사용
+                }
+                throw new Error(errorMessage);
             }
 
             const userData = await response.json();
@@ -70,6 +79,11 @@ const MainLogin = () => {
             default:
                 return <Home />;
         }
+    }
+
+    // 회원가입 화면 분기
+    if (isRegistering) {
+        return <Register onToLogin={() => setIsRegistering(false)} />;
     }
 
     // 로그인 폼
@@ -112,7 +126,7 @@ const MainLogin = () => {
                             <Button className="w-full" onClick={handleLogin}>
                                 로그인
                             </Button>
-                            <Button variant="outline" className="w-full" onClick={()=>{<Register />}}>
+                            <Button variant="outline" className="w-full" onClick={() => setIsRegistering(true)}>
                                 회원가입
                             </Button>
                         </div>
