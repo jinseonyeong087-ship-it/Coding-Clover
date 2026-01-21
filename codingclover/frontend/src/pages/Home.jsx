@@ -22,11 +22,11 @@ function Home() {
             신규 가입 시 첫 강좌 무료!
           </p>
           <div className="flex justify-center gap-4">
-            <Button size="lg" variant="secondary">
+            <Button size="lg" variant="secondary" className="hover:bg-white">
               <BookOpen className="mr-2 h-5 w-5" />
               수강신청하기
             </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-purple-600">
+            <Button size="lg" variant="outline" className="border-white text-black hover:bg-white hover:text-purple-600">
               <PlayCircle className="mr-2 h-5 w-5" />
               강좌 둘러보기
             </Button>
@@ -58,9 +58,9 @@ function Home() {
                   </p>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Link to="/student/courses/courseId/lectures" variant="outline" size="sm" className="w-full flex items-center justify-center">
                     자세히 보기 <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  </Link>
                 </CardFooter>
               </Card>
             </div>
@@ -79,9 +79,9 @@ function Home() {
                   </p>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Link to="/student/courses/courseId/lectures" variant="outline" size="sm" className="w-full flex items-center justify-center">
                     자세히 보기 <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  </Link>
                 </CardFooter>
               </Card>
             </div>
@@ -100,9 +100,9 @@ function Home() {
                   </p>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Link to="/student/courses/courseId/lectures" variant="outline" size="sm" className="w-full flex items-center justify-center">
                     자세히 보기 <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  </Link>
                 </CardFooter>
               </Card>
             </div>
