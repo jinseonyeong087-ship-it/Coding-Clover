@@ -4,6 +4,7 @@ function Tail() {
         padding: '40px 0',
         marginTop: '50px',
         borderTop: '1px solid #dee2e6',
+        color: '#2c2c2c'
     };
 
     return (

@@ -2,11 +2,10 @@ import React from 'react';
 import StudentNav from '../components/StudentNav';
 import Tail from '../components/Tail';
 import { Link } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs"
-import { Button } from "@/components/ui/Button"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card"
-import { ArrowRight, BookOpen, PlayCircle } from "lucide-react"
-import Enroll from './student/Enroll';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import { Button } from "@/components/ui/Button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
+import { ArrowRight, BookOpen, PlayCircle } from "lucide-react";
 
 function Home() {
   return (

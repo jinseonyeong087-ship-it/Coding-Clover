@@ -17,6 +17,11 @@ export default defineConfig({
             return req.url;
           }
         }
+      },
+
+      '/api': {
+        target: 'http://localhost:3333',
+        changeOrigin: true,
       }
     }
   },
