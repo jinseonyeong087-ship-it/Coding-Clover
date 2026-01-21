@@ -70,5 +70,15 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
       """)
   List<Enrollment> findAllWithUserAndCourse();
 
+  // 관리자용 특정 강좌 수강생 조회 (N+1 방지)
+  @Query("""
+      SELECT e FROM Enrollment e 
+      JOIN FETCH e.user 
+      JOIN FETCH e.course 
+      LEFT JOIN FETCH e.cancelledBy
+      WHERE e.course = :course
+      """)
+  List<Enrollment> findAdminByCourse(Course course);
+
   
 }

@@ -3,6 +3,7 @@ package com.mysite.clover.Enrollment;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +31,7 @@ public class EnrollmentController {
         private final EnrollmentService enrollmentService;
         
         // 내 수강 내역 조회
+        @PreAuthorize("hasRole('STUDENT')")
         @GetMapping("/enrollment")
         public ResponseEntity<List<StudentEnrollmentDto>> getMyEnrollments(
                 @AuthenticationPrincipal Users student) {
@@ -38,6 +40,7 @@ public class EnrollmentController {
         }
         
         // 강좌 수강 신청
+        @PreAuthorize("hasRole('STUDENT')")
         @PostMapping("/course/{courseId}/enroll")
         public ResponseEntity<String> enrollCourse(
                 @PathVariable Long courseId,
@@ -51,6 +54,7 @@ public class EnrollmentController {
         }
         
         // 내 수강 취소
+        @PreAuthorize("hasRole('STUDENT')")
         @DeleteMapping("/course/{courseId}/cancel")
         public ResponseEntity<String> cancelMyEnrollment(
                 @PathVariable Long courseId,
@@ -73,6 +77,7 @@ public class EnrollmentController {
         private final EnrollmentService enrollmentService;
         
         // 내 모든 강좌의 수강생 현황
+        @PreAuthorize("hasRole('INSTRUCTOR')")
         @GetMapping("/enrollment")
         public ResponseEntity<List<InstructorEnrollmentDto>> getMyAllCourseStudents(
                 @AuthenticationPrincipal Users instructor) {
@@ -81,6 +86,7 @@ public class EnrollmentController {
         }
         
         // 특정 강좌의 수강생 목록
+        @PreAuthorize("hasRole('INSTRUCTOR')")
         @GetMapping("/course/{courseId}/enrollment")
         public ResponseEntity<List<InstructorEnrollmentDto>> getCourseStudents(
                 @PathVariable Long courseId,
@@ -99,13 +105,24 @@ public class EnrollmentController {
         private final EnrollmentService enrollmentService;
         
         // 전체 수강 내역 관리
+        @PreAuthorize("hasRole('ADMIN')")
         @GetMapping("/enrollment")
         public ResponseEntity<List<AdminEnrollmentDto>> getAllEnrollments() {
             List<AdminEnrollmentDto> enrollments = enrollmentService.getAllEnrollments();
             return ResponseEntity.ok(enrollments);
         }
         
+        // 특정 강좌의 수강생 조회 (관리자 권한)
+        @PreAuthorize("hasRole('ADMIN')")
+        @GetMapping("/course/{courseId}/enrollment")
+        public ResponseEntity<List<AdminEnrollmentDto>> getAdminCourseStudents(
+                @PathVariable Long courseId) {
+            List<AdminEnrollmentDto> students = enrollmentService.getAdminCourseStudents(courseId);
+            return ResponseEntity.ok(students);
+        }
+        
         // 수강 강제 취소 (관리자 권한)
+        @PreAuthorize("hasRole('ADMIN')")
         @DeleteMapping("/enrollment/{enrollmentId}/cancel")
         public ResponseEntity<String> adminCancelEnrollment(
                 @PathVariable Long enrollmentId,

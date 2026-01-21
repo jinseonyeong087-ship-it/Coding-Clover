@@ -121,7 +121,8 @@
 /admin/course/{id}/approve  → 승인
 /admin/course/{id}/reject   → 반려
 /admin/course/{id}/close    → 강좌 신규 모집 종료
-/admin/users/enrollment/{id}/cancel → 수강 강제 취소
+/admin/enrollment/{id}/cancel → 수강 강제 취소
+/admin/course/{courseId}/enrollment → 특정 강좌 수강생 조회
 
 ### 📌 수강 관리
 /admin/enrollment          → 전체 수강 내역 관리

@@ -166,4 +166,25 @@ public class EnrollmentService {
     
     enrollment.cancel(admin);
   }
+
+  // 관리자 - 특정 강좌의 수강생 조회
+  @Transactional(readOnly = true)
+  public List<AdminEnrollmentDto> getAdminCourseStudents(Long courseId) {
+    Course course = courseRepository.findById(courseId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
+        
+    List<Enrollment> enrollments = enrollmentRepository.findAdminByCourse(course);
+    return enrollments.stream()
+        .map(e -> new AdminEnrollmentDto(
+            e.getEnrollmentId(),
+            e.getUser().getUserId(),
+            e.getUser().getName(),
+            e.getCourse().getCourseId(),
+            e.getCourse().getTitle(),
+            e.getEnrolledAt(),
+            e.getStatus(),
+            e.getCancelledBy() != null ? e.getCancelledBy().getUserId() : null
+        ))
+        .collect(Collectors.toList());
+  }
 }
