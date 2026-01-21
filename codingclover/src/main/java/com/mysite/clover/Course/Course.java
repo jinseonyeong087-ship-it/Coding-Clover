@@ -30,9 +30,9 @@ public class Course {
     // 썸네일 이미지 URL
     private String thumbnailUrl;
 
-    // 제안 상태
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String proposalStatus = "PENDING";
+    private CourseProposalStatus proposalStatus = CourseProposalStatus.PENDING;
 
     // 거절 사유
     private String proposalRejectReason;
