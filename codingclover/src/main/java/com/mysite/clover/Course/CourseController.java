@@ -40,19 +40,19 @@ public class CourseController {
     public void create(
             @RequestBody @Valid CourseForm courseForm,
             Principal principal) {
-                
+
         Users user = ur.findByLoginId(principal.getName())
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
 
         cs.create(
-            courseForm.getTitle(),
-            courseForm.getDescription(),
-            courseForm.getLevel(),
-            courseForm.getPrice(),
-            user,                 // created_by
-            CourseStatus.PENDING  
-            //proposal_status
+                courseForm.getTitle(),
+                courseForm.getDescription(),
+                courseForm.getLevel(),
+                courseForm.getPrice(),
+                user, // created_by
+                CourseProposalStatus.PENDING
+        // proposal_status
         );
-                
+
     }
 }
