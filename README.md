@@ -26,3 +26,6 @@ git log --oneline --all    명령어 입력 후 노란색으로 표시되는 글
 
 익스텐션 깃 그래프(git grap) 설치면 깃 로그 보기 편함
 https://codingapple.com/unit/git-diff-difftool-vscode/?id=37473
+
+백 서버 켜기
+.\gradlew bootRun
