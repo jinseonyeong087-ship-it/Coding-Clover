@@ -19,19 +19,24 @@ function Basic() {
     <>
       <StudentNav />
       <section className="container mx-auto px-4 py-16">
-        <Tabs>
+        <Tabs defaultValue={0}>
           <div className='flex items-center gap-10'>
-            <h2 className="text-2xl font-bold mb-6">
-              {course.map((item)=>{item.label})}
-            </h2>
+            {course.map((item)=>(
+                <h2 className="text-2xl font-bold mb-6" defaultValue={0}>
+                  {item.label}
+                </h2>
+            ))}
+            
             <TabsList className="mb-6">
-              <TabsTrigger key={ course.map((item)=>{item.id}) } value={ course.map((item)=>{item.id}) }>
-                {course.map((item)=>{item.label})}
-              </TabsTrigger>
+              {course.map((item)=>(
+                <TabsTrigger defaultValue={0}>
+                  {item.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
                 
           </div>
-              <TabsContent key={ course.map((item)=>{item.id}) } value={ course.map((item)=>{item.id}) }>
+              <TabsContent defaultValue={0}>
                 <div className="grid coursesrid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {/* 이것도 맵 */}
                   <Card className="hover:shadow-lg transition-shadow">
