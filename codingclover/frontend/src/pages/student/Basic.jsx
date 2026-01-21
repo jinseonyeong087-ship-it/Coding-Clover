@@ -10,9 +10,9 @@ import { ArrowRight, BookOpen, PlayCircle } from "lucide-react";
 function Basic() {
 
   let course = [
-    {basic: "값"}, 
-    {intermediate: "값"}, 
-    {advanced: "값"}
+    { id: 1, title:"초급강좌", label:"초급", description: "초보를위한어쩌구", created_at:"26.02.13" }, 
+    { id: 2, title:"중급강좌", label:"중급", description: "이거알면중타는감", created_at:"26.02.13" }, 
+    { id: 3, title:"고급강좌", label:"고급", description: "회사가서 써먹어라", created_at:"26.02.13" }
   ]
 
   return (
@@ -21,28 +21,26 @@ function Basic() {
       <section className="container mx-auto px-4 py-16">
         <Tabs>
           <div className='flex items-center gap-10'>
-            course.map((courses) => {
-              return (
-                <h2 className="text-2xl font-bold mb-6">{courses.label}</h2>
-
-                <TabsList className="mb-6">
-                  <TabsTrigger value={courses.id}>{courses.label}</TabsTrigger>
-                </TabsList>
-              )
-            })
+            <h2 className="text-2xl font-bold mb-6">
+              {course.map((item)=>{item.label})}
+            </h2>
+            <TabsList className="mb-6">
+              <TabsTrigger key={ course.map((item)=>{item.id}) } value={ course.map((item)=>{item.id}) }>
+                {course.map((item)=>{item.label})}
+              </TabsTrigger>
+            </TabsList>
+                
           </div>
-          course.map(function() {
-            return (
-              <TabsContent value={grade.id}>
+              <TabsContent key={ course.map((item)=>{item.id}) } value={ course.map((item)=>{item.id}) }>
                 <div className="grid coursesrid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {/* 이것도 맵 */}
                   <Card className="hover:shadow-lg transition-shadow">
                     <CardHeader>
-                      <CardTitle className="text-lg">{courses.title}</CardTitle>
-                      <CardDescription>{grade.description}</CardDescription>
+                      <CardTitle className="text-lg">{ course.map((item)=>{item.title}) }</CardTitle>
+                      <CardDescription>{ course.map((item)=>{item.description}) }</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground">{grade.created_at}</p>
+                      <p className="text-sm text-muted-foreground">{ course.map((item)=>{item.created_at}) }  </p>
                     </CardContent>
                     <CardFooter>
                       <Button variant="outline" size="sm" className="w-full">
@@ -55,7 +53,6 @@ function Basic() {
                   </Card>
                 </div>
               </TabsContent>
-            )})
         </Tabs >
       </section>
       <Tail />
