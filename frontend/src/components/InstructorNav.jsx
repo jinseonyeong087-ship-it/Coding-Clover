@@ -7,9 +7,7 @@ function InstructorNav() {
                 <MenubarTrigger>레벨별 강좌</MenubarTrigger>
                 <MenubarContent>
                     <MenubarGroup>
-                        <MenubarItem>
-                            초급 <MenubarShortcut>⌘T</MenubarShortcut>
-                        </MenubarItem>
+                        <MenubarItem><Link to="/">초급</Link></MenubarItem>
                         <MenubarItem>중급</MenubarItem>
                         <MenubarItem>고급</MenubarItem>
                     </MenubarGroup>
