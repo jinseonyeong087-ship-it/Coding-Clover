@@ -6,7 +6,7 @@ import Register from './pages/Register'
 import Enroll from './pages/student/Enroll'
 import InstructorMain from './pages/instructor/InstructorMain'
 import AdminMain from './pages/admin/AdminMain'
-import Basic from './pages/student/Basic'
+import Level from './pages/student/Level'
 import Lecture from './pages/student/Lecture'
 import CodingTest from './pages/CodingTest'
 
@@ -20,9 +20,9 @@ function App() {
         <Route path="/auth/login" element={<MainLogin />} />
         <Route path="/auth/register" element={<Register />} />
         {/* /auth/oauth 소셜 로그인 */}
-        <Route path="/course/level/1" element={<Basic />} />
-        {/* 중급강좌 <Route path="/course/level/2" element={<Intermediate />} /> */}
-        {/* 고급강좌 <Route path="/course/level/3" element={<Advanced />} /> */}
+        <Route path="/course/level/1" element={<Level />} />
+        <Route path="/course/level/2" element={<Intermediate />} />
+        <Route path="/course/level/3" element={<Advanced />} />
         {/* <Route path="/student/course/courseId" element={<Basic />} /> */}
         <Route path="/student/course/courseId/lectures" element={<Lecture />} />
         {/* 럭쳐 링크 수정 필요함 */}

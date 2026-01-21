@@ -22,7 +22,7 @@ function Home() {
             신규 가입 시 첫 강좌 무료!
           </p>
           <div className="flex justify-center gap-4">
-            <Button size="lg" variant="secondary" className="hover:bg-white">
+            <Button size="lg" variant="secondary" className="bg-white hover:bg-white hover:text-purple-600">
               <BookOpen className="mr-2 h-5 w-5" />
               수강신청하기
             </Button>

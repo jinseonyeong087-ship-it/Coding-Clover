@@ -28,8 +28,8 @@ function StudentNav() {
                         <MenubarContent>
                             <MenubarGroup>
                                 <MenubarItem><Link to="/course/level/1">초급</Link></MenubarItem>
-                                <MenubarItem>중급</MenubarItem>
-                                <MenubarItem>고급</MenubarItem>
+                                <MenubarItem><Link to="/course/level/2">중급</Link></MenubarItem>
+                                <MenubarItem><Link to="/course/level/3">고급</Link></MenubarItem>
                             </MenubarGroup>
                         </MenubarContent>
                     </MenubarMenu>
