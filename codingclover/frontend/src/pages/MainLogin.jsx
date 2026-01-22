@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import Home from './Home';
-import StudentNav from '../components/StudentNav';
-import InstructorMain from './instructor/InstructorMain';
-import AdminMain from './admin/AdminMain';
-import Tail from '../components/Tail';
-import Register from './Register';
+import { Link } from 'react-router-dom';
+import Home from '@/pages/Home';
+import StudentNav from '@/components/StudentNav';
+import InstructorMain from '@/components/InstructorNav';
+import AdminMain from '@/components/AdminNav';
+import Tail from '@/components/Tail';
+import Register from '@/pages/Register';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -130,6 +131,7 @@ const MainLogin = () => {
                             <Button variant="outline" className="w-full" onClick={() => setIsRegistering(true)}>
                                 회원가입
                             </Button>
+                            <Link to="/auth/findaccount" className='text-center'>아이디/비밀번호 찾기</Link>
                         </div>
                     </CardContent>
                 </Card>
