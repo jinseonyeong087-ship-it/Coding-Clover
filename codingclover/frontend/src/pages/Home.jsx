@@ -27,11 +27,11 @@ function Home() {
     { course_id: 7, title: "초급강좌", level: "1", description: "초보를위한어쩌구", created_at: "26.02.13" },
     { course_id: 8, title: "중급강좌", level: "2", description: "이거알면중타는감", created_at: "26.02.13" },
     { course_id: 9, title: "고급강좌", level: "3", description: "회사가서 써먹어라", created_at: "26.02.13" },
-    { course_id: 5, title: "중급강좌", level: "2", description: "이거알면중타는감", created_at: "26.02.13" },
-    { course_id: 6, title: "고급강좌", level: "3", description: "회사가서 써먹어라", created_at: "26.02.13" },
-    { course_id: 7, title: "초급강좌", level: "1", description: "초보를위한어쩌구", created_at: "26.02.13" },
-    { course_id: 8, title: "중급강좌", level: "2", description: "이거알면중타는감", created_at: "26.02.13" },
-    { course_id: 9, title: "고급강좌", level: "3", description: "회사가서 써먹어라", created_at: "26.02.13" },
+    { course_id: 10, title: "중급강좌", level: "2", description: "이거알면중타는감", created_at: "26.02.13" },
+    { course_id: 11, title: "고급강좌", level: "3", description: "회사가서 써먹어라", created_at: "26.02.13" },
+    { course_id: 12, title: "초급강좌", level: "1", description: "초보를위한어쩌구", created_at: "26.02.13" },
+    { course_id: 13, title: "중급강좌", level: "2", description: "이거알면중타는감", created_at: "26.02.13" },
+    { course_id: 14, title: "고급강좌", level: "3", description: "회사가서 써먹어라", created_at: "26.02.13" },
   ])
 
   // 서버 데이터 사용 시

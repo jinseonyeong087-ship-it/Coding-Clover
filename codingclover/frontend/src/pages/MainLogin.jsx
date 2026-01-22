@@ -75,7 +75,7 @@ const MainLogin = () => {
                 return <InstructorMain />;
             case UsersRole.ADMIN:
                 // TODO: AdminMain 컴포넌트 구현 후 연결
-                return <Home />;
+                return <AdminMain />;
             default:
                 return <Home />;
         }

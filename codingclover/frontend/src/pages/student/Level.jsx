@@ -14,10 +14,10 @@ function Level() {
 
   const navigate = useNavigate();
 
-  const [tabs, setTabs] = useState([
-    { id: 1, tablabel: "초급" },
-    { id: 2, tablabel: "중급" },
-    { id: 3, tablabel: "고급" }
+  const [tabs] = useState([
+    { id: "1", tablabel: "초급" },
+    { id: "2", tablabel: "중급" },
+    { id: "3", tablabel: "고급" }
   ]);
 
   const [course, setCourse] = useState([
@@ -52,12 +52,12 @@ function Level() {
     <>
       <StudentNav />
       <section className="container mx-auto px-4 py-16">
-        <Tabs defaultValue={Number(level)} onValueChange={handleTabChange}>{/*Number 함수 사용해서 여기에 뿌리는 거구먼*/}
+        <Tabs defaultValue={level} onValueChange={handleTabChange}>{/*Number 함수 사용해서 여기에 뿌리는 거구먼*/}
           <div className='flex items-center gap-10'>
             <h2 className="text-2xl font-bold mb-6">강좌 목록</h2>
             <TabsList className="mb-6">
               {tabs.map((tab) => (
-                <TabsTrigger key={tab.id} value={tab.id}>
+                <TabsTrigger value={String(tab.id)}>
                   {tab.tablabel}
                 </TabsTrigger>
               ))}
