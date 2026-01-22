@@ -185,7 +185,7 @@ public class ExamService {
                 continue;
 
             // 3. 수강생의 완료 강의 수
-            long completedLectures = lectureProgressRepository.countByEnrollmentAndCompletedYnTrue(enrollment);
+            long completedLectures = lectureProgressRepository.findByEnrollmentAndCompletedYnTrue(enrollment).size();
 
             // 4. 진도율 계산
             double progress = (double) completedLectures / totalLectures;
