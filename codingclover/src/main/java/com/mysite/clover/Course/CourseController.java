@@ -229,19 +229,4 @@ public class CourseController {
         cs.reject(course, req.getReason());
         return ResponseEntity.ok("반려 완료");
     }
-
-    /**
-     * 관리자 : 강좌 모집 종료
-     * 강좌의 모집 상태를 종료로 변경합니다.
-     * 
-     * @param id 강좌 ID
-     * @return 종료 결과 메시지
-     */
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/admin/course/{id}/close")
-    public ResponseEntity<String> close(@PathVariable Long id) {
-        Course course = cs.getCourse(id);
-        cs.close(course);
-        return ResponseEntity.ok("강좌 모집 종료 완료");
-    }
 }
