@@ -28,9 +28,9 @@ function StudentNav() {
                         <MenubarTrigger className="cursor-pointer">전체 강좌</MenubarTrigger>
                         <MenubarContent>
                             <MenubarGroup>
-                                <MenubarItem><Link to="/course/level/1">초급</Link></MenubarItem>
-                                <MenubarItem><Link to="/course/level/2">중급</Link></MenubarItem>
-                                <MenubarItem><Link to="/course/level/3">고급</Link></MenubarItem>
+                                <Link to="/course/level/1"><MenubarItem>초급</MenubarItem></Link>
+                                <Link to="/course/level/2"><MenubarItem>중급</MenubarItem></Link>
+                                <Link to="/course/level/3"><MenubarItem>고급</MenubarItem></Link>
                             </MenubarGroup>
                         </MenubarContent>
                     </MenubarMenu>
