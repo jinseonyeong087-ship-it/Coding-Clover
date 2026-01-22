@@ -65,7 +65,7 @@ function StudentNav() {
                         className="pl-9 w-48"
                     />
                 </div>
-                <Button variant="ghost" size="sm"><Link to="/auth/login">로그인</Link></Button>
+                <Button size="sm"><Link to="/auth/login">로그인</Link></Button>
                 {/* <Button size="sm"><Link to="/auth/register">회원가입</Link></Button> */}
             </div>
         </nav>

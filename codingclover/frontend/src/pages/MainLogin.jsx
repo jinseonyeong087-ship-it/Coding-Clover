@@ -131,7 +131,11 @@ const MainLogin = () => {
                             <Button variant="outline" className="w-full" onClick={() => setIsRegistering(true)}>
                                 회원가입
                             </Button>
-                            <Link to="/auth/findaccount" className='text-center'>아이디/비밀번호 찾기</Link>
+                            <CardDescription>
+                                <Link to="/auth/findaccount" className='text-center items-center text-sm text-dark'>
+                                    아이디/비밀번호 찾기
+                                </Link>
+                            </CardDescription>
                         </div>
                     </CardContent>
                 </Card>
