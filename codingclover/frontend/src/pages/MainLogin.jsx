@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/Label';
 import secureLocalStorage from "react-secure-storage";
 import axios from 'axios';
 
-function MainLogin() {
 
     // Users 엔티티의 UsersRole enum과 일치
     const UsersRole = {
@@ -61,6 +60,8 @@ function MainLogin() {
 
                 const userData = await response.json();
 
+                localStorage.setItem('token', response.data.token);
+
                 switch (userData.role) {
                     case UsersRole.STUDENT:
                         navigate('/');
@@ -84,15 +85,7 @@ function MainLogin() {
             }
         };
 
-        const handLogout = async () => {
-            try {
-                await axios.post('/logout');
-                alert('로그아웃 완료');
-                window.location.href = '/';
-            } catch (error) {
-                console.error('로그아웃 에러:', error);
-            }
-        }
+        
 
         // 로그인 후 role에 따라 페이지 분기
 
@@ -182,7 +175,6 @@ function MainLogin() {
         );
     };
 
-}
 
 
 

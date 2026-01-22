@@ -15,6 +15,17 @@ import { Search } from "lucide-react"
 
 function StudentNav() {
 
+    const handLogout = async () => {
+        try {
+            await axios.post('/logout');
+            AuthenticationService.logout();
+            alert('로그아웃 완료');
+            window.location.href = '/';
+        } catch (error) {
+            console.error('로그아웃 에러:', error);
+        }
+    }
+
     return (
         <nav className="container mx-auto flex items-center justify-between py-3 border-b bg-background">
             {/* 로고 + 메뉴바 */}
@@ -66,6 +77,8 @@ function StudentNav() {
                     />
                 </div>
                 <Button size="sm"><Link to="/auth/login">로그인</Link></Button>
+                <Button size="sm" onClick={handLogout}><Link to="/">로그아웃</Link></Button>
+                
                 {/* <Button size="sm"><Link to="/auth/register">회원가입</Link></Button> */}
             </div>
         </nav>
