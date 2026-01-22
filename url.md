@@ -110,11 +110,11 @@
 /instructor/exam/{id} → 시험 상세
 
 ### 📌 Q/A
-/instructor/qna              → 질문 관리
+/instructor/qna              → 질문 전체보기
 /instructor/qna/{id}/add     → 답변 등록
 /instructor/qna/{id}/delete  → 답변 삭제
 /instructor/qna/{id}/edit    → 답글 수정
-/instructor/qna/{id}/reply   → 내 강좌에 대한 질문만 조회
+/instructor/qna/{id}/owned   → 내 강좌에 대한 질문만 조회
 /instructor/qna/wait         → wait 상태 글만 보기
 /instructor/qna/answered     → answered 상태 글만 보기
 
