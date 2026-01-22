@@ -2,6 +2,7 @@ package com.mysite.clover.Course;
 
 import java.time.LocalDateTime;
 
+import com.mysite.clover.Qna.Qna;
 import com.mysite.clover.Users.Users;
 
 import jakarta.persistence.Column;
@@ -13,9 +14,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
-
+import java.util.List;
+import jakarta.persistence.CascadeType;
 /**
  * 강좌 엔티티
  * 강좌의 기본 정보를 저장합니다.
@@ -71,4 +74,7 @@ public class Course {
 
     /** 수정 일시 */
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE)
+    private List<Qna> qnaList;
 }
