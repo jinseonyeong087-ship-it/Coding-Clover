@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Home from '@/pages/Home';
 import StudentNav from '@/components/StudentNav';
 import InstructorMain from '@/components/InstructorNav';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
+import axios from 'axios';
 
 // Users 엔티티의 UsersRole enum과 일치
 const UsersRole = {
@@ -21,10 +22,10 @@ const UsersRole = {
 const MainLogin = () => {
     const [loginId, setLoginId] = useState('');
     const [password, setPassword] = useState('');
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [user, setUser] = useState(null);
     const [error, setError] = useState('');
     const [isRegistering, setIsRegistering] = useState(false);
+
+    const navigate = useNavigate();
 
     const handleLogin = async () => {
         setError('');
@@ -60,6 +61,22 @@ const MainLogin = () => {
             }
 
             const userData = await response.json();
+
+            switch (userData.role) {
+                case UsersRole.STUDENT:
+                    navigate('/');
+                    break;
+                case UsersRole.INSTRUCTOR:
+                    navigate('/instructor/dashboard');
+                    break;
+                case UsersRole.ADMIN:
+                    navigate('/admin/dashboard');
+                    break;
+                default:
+                    navigate('/');
+                    break;
+            }
+
             // userData 구조: { userId, loginId, name, email, role, status }
             setUser(userData);
             setIsLoggedIn(true);
@@ -69,24 +86,35 @@ const MainLogin = () => {
     };
 
     // 로그인 후 role에 따라 페이지 분기
-    if (isLoggedIn && user) {
-        switch (user.role) {
-            case UsersRole.STUDENT:
-                return <Home />;
-            case UsersRole.INSTRUCTOR:
-                return <InstructorMain />;
-            case UsersRole.ADMIN:
-                // TODO: AdminMain 컴포넌트 구현 후 연결
-                return <AdminMain />;
-            default:
-                return <Home />;
-        }
-    }
+
+
+
+
+    // axios.post('/auth/login', { loginId, password })
+    //     .then((response) => {
+    //         // 로그인 성공
+    //         localStorage.setItem('token', response.data.token);  // 토큰 저장 (있다면)
+
+    //         // 역할에 따라 이동
+    //         if (response.data.role === 'INSTRUCTOR') {
+    //             navigate('/instructor/dashboard');
+    //         } else if (response.data.role === 'ADMIN') {
+    //             navigate('/admin/dashboard');
+    //         } else {
+    //             navigate('/');  // 학생 등
+    //         }
+    //     })
+    //     .catch((err) => {
+    //         console.log('로그인 실패', err);
+    //     });
+
+    // default:
+    // return <Link to="/" />;
 
     // 회원가입 화면 분기
-    if (isRegistering) {
-        return <Register onToLogin={() => setIsRegistering(false)} />;
-    }
+    // if (isRegistering) {
+    //     return <Register onToLogin={() => setIsRegistering(false)} />;
+    // }
 
     // 로그인 폼
     return (

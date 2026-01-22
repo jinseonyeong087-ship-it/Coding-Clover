@@ -67,7 +67,7 @@ function AdminNav() {
                     />
                 </div>
                 <Button variant="ghost" size="sm"><Link to="/admin/dashboard">관리자 페이지</Link></Button>
-                <Button size="sm"><Link to="/auth/register">로그아웃</Link></Button>
+                <Button size="sm"><Link to="/">로그아웃</Link></Button>
             </div>
         </nav>
     );

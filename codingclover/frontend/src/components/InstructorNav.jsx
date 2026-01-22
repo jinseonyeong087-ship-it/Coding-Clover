@@ -59,8 +59,8 @@ function InstructorNav() {
                         className="pl-9 w-48"
                     />
                 </div>
-                <Button variant="ghost" size="sm"><Link to="/instructor/dashboard">강사 페이이지</Link></Button>
-                <Button size="sm"><Link to="/auth/register">로그아웃</Link></Button>
+                <Button variant="ghost" size="sm"><Link to="/instructor/dashboard">강사 페이지</Link></Button>
+                <Button size="sm"><Link to="/">로그아웃</Link></Button>
                 {/* 로그인 로그아웃 구현해야 함 */}
             </div>
         </nav >

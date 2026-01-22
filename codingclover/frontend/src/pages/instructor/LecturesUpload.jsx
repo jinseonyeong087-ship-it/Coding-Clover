@@ -8,25 +8,31 @@ import InstructorMain from './InstructorMain'
 import axios from 'axios';
 
 function LecturesUpload() {
-  const [course, setCourse ] = useState({
-    title: ' ' ,
-    description: ' ' ,
-    price: ' ',
-    level: ' ' ,
-    thumbnail_url: ' '
-})
+  const [course, setCourse] = useState({
+    title: ' ',
+    description: ' ',
+    price: 0,
+    level: 1,
+  })
+
+  // thumbnailUrl: ' '
 
   const handleChange = (event) => {
     console.log('입력 값:', event.target);
     const { name, value } = event.target;
-    setCourse(prev => ({...prev, [name]: value}));
+    setCourse(prev => ({ ...prev, [name]: value }));
   };
 
   const handleClick = () => {
     console.log('제출버튼누름');
-    axios.post('http://localhost:3333/instructor/course/new', course)
-    .then((response)=>console.log('결과 : ', response.data))
-    .catch((err)=>{console.log('실패', err)});
+    axios.post('http://localhost:3333/instructor/course/new', {
+      title: course.title,
+      description: course.description,
+      price: course.price,
+      level: course.level
+    })
+      .then((response) => console.log('결과 : ', response.data))
+      .catch((err) => { console.log('실패', err) });
   };
 
   // setCourse(post save on DB & <InstructorMain/>);
@@ -72,16 +78,11 @@ function LecturesUpload() {
               <Input name="price" type="text" onChange={handleChange} value={course.price} className="col-span-3" method="post" />
             </div>
 
-            {/* <div className="grid grid-cols-4 items-center gap-6">
-              <label className="text-right font-medium">썸네일</label>
-              <Input name="thumbnail_url" type="file" onChange={handleChange} value={course.thumbnail_url} placeholder={course.thumbnail_url} className="col-span-3" method="post" />
-            </div> */}
+            <CardFooter className="flex justify-end gap-3">
+              <Button variant="outline">임시 저장</Button>
+              <Button onClick={handleClick} method="post">개설 신청</Button>
+            </CardFooter>
           </CardContent>
-
-          <CardFooter className="flex justify-end gap-3">
-            <Button variant="outline">임시 저장</Button>
-            <Button onClick={handleClick} method="post">개설 신청</Button>
-          </CardFooter>
         </Card>
       </section>
 
