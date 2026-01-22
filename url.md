@@ -23,40 +23,27 @@
 
 (로그인 + 수강생 권한 필요)
 
-## 수강생 마이페이지
 /student/dashboard      → 수강생 대시보드
-/student/profile        → 수강생 프로필
-/student/mypage                 → 회원 정보
-/student/mypage/profile         → 회원 정보 수정
-/student/mypage/password        → 비밀번호 변경
-/student/enrollment     → 내 수강 내역 조회
 
-/student/course        → 내 강좌
-/student/course/active → 수강 중 강좌
-/student/course/completed → 수강 완료 강좌
+## 수강생 마이페이지
+/student/mypage                         → 수강생 프로필
+/student/mypage/profile                 → 회원 정보
+/student/mypage/profile/password        → 비밀번호 변경
 
-### 📌 출석 / 이력
-/student/history             → 학습 로그
-/student/history/exam       → 시험 응시 이력
-/student/history/attendance → 출석 이력
-
-### 📌 Q/A
-/student/qna                 → 내 질문 목록
-/student/qna/new             → 질문 등록
-/student/qna/{id}            → 질문 상세
-
-### 📌 결제 / 수강권
+<!-- ### 📌 결제 / 수강권
 /student/payment            → 결제 내역
-<!-- /student/payments/credits    → 크레딧 현황 추후 구현-->
+/student/payments/credits    → 크레딧 현황 추후 구현
 /student/payment/purchase  → 수강권 구매
-/student/payment/refunds   → 환불 내역
+/student/payment/refunds   → 환불 내역 -->
 
-## 수강생 강좌
+## 수강생 내 강의실
 /student/course/{courseId} → 강좌 상세
 /student/course/{courseId}/lectures → 강의 목록
 /student/lecture/{lectureId} → 강의 시청
-/student/course/{courseId}/enroll → 수강 신청
-/student/course/{courseId}/cancel → 수강 취소
+/student/enrollment/{courseId}/enroll → 수강 신청
+/student/enrollment/{courseId}/cancel → 수강 취소
+/student/enrollment/active       → 수강 중 강좌
+/student/enrollment/completed    → 수강 완료 강좌
 
 ### 📌 코딩 연습
 /student/problem                 → 문제 목록
@@ -70,10 +57,22 @@
 /student/exam/{examId}      → 시험 응시
 /student/exam/{examId}/result → 개인 결과 상세
 
+### 📌 출석 / 이력
+/student/history             → 학습 로그
+/student/history/attendance  → 출석 이력
+/student/history/exam        → 시험 응시 이력
+
 /student/community     → 커뮤니티
 /student/community/{id}     → 커뮤니티 게시글 상세
 /student/community/{id}/edit     → 커뮤니티 게시글 수정
 /student/community/{id}/delete     → 커뮤니티 게시글 삭제
+
+### 📌 Q/A
+/student/qna                 → 내 질문 목록
+/student/qna/new             → 질문 등록
+/student/qna/{id}            → 질문 상세
+/student/qna/{id}/edit       → 질문 수정
+/student/qna/{id}/delete     → 질문 삭제
 
 # 🟨 강사 영역
 
