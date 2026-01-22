@@ -9,15 +9,15 @@ import { ArrowRight, BookOpen, PlayCircle } from "lucide-react";
 
 function Home() {
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
-  const [tabs, setTabs] = useState([
+  const [tabs] = useState([
     { id: 1, tablabel: "초급" },
     { id: 2, tablabel: "중급" },
     { id: 3, tablabel: "고급" }
   ]);
 
-  const [course, setCourse] = useState([
+  const [course] = useState([
     { course_id: 1, title: "초급강좌", level: "1", description: "초보를위한어쩌구", created_at: "26.02.13" },
     { course_id: 2, title: "중급강좌", level: "2", description: "이거알면중타는감", created_at: "26.02.13" },
     { course_id: 3, title: "고급강좌", level: "3", description: "회사가서 써먹어라", created_at: "26.02.13" },

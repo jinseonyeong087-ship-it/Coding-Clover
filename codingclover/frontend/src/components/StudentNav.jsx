@@ -16,7 +16,7 @@ import { Search } from "lucide-react"
 function StudentNav() {
 
     return (
-        <nav className="flex items-center justify-between px-24 py-3 border-b bg-background">
+        <nav className="container mx-auto flex items-center justify-between py-3 border-b bg-background">
             {/* 로고 + 메뉴바 */}
             <div className="flex items-center gap-6">
                 <Link to="/" className="text-xl font-bold text-primary no-underline">
@@ -65,8 +65,8 @@ function StudentNav() {
                         className="pl-9 w-48"
                     />
                 </div>
-                <Button variant="ghost" size="sm"><Link to="/auth/login">로그인</Link></Button>
-                <Button size="sm"><Link to="/auth/register">회원가입</Link></Button>
+                <Button size="sm"><Link to="/auth/login">로그인</Link></Button>
+                {/* <Button size="sm"><Link to="/auth/register">회원가입</Link></Button> */}
             </div>
         </nav>
     );

@@ -1,6 +1,7 @@
 import React from "react";
-import InstructorNav from "../../components/InstructorNav";
-import Tail from "../../components/Tail";
+import { Link } from "react-router-dom";
+import InstructorNav from "@/components/InstructorNav";
+import Tail from "@/components/Tail";
 
 function InstructorMain() {
 
