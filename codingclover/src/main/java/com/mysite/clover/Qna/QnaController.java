@@ -45,7 +45,7 @@ public class QnaController {
     return qnaService.getDetail(id);
   }
 
-  // 질문 등록에 담을거
+  // 질문 등록에 담을거(DTO)
   @Data
   public static class QnaAddRequest {
     private String title;
