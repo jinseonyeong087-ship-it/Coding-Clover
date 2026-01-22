@@ -3,7 +3,12 @@ import AdminNav from '@/components/AdminNav';
 import Tail from '@/components/Tail';
 
 function AdminMain() {
+
+    const course = useState();
     
+    
+
+
     return (
         <>
         <AdminNav />
