@@ -132,4 +132,10 @@ public class LectureService {
         // Repository에 findByCourseAndApprovalStatusOrderByOrderNoAsc 추가 권장.
         return lectureRepository.findByCourseAndApprovalStatusOrderByOrderNoAsc(course, "APPROVED");
     }
+
+       // ID로 강의 조회 (컨트롤러용)
+    public Lecture findById(Long id) {
+        return lectureRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다."));
+    }
 }
