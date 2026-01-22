@@ -9,7 +9,5 @@ public enum CourseProposalStatus {
     /** 승인됨 (공개) */
     APPROVED,
     /** 반려됨 */
-    REJECTED,
-    /** 모집 종료 (마감) */
-    CLOSED
+    REJECTED
 }

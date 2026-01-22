@@ -177,17 +177,6 @@ public class CourseService {
     }
 
     /**
-     * 강좌 모집 종료
-     * 강좌 상태를 CLOSED로 변경합니다.
-     * 
-     * @param course 대상 강좌
-     */
-    public void close(Course course) {
-        course.setProposalStatus(CourseProposalStatus.CLOSED);
-        courseRepository.save(course);
-    }
-
-    /**
      * 강좌 삭제
      * 강좌 데이터를 삭제합니다.
      * 
