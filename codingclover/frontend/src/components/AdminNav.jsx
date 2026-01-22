@@ -23,34 +23,36 @@ function AdminNav() {
                 </Link>
 
                 <Menubar className="border-none shadow-none bg-transparent">
-                <MenubarMenu>
-                    <MenubarTrigger className="cursor-pointer">전체 회원</MenubarTrigger>
-                    <MenubarContent>
-                        <MenubarGroup>
-                            <MenubarItem>강사관리</MenubarItem>
-                            <MenubarItem>수상생 관리</MenubarItem>
-                        </MenubarGroup>
-                    </MenubarContent>
-                </MenubarMenu>
-                <MenubarMenu>
-                    <MenubarTrigger className="cursor-pointer">강좌관리</MenubarTrigger>
-                    <MenubarContent>
-                        <MenubarItem>승인 대기 강좌</MenubarItem>
-                        <MenubarItem>강좌 승인/반려</MenubarItem>
-                        <MenubarItem>강의 관리</MenubarItem>
-                    </MenubarContent>
-                </MenubarMenu>
-                <MenubarMenu>
-                    <MenubarTrigger className="cursor-pointer">문제 관리</MenubarTrigger>
-                    <MenubarContent>
-                        <MenubarItem>문제 지출</MenubarItem>
-                        <MenubarItem>문제 수정/삭제</MenubarItem>
-                    </MenubarContent>
-                </MenubarMenu>
-                <MenubarMenu>
-                    <MenubarTrigger className="cursor-pointer">공지사항</MenubarTrigger>
-                </MenubarMenu>
-                
+                    <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer">강좌 관리</MenubarTrigger>
+                        <MenubarContent>
+                            <MenubarItem>승인 대기 강좌</MenubarItem>
+                            <MenubarItem></MenubarItem>
+                        </MenubarContent>
+                    </MenubarMenu>
+                    <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer">문제 제출</MenubarTrigger>
+                        <MenubarContent>
+                            <MenubarGroup>
+                                <MenubarItem>문제 제출 및 수정</MenubarItem>
+                                <MenubarItem>문제 관리</MenubarItem>
+                            </MenubarGroup>
+                        </MenubarContent>
+                    </MenubarMenu>
+
+                    <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer">공지 업로드</MenubarTrigger>
+                    </MenubarMenu>
+                    <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer">결제 관리</MenubarTrigger>
+                        <MenubarContent>
+                            <MenubarGroup>
+                                <MenubarItem>강사료</MenubarItem>
+                                <MenubarItem>환불 처리</MenubarItem>
+                            </MenubarGroup>
+                        </MenubarContent>
+                    </MenubarMenu>
+
                 </Menubar>
             </div>
 

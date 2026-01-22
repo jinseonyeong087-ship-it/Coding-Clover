@@ -22,34 +22,30 @@ function InstructorNav() {
                 </Link>
                 <Menubar>
                     <MenubarMenu>
-                        <MenubarTrigger>레벨별 강좌</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer">강좌 관리</MenubarTrigger>
                         <MenubarContent>
                             <MenubarGroup>
-                                <MenubarItem>초급</MenubarItem>
-                                <MenubarItem>중급</MenubarItem>
-                                <MenubarItem>고급</MenubarItem>
+                                <MenubarItem>내 강의</MenubarItem>
+                                <MenubarItem>강좌 개설 신청</MenubarItem>
+                                <MenubarItem>강의 업로드</MenubarItem>
                             </MenubarGroup>
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger>레벨별 강좌</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer">과제 관리</MenubarTrigger>
                         <MenubarContent>
-                            <MenubarGroup>
-                                <MenubarItem>초급</MenubarItem>
-                                <MenubarItem>중급</MenubarItem>
-                                <MenubarItem>고급</MenubarItem>
-                            </MenubarGroup>
+                            <MenubarItem>내가 올린 과제</MenubarItem>
+                            <MenubarItem>과제 등록하기</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger>레벨별 강좌</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer">Q&A 답변관리</MenubarTrigger>
                         <MenubarContent>
-                            <MenubarGroup>
-                                <MenubarItem>초급</MenubarItem>
-                                <MenubarItem>중급</MenubarItem>
-                                <MenubarItem>고급</MenubarItem>
-                            </MenubarGroup>
+                            <MenubarItem>수강생 질문</MenubarItem>
                         </MenubarContent>
+                    </MenubarMenu>
+                    <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer">수익 정산</MenubarTrigger>
                     </MenubarMenu>
                 </Menubar>
             </div>
