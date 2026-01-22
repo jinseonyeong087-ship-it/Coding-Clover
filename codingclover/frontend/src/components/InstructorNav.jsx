@@ -17,7 +17,7 @@ function InstructorNav() {
     return (
         <nav className="container mx-auto flex items-center justify-between py-3 border-b bg-background">
             <div className="flex items-center gap-6">
-                <Link to="/instructor/dashboard" className="text-xl font-bold text-primary no-underline">
+                <Link to="/" className="text-xl font-bold text-primary no-underline">
                     Coding-Clover
                 </Link>
                 <Menubar>
@@ -63,7 +63,8 @@ function InstructorNav() {
                         className="pl-9 w-48"
                     />
                 </div>
-                <Button variant="ghost" size="sm"><Link to="/auth/login">로그아웃</Link></Button>
+                <Button variant="ghost" size="sm"><Link to="/instructor/dashboard">강사 페이이지</Link></Button>
+                <Button size="sm"><Link to="/auth/register">로그아웃</Link></Button>
                 {/* 로그인 로그아웃 구현해야 함 */}
             </div>
         </nav >
