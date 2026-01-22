@@ -23,7 +23,7 @@ public class InstructorProfileController {
 
     // Spring Security 인증 여부 확인 (@PreAuthorize)
   @PreAuthorize("isAuthenticated()")
-  @GetMapping("/profile")
+  @GetMapping("/mypage")
   public InstructorProfileDto getInstructorProfile(
       @AuthenticationPrincipal User principal) {
     // 로그인 ID 추출
