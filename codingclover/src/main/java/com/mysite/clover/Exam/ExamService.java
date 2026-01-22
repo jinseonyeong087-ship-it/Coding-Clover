@@ -7,7 +7,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import com.mysite.clover.Enrollment.Enrollment;
+import com.mysite.clover.Enrollment.EnrollmentRepository;
+import com.mysite.clover.Enrollment.EnrollmentStatus;
+import com.mysite.clover.Lecture.LectureRepository;
+import com.mysite.clover.LectureProgress.LectureProgressRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -16,21 +23,46 @@ public class ExamService {
     private final ExamRepository examRepository;
     private final ExamAttemptRepository examAttemptRepository;
     private final CourseRepository courseRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final LectureRepository lectureRepository;
+    private final LectureProgressRepository lectureProgressRepository;
 
-    // 강좌별 시험 목록 조회
+    /**
+     * 강좌별 시험 목록 조회
+     * 특정 강좌에 연결된 모든 시험을 조회합니다.
+     * 
+     * @param courseId 강좌 ID
+     * @return 시험 목록
+     */
     public List<Exam> getExamsByCourse(Long courseId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("강좌를 찾을 수 없습니다."));
         return examRepository.findByCourse(course);
     }
 
-    // 시험 상세 조회
+    /**
+     * 시험 상세 조회
+     * ID로 시험을 조회하며, 존재하지 않을 경우 예외가 발생합니다.
+     * 
+     * @param examId 시험 ID
+     * @return 조회된 시험
+     */
     public Exam getExam(Long examId) {
         return examRepository.findById(examId)
                 .orElseThrow(() -> new IllegalArgumentException("시험을 찾을 수 없습니다."));
     }
 
-    // 시험 생성 (강사)
+    /**
+     * 시험 생성
+     * 새로운 시험을 생성합니다.
+     * 
+     * @param courseId   연결될 강좌 ID
+     * @param title      시험 제목
+     * @param timeLimit  제한 시간
+     * @param level      난이도
+     * @param passScore  합격 기준 점수
+     * @param instructor 등록 강사
+     */
     @Transactional
     public void createExam(Long courseId, String title, Integer timeLimit, Integer level, Integer passScore,
             Users instructor) {
@@ -48,8 +80,15 @@ public class ExamService {
         examRepository.save(exam);
     }
 
-    // 시험 응시 시작/제출 로직은 추후 구체화 (점수 기록 등)
-    // 현재는 단순 기록용 메서드 예시
+    /**
+     * 시험 응시 기록 저장
+     * 시험 결과를 저장하고 시도 횟수를 증가시킵니다.
+     * 
+     * @param exam   시험
+     * @param user   응시자
+     * @param score  점수
+     * @param passed 통과 여부
+     */
     @Transactional
     public void recordAttempt(Exam exam, Users user, Integer score, Boolean passed) {
         // 기존 시도 횟수 조회
@@ -67,18 +106,35 @@ public class ExamService {
         examAttemptRepository.save(attempt);
     }
 
-    // 특정 시험의 응시 이력 (강사용)
+    /**
+     * 특정 시험의 응시 기록 조회 (강사용)
+     * 해당 시험에 대한 모든 학생들의 응시 기록을 조회합니다.
+     * 
+     * @param examId 시험 ID
+     * @return 응시 기록 목록
+     */
     public List<ExamAttempt> getAttemptsByExam(Long examId) {
         Exam exam = getExam(examId);
         return examAttemptRepository.findByExam(exam);
     }
 
-    // 전체 응시 이력 (관리자용)
+    /**
+     * 전체 응시 기록 조회 (관리자용)
+     * 시스템 상의 모든 응시 기록을 조회합니다.
+     * 
+     * @return 전체 응시 기록 목록
+     */
     public List<ExamAttempt> getAllAttempts() {
         return examAttemptRepository.findAll();
     }
 
-    // 강사별 시험 목록
+    /**
+     * 강사별 시험 목록 조회
+     * 특정 강사가 출제한 모든 시험을 조회합니다.
+     * 
+     * @param instructor 강사 정보
+     * @return 시험 목록
+     */
     public List<Exam> getExamsByInstructor(Users instructor) {
         // Repository method need to be added: findByCreatedBy
         // But wait, ExamRepository doesn't have it yet.
@@ -86,20 +142,59 @@ public class ExamService {
         return examRepository.findByCreatedBy(instructor);
     }
 
-    // 특정 시험의 내 시도 내역 (수강생용)
+    /**
+     * 특정 시험의 본인 응시 기록 조회
+     * 
+     * @param examId 시험 ID
+     * @param user   응시자
+     * @return 본인의 응시 기록
+     */
     public List<ExamAttempt> getAttemptsByExamAndUser(Long examId, Users user) {
         Exam exam = getExam(examId);
         return examAttemptRepository.findByExamAndUser(exam, user);
     }
 
-    // 학생이 응시 가능한 시험 목록 (수강 중인 강좌의 시험들)
+    /**
+     * 응시 가능한 시험 목록 조회
+     * 수강 중인 강좌 중, 진도율이 80% 이상인 경우에만 해당 강좌의 시험을 목록에 포함시킵니다.
+     * 
+     * @param student 수강생 정보
+     * @return 응시 가능한 시험 목록
+     */
     public List<Exam> getStudentExams(Users student) {
-        // 1. 학생이 수강중인 강좌 ID 목록 조회 (Enrollment 이용) - Service or Repository call
-        // 2. 해당 강좌들의 시험 목록 조회
-        // This logic requires EnrollmentRepository or similar dependency.
-        // For now, let's inject EnrollmentRepository if not present?
-        // Ah, ExamService doesn't have EnrollmentRepository injection.
-        // I will add it.
-        return List.of(); // Placeholder until EnrollmentRepository is injected.
+        List<Exam> availableExams = new ArrayList<>();
+
+        // 1. 학생이 수강 관련된(수강중, 수료) 강좌 조회 (CANCELLED 제외)
+        List<Enrollment> allEnrollments = enrollmentRepository.findByUser(student);
+        List<Enrollment> enrollments = new ArrayList<>();
+        for (Enrollment e : allEnrollments) {
+            if (e.getStatus() != EnrollmentStatus.CANCELLED) {
+                enrollments.add(e);
+            }
+        }
+
+        for (Enrollment enrollment : enrollments) {
+            Course course = enrollment.getCourse();
+
+            // 2. 강좌의 총 강의 수
+            long totalLectures = lectureRepository.countByCourseAndApprovalStatus(course, "APPROVED");
+
+            if (totalLectures == 0)
+                continue;
+
+            // 3. 수강생의 완료 강의 수
+            long completedLectures = lectureProgressRepository.countByEnrollmentAndCompletedYnTrue(enrollment);
+
+            // 4. 진도율 계산
+            double progress = (double) completedLectures / totalLectures;
+
+            // 5. 80% 이상이면 해당 강좌의 시험 목록 추가
+            if (progress >= 0.8) {
+                List<Exam> exams = examRepository.findByCourse(course);
+                availableExams.addAll(exams);
+            }
+        }
+
+        return availableExams;
     }
 }

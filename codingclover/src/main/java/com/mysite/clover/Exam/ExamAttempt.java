@@ -9,30 +9,41 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
+/**
+ * 시험 응시 기록 엔티티
+ * 학생의 시험 응시 기록과 결과를 저장합니다.
+ */
 @Getter
 @Setter
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class ExamAttempt {
 
+    /** 응시 기록 ID (Primary Key) */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long attemptId;
 
+    /** 응시한 시험 */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "exam_id")
     private Exam exam;
 
+    /** 응시자 (학생) */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private Users user; // 수강생
+    private Users user;
 
-    private Integer attemptNo; // 도전 횟수 (1부터 시작)
+    /** 시도 횟수 (1부터 시작) */
+    private Integer attemptNo;
 
+    /** 응시 일시 */
     @CreatedDate
     private LocalDateTime attemptedAt;
 
-    private Integer score; // 시험 점수
+    /** 획듍 점수 */
+    private Integer score;
 
-    private Boolean passed; // 통과 여부
+    /** 합격 여부 */
+    private Boolean passed;
 }

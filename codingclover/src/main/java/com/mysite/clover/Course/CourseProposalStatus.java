@@ -1,14 +1,15 @@
 package com.mysite.clover.Course;
 
-// 강좌 제안 상태
+/**
+ * 강좌 승인 상태 Enum
+ */
 public enum CourseProposalStatus {
-    // 대기 중
+    /** 승인 대기 중 */
     PENDING,
-    // 승인됨
+    /** 승인됨 (공개) */
     APPROVED,
-    // 거절됨
-    // 거절됨
+    /** 반려됨 */
     REJECTED,
-    // 마감됨
+    /** 모집 종료 (마감) */
     CLOSED
 }
