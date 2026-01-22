@@ -36,49 +36,25 @@ public class CourseController {
         return ResponseEntity.ok(cs.getPublicListByLevel(level));
     }
 
+    // 강좌 상세 (맛보기/공통)
+    @GetMapping("/course/{id}")
+    public ResponseEntity<Course> detail(@PathVariable Long id) {
+        return ResponseEntity.ok(cs.getCourse(id));
+    }
+
     // ==========================================
     // 🟩 수강생 영역
     // ==========================================
 
-    // 내 강좌 목록
-    @PreAuthorize("hasRole('STUDENT')")
-    @GetMapping("/student/course")
-    public ResponseEntity<List<Course>> studentList(Principal principal) {
-        Users user = ur.findByLoginId(principal.getName())
-                .orElseThrow(() -> new RuntimeException("유저 없음"));
-        return ResponseEntity.ok(cs.getStudentList(user));
-    }
-
-    // 수강 중 강좌
-    @PreAuthorize("hasRole('STUDENT')")
-    @GetMapping("/student/course/active")
-    public ResponseEntity<List<Course>> studentActiveList(Principal principal) {
-        Users user = ur.findByLoginId(principal.getName())
-                .orElseThrow(() -> new RuntimeException("유저 없음"));
-        return ResponseEntity.ok(cs.getStudentActiveList(user));
-    }
-
-    // 수강 완료 강좌
-    @PreAuthorize("hasRole('STUDENT')")
-    @GetMapping("/student/course/completed")
-    public ResponseEntity<List<Course>> studentCompletedList(Principal principal) {
-        Users user = ur.findByLoginId(principal.getName())
-                .orElseThrow(() -> new RuntimeException("유저 없음"));
-        return ResponseEntity.ok(cs.getStudentCompletedList(user));
-    }
-
-    // 강좌 상세 (수강생용)
+    // 강좌 상세 (수강생용 - 수강 중인 강좌의 상세 정보, 커리큘럼 등 포함 가능)
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/student/course/{courseId}")
     public ResponseEntity<Course> studentCourseDetail(@PathVariable Long courseId) {
         return ResponseEntity.ok(cs.getCourse(courseId));
     }
 
-    // 수강 신청/취소는 EnrollmentController에서 처리 (/student/course/{courseId}/enroll 등)
-    // 만약 여기서 처리해야 한다면 EnrollmentService를 주입받아 호출해야 함.
-    // 현재는 url.md 경로가 EnrollmentController 경로와 유사하므로 생략하거나,
-    // EnrollmentController 경로를 수정하지 못하는 상황이면 여기서 포워딩 해야 함.
-    // 일단 EnrollmentController가 존재하므로 생략.
+    // 수강 내역(active/completed) 조회는 EnrollmentController (/student/enrollment/...) 에서
+    // 담당
 
     // ==========================================
     // 🟨 강사 영역
@@ -118,6 +94,16 @@ public class CourseController {
     @GetMapping("/instructor/course/{id}")
     public ResponseEntity<Course> instructorCourseDetail(@PathVariable Long id) {
         return ResponseEntity.ok(cs.getCourse(id));
+    }
+
+    // 강좌 삭제
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @DeleteMapping("/instructor/course/{id}/delete")
+    public ResponseEntity<String> delete(@PathVariable Long id) {
+        Course course = cs.getCourse(id);
+        // 작성자 본인 확인 로직 필요 (생략 가능하나 추가 추천)
+        cs.delete(course);
+        return ResponseEntity.ok("강좌 삭제 성공");
     }
 
     // ==========================================

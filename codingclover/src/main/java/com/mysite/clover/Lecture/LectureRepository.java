@@ -18,6 +18,9 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
     // 승인 상태별 조회 (관리자용)
     List<Lecture> findByApprovalStatus(String approvalStatus);
 
+    // 레벨별/상태별 조회 (수강생 공개용)
+    List<Lecture> findByCourseAndApprovalStatusOrderByOrderNoAsc(Course course, String approvalStatus);
+
     // 특정 강좌에서 특정 순서의 강의 조회
     // Lecture findByCourseAndOrderNo(Course course, int orderNo);
 }

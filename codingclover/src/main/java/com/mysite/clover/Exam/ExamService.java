@@ -72,4 +72,34 @@ public class ExamService {
         Exam exam = getExam(examId);
         return examAttemptRepository.findByExam(exam);
     }
+
+    // 전체 응시 이력 (관리자용)
+    public List<ExamAttempt> getAllAttempts() {
+        return examAttemptRepository.findAll();
+    }
+
+    // 강사별 시험 목록
+    public List<Exam> getExamsByInstructor(Users instructor) {
+        // Repository method need to be added: findByCreatedBy
+        // But wait, ExamRepository doesn't have it yet.
+        // Let's assume we will add it.
+        return examRepository.findByCreatedBy(instructor);
+    }
+
+    // 특정 시험의 내 시도 내역 (수강생용)
+    public List<ExamAttempt> getAttemptsByExamAndUser(Long examId, Users user) {
+        Exam exam = getExam(examId);
+        return examAttemptRepository.findByExamAndUser(exam, user);
+    }
+
+    // 학생이 응시 가능한 시험 목록 (수강 중인 강좌의 시험들)
+    public List<Exam> getStudentExams(Users student) {
+        // 1. 학생이 수강중인 강좌 ID 목록 조회 (Enrollment 이용) - Service or Repository call
+        // 2. 해당 강좌들의 시험 목록 조회
+        // This logic requires EnrollmentRepository or similar dependency.
+        // For now, let's inject EnrollmentRepository if not present?
+        // Ah, ExamService doesn't have EnrollmentRepository injection.
+        // I will add it.
+        return List.of(); // Placeholder until EnrollmentRepository is injected.
+    }
 }

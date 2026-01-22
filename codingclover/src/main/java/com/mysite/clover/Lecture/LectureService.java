@@ -28,8 +28,7 @@ public class LectureService {
             int orderNo,
             String videoUrl,
             int duration,
-            Users instructor
-    ) {
+            Users instructor) {
         Lecture lecture = new Lecture();
 
         lecture.setCourse(course);
@@ -69,5 +68,18 @@ public class LectureService {
     public void inactive(Lecture lecture) {
         lecture.setApprovalStatus("INACTIVE");
         lectureRepository.save(lecture);
+    }
+
+    // 승인 대기 강의 목록 (관리자용)
+    public List<Lecture> getPendingList() {
+        return lectureRepository.findByApprovalStatus("PENDING");
+    }
+
+    // 수강생용 강의 목록 (승인된 것만, 순서대로)
+    public List<Lecture> getPublicListByCourse(Course course) {
+        // 기존 getListByCourse는 강사용(전체)이고, 학생용은 APPROVE 된 것만
+        // Repository에 메소드 추가 필요할 수 있음. 일단 스트림으로 처리하거나 Repository 추가.
+        // Repository에 findByCourseAndApprovalStatusOrderByOrderNoAsc 추가 권장.
+        return lectureRepository.findByCourseAndApprovalStatusOrderByOrderNoAsc(course, "APPROVED");
     }
 }

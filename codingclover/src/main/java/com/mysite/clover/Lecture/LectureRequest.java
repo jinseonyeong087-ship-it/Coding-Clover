@@ -1,10 +1,10 @@
 package com.mysite.clover.Lecture;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
+@AllArgsConstructor
 public class LectureRequest {
     private String title;
     private int orderNo;
