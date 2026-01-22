@@ -15,7 +15,7 @@ import { Search } from "lucide-react"
 import Logout from "@/components/Logout"
 
 function StudentNav() {
-    
+
     return (
         <nav className="container mx-auto flex items-center justify-between py-3 border-b bg-background">
             {/* 로고 + 메뉴바 */}
@@ -66,9 +66,13 @@ function StudentNav() {
                         className="pl-9 w-48"
                     />
                 </div>
-                <Button size="sm"><Link to="/auth/login">로그인</Link></Button>
-                <Logout />
-                
+                {!loginId ? (
+                    <Button size="sm"><Link to="/auth/login">로그인</Link></Button>)
+                    :(<>
+                        <span className="text-sm">{user?.name}님</span>
+                        <Logout />
+                    </>)}
+
                 {/* <Button size="sm"><Link to="/auth/register">회원가입</Link></Button> */}
             </div>
         </nav>
