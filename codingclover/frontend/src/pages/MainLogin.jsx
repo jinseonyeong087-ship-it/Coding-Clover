@@ -42,7 +42,9 @@ const MainLogin = () => {
             if (!loginId || !password) {
                 setError('아이디와 비밀번호를 입력해주세요.');
                 return;
-            } else if () {
+            } else if (!Response.ok) {
+                setError('네트워크 에러');
+                throw new Error(setError);
 
 
             } else if (loginId && password) {
@@ -62,9 +64,10 @@ const MainLogin = () => {
                 }
             }
         } catch (err) {
-            setError(err.message || '잠시 후 다시 시도해 주세요.');
+            setError(err.message || '정의되지 않은 변수 참조, 함수 호출 실패, 데이터 타입 불일치');
             return;
         }
+    };
 
 
 
@@ -106,7 +109,7 @@ const MainLogin = () => {
         // } catch (err) {
         //     setError(err.message || '로그인 중 오류가 발생했습니다.');
         // }
-    };
+    
 
 
 
