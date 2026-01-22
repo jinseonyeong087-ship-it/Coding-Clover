@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Home from './Home';
 import StudentNav from '../components/StudentNav';
 import InstructorMain from './instructor/InstructorMain';
+import AdminMain from './admin/AdminMain';
 import Tail from '../components/Tail';
 import Register from './Register';
 import { Button } from '@/components/ui/Button';
@@ -75,7 +76,7 @@ const MainLogin = () => {
                 return <InstructorMain />;
             case UsersRole.ADMIN:
                 // TODO: AdminMain 컴포넌트 구현 후 연결
-                return <Home />;
+                return <AdminMain />;
             default:
                 return <Home />;
         }
