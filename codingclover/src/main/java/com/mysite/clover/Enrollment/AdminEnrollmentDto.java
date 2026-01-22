@@ -9,12 +9,18 @@ import lombok.Getter;
 @AllArgsConstructor
 public class AdminEnrollmentDto {
     
-    private Long enrollmentId;
-    private Long userId;
-    private String userName;
-    private Long courseId;
-    private String courseTitle;
-    private LocalDateTime enrolledAt;
-    private EnrollmentStatus status;
-    private Long cancelledBy;
+    private Long enrollmentId; // 수강 신청 ID
+    
+    // 수강생 정보
+    private Long userId; // 수강생 ID
+    private String userName; // 수강생 이름
+    
+    // 강좌 정보
+    private Long courseId; // 강좌 ID
+    private String courseTitle; // 강좌 제목
+    
+    // 수강 정보
+    private LocalDateTime enrolledAt; // 수강 신청 일시
+    private EnrollmentStatus status; // 수강 상태 (수강중/취소됨)
+    private Long cancelledBy; // 수강 취소한 사용자 ID (취소된 경우)
 }
