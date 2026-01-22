@@ -18,7 +18,7 @@ function AdminNav() {
         <nav className="flex items-center justify-between px-24 py-3 border-b bg-background">
             {/* 로고 + 메뉴바 */}
             <div className="flex items-center gap-6">
-                <Link to="/" className="text-xl font-bold text-primary no-underline">
+                <Link to="/admin/dashboard" className="text-xl font-bold text-primary no-underline">
                     Coding-Clover
                 </Link>
 
