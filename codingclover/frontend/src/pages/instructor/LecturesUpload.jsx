@@ -11,8 +11,8 @@ function LecturesUpload() {
   const [course, setCourse] = useState({
     title: ' ',
     description: ' ',
-    price: 0,
-    level: 1,
+    price: Number(),
+    level: Number(),
   })
 
   // thumbnailUrl: ' '

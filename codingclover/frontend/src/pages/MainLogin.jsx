@@ -30,34 +30,41 @@ const MainLogin = () => {
         }
     }, []); // [] 이거 뭐하는 용도임? []이거 배열인데 뭐 담아가는 거지 로그인 정보 담는 건가
 
-    const handleLogin = async (loginId, password) => {
-
-        const response = await fetch('/auth/login', {
-            method: 'POST',
-            headers:{
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                loginId: loginId,    // state 값 사용
-                password: password   // state 값 사용
-            })
-        });
-
-        localStorage.setItem("loginId", true);
-        setLoginId(false);
-
-
+    const handleLogin = async () => {
 
         setError('');
 
+        if (!loginId || !password) {
+            setError('아이디, 비밀번호를 입력해 주세요.');
+            return;
+        };
+
+
+
         try {
-            if (!loginId || !password) {
-                setError('아이디와 비밀번호가 일치하지 않습니다.');
+            const response = await fetch('/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    loginId: loginId,    // state 값 사용
+                    password: password   // state 값 사용
+                })
+            });
+
+            if (!response.ok) {
+                setError('아이디 또는 비밀번호가 일치하지 않습니다.');
                 return;
-            } else if (!Response.ok) {
-                setError('네트워크 에러');
-                throw new Error(setError);
-            } else if (loginId && password) {
+            }
+
+            const userData = await response.json();
+
+            localStorage.setItem("user", JSON.stringify(userData));
+
+            if (loginId && password) {
+                localStorage.setItem("loginId", true);
+                setLoginId(false);
                 switch (userData.role) {
                     case UsersRole.STUDENT:
                         navigate('/');
@@ -72,7 +79,7 @@ const MainLogin = () => {
                         navigate('/');
                         break;
                 }
-            }
+            };
         } catch (err) {
             setError(err.message || '정의되지 않은 변수 참조, 함수 호출 실패, 데이터 타입 불일치');
             return;
