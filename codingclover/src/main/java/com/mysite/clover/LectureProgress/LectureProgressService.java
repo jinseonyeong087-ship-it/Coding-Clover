@@ -102,4 +102,21 @@ public class LectureProgressService {
     return lectureProgressRepository.save(progress);
   }
 
+  public Page<AdminLectureProgressDto> getAllProgressForAdmin(Pageable pageable) {
+    return lectureProgressRepository.findAll(pageable)
+        .map(p -> new AdminLectureProgressDto(
+            p.getProgressId(),
+            p.getLecture().getCourse().getCourseId(),
+            p.getLecture().getCourse().getTitle(),
+            p.getLecture().getLectureId(),
+            p.getLecture().getTitle(),
+            p.getEnrollment().getUser().getUserId(),
+            p.getEnrollment().getUser().getName(),
+            p.getCompletedYn(),
+            p.getLastWatchedAt(),
+            p.getEnrollment().getStatus()
+        ));
+}
+
+
 }

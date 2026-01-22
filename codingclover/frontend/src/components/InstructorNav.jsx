@@ -17,39 +17,35 @@ function InstructorNav() {
     return (
         <nav className="container mx-auto flex items-center justify-between py-3 border-b bg-background">
             <div className="flex items-center gap-6">
-                <Link to="/instructor/dashboard" className="text-xl font-bold text-primary no-underline">
+                <Link to="/" className="text-xl font-bold text-primary no-underline">
                     Coding-Clover
                 </Link>
                 <Menubar>
                     <MenubarMenu>
-                        <MenubarTrigger>레벨별 강좌</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer">강좌 관리</MenubarTrigger>
                         <MenubarContent>
                             <MenubarGroup>
-                                <MenubarItem>초급</MenubarItem>
-                                <MenubarItem>중급</MenubarItem>
-                                <MenubarItem>고급</MenubarItem>
+                                <MenubarItem>내 강의</MenubarItem>
+                                <MenubarItem>강좌 개설 신청</MenubarItem>
+                                <MenubarItem>강의 업로드</MenubarItem>
                             </MenubarGroup>
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger>레벨별 강좌</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer">과제 관리</MenubarTrigger>
                         <MenubarContent>
-                            <MenubarGroup>
-                                <MenubarItem>초급</MenubarItem>
-                                <MenubarItem>중급</MenubarItem>
-                                <MenubarItem>고급</MenubarItem>
-                            </MenubarGroup>
+                            <MenubarItem>내가 올린 과제</MenubarItem>
+                            <MenubarItem>과제 등록하기</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger>레벨별 강좌</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer">Q&A 답변관리</MenubarTrigger>
                         <MenubarContent>
-                            <MenubarGroup>
-                                <MenubarItem>초급</MenubarItem>
-                                <MenubarItem>중급</MenubarItem>
-                                <MenubarItem>고급</MenubarItem>
-                            </MenubarGroup>
+                            <MenubarItem>수강생 질문</MenubarItem>
                         </MenubarContent>
+                    </MenubarMenu>
+                    <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer">수익 정산</MenubarTrigger>
                     </MenubarMenu>
                 </Menubar>
             </div>
@@ -63,7 +59,8 @@ function InstructorNav() {
                         className="pl-9 w-48"
                     />
                 </div>
-                <Button variant="ghost" size="sm"><Link to="/auth/login">로그아웃</Link></Button>
+                <Button variant="ghost" size="sm"><Link to="/instructor/dashboard">강사 페이이지</Link></Button>
+                <Button size="sm"><Link to="/auth/register">로그아웃</Link></Button>
                 {/* 로그인 로그아웃 구현해야 함 */}
             </div>
         </nav >
