@@ -33,40 +33,41 @@ import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
 
 function AdminMain() {
 
-    const course = useState();
+    const [course, setCourse ] = useState({
+        level: '123' ,
+        title: '123' ,
+        created_by: '123',
+        proposal_status: ['PENDING', 'APPROVED', 'REJECTED'],
+    })
+
+    // 강좌 승인 백엔파일을 찾아라
 
     return (
         <>
             <AdminNav />
             <section className="container mx-auto px-4 py-16">
-                <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(payment.id)}
-              >
-                Copy payment ID
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuGroup>
-              <DropdownMenuItem>View customer</DropdownMenuItem>
-              <DropdownMenuItem>View payment details</DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+                <Table>
+                    <TableHeader>
+                            <TableRow>
+                                <TableHead>등급</TableHead>
+                                <TableHead>강좌명</TableHead>
+                                <TableHead>강사</TableHead>
+                                <TableHead>승인상태</TableHead>
+                            </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow>
+                                <TableCell>{course.level}</TableCell>
+                                <TableCell>{course.title}</TableCell>
+                                <TableCell>{course.created_by}</TableCell>
+                                <TableCell>{course.proposal_status}</TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
             </section>
             <Tail />
         </>
-
     )
-
 }
 
 export default AdminMain;
