@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
-import secureLocalStorage from "react-secure-storage";
-import axios from 'axios';
 
 
 // Users 엔티티의 UsersRole enum과 일치
@@ -18,7 +16,7 @@ const UsersRole = {
 };
 
 const MainLogin = () => {
-    const [loginId, setLoginId] = useState(false);
+    const [loginId, setLoginId] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isRegistering, setIsRegistering] = useState(false);
@@ -26,27 +24,39 @@ const MainLogin = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const secureLocalStorage = localStorage.getInfo("loginId");
-        if (secureLocalStorage === "ture") {
-            setLoginId(true);
+        const secureLocalStorage = localStorage.getItem("loginId");
+        if (secureLocalStorage === "true") {
+            setLoginId('');
         }
     }, []); // [] 이거 뭐하는 용도임? []이거 배열인데 뭐 담아가는 거지 로그인 정보 담는 건가
 
     const handleLogin = async (loginId, password) => {
-        localStorage.setInfo("loginId", true);
+
+        const response = await fetch('/auth/login', {
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                loginId: loginId,    // state 값 사용
+                password: password   // state 값 사용
+            })
+        });
+
+        localStorage.setItem("loginId", true);
         setLoginId(false);
+
+
 
         setError('');
 
         try {
             if (!loginId || !password) {
-                setError('아이디와 비밀번호를 입력해주세요.');
+                setError('아이디와 비밀번호가 일치하지 않습니다.');
                 return;
             } else if (!Response.ok) {
                 setError('네트워크 에러');
                 throw new Error(setError);
-
-
             } else if (loginId && password) {
                 switch (userData.role) {
                     case UsersRole.STUDENT:
@@ -69,82 +79,6 @@ const MainLogin = () => {
         }
     };
 
-
-
-
-        // try {
-        //     // 실제 로그인 API 호출
-        //     const response = await fetch('/auth/login', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //         },
-        //         body: JSON.stringify({
-        //             loginId: loginId,
-        //             password: password
-        //         })
-        //     });
-
-        //     if (!response.ok) {
-        //         // 에러 메시지 파싱 시도
-        //         let errorMessage = '로그인에 실패했습니다.';
-        //         try {
-        //             const errorData = await response.json();
-        //             if (errorData.message) errorMessage = errorData.message;
-        //         } catch (e) {
-        //             // JSON 파싱 실패 시 기본 메시지 사용
-        //         }
-        //         throw new Error(errorMessage);
-        //     }
-
-        //     const userData = await response.json();
-
-        //     localStorage.setItem('token', response.data.token);
-
-            
-
-        //     // userData 구조: { userId, loginId, name, email, role, status }
-        //     setUser(userData);
-        //     setIsLoggedIn(true);
-        // } catch (err) {
-        //     setError(err.message || '로그인 중 오류가 발생했습니다.');
-        // }
-    
-
-
-
-    // 로그인 후 role에 따라 페이지 분기
-
-
-
-
-    // axios.post('/auth/login', { loginId, password })
-    //     .then((response) => {
-    //         // 로그인 성공
-    //         localStorage.setItem('token', response.data.token);  // 토큰 저장 (있다면)
-
-    //         // 역할에 따라 이동
-    //         if (response.data.role === 'INSTRUCTOR') {
-    //             navigate('/instructor/dashboard');
-    //         } else if (response.data.role === 'ADMIN') {
-    //             navigate('/admin/dashboard');
-    //         } else {
-    //             navigate('/');  // 학생 등
-    //         }
-    //     })
-    //     .catch((err) => {
-    //         console.log('로그인 실패', err);
-    //     });
-
-    // default:
-    // return <Link to="/" />;
-
-    // 회원가입 화면 분기
-    // if (isRegistering) {
-    //     return <Register onToLogin={() => setIsRegistering(false)} />;
-    // }
-
-    // 로그인 폼
     return (
         <div className="min-h-screen flex flex-col bg-background">
             <StudentNav />
