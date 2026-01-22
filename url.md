@@ -68,11 +68,14 @@
 /student/community/{id}/delete     → 커뮤니티 게시글 삭제
 
 ### 📌 Q/A
-/student/qna                 → 내 질문 목록
-/student/qna/new             → 질문 등록
+/student/qna                 → 질문 목록
+/student/qna/my              → 내가 작성한 질문 목록
+/student/qna/add             → 질문 등록
 /student/qna/{id}            → 질문 상세
 /student/qna/{id}/edit       → 질문 수정
 /student/qna/{id}/delete     → 질문 삭제
+/student/qna/wait            → wait 상태 글만 보기
+/student/qna/answered        → answered 상태 글만 보기
 
 # 🟨 강사 영역
 
@@ -106,9 +109,14 @@
 /instructor/exam/new  → 시험 등록
 /instructor/exam/{id} → 시험 상세
 
-### 📌 Q/A / 정산
+### 📌 Q/A
 /instructor/qna              → 질문 관리
-/instructor/qna/{id}         → 답변 등록 / 수정
+/instructor/qna/{id}/add     → 답변 등록
+/instructor/qna/{id}/delete  → 답변 삭제
+/instructor/qna/{id}/edit    → 답글 수정
+/instructor/qna/{id}/reply   → 내 강좌에 대한 질문만 조회
+/instructor/qna/wait         → wait 상태 글만 보기
+/instructor/qna/answered     → answered 상태 글만 보기
 
 <!-- 정산/계좌 관련 테이블 없음 추후 구현
 /instructor/settlement       → 정산 내역
@@ -163,3 +171,9 @@
 /admin/logs/exams            → 시험 로그
 
 /admin/notice               → 공지 관리
+
+### 📌 Q/A
+/admin/qna                 → 질문 목록
+/admin/qna/{id}            → 질문 상세
+/admin/qna/{id}/delete     → 질문 삭제
+/admin/qna/{id}/answer/delete     → 답변 삭제
