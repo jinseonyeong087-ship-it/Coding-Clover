@@ -1,5 +1,6 @@
-package com.mysite.clover.Exam;
+package com.mysite.clover.ExamAttempt;
 
+import com.mysite.clover.Exam.Exam;
 import com.mysite.clover.Users.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 

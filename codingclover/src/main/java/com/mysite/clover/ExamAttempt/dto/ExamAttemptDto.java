@@ -1,8 +1,8 @@
-package com.mysite.clover.Exam.dto;
+package com.mysite.clover.ExamAttempt.dto;
 
 import java.time.LocalDateTime;
 
-import com.mysite.clover.Exam.ExamAttempt;
+import com.mysite.clover.ExamAttempt.ExamAttempt;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

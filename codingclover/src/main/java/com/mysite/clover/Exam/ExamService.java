@@ -13,6 +13,8 @@ import java.util.List;
 import com.mysite.clover.Enrollment.Enrollment;
 import com.mysite.clover.Enrollment.EnrollmentRepository;
 import com.mysite.clover.Enrollment.EnrollmentStatus;
+import com.mysite.clover.ExamAttempt.ExamAttempt;
+import com.mysite.clover.ExamAttempt.ExamAttemptRepository;
 import com.mysite.clover.Lecture.LectureRepository;
 import com.mysite.clover.LectureProgress.LectureProgressRepository;
 

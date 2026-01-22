@@ -1,5 +1,6 @@
-package com.mysite.clover.Exam;
+package com.mysite.clover.ExamAttempt;
 
+import com.mysite.clover.Exam.Exam;
 import com.mysite.clover.Users.Users;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -41,7 +42,7 @@ public class ExamAttempt {
     @CreatedDate
     private LocalDateTime attemptedAt;
 
-    /** 획듍 점수 */
+    /** 획득 점수 */
     private Integer score;
 
     /** 합격 여부 */
