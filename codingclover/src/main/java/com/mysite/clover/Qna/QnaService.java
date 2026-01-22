@@ -14,6 +14,9 @@ import com.mysite.clover.Course.Course;
 public class QnaService {
   private final QnaRepository qnaRepository;
 
+  // 학생
+  // ------------------------------------------------------------------------------------------
+
   // 전체 질문 조회할때 겸 최신순 정렬 생성일 기준으로 짰음
   public List<Qna> getList() {
     return qnaRepository.findAllByOrderByCreatedAtDesc();
@@ -46,5 +49,14 @@ public class QnaService {
     q.setCreatedAt(LocalDateTime.now());
     qnaRepository.save(q);
   }
+  // 학생
+  // ------------------------------------------------------------------------------------------
+
+  // 강사
+  // 강좌 별 조회
+  public List<Qna> getCourseList(Course course) {
+    return qnaRepository.findAllByCourseOrderByCreatedAtDesc(course);
+  }
+
 
 }

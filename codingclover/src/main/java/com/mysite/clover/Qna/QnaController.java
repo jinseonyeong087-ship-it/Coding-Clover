@@ -22,6 +22,8 @@ public class QnaController {
   private final UsersRepository usersRepository;
   private final CourseRepository courseRepository;
 
+  // 학생
+  // =================================================================================
   @GetMapping("/student/qna")
   public List<Qna> getStudentList() {
     return qnaService.getList();
@@ -43,7 +45,7 @@ public class QnaController {
     return qnaService.getDetail(id);
   }
 
-  // 질문 등록
+  // 질문 등록에 담을거
   @Data
   public static class QnaAddRequest {
     private String title;
@@ -51,7 +53,7 @@ public class QnaController {
     private Long userId;
     private Long courseId;
   }
-
+  // 질문 등록 
   @PostMapping("/student/qna/add")
   public void createQna(@RequestBody QnaAddRequest request) {
 
@@ -61,4 +63,21 @@ public class QnaController {
     qnaService.create(request.getTitle(), request.getQuestion(), user, course);
 
   }
+   // =================================================================================
+
+   // 강사
+   // =================================================================================
+
+   // Qna 전체 보기 (강사)
+   @GetMapping("/instructor/qna")
+   public List<Qna> getInstructorList() {
+    return qnaService.getList();
+   }
+
+   // 강사 개인 강좌에 대한 질문 조회
+   @GetMapping("/instructor/qna/{id}/owned")
+   public List<Qna> getOwnedQna(@PathVariable("id") Long courseId) {
+    Course course = courseRepository.findById(courseId).get();
+    return qnaService.getCourseList(course);
+   }
 }
