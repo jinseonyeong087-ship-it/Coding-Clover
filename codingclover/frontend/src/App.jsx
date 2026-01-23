@@ -12,6 +12,7 @@ import CodingTest from './pages/CodingTest'
 import EmailTest from './pages/EmailTest'
 import LecturesUpload from './pages/instructor/LecturesUpload'
 import FindAccount from '@/pages/FindAccount'
+import QnaTest from './pages/QnaTest'
 
 function App() {
   return (
@@ -22,6 +23,8 @@ function App() {
         <Route path="/test/coding" element={<CodingTest />} />
         {/* 이메일 발송 테스트 페이지 */}
         <Route path="/test/email" element={<EmailTest />} />
+        {/* QnA 테스트 페이지 */}
+        <Route path="/test/qna" element={<QnaTest />} />
         {/* 로그인 관련 */}
         <Route path="/auth/login" element={<MainLogin />} />
         <Route path="/auth/register" element={<Register />} />

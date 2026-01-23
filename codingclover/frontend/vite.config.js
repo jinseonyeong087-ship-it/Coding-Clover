@@ -33,14 +33,30 @@ export default defineConfig({
       '/course': {
         target: 'http://localhost:3333',
         changeOrigin: true,
-        // HTML 요청(페이지 이동)은 프록시 안 함
         bypass: (req) => {
           if (req.headers.accept?.includes('html')) {
             return req.url;
           }
         }
+      },
+      '/student': {
+        target: 'http://localhost:3333',
+        changeOrigin: true,
+        bypass: (req) => {
+          if (req.headers.accept?.includes('html')) {
+             return req.url;
+          }
+        }
+      },
+      '/instructor': {
+        target: 'http://localhost:3333',
+        changeOrigin: true,
+        bypass: (req) => {
+          if (req.headers.accept?.includes('html')) {
+             return req.url;
+          }
+        }
       }
-      // 이렇게 하면 브라우저 페이지 이동은 React가 처리하고, API 호출만 백엔드로 감
 
       // vite.config.js 역할
       // React Router가 처리하기 전에
