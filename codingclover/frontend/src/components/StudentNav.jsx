@@ -27,7 +27,9 @@ function StudentNav() {
             setLoginId(true);
         }
         if (storedUsers) {
-            setUsers(JSON.parse(storedUsers));
+            const parsedUsers = JSON.parse(storedUsers);
+            setUsers(parsedUsers);
+            console.log("현재 로그인한 사용자:", parsedUsers);
         }
     }, []);
 

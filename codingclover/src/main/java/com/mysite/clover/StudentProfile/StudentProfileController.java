@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import java.util.Map;
 
 import com.mysite.clover.Users.Users;
@@ -33,16 +35,51 @@ public class StudentProfileController {
     return "API 연결 성공!";
   }
 
-  // Spring Security 인증 여부 확인 - 임시 비활성화 (테스트용)
+  // Spring Security 인증 여부 확인 - 실제 로그인 사용자 조회
   // @PreAuthorize("isAuthenticated()")
   @GetMapping("/mypage")
-  public StudentProfileDto getStudentProfile() {
+  public StudentProfileDto getStudentProfile(
+      @AuthenticationPrincipal User principal,
+      HttpServletRequest request) {
     
     System.out.println("=== 마이페이지 API 호출 ===");
     
     try {
-      // 임시로 고정 사용자 ID 사용
-      String loginId = "student";
+      String loginId = null;
+      
+      // 1. 헤더에서 로그인 ID 추출 (프론트엔드에서 전달)
+      String headerLoginId = request.getHeader("X-Login-Id");
+      if (headerLoginId != null && !headerLoginId.isEmpty() && !headerLoginId.equals("null")) {
+        loginId = headerLoginId;
+        System.out.println("✅ 헤더에서 로그인 ID 추출: " + loginId);
+      }
+      // 2. Principal에서 사용자 정보 추출 시도
+      else if (principal != null) {
+        loginId = principal.getUsername();
+        System.out.println("✅ Principal에서 로그인 ID 추출: " + loginId);
+      } 
+      // 3. 세션에서 사용자 정보 추출 시도
+      else {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+          String[] possibleKeys = {"loginId", "user", "username", "userId"};
+          for (String key : possibleKeys) {
+            Object value = session.getAttribute(key);
+            if (value != null && loginId == null) {
+              loginId = value.toString();
+              System.out.println("✅ 세션에서 loginId 추출 (" + key + "): " + loginId);
+              break;
+            }
+          }
+        }
+      }
+      
+      // 4. 모두 실패시 기본값 사용
+      if (loginId == null || loginId.isEmpty()) {
+        loginId = "student";
+        System.out.println("⚠️ 기본값 사용: " + loginId);
+      }
+
       // Users 테이블에서 기본 정보 조회
       Users user = usersRepository.findByLoginId(loginId).orElse(null);
       if (user == null) {
@@ -104,10 +141,13 @@ public class StudentProfileController {
     }
   }
 
-  // 수강생 프로필 정보 수정 - 안전한 DB 연동 버전
+  // 수강생 프로필 정보 수정 - 실제 로그인 사용자 기반
   @Transactional
   @PutMapping("/mypage")
-  public ResponseEntity<String> updateStudentProfile(@RequestBody Map<String, String> requestData) {
+  public ResponseEntity<String> updateStudentProfile(
+      @RequestBody Map<String, String> requestData,
+      @AuthenticationPrincipal User principal,
+      HttpServletRequest request) {
     
     System.out.println("=== 프로필 업데이트 API 호출 ===");
     System.out.println("받은 데이터: " + requestData);
@@ -119,8 +159,36 @@ public class StudentProfileController {
       
       System.out.println("파싱된 데이터 - 이름: " + name + ", 학습수준: " + educationLevel + ", 관심분야: " + interestCategory);
       
-      // 임시로 고정 사용자 ID 사용 (실제로는 인증에서 가져와야 함)
-      String loginId = "student"; // 또는 실제 테스트용 사용자 ID
+      String loginId = null;
+      
+      // 1. 헤더에서 로그인 ID 추출 (프론트엔드에서 전달)
+      String headerLoginId = request.getHeader("X-Login-Id");
+      if (headerLoginId != null && !headerLoginId.isEmpty() && !headerLoginId.equals("null")) {
+        loginId = headerLoginId;
+        System.out.println("✅ 헤더에서 로그인 ID 추출: " + loginId);
+      }
+      // 2. Principal에서 사용자 정보 추출 시도
+      else if (principal != null) {
+        loginId = principal.getUsername();
+        System.out.println("✅ Principal에서 로그인 ID 추출: " + loginId);
+      } 
+      // 3. 세션에서 사용자 정보 추출 시도
+      else {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+          Object loginIdFromSession = session.getAttribute("loginId");
+          if (loginIdFromSession != null) {
+            loginId = loginIdFromSession.toString();
+            System.out.println("✅ 세션에서 loginId 추출: " + loginId);
+          }
+        }
+      }
+      
+      // 4. 모두 실패시 기본값 사용
+      if (loginId == null || loginId.isEmpty()) {
+        loginId = "student";
+        System.out.println("⚠️ 기본값 사용: " + loginId);
+      }
       
       // Users 조회
       Users user = usersRepository.findByLoginId(loginId).orElse(null);
