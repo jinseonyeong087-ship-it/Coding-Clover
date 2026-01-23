@@ -2,6 +2,8 @@ package com.mysite.clover.Qna;
 
 import java.time.LocalDateTime;
 
+import java.util.List;
+import com.mysite.clover.QnaAnswer.QnaAnswer;
 import lombok.Data;
 
 @Data
@@ -20,6 +22,9 @@ public class QnaDto {
   private Long courseId;
   private String courseTitle;
 
+  // Answers
+  private List<QnaAnswerDto> answers;
+
   public QnaDto(Qna qna) {
     qnaId = qna.getQnaId();
     title = qna.getTitle();
@@ -34,5 +39,29 @@ public class QnaDto {
     // Course info
     courseId = qna.getCourse().getCourseId();
     courseTitle = qna.getCourse().getTitle();
+
+    // Answers
+    if (qna.getQnaAnswerList() != null) {
+      this.answers = qna.getQnaAnswerList().stream()
+          .map(QnaAnswerDto::new)
+          .toList();
+    }
+  }
+
+  @Data
+  public static class QnaAnswerDto {
+    private Long answerId;
+    private String content;
+    private Long instructorId;
+    private String instructorName;
+    private LocalDateTime answeredAt;
+
+    public QnaAnswerDto(QnaAnswer answer) {
+      this.answerId = answer.getAnswerId();
+      this.content = answer.getAnswer();
+      this.instructorId = answer.getInstructor().getUserId();
+      this.instructorName = answer.getInstructor().getName();
+      this.answeredAt = answer.getAnsweredAt();
+    }
   }
 }
