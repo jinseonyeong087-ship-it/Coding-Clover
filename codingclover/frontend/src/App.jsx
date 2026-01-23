@@ -33,7 +33,7 @@ function App() {
         <Route path="/auth/findaccount" element={FindAccount} />
         {/* <Route path="/auth/oauth element={FindAccount} /> 소셜 로그인 아이콘도 없음*/}
         {/* 권한 없음 페이지 */}
-        <Route path="/noroll" element={Noroll} />
+        <Route path="/noroll" element={<Noroll />} />
         {/* 학생 강좌 */}
         <Route path="/course/level/:level" element={<Level />} />
         <Route path="/student/course/courseId/lectures" element={<Lecture />} />

@@ -1,12 +1,15 @@
+import React from 'react';
 import StudentNav from '@/components/StudentNav';
-import React, { useState } from 'react';
+import Tail from '@/components/Tail';
 
 function Noroll() {
-    <>
-    <StudentNav />
-    <p>권한 없음</p>
-    <Tail />
-    </>
+    return (
+        <>
+            <StudentNav />
+            <p className='text-center item-center'>권한 없음</p>
+            <Tail />
+        </>
+    );
 }
 
 export default Noroll;
