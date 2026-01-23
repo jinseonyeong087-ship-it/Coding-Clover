@@ -16,6 +16,8 @@ import Logout from "@/components/Logout"
 
 function StudentNav() {
 
+    const [loginId, setLoginId] = useState(false);
+
     return (
         <nav className="container mx-auto flex items-center justify-between py-3 border-b bg-background">
             {/* 로고 + 메뉴바 */}
