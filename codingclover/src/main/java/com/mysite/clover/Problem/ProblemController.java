@@ -20,6 +20,8 @@ public class ProblemController {
   private final ProblemRepository problemRepository;
   private final TestCaseRepository testCaseRepository;
   private final CodeExecutor codeExecutor;
+  private final com.mysite.clover.Submission.SubmissionService submissionService;
+  private final com.mysite.clover.Users.UsersRepository usersRepository;
 
   // 문제 목록 조회
   @GetMapping
@@ -105,6 +107,23 @@ public class ProblemController {
     // 문제의 의도상 Scanner를 안 쓸 경우, 코드 수정(n=10 or n=11)에 따라
     // Even 또는 Odd 중 하나만 맞출 수 있으므로, '하나라도 맞으면 정답'으로 처리
     boolean passed = passedCount > 0;
+
+    // 추가: 제출 이력 저장 (회원일 경우에만)
+    if (request.getUserId() != null) {
+      System.out.println("Saving submission for User ID: " + request.getUserId());
+      final long finalTotalTime = totalTime;
+      try {
+        usersRepository.findById(request.getUserId()).ifPresent(user -> {
+          submissionService.create(user, problem, request.getCode(),
+              passed ? "PASS" : "FAIL", finalTotalTime);
+          System.out.println("Submission saved successfully.");
+        });
+      } catch (Exception e) {
+        System.err.println("제출 이력 저장 실패: " + e.getMessage());
+        e.printStackTrace();
+        // 저장은 실패해도 채점 결과는 반환하도록 예외를 무시하고 진행
+      }
+    }
 
     return ResponseEntity.ok(GradingResult.builder()
         .passed(passed)

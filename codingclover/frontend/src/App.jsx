@@ -14,6 +14,7 @@ import EmailTest from './pages/EmailTest'
 import LecturesUpload from './pages/instructor/LecturesUpload'
 import FindAccount from '@/pages/FindAccount'
 import QnaTest from './pages/QnaTest'
+import SubmissionTest from './pages/SubmissionTest'
 import ProtectedRoute from '@/components/ProtectdRoute'
 import Noroll from '@/pages/Noroll'
 
@@ -28,6 +29,8 @@ function App() {
         <Route path="/test/email" element={<EmailTest />} />
         {/* QnA 테스트 페이지 */}
         <Route path="/test/qna" element={<QnaTest />} />
+        {/* Submission 테스트 페이지 */}
+        <Route path="/test/submission" element={<SubmissionTest />} />
         {/* 로그인 관련 */}
         <Route path="/auth/login" element={<MainLogin />} />
         <Route path="/auth/register" element={<Register />} />

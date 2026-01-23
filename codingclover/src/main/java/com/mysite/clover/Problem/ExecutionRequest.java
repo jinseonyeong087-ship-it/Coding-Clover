@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class ExecutionRequest {
   private String code; // 실행할 소스 코드
   private String input; // (선택) 실행 시 입력값 (System.in)
+  private Long userId; // (선택) 제출자 ID
 }

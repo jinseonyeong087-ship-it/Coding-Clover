@@ -76,10 +76,22 @@ public class Main {
     setGradingResult(null);
 
     try {
+      // 로컬 스토리지에서 유저 정보 가져와서 ID 추출
+      const storedUser = localStorage.getItem('users');
+      let userId = null;
+      if (storedUser) {
+        try {
+          const u = JSON.parse(storedUser);
+          userId = u.userId || u.id;
+        } catch (e) {
+          console.error("User parsing error", e);
+        }
+      }
+
       const response = await fetch(`/api/problems/${selectedId}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code, userId }),
       });
       const data = await response.json();
       setGradingResult(data);
