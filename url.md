@@ -94,10 +94,11 @@
 /instructor/enrollment                    → 내 강좌 수강생 현황
 /instructor/course/{courseId}/enrollment  → 특정 강좌 수강생 목록
 
-### 📌 강의 / 과제 관리
+### 📌 강의 관리
 /instructor/lecture         → 강의 관리
 /instructor/lecture/upload  → 강의 업로드 요청
 
+### 📌 시험 관리
 /instructor/course/{courseId}/exam
 → 해당 강좌의 시험 목록
 /instructor/course/{courseId}/exam/{examId}/attempts
