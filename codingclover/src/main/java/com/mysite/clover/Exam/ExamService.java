@@ -3,6 +3,7 @@ package com.mysite.clover.Exam;
 import com.mysite.clover.Course.Course;
 import com.mysite.clover.Course.CourseRepository;
 import com.mysite.clover.Users.Users;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import java.util.List;
 import com.mysite.clover.Enrollment.Enrollment;
 import com.mysite.clover.Enrollment.EnrollmentRepository;
 import com.mysite.clover.Enrollment.EnrollmentStatus;
+import com.mysite.clover.Exam.dto.ExamCreateRequest;
 import com.mysite.clover.ExamAttempt.ExamAttempt;
 import com.mysite.clover.ExamAttempt.ExamAttemptRepository;
 import com.mysite.clover.Lecture.LectureRepository;
@@ -63,11 +65,12 @@ public class ExamService {
      * @param timeLimit  제한 시간
      * @param level      난이도
      * @param passScore  합격 기준 점수
+     * @param boolean1 
      * @param instructor 등록 강사
      */
     @Transactional
     public void createExam(Long courseId, String title, Integer timeLimit, Integer level, Integer passScore,
-            Users instructor) {
+            Boolean boolean1, Users instructor) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("강좌를 찾을 수 없습니다."));
 
@@ -192,11 +195,41 @@ public class ExamService {
 
             // 5. 80% 이상이면 해당 강좌의 시험 목록 추가
             if (progress >= 0.8) {
-                List<Exam> exams = examRepository.findByCourse(course);
+                List<Exam> exams = examRepository.findByCourseAndIsPublishedTrue(course);
                 availableExams.addAll(exams);
             }
         }
-
         return availableExams;
+    }
+
+    // 시험 수정
+    @Transactional
+    public void updateExam(Long examId, String title, Integer timeLimit, Integer level, Integer passScore, boolean isPublished) {
+        // 시험 조회
+        Exam exam = getExam(examId);
+        // 시험 정보 업데이트
+        exam.setTitle(title);
+        // 제한 시간 업데이트
+        exam.setTimeLimit(timeLimit);
+        // 난이도 업데이트
+        exam.setLevel(level);
+        // 합격 기준 점수 업데이트
+        exam.setPassScore(passScore);
+        // 공개 여부 업데이트
+        exam.setIsPublished(isPublished);
+        // 공개 여부 업데이트
+        examRepository.save(exam);
+    }
+
+    @Transactional
+    public void deleteExam(Long examId) {
+        // 시험 조회
+        Exam exam = getExam(examId);
+        // 시험 삭제
+        examRepository.delete(exam);
+    }
+
+    public void updateExam(Long examId, ExamCreateRequest form) {
+        throw new UnsupportedOperationException("Unimplemented method 'updateExam'");
     }
 }

@@ -42,4 +42,8 @@ public class Exam {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private Users createdBy;
+
+    /** 시험 공개 여부 */
+    @Column(nullable = false)
+    private Boolean isPublished = false; // 기본값은 비공개
 }

@@ -22,4 +22,7 @@ public interface ExamRepository extends JpaRepository<Exam, Long> {
      * @return 시험 목록
      */
     List<Exam> findByCreatedBy(Users user);
+
+    // 공개된 시험 목록 조회
+    List<Exam> findByCourseAndIsPublishedTrue(Course course);
 }

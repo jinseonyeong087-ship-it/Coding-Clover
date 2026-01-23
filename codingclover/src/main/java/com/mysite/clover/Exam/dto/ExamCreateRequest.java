@@ -31,4 +31,7 @@ public class ExamCreateRequest {
     /** 합격 기준 점수 */
     @NotNull(message = "통과 기준 점수는 필수입니다.")
     private Integer passScore;
+
+    /** 공개 여부 */
+    private Boolean isPublished= false;
 }
