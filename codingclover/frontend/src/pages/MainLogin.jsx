@@ -28,7 +28,7 @@ const MainLogin = () => {
         if (secureLocalStorage === "true") {
             setLoginId('');
         }
-    }, []); // [] 이거 뭐하는 용도임? []이거 배열인데 뭐 담아가는 거지 로그인 정보 담는 건가
+    }, []); // [] 이거 뭐하는 용도임? []이거 무한루프 방지용임
 
     const handleLogin = async () => {
 

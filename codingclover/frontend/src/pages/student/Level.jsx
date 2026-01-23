@@ -46,7 +46,7 @@ function Level() {
   // 서버 데이터 사용 시
   // const [course, setCourse] = useState([]);
 
-  // useEffect(()=>{ fetch('/course').then(res=>res.json()).then(data => setCourse(data))})
+  // useEffect(()=>{ fetch('/course').then(res=>res.json()).then(data => setCourse(data))}, [])
 
   return (
     <>
