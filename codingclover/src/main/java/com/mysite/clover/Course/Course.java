@@ -19,6 +19,7 @@ import lombok.Getter;
 import lombok.Setter;
 import java.util.List;
 import jakarta.persistence.CascadeType;
+
 /**
  * 강좌 엔티티
  * 강좌의 기본 정보를 저장합니다.
