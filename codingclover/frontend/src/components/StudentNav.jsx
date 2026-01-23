@@ -66,7 +66,12 @@ function StudentNav() {
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer">마이페이지</MenubarTrigger>
+                        <Link
+                            to="/student/mypage"
+                            className="px-3 py-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors cursor-pointer"
+                        >
+                            마이페이지
+                        </Link>
                     </MenubarMenu>
                 </Menubar>
             </div>
@@ -83,7 +88,7 @@ function StudentNav() {
                 </div>
                 {!loginId ? (
                     <Button size="sm"><Link to="/auth/login">로그인</Link></Button>)
-                    :(<>
+                    : (<>
                         <Button variant="ghost" className="text-sm">{users.name}님</Button>
                         <Logout />
                     </>)}

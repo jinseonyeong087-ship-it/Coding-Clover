@@ -8,6 +8,7 @@ import InstructorMain from './pages/instructor/InstructorMain'
 import AdminMain from './pages/admin/AdminMain'
 import Level from './pages/student/Level'
 import Lecture from './pages/student/Lecture'
+import MyPage from './pages/student/MyPage'
 import CodingTest from './pages/CodingTest'
 import EmailTest from './pages/EmailTest'
 import LecturesUpload from './pages/instructor/LecturesUpload'
@@ -37,6 +38,7 @@ function App() {
         {/* 학생 강좌 */}
         <Route path="/course/level/:level" element={<Level />} />
         <Route path="/student/course/courseId/lectures" element={<Lecture />} />
+        <Route path="/student/mypage" element={<MyPage />} />
         <Route path="/enroll" element={<Enroll />} />
         {/* 디비 연동하고 /student/course/{courseId}/enroll로 경로수정 */}
         {/* 럭쳐 링크 수정 필요함 */}
