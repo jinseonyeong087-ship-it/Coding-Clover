@@ -21,6 +21,48 @@ function MyPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState(user);
 
+  // 학습 수준 옵션
+  const educationOptions = [
+    "초등학교",
+    "중학교", 
+    "고등학교",
+    "대학교 재학",
+    "대학교 졸업",
+    "대학원",
+    "기타"
+  ];
+
+  // 관심 분야 옵션
+  const interestOptions = [
+    "Web Development",
+    "Mobile App Development", 
+    "Data Science",
+    "AI/Machine Learning",
+    "Game Development",
+    "Backend Development",
+    "Frontend Development",
+    "DevOps",
+    "Cybersecurity",
+    "Database",
+    "Cloud Computing",
+    "Blockchain"
+  ];
+
+  // 관심 분야 체크박스 상태
+  const [selectedInterests, setSelectedInterests] = useState([]);
+
+  // 사용자 데이터 로드 시 관심 분야 파싱
+  useEffect(() => {
+    if (user.interestCategory && user.interestCategory !== "미설정") {
+      const interests = user.interestCategory
+        .split(', ')
+        .filter(item => item.length > 0 && item !== "미설정");
+      setSelectedInterests(interests);
+    } else {
+      setSelectedInterests([]);
+    }
+  }, [user.interestCategory]);
+
   // 컴포넌트 마운트 시 사용자 정보 조회
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -33,25 +75,12 @@ function MyPage() {
           credentials: 'include'
         });
 
-        if (response.status === 403) {
-          // 인증되지 않은 사용자
-          alert('로그인이 필요합니다.');
-          window.location.href = '/auth/login';
-          return;
-        }
-
-        if (response.status === 401) {
-          // 인증 만료
-          alert('세션이 만료되었습니다. 다시 로그인해주세요.');
-          window.location.href = '/auth/login';
-          return;
-        }
-
         if (!response.ok) {
           throw new Error(`서버 오류: ${response.status}`);
         }
 
         const data = await response.json();
+        
         setUser({
           name: data.name,
           email: data.email,
@@ -74,46 +103,70 @@ function MyPage() {
     setIsEditing(!isEditing);
     if (!isEditing) {
       setEditForm(user);
+      // 편집 모드 진입 시 현재 관심 분야를 체크박스에 반영
+      if (user.interestCategory) {
+        setSelectedInterests(user.interestCategory.split(', ').filter(item => item.length > 0));
+      }
+    }
+  };
+
+  // 관심 분야 체크박스 핸들러
+  const handleInterestChange = (interest, checked) => {
+    if (checked) {
+      setSelectedInterests([...selectedInterests, interest]);
+    } else {
+      setSelectedInterests(selectedInterests.filter(item => item !== interest));
     }
   };
 
   const handleSave = async () => {
     try {
+      // 관심 분야를 문자열로 결합
+      const interestCategoryString = selectedInterests.length > 0 
+        ? selectedInterests.join(', ')
+        : "미설정";
+      
+      const dataToSend = {
+        name: editForm.name,
+        educationLevel: editForm.educationLevel,
+        interestCategory: interestCategoryString
+      };
+      
       const response = await fetch('/api/student/mypage', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
-          name: editForm.name,
-          educationLevel: editForm.educationLevel,
-          interestCategory: editForm.interestCategory
-        })
+        body: JSON.stringify(dataToSend)
       });
 
-      if (response.status === 403 || response.status === 401) {
-        alert('로그인이 필요합니다.');
-        window.location.href = '/auth/login';
-        return;
-      }
+      const result = await response.text();
 
-      if (!response.ok) {
-        throw new Error(`서버 오류: ${response.status}`);
+      if (response.ok) {
+        setIsEditing(false);
+        alert(`저장 완료!`);
+        // 페이지 새로고침으로 DB에서 최신 데이터 다시 로드
+        window.location.reload();
+      } else {
+        alert(`서버 오류 (${response.status}): ${result}`);
       }
-
-      setUser(editForm);
-      setIsEditing(false);
-      alert('프로필이 성공적으로 업데이트되었습니다.');
+      
     } catch (err) {
-      alert(`오류: ${err.message}`);
-      console.error('Error updating profile:', err);
+      alert(`네트워크 오류: ${err.message}`);
+      console.error('Error calling API:', err);
     }
   };
 
   const handleCancel = () => {
     setEditForm(user);
     setIsEditing(false);
+    // 관심 분야도 원래대로 되돌리기
+    if (user.interestCategory) {
+      setSelectedInterests(user.interestCategory.split(', ').filter(item => item.length > 0));
+    } else {
+      setSelectedInterests([]);
+    }
   };
 
   return (
@@ -184,12 +237,18 @@ function MyPage() {
                   <div className="space-y-2">
                     <Label htmlFor="educationLevel">학습 수준</Label>
                     {isEditing ? (
-                      <Input
-                        id="educationLevel"
-                        value={editForm.educationLevel}
+                      <select 
+                        value={editForm.educationLevel} 
                         onChange={(e) => setEditForm({...editForm, educationLevel: e.target.value})}
-                        placeholder="예: 대학교 재학, 고등학교 졸업 등"
-                      />
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                      >
+                        <option value="">학습 수준을 선택하세요</option>
+                        {educationOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
                       <Input value={user.educationLevel || '미설정'} readOnly />
                     )}
@@ -198,12 +257,33 @@ function MyPage() {
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="interestCategory">관심 분야</Label>
                     {isEditing ? (
-                      <Input
-                        id="interestCategory"
-                        value={editForm.interestCategory}
-                        onChange={(e) => setEditForm({...editForm, interestCategory: e.target.value})}
-                        placeholder="예: Web Development, Mobile App 등"
-                      />
+                      <div className="space-y-3">
+                        <p className="text-sm text-gray-600">관심있는 분야를 모두 선택하세요 (복수 선택 가능)</p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {interestOptions.map((interest) => (
+                            <div key={interest} className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id={interest}
+                                checked={selectedInterests.includes(interest)}
+                                onChange={(e) => handleInterestChange(interest, e.target.checked)}
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                              />
+                              <Label 
+                                htmlFor={interest}
+                                className="text-sm font-normal cursor-pointer"
+                              >
+                                {interest}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                        {selectedInterests.length > 0 && (
+                          <div className="text-sm text-gray-600">
+                            선택된 항목: {selectedInterests.join(', ')}
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <Input value={user.interestCategory || '미설정'} readOnly />
                     )}

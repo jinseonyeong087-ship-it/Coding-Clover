@@ -6,14 +6,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.Table;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
 @Table(name="student_profile")
 public class StudentProfile {
@@ -22,9 +23,8 @@ public class StudentProfile {
     @Column(name = "user_id")
     private Long userId;
 
-  //1:1 Users와 매핑
+  //1:1 Users와 매핑 - MapsId 제거
   @OneToOne
-    @MapsId  // userId를 Users의 PK와 매핑
     @JoinColumn(name = "user_id")
     private Users user;
 
@@ -35,4 +35,9 @@ public class StudentProfile {
   //관심 분야
   @Column(name = "interest_category", length = 100)
     private String interestCategory;
+    
+  // 안전한 생성자
+  public StudentProfile(Long userId) {
+    this.userId = userId;
+  }
 }
