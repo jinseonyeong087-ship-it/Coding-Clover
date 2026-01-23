@@ -3,6 +3,7 @@ package com.mysite.clover.Course;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import com.mysite.clover.Enrollment.EnrollmentRepository;
@@ -10,10 +11,11 @@ import com.mysite.clover.Users.Users;
 
 // 강좌 서비스
 @Service
+@RequiredArgsConstructor
 public class CourseService {
 
-    private final CourseRepository courseRepository = null;
-    private final EnrollmentRepository enrollmentRepository = null;
+    private final CourseRepository courseRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     /**
      * 전체 강좌 목록 조회 (관리자용)

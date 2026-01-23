@@ -3,6 +3,7 @@ package com.mysite.clover.Course.dto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Getter;
 
 /**
@@ -10,8 +11,12 @@ import lombok.Getter;
  * 강사가 새로운 강좌를 개설할 때 전송하는 데이터입니다.
  */
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
 public class CourseCreateRequest {
+    /** 강사 ID */
+    private Long instructorId;
+
     /** 강좌 제목 */
     @NotEmpty(message = "제목은 필수입니다.")
     private String title;

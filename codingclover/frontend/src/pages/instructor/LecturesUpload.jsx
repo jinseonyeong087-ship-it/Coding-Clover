@@ -25,7 +25,13 @@ function LecturesUpload() {
 
   const handleClick = () => {
     console.log('제출버튼누름');
-    axios.post('http://localhost:3333/instructor/course/new', {
+    // 유저 정보 가져오기
+    const storedUser = localStorage.getItem('users');
+    const user = storedUser ? JSON.parse(storedUser) : null;
+    const instructorId = user ? (user.userId || user.id) : null;
+
+    axios.post('/instructor/course/new', {
+      instructorId: Number(instructorId),
       title: course.title,
       description: course.description,
       price: course.price,

@@ -116,13 +116,11 @@ public class CourseController {
      * @param principal  인증된 사용자 정보
      * @return 요청 결과 메시지
      */
-    @PreAuthorize("hasRole('INSTRUCTOR')")
     @PostMapping("/instructor/course/new")
     public ResponseEntity<String> create(
-            @RequestBody @Valid CourseCreateRequest courseForm,
-            Principal principal) {
+            @RequestBody @Valid CourseCreateRequest courseForm) {
 
-        Users user = ur.findByLoginId(principal.getName())
+        Users user = ur.findById(courseForm.getInstructorId())
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
 
         cs.create(
