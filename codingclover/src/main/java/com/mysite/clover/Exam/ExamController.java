@@ -82,12 +82,16 @@ public class ExamController {
         @PreAuthorize("hasRole('STUDENT')")
         @GetMapping("/student/my-scores")
         public ResponseEntity<List<ScoreHistoryDto>> getMyScores(Principal principal) {
-                Users student = usersRepository.findByLoginId(principal.getName())
-                                .orElseThrow(() -> new RuntimeException("학생 없음"));
-
+                Users student = usersRepository.findByLoginId(principal.getName()).orElseThrow();
                 return ResponseEntity.ok(examService.getMyScores(student).stream()
-                                .map(ScoreHistoryDto::fromEntity)
-                                .toList());
+                                .map(ScoreHistoryDto::fromEntity).toList());
+        }
+
+        @PreAuthorize("hasRole('INSTRUCTOR')")
+        @GetMapping("/instructor/exam/{examId}/scores")
+        public ResponseEntity<List<ScoreHistoryDto>> getInstructorScores(@PathVariable Long examId) {
+                return ResponseEntity.ok(examService.getExamScoresForInstructor(examId).stream()
+                                .map(ScoreHistoryDto::fromEntity).toList());
         }
 
         // ==========================================
