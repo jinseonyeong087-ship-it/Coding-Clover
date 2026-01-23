@@ -47,7 +47,7 @@ function AdminNav() {
                             <MenubarItem></MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
-                    <MenubarMenu>
+                    {/* <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">문제 제출</MenubarTrigger>
                         <MenubarContent>
                             <MenubarGroup>
@@ -55,8 +55,7 @@ function AdminNav() {
                                 <MenubarItem>문제 관리</MenubarItem>
                             </MenubarGroup>
                         </MenubarContent>
-                    </MenubarMenu>
-
+                    </MenubarMenu> */}
                     <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">공지 업로드</MenubarTrigger>
                     </MenubarMenu>

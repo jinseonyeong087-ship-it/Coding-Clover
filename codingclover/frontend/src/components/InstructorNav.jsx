@@ -50,10 +50,10 @@ function InstructorNav() {
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer">과제 관리</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer">시험 제출</MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem>내가 올린 과제</MenubarItem>
-                            <MenubarItem>과제 등록하기</MenubarItem>
+                            <MenubarItem>시험 제출하기</MenubarItem>
+                            <MenubarItem>시험 결과</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>

@@ -10,33 +10,43 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 
 function LecturesUpload() {
-  const [course, setCourse] = useState({title: '', level: 1, description: '', price: 0 });
+  const [course, setCourse] = useState({ title: '', level: 1, description: '', price: 0 });
+  const [users, setUsers] = useState();
+  const [selectLevel, setSelectLevel] = useState(null);
   // const [course, setCourse] = useState([]);
 
   useEffect(() => { fetch('/instructor/course/new').then(res => res.json()).then(data => setCourse(data)) }, []);
 
+
+// 요고는 유저가 입력한 걸 State에 저장해주는 고얌
   const handleChange = (event) => {
     const { name, value } = event.target;
     setCourse(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleCheckboxChange = () => {
+    setSelectLevel(!selectLevel);
+  };
+
   const handleClick = () => {
     console.log('제출버튼누름');
     // 유저 정보 가져오기
-    const storedUser = localStorage.getItem('users');
-    const user = storedUser ? JSON.parse(storedUser) : null;
-    const instructorId = user ? (user.userId || user.id) : null;
+    const storedUser = localStorage.getItem(users);
+    const users = storedUser ? JSON.parse(storedUser) : null;
+    const instructorId = users ? (users.userId || users.id) : null;
 
     axios.post('/instructor/course/new', {
       instructorId: Number(instructorId),
       title: course.title,
+      level: course.level,
       description: course.description,
       price: course.price,
-      level: course.level
     })
       .then((response) => console.log('결과 : ', response.data))
       .catch((err) => { console.log('실패', err) });
   };
+
+
 
   return (
     <>
@@ -62,11 +72,11 @@ function LecturesUpload() {
             <div className="grid grid-cols-4 items-center gap-6">
               <label className="text-right font-medium">난이도</label>
               <div className="flex justify-between gap-6">
-                <div className="flex justify-between"><Checkbox id="terms-checkbox1" name="level" />
+                <div className="flex justify-between"><Checkbox id="terms-checkbox1" name="level" onChange={handleCheckboxChange} />
                   <Label htmlFor="terms-checkbox">초급</Label></div>
-                <div className="flex justify-between"><Checkbox id="terms-checkbox2" name="level" />
+                <div className="flex justify-between"><Checkbox id="terms-checkbox2" name="level" onChange={handleCheckboxChange} />
                   <Label htmlFor="terms-checkbox">중급</Label></div>
-                <div className="flex justify-between"><Checkbox id="terms-checkbox3" name="level" />
+                <div className="flex justify-between"><Checkbox id="terms-checkbox3" name="level" onChange={handleCheckboxChange} />
                   <Label htmlFor="terms-checkbox">고급</Label></div>
               </div>
             </div>
