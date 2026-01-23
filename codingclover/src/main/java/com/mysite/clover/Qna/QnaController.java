@@ -12,6 +12,7 @@ import com.mysite.clover.Course.Course;
 import com.mysite.clover.Course.CourseRepository;
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.Users.UsersRepository;
+import com.mysite.clover.QnaAnswer.QnaAnswer;
 import lombok.Data;
 import com.mysite.clover.QnaAnswer.QnaAnswerService;
 import lombok.RequiredArgsConstructor;
@@ -105,5 +106,48 @@ public class QnaController {
     Users instructor = usersRepository.findById(request.getInstructorId()).get();
 
     qnaAnswerService.create(qna, instructor, request.getContent());
+  }
+
+  // 답변 수정 DTO
+  @Data
+  public static class AnswerUpdateRequest {
+    private Long userId; // 수정하려는 유저 ID
+    private String content; // 수정할 내용
+  }
+
+  // 답변 수정
+  @PostMapping("/instructor/qna/answer/{id}/update")
+  public void updateAnswer(@PathVariable("id") Long answerId, @RequestBody AnswerUpdateRequest request) {
+    QnaAnswer answer = qnaAnswerService.getAnswer(answerId);
+
+    // 권한 체크: 답변 작성자 본인만 가능
+    if (answer.getInstructor().getUserId() != request.getUserId()) {
+      throw new RuntimeException("수정 권한이 없습니다.");
+    }
+
+    qnaAnswerService.update(answer, request.getContent());
+  }
+
+  // 답변 삭제 DTO
+  @Data
+  public static class AnswerDeleteRequest {
+    private Long userId; // 삭제하려는 유저 ID
+  }
+
+  // 답변 삭제
+  @PostMapping("/instructor/qna/answer/{id}/delete")
+  public void deleteAnswer(@PathVariable("id") Long answerId, @RequestBody AnswerDeleteRequest request) {
+    QnaAnswer answer = qnaAnswerService.getAnswer(answerId);
+    Users user = usersRepository.findById(request.getUserId()).get();
+
+    // 권한 체크: 답변 작성자 본인이거나 관리자(ADMIN)여야 함
+    boolean isOwner = answer.getInstructor().getUserId() == request.getUserId();
+    boolean isAdmin = user.getRole() == com.mysite.clover.Users.UsersRole.ADMIN;
+
+    if (!isOwner && !isAdmin) {
+      throw new RuntimeException("삭제 권한이 없습니다.");
+    }
+
+    qnaAnswerService.delete(answer);
   }
 }
