@@ -2,36 +2,25 @@ package com.mysite.clover.Course.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.Setter;
 
-/**
- * 강좌 생성 요청 DTO
- * 강사가 새로운 강좌를 개설할 때 전송하는 데이터입니다.
- */
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@Setter
 public class CourseCreateRequest {
-    /** 강사 ID */
-    private Long instructorId;
-
-    /** 강좌 제목 */
-    @NotBlank(message = "강좌 제목은 필수 입력 항목입니다.")
+    @NotBlank(message = "강좌 제목은 필수입니다.")
     private String title;
 
-    /** 강좌 설명 */
-    @NotBlank(message = "강좌 설명은 필수 입력 항목입니다.")
+    @NotBlank(message = "강좌 설명은 필수입니다.")
     private String description;
 
-    /** 난이도 (1 이상) */
-    @Min(value = 1, message = "레벨은 1 이상이어야 합니다.")
-    private int level;
+    @NotNull(message = "난이도를 선택해주세요.")
+    private Integer level;
 
-    /** 수강료 (0 이상) */
+    @NotNull(message = "가격을 입력해주세요.")
     @Min(value = 0, message = "가격은 0원 이상이어야 합니다.")
-    private int price;
+    private Integer price;
 
-    // private String thumbnailUrl; // 추후 추가
+    private Long instructorId; // 프론트에서 보낸 ID를 담는 곳
 }

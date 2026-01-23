@@ -22,8 +22,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 public class CourseController {
 
-    private final CourseService cs;
-    private final UsersRepository ur;
+    private final CourseService courseService;
+    private final UsersRepository usersRepository;
 
     // ==========================================
     // 🟦 공통 영역 (비로그인 / 로그인 공통)
@@ -37,7 +37,7 @@ public class CourseController {
      */
     @GetMapping("/course")
     public ResponseEntity<List<StudentCourseDto>> list() {
-        return ResponseEntity.ok(cs.getPublicList().stream()
+        return ResponseEntity.ok(courseService.getPublicList().stream()
                 .map(StudentCourseDto::fromEntity)
                 .toList());
     }
@@ -51,7 +51,7 @@ public class CourseController {
      */
     @GetMapping("/course/level/{level}")
     public ResponseEntity<List<StudentCourseDto>> listByLevel(@PathVariable int level) {
-        return ResponseEntity.ok(cs.getPublicListByLevel(level).stream()
+        return ResponseEntity.ok(courseService.getPublicListByLevel(level).stream()
                 .map(StudentCourseDto::fromEntity)
                 .toList());
     }
@@ -65,7 +65,7 @@ public class CourseController {
      */
     @GetMapping("/course/{id}")
     public ResponseEntity<StudentCourseDto> detail(@PathVariable Long id) {
-        return ResponseEntity.ok(StudentCourseDto.fromEntity(cs.getCourse(id)));
+        return ResponseEntity.ok(StudentCourseDto.fromEntity(courseService.getCourse(id)));
     }
 
     // ==========================================
@@ -82,7 +82,7 @@ public class CourseController {
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/student/course/{courseId}")
     public ResponseEntity<StudentCourseDto> studentCourseDetail(@PathVariable Long courseId) {
-        return ResponseEntity.ok(StudentCourseDto.fromEntity(cs.getCourse(courseId)));
+        return ResponseEntity.ok(StudentCourseDto.fromEntity(courseService.getCourse(courseId)));
     }
 
     // 수강 내역(active/completed) 조회는 EnrollmentController (/student/enrollment/...) 에서
@@ -102,9 +102,9 @@ public class CourseController {
     @PreAuthorize("hasRole('INSTRUCTOR')")
     @GetMapping("/instructor/course")
     public ResponseEntity<List<InstructorCourseDto>> instructorList(Principal principal) {
-        Users user = ur.findByLoginId(principal.getName())
+        Users user = usersRepository.findByLoginId(principal.getName())
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
-        return ResponseEntity.ok(cs.getInstructorList(user).stream()
+        return ResponseEntity.ok(courseService.getInstructorList(user).stream()
                 .map(InstructorCourseDto::fromEntity)
                 .toList());
     }
@@ -117,32 +117,34 @@ public class CourseController {
      * @param principal  인증된 사용자 정보
      * @return 요청 결과 메시지
      */
-    // src/main/java/com/mysite/clover/Course/CourseController.java 수정
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+
     @PostMapping("/instructor/course/new")
-    public ResponseEntity<?> create(
-            @RequestBody @Valid CourseCreateRequest courseForm,
-            BindingResult bindingResult, // 검증 결과 확인을 위해 추가
+    public ResponseEntity<?> createCourse(
+            @Valid @RequestBody CourseCreateRequest request,
+            BindingResult bindingResult,
             Principal principal) {
 
-        // 1. 유효성 검사 실패 시 에러 메시지 반환
+        // 1. 유효성 검사 (DTO에 설정한 @NotBlank 등을 체크)
         if (bindingResult.hasErrors()) {
-            String errorMessage = bindingResult.getAllErrors().get(0).getDefaultMessage();
-            return ResponseEntity.badRequest().body(errorMessage);
+            return ResponseEntity.badRequest()
+                    .body(bindingResult.getAllErrors().get(0).getDefaultMessage());
         }
 
-        Users user = ur.findByLoginId(principal.getName())
-                .orElseThrow(() -> new RuntimeException("유저 없음"));
+        // 2. Principal을 통해 실제 로그인한 유저(강사)를 찾음
+        // 이 방식이 instructorId를 직접 쓰는 것보다 훨씬 안전합니다.
+        Users loginUser = usersRepository.findByLoginId(principal.getName())
+                .orElseThrow(() -> new RuntimeException("유저 정보가 없습니다."));
 
-        cs.create(
-                courseForm.getTitle(),
-                courseForm.getDescription(),
-                courseForm.getLevel(),
-                courseForm.getPrice(),
-                user,
+        // 3. 서비스 호출 (DTO에서 받은 값들과 찾은 유저 객체를 넘김)
+        courseService.create(
+                request.getTitle(),
+                request.getDescription(),
+                request.getLevel(),
+                request.getPrice(),
+                loginUser,
                 CourseProposalStatus.PENDING);
 
-        return ResponseEntity.ok("강좌 개설 요청 성공");
+        return ResponseEntity.ok("강좌 개설 신청이 완료되었습니다.");
     }
 
     /**
@@ -155,7 +157,7 @@ public class CourseController {
     @PreAuthorize("hasRole('INSTRUCTOR')")
     @GetMapping("/instructor/course/{id}")
     public ResponseEntity<InstructorCourseDto> instructorCourseDetail(@PathVariable Long id) {
-        return ResponseEntity.ok(InstructorCourseDto.fromEntity(cs.getCourse(id)));
+        return ResponseEntity.ok(InstructorCourseDto.fromEntity(courseService.getCourse(id)));
     }
 
     /**
@@ -168,9 +170,9 @@ public class CourseController {
     @PreAuthorize("hasRole('INSTRUCTOR')")
     @DeleteMapping("/instructor/course/{id}/delete")
     public ResponseEntity<String> delete(@PathVariable Long id) {
-        Course course = cs.getCourse(id);
+        Course course = courseService.getCourse(id);
         // 작성자 본인 확인 로직 필요 (생략 가능하나 추가 추천)
-        cs.delete(course);
+        courseService.delete(course);
         return ResponseEntity.ok("강좌 삭제 성공");
     }
 
@@ -187,7 +189,7 @@ public class CourseController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/course")
     public ResponseEntity<List<AdminCourseDto>> adminList() {
-        return ResponseEntity.ok(cs.getList().stream()
+        return ResponseEntity.ok(courseService.getList().stream()
                 .map(AdminCourseDto::fromEntity)
                 .toList());
     }
@@ -201,7 +203,7 @@ public class CourseController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/course/pending")
     public ResponseEntity<List<AdminCourseDto>> adminPendingList() {
-        return ResponseEntity.ok(cs.getPendingList().stream()
+        return ResponseEntity.ok(courseService.getPendingList().stream()
                 .map(AdminCourseDto::fromEntity)
                 .toList());
     }
@@ -217,10 +219,10 @@ public class CourseController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/course/{id}/approve")
     public ResponseEntity<String> approve(@PathVariable Long id, Principal principal) {
-        Users admin = ur.findByLoginId(principal.getName())
+        Users admin = usersRepository.findByLoginId(principal.getName())
                 .orElseThrow(() -> new RuntimeException("관리자 없음"));
-        Course course = cs.getCourse(id);
-        cs.approve(course, admin);
+        Course course = courseService.getCourse(id);
+        courseService.approve(course, admin);
         return ResponseEntity.ok("승인 완료");
     }
 
@@ -235,8 +237,8 @@ public class CourseController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/course/{id}/reject")
     public ResponseEntity<String> reject(@PathVariable Long id, @RequestBody RejectRequest req) {
-        Course course = cs.getCourse(id);
-        cs.reject(course, req.getReason());
+        Course course = courseService.getCourse(id);
+        courseService.reject(course, req.getReason());
         return ResponseEntity.ok("반려 완료");
     }
 }
