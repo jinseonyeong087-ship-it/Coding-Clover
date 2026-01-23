@@ -86,14 +86,6 @@ public class ExamController {
                 return ResponseEntity.ok(examService.getMyScores(student).stream()
                                 .map(ScoreHistoryDto::fromEntity).toList());
         }
-
-        @PreAuthorize("hasRole('INSTRUCTOR')")
-        @GetMapping("/instructor/exam/{examId}/scores")
-        public ResponseEntity<List<ScoreHistoryDto>> getInstructorScores(@PathVariable Long examId) {
-                return ResponseEntity.ok(examService.getExamScoresForInstructor(examId).stream()
-                                .map(ScoreHistoryDto::fromEntity).toList());
-        }
-
         // ==========================================
         // 🟨 강사 영역
         // ==========================================
