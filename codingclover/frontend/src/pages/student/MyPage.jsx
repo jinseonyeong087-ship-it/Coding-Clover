@@ -67,10 +67,21 @@ function MyPage() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
+        // localStorage에서 현재 로그인한 사용자 정보 가져오기
+        const storedUsers = localStorage.getItem("users");
+        let currentLoginId = null;
+        
+        if (storedUsers) {
+          const userInfo = JSON.parse(storedUsers);
+          currentLoginId = userInfo.loginId;
+          console.log("현재 로그인한 사용자:", currentLoginId);
+        }
+        
         const response = await fetch('/api/student/mypage', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'X-Login-Id': currentLoginId || 'student' // 사용자 정보를 헤더로 전달
           },
           credentials: 'include'
         });
@@ -121,6 +132,15 @@ function MyPage() {
 
   const handleSave = async () => {
     try {
+      // localStorage에서 현재 로그인한 사용자 정보 가져오기
+      const storedUsers = localStorage.getItem("users");
+      let currentLoginId = null;
+      
+      if (storedUsers) {
+        const userInfo = JSON.parse(storedUsers);
+        currentLoginId = userInfo.loginId;
+      }
+      
       // 관심 분야를 문자열로 결합
       const interestCategoryString = selectedInterests.length > 0 
         ? selectedInterests.join(', ')
@@ -136,6 +156,7 @@ function MyPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'X-Login-Id': currentLoginId || 'student' // 사용자 정보를 헤더로 전달
         },
         credentials: 'include',
         body: JSON.stringify(dataToSend)
