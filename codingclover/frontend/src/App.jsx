@@ -17,12 +17,15 @@ import QnaTest from './pages/QnaTest'
 import SubmissionTest from './pages/SubmissionTest'
 import ProtectedRoute from '@/components/ProtectdRoute'
 import Noroll from '@/pages/Noroll'
+import CommunityPostTest from './pages/CommunityPostTest'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+         {/* 커뮤니티 테스트 페이지 */}
+        <Route path="/test/community" element={<CommunityPostTest />} />
         {/* 임시 코딩 테스트 페이지 */}
         <Route path="/test/coding" element={<CodingTest />} />
         {/* 이메일 발송 테스트 페이지 */}
