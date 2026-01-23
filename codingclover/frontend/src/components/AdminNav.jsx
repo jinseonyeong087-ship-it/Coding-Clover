@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
     Menubar,
@@ -12,8 +12,24 @@ import {
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Search } from "lucide-react"
+import Logout from "@/components/Logout"
+import axios from 'axios';
 
 function AdminNav() {
+    const [loginId, setLoginId] = useState(false);
+    const [users, setUsers] = useState({ name: '' });
+
+    useEffect(() => {
+        const storedLoginId = localStorage.getItem("loginId");
+        const storedUsers = localStorage.getItem("users");
+
+        if (storedLoginId === "true") {
+            setLoginId(true);
+        }
+        if (storedUsers) {
+            setUsers(JSON.parse(storedUsers));
+        }
+    }, []);
     return (
         <nav className="flex items-center justify-between px-24 py-3 border-b bg-background">
             {/* 로고 + 메뉴바 */}
@@ -66,8 +82,14 @@ function AdminNav() {
                         className="pl-9 w-48"
                     />
                 </div>
-                <Button variant="ghost" size="sm"><Link to="/admin/dashboard">관리자 페이지</Link></Button>
-                <Button size="sm"><Link to="/">로그아웃</Link></Button>
+                {!loginId ? (
+                    <Button size="sm"><Link to="/auth/login">로그인</Link></Button>)
+                    : (<>
+                        <span variant="ghost" className="text-sm">{users.name}님</span>
+                        <Logout />
+                    </>)}
+                {/* <Button variant="ghost" size="sm"><Link to="/admin/dashboard">관리자 페이지</Link></Button>
+                <Button size="sm"><Link to="/">로그아웃</Link></Button> */}
             </div>
         </nav>
     );

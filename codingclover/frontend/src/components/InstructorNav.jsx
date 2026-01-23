@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
     Menubar,
@@ -12,8 +12,24 @@ import {
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Search } from "lucide-react"
+import Logout from "@/components/Logout"
+import axios from 'axios';
 
 function InstructorNav() {
+    const [loginId, setLoginId] = useState(false);
+    const [users, setUsers] = useState({ name: '' });
+
+    useEffect(() => {
+        const storedLoginId = localStorage.getItem("loginId");
+        const storedUsers = localStorage.getItem("users");
+
+        if (storedLoginId === "true") {
+            setLoginId(true);
+        }
+        if (storedUsers) {
+            setUsers(JSON.parse(storedUsers));
+        }
+    }, []);
     return (
         <nav className="container mx-auto flex items-center justify-between py-3 border-b bg-background">
             <div className="flex items-center gap-6">
@@ -59,8 +75,15 @@ function InstructorNav() {
                         className="pl-9 w-48"
                     />
                 </div>
-                <Button variant="ghost" size="sm"><Link to="/instructor/dashboard">강사 페이지</Link></Button>
-                <Button size="sm"><Link to="/">로그아웃</Link></Button>
+
+                {!loginId ? (
+                    <Button size="sm"><Link to="/auth/login">로그인</Link></Button>)
+                    : (<>
+                        <span variant="ghost" className="text-sm">{users.name}님</span>
+                        <Logout />
+                    </>)}
+                {/* <Button variant="ghost" size="sm"><Link to="/instructor/dashboard">강사 페이지</Link></Button>
+                <Button size="sm"><Link to="/">로그아웃</Link></Button> */}
                 {/* 로그인 로그아웃 구현해야 함 */}
             </div>
         </nav >

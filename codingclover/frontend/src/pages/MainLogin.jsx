@@ -39,8 +39,6 @@ const MainLogin = () => {
             return;
         };
 
-
-
         try {
             const response = await fetch('/auth/login', {
                 method: 'POST',
@@ -51,7 +49,11 @@ const MainLogin = () => {
                     loginId: loginId,    // state 값 사용
                     password: password   // state 값 사용
                 })
-            });
+            
+            }
+        );
+
+        console.log("try 구문 성공");
 
             if (!response.ok) {
                 setError('아이디 또는 비밀번호가 일치하지 않습니다.');
@@ -60,9 +62,10 @@ const MainLogin = () => {
 
             const userData = await response.json();
 
-            localStorage.setItem("user", JSON.stringify(userData));
+            localStorage.setItem("users", JSON.stringify(userData));
 
             if (loginId && password) {
+                console.log("try 구문 성공");
                 localStorage.setItem("loginId", true);
                 setLoginId(false);
                 switch (userData.role) {

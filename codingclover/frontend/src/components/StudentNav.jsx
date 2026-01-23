@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
     Menubar,
@@ -13,10 +13,23 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Search } from "lucide-react"
 import Logout from "@/components/Logout"
+import axios from 'axios';
 
 function StudentNav() {
-
     const [loginId, setLoginId] = useState(false);
+    const [users, setUsers] = useState({ name: '' });
+
+    useEffect(() => {
+        const storedLoginId = localStorage.getItem("loginId");
+        const storedUsers = localStorage.getItem("users");
+
+        if (storedLoginId === "true") {
+            setLoginId(true);
+        }
+        if (storedUsers) {
+            setUsers(JSON.parse(storedUsers));
+        }
+    }, []);
 
     return (
         <nav className="container mx-auto flex items-center justify-between py-3 border-b bg-background">
@@ -71,7 +84,7 @@ function StudentNav() {
                 {!loginId ? (
                     <Button size="sm"><Link to="/auth/login">로그인</Link></Button>)
                     :(<>
-                        <span className="text-sm">{user?.name}님</span>
+                        <span variant="ghost" className="text-sm">{users.name}님</span>
                         <Logout />
                     </>)}
 

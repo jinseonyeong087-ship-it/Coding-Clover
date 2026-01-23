@@ -1,37 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/Button';
-import axios from 'axios';
+import React from 'react';
+import { Button } from "@/components/ui/Button"
+import { useNavigate } from 'react-router-dom';
 
 function Logout() {
+    const navigate = useNavigate();
 
-    const handLogout = async () => {
+    const handleLogout = () => {
+        // localStorage에서 로그인 정보 삭제
+        localStorage.removeItem('loginId');
+        localStorage.removeItem('users');
 
-        const [loginId, setLoginId] = useState(false);
-        const [user, setUser] = useState(null);
-
-        useEffect(() => {
-            const savedUser = localStorage.getItem('user');
-            if (savedUser) {
-                setUser(JSON.parse(savedUser));
-                setIsLoggedIn(true);
-            }
-        }, []);
-
-        try {
-            await axios.post('http://localhost:3333/auth/logout', {})
-            localStorage.removeItem(loginId);
-            setLoginId(false);
-            setUser(null);
-            alert('로그아웃 완료');
-            window.location.href = '/';
-        } catch (error) {
-            console.error('로그아웃 에러:', error);
-        }
-    }
+        alert('로그아웃 완료');
+        navigate('/');
+        window.location.reload(); // Nav 상태 새로고침
+    };
 
     return (
-        <Button size="sm" onClick={handLogout}><Link to="/">로그아웃</Link></Button>
+        <Button size="sm" onClick={handleLogout}>로그아웃</Button>
     )
 }
 
