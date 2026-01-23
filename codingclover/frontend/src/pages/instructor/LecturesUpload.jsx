@@ -1,24 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import InstructorNav from '@/components/InstructorNav';
-import Tail from '../../components/Tail';
+import Tail from '@/components/Tail';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import InstructorMain from './InstructorMain'
 import axios from 'axios';
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
 
 function LecturesUpload() {
-  const [course, setCourse] = useState({
-    title: ' ',
-    description: ' ',
-    price: 0,
-    level: 1,
-  })
+  const [course, setCourse] = useState({title: '', level: 1, description: '', price: 0 });
+  // const [course, setCourse] = useState([]);
 
-  // thumbnailUrl: ' '
+  useEffect(() => { fetch('/instructor/course/new').then(res => res.json()).then(data => setCourse(data)) }, []);
 
   const handleChange = (event) => {
-    console.log('입력 값:', event.target);
     const { name, value } = event.target;
     setCourse(prev => ({ ...prev, [name]: value }));
   };
@@ -34,13 +31,6 @@ function LecturesUpload() {
       .then((response) => console.log('결과 : ', response.data))
       .catch((err) => { console.log('실패', err) });
   };
-
-  // setCourse(post save on DB & <InstructorMain/>);
-
-  // 서버 데이터 사용 시
-  // const [course, setCourse] = useState([]);
-
-  // useEffect(()=>{ fetch('/instructor/course/new').then(res=>res.json()).then(data => setCourse(data))})
 
   return (
     <>
@@ -65,7 +55,14 @@ function LecturesUpload() {
 
             <div className="grid grid-cols-4 items-center gap-6">
               <label className="text-right font-medium">난이도</label>
-              <Input name="level" type="text" onChange={handleChange} value={course.level} className="col-span-3" method="post" />
+              <div className="flex justify-between gap-6">
+                <div className="flex justify-between"><Checkbox id="terms-checkbox1" name="level" />
+                  <Label htmlFor="terms-checkbox">초급</Label></div>
+                <div className="flex justify-between"><Checkbox id="terms-checkbox2" name="level" />
+                  <Label htmlFor="terms-checkbox">중급</Label></div>
+                <div className="flex justify-between"><Checkbox id="terms-checkbox3" name="level" />
+                  <Label htmlFor="terms-checkbox">고급</Label></div>
+              </div>
             </div>
 
             <div className="grid grid-cols-4 items-center gap-6">
