@@ -12,6 +12,7 @@ const QnaTest = () => {
   const [question, setQuestion] = useState('');
   const [courseId, setCourseId] = useState('');
   const [user, setUser] = useState(null);
+  const [viewMode, setViewMode] = useState('all'); // 'all' | 'my'
 
   useEffect(() => {
     // 유저 정보 가져오기
@@ -19,15 +20,34 @@ const QnaTest = () => {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-    fetchQnaList();
   }, []);
+
+  // viewMode나 user가 바뀌면 리스트 다시 불러오기
+  useEffect(() => {
+    fetchQnaList();
+  }, [viewMode, user]);
 
   const fetchQnaList = async () => {
     try {
-      const response = await fetch('/student/qna');
+      let url = '/student/qna';
+
+      if (viewMode === 'my') {
+        if (!user) {
+          setQnaList([]);
+          return;
+        }
+        // user.userId 혹은 user.id 확인 필요. 
+        // 보통 Entity 필드명이 userId이면 JSON도 userId
+        const uid = user.userId || user.id;
+        url = `/student/qna/my?userId=${uid}`;
+      }
+
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setQnaList(data);
+      } else {
+        console.error("Fetch failed", response.status);
       }
     } catch (error) {
       console.error('Failed to fetch QnA list:', error);
@@ -50,17 +70,9 @@ const QnaTest = () => {
     const qnaData = {
       title,
       question,
-      userId: user.userId, // Users 엔티티의 ID 필드명이 userId라고 가정 (확인 필요시 체크)
+      userId: user.userId || user.id,
       courseId: Number(courseId)
     };
-    // 주의: 백엔드 QnaController에서 userId 변수명이 정확히 무엇인지 확인 필요. 
-    // QnaController.java를 보면 @RequestBody QnaAddRequest request를 받음.
-    // QnaAddRequest에는 private Long userId; 라고 되어있음.
-    // 하지만 프론트 localStorage에 저장된 user 객체의 id 속성명이 'userId'인지 'id'인지 확인 필요.
-    // 보통 DB 컬럼이 user_id이면 JPA entity는 userId, JSON 변환시는 userId일 가능성 높음. 
-    // 혹은 ResponseDto에 따라 다름. 안전하게 확인하자.
-    // -> MainLogin.jsx에서 response.json()을 저장함.
-    // 만약 Users 객체 자체라면 @Id private Long userId; 일 것임.
 
     try {
       const response = await fetch('/student/qna/add', {
@@ -140,29 +152,57 @@ const QnaTest = () => {
 
           {/* QnA 리스트 */}
           <Card>
-            <CardHeader>
-              <CardTitle>질문 목록</CardTitle>
-              <CardDescription>전체 질문 리스트입니다.</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>질문 목록</CardTitle>
+                <CardDescription>
+                  {viewMode === 'all' ? '전체 질문 리스트입니다.' : '내 질문 리스트입니다.'}
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant={viewMode === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('all')}
+                >
+                  전체 보기
+                </Button>
+                <Button
+                  variant={viewMode === 'my' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('my')}
+                >
+                  내 질문만
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4 max-h-[500px] overflow-y-auto">
                 {qnaList.length === 0 ? (
-                  <p className="text-center text-muted-foreground">등록된 질문이 없습니다.</p>
+                  <p className="text-center text-muted-foreground py-8">
+                    {viewMode === 'my' && !user ? '로그인이 필요합니다.' : '등록된 질문이 없습니다.'}
+                  </p>
                 ) : (
                   qnaList.map((qna) => (
                     <div key={qna.qnaId} className="p-4 border rounded-lg hover:bg-slate-50">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-semibold">{qna.title}</h3>
-                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                          {qna.status || 'STATUS'}
+                        <span className={`text-xs px-2 py-1 rounded ${qna.status === 'COMPLETE'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-yellow-100 text-yellow-700'
+                          }`}>
+                          {qna.status || 'WAIT'}
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                         {qna.question}
                       </p>
-                      <div className="flex justify-end text-xs text-muted-foreground">
-                        <span>작성자: {qna.users?.name || qna.users?.username || 'User'}</span>
-                        <span className="mx-2">|</span>
+                      <div className="flex justify-between items-center text-xs text-muted-foreground mt-2">
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium text-foreground">
+                            {qna.users?.name || qna.users?.username || 'User'}
+                          </span>
+                        </div>
                         <span>{new Date(qna.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>

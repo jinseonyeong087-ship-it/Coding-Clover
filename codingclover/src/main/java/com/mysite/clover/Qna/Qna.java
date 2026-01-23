@@ -24,15 +24,15 @@ import com.mysite.clover.QnaAnswer.QnaAnswer;
 @Table(name = "qna")
 public class Qna {
 
-  //qna_id
+  // qna_id
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "qna_id", nullable = false)
   private Long qnaId;
 
-  //강좌 아이디
+  // 강좌 아이디
   @ManyToOne
-  @JoinColumn(name = "course_id" , nullable = false)
+  @JoinColumn(name = "course_id", nullable = false)
   private Course course;
 
   // 유저 아이디
@@ -55,7 +55,7 @@ public class Qna {
   // 생성일
   @Column(name = "created_at", nullable = false)
   private LocalDateTime createdAt;
-  
+
   @OneToMany(mappedBy = "qna", cascade = CascadeType.REMOVE)
   private List<QnaAnswer> qnaAnswerList;
 }
