@@ -19,9 +19,13 @@ const QnaTest = () => {
   const [answerContent, setAnswerContent] = useState('');
   const [instructorId, setInstructorId] = useState('');
 
+  // 답변 수정 관련 state
+  const [editingAnswerId, setEditingAnswerId] = useState(null);
+  const [editContent, setEditContent] = useState('');
+
   useEffect(() => {
     // 유저 정보 가져오기
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem('users');
     if (storedUser) {
       const u = JSON.parse(storedUser);
       setUser(u);
@@ -82,6 +86,70 @@ const QnaTest = () => {
         fetchQnaList(); // 리스트 갱신
       } else {
         alert("답변 등록 실패");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("에러 발생");
+    }
+  };
+
+  const handleAnswerUpdate = async (answerId) => {
+    if (!editContent.trim()) {
+      alert("내용을 입력해주세요.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/instructor/qna/answer/${answerId}/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.userId || user.id,
+          content: editContent
+        })
+      });
+
+      if (response.ok) {
+        alert("답변이 수정되었습니다.");
+        setEditingAnswerId(null);
+        setEditContent('');
+        if (selectedQna) handleQnaClick(selectedQna.qnaId); // 상세 정보 갱신
+      } else {
+        const msg = await response.text();
+        alert("수정 실패: " + msg);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("에러 발생");
+    }
+  };
+
+  const handleAnswerDelete = async (answerId) => {
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+
+    try {
+      const response = await fetch(`/instructor/qna/answer/${answerId}/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.userId || user.id
+        })
+      });
+
+      if (response.ok) {
+        alert("답변이 삭제되었습니다.");
+        if (selectedQna) {
+          // 상태 업데이트를 위해 다시 불러오거나 리스트 갱신
+          handleQnaClick(selectedQna.qnaId);
+          fetchQnaList();
+        }
+      } else {
+        const msg = await response.text();
+        alert("삭제 실패: " + msg);
       }
     } catch (err) {
       console.error(err);
@@ -162,7 +230,7 @@ const QnaTest = () => {
               variant="outline"
               size="sm"
               onClick={() => {
-                localStorage.removeItem('user');
+                localStorage.removeItem('users');
                 localStorage.removeItem('token'); // if used
                 window.location.reload();
               }}
@@ -319,15 +387,64 @@ const QnaTest = () => {
                 <div className="border-t pt-6">
                   <h3 className="font-semibold mb-4 text-green-700">등록된 답변</h3>
                   <div className="space-y-4">
-                    {selectedQna.answers.map((ans) => (
-                      <div key={ans.answerId} className="bg-green-50 p-4 rounded-md border border-green-100">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium text-sm">{ans.instructorName || '강사'}</span>
-                          <span className="text-xs text-muted-foreground">{new Date(ans.answeredAt).toLocaleString()}</span>
+                    {selectedQna.answers.map((ans) => {
+                      const isOwner = user && (user.userId || user.id) === ans.instructorId;
+                      const isAdmin = user && user.role === 'ADMIN';
+
+                      return (
+                        <div key={ans.answerId} className="bg-green-50 p-4 rounded-md border border-green-100">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-medium text-sm">{ans.instructorName || '강사'}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground mr-2">{new Date(ans.answeredAt).toLocaleString()}</span>
+                              {editingAnswerId !== ans.answerId && (
+                                <div className="flex gap-1">
+                                  {isOwner && (
+                                    <Button
+                                      variant="ghost"
+                                      size="xs"
+                                      className="h-7 px-2 text-xs text-blue-600 hover:text-blue-800"
+                                      onClick={() => {
+                                        setEditingAnswerId(ans.answerId);
+                                        setEditContent(ans.content);
+                                      }}
+                                    >
+                                      수정
+                                    </Button>
+                                  )}
+                                  {(isOwner || isAdmin) && (
+                                    <Button
+                                      variant="ghost"
+                                      size="xs"
+                                      className="h-7 px-2 text-xs text-red-600 hover:text-red-800"
+                                      onClick={() => handleAnswerDelete(ans.answerId)}
+                                    >
+                                      삭제
+                                    </Button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {editingAnswerId === ans.answerId ? (
+                            <div className="space-y-2">
+                              <textarea
+                                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                              />
+                              <div className="flex justify-end gap-2">
+                                <Button size="sm" variant="outline" onClick={() => setEditingAnswerId(null)}>취소</Button>
+                                <Button size="sm" onClick={() => handleAnswerUpdate(ans.answerId)}>저장</Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm whitespace-pre-wrap">{ans.content}</p>
+                          )}
                         </div>
-                        <p className="text-sm whitespace-pre-wrap">{ans.content}</p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
