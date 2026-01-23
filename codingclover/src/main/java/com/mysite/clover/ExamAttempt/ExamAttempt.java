@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "exam_attempt")
 public class ExamAttempt {
 
     /** 응시 기록 ID (Primary Key) */
