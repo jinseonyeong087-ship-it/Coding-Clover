@@ -1,7 +1,7 @@
 package com.mysite.clover.Course.dto;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
@@ -18,20 +18,20 @@ public class CourseCreateRequest {
     private Long instructorId;
 
     /** 강좌 제목 */
-    @NotEmpty(message = "제목은 필수입니다.")
+    @NotBlank(message = "강좌 제목은 필수 입력 항목입니다.")
     private String title;
 
     /** 강좌 설명 */
-    @NotEmpty(message = "설명은 필수입니다.")
+    @NotBlank(message = "강좌 설명은 필수 입력 항목입니다.")
     private String description;
 
     /** 난이도 (1 이상) */
     @Min(value = 1, message = "레벨은 1 이상이어야 합니다.")
-    private Integer level;
+    private int level;
 
     /** 수강료 (0 이상) */
-    @Min(value = 0, message = "가격은 0 이상이어야 합니다.")
-    private Integer price;
+    @Min(value = 0, message = "가격은 0원 이상이어야 합니다.")
+    private int price;
 
     // private String thumbnailUrl; // 추후 추가
 }

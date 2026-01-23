@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import com.mysite.clover.Course.dto.AdminCourseDto;
@@ -116,11 +117,21 @@ public class CourseController {
      * @param principal  인증된 사용자 정보
      * @return 요청 결과 메시지
      */
+    // src/main/java/com/mysite/clover/Course/CourseController.java 수정
+    @PreAuthorize("hasRole('INSTRUCTOR')")
     @PostMapping("/instructor/course/new")
-    public ResponseEntity<String> create(
-            @RequestBody @Valid CourseCreateRequest courseForm) {
+    public ResponseEntity<?> create(
+            @RequestBody @Valid CourseCreateRequest courseForm,
+            BindingResult bindingResult, // 검증 결과 확인을 위해 추가
+            Principal principal) {
 
-        Users user = ur.findById(courseForm.getInstructorId())
+        // 1. 유효성 검사 실패 시 에러 메시지 반환
+        if (bindingResult.hasErrors()) {
+            String errorMessage = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            return ResponseEntity.badRequest().body(errorMessage);
+        }
+
+        Users user = ur.findByLoginId(principal.getName())
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
 
         cs.create(
@@ -128,8 +139,9 @@ public class CourseController {
                 courseForm.getDescription(),
                 courseForm.getLevel(),
                 courseForm.getPrice(),
-                user, // created_by
+                user,
                 CourseProposalStatus.PENDING);
+
         return ResponseEntity.ok("강좌 개설 요청 성공");
     }
 
