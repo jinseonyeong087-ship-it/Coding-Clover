@@ -21,7 +21,7 @@ const QnaTest = () => {
 
   useEffect(() => {
     // 유저 정보 가져오기
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem('users'); // 'user' -> 'users'로 수정 (전체 표준 따름)
     if (storedUser) {
       const u = JSON.parse(storedUser);
       setUser(u);
