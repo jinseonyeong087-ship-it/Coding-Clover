@@ -58,4 +58,16 @@ public class QnaService {
     return qnaRepository.findAllByCourseOrderByCreatedAtDesc(course);
   }
 
+  // 질문 수정
+  public void update(Qna qna, String title, String content) {
+    qna.setTitle(title);
+    qna.setQuestion(content);
+    qnaRepository.save(qna);
+  }
+
+  // 질문 삭제
+  public void delete(Qna qna) {
+    qnaRepository.delete(qna);
+  }
+
 }

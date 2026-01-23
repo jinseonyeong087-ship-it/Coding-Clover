@@ -23,6 +23,11 @@ const QnaTest = () => {
   const [editingAnswerId, setEditingAnswerId] = useState(null);
   const [editContent, setEditContent] = useState('');
 
+  // 질문 수정 관련 state
+  const [isEditingQna, setIsEditingQna] = useState(false);
+  const [editQnaTitle, setEditQnaTitle] = useState('');
+  const [editQnaQuestion, setEditQnaQuestion] = useState('');
+
   useEffect(() => {
     // 유저 정보 가져오기
     const storedUser = localStorage.getItem('users');
@@ -157,13 +162,81 @@ const QnaTest = () => {
     }
   };
 
+  const handleQnaUpdate = async () => {
+    if (!editQnaTitle.trim() || !editQnaQuestion.trim()) {
+      alert("제목과 내용을 모두 입력해주세요.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/student/qna/${selectedQna.qnaId}/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.userId || user.id,
+          title: editQnaTitle,
+          question: editQnaQuestion
+        })
+      });
+
+      if (response.ok) {
+        alert("질문이 수정되었습니다.");
+        setIsEditingQna(false);
+        // 리스트 및 상세 갱신
+        fetchQnaList();
+        handleQnaClick(selectedQna.qnaId);
+      } else {
+        const msg = await response.text();
+        alert("수정 실패: " + msg);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("에러 발생");
+    }
+  };
+
+  const handleQnaDelete = async () => {
+    if (!window.confirm("정말 이 질문을 삭제하시겠습니까? (관련된 모든 답변도 삭제될 수 있습니다)")) return;
+
+    try {
+      const response = await fetch(`/student/qna/${selectedQna.qnaId}/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.userId || user.id
+        })
+      });
+
+      if (response.ok) {
+        alert("질문이 삭제되었습니다.");
+        setSelectedQna(null);
+        fetchQnaList();
+      } else {
+        const msg = await response.text();
+        alert("삭제 실패: " + msg);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("에러 발생");
+    }
+  };
+
+
   const handleQnaClick = async (id) => {
     try {
       const response = await fetch(`/student/qna/${id}`);
       if (response.ok) {
         const data = await response.json();
         setSelectedQna(data);
-        setAnswerContent(''); // 답변 내용 초기화
+        // 초기화
+        setAnswerContent('');
+        setIsEditingQna(false);
+        setEditQnaTitle(data.title);
+        setEditQnaQuestion(data.question);
       } else {
         alert("상세 정보를 불러오는데 실패했습니다.");
       }
@@ -363,23 +436,77 @@ const QnaTest = () => {
             <CardHeader className="border-b">
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-xl">{selectedQna.title}</CardTitle>
+                  {isEditingQna ? (
+                    <div className="flex gap-2 items-center mb-2">
+                      <Input
+                        value={editQnaTitle}
+                        onChange={(e) => setEditQnaTitle(e.target.value)}
+                        className="text-lg font-bold"
+                      />
+                    </div>
+                  ) : (
+                    <CardTitle className="text-xl">{selectedQna.title}</CardTitle>
+                  )}
                   <CardDescription className="mt-1 flex gap-2">
                     <span>작성자: {selectedQna.userName}</span>
                     <span>•</span>
                     <span>{new Date(selectedQna.createdAt).toLocaleString()}</span>
                   </CardDescription>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => setSelectedQna(null)}>✕</Button>
+                <div className="flex gap-2">
+                  {!isEditingQna && user && (
+                    <>
+                      {(user.userId || user.id) === selectedQna.userId && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs"
+                          onClick={() => {
+                            setIsEditingQna(true);
+                            setEditQnaTitle(selectedQna.title);
+                            setEditQnaQuestion(selectedQna.question);
+                          }}
+                        >
+                          수정
+                        </Button>
+                      )}
+                      {((user.userId || user.id) === selectedQna.userId || user.role === 'ADMIN') && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="h-8 text-xs"
+                          onClick={handleQnaDelete}
+                        >
+                          삭제
+                        </Button>
+                      )}
+                    </>
+                  )}
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedQna(null)}>✕</Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               {console.log("Selected QnA Debug:", selectedQna)}
               <div>
                 <h3 className="font-semibold mb-2">질문 내용</h3>
-                <div className="bg-slate-50 p-4 rounded-md min-h-[100px] whitespace-pre-wrap border">
-                  {selectedQna.question || "질문 내용이 없습니다."}
-                </div>
+                {isEditingQna ? (
+                  <div className="space-y-4">
+                    <textarea
+                      className="flex min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      value={editQnaQuestion}
+                      onChange={(e) => setEditQnaQuestion(e.target.value)}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setIsEditingQna(false)}>취소</Button>
+                      <Button onClick={handleQnaUpdate}>저장</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-slate-50 p-4 rounded-md min-h-[100px] whitespace-pre-wrap border">
+                    {selectedQna.question || "질문 내용이 없습니다."}
+                  </div>
+                )}
               </div>
 
               {/* 답변 리스트 표시 */}
