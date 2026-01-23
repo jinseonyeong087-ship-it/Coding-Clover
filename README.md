@@ -29,3 +29,8 @@ https://codingapple.com/unit/git-diff-difftool-vscode/?id=37473
 
 백 서버 켜기
 .\gradlew bootRun
+
+git checkout main: main 브랜치로 이동
+git pull origin main: main 브랜치 최신화 (혹시 모를 충돌 방지)
+git merge sub: sub 브랜치의 내용을 main에 합치기
+git push origin main: 합친 내용을 깃허브(서버)에 올리기
