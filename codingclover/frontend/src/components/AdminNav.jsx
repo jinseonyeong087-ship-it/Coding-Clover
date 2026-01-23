@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
     Menubar,
     MenubarContent,
@@ -18,6 +18,7 @@ import axios from 'axios';
 function AdminNav() {
     const [loginId, setLoginId] = useState(false);
     const [users, setUsers] = useState({ name: '' });
+    const navigate = useNavigate();
 
     useEffect(() => {
         const storedLoginId = localStorage.getItem("loginId");
@@ -34,7 +35,7 @@ function AdminNav() {
         <nav className="flex items-center justify-between px-24 py-3 border-b bg-background">
             {/* 로고 + 메뉴바 */}
             <div className="flex items-center gap-6">
-                <Link to="/" className="text-xl font-bold text-primary no-underline">
+                <Link to="/admin/dashboard" className="text-xl font-bold text-primary no-underline">
                     Coding-Clover
                 </Link>
 
@@ -68,7 +69,6 @@ function AdminNav() {
                             </MenubarGroup>
                         </MenubarContent>
                     </MenubarMenu>
-
                 </Menubar>
             </div>
 
@@ -82,14 +82,9 @@ function AdminNav() {
                         className="pl-9 w-48"
                     />
                 </div>
-                {!loginId ? (
-                    <Button size="sm"><Link to="/auth/login">로그인</Link></Button>)
-                    : (<>
-                        <span variant="ghost" className="text-sm">{users.name}님</span>
-                        <Logout />
-                    </>)}
-                {/* <Button variant="ghost" size="sm"><Link to="/admin/dashboard">관리자 페이지</Link></Button>
-                <Button size="sm"><Link to="/">로그아웃</Link></Button> */}
+
+                <Button variant="ghost" className="text-sm">{users.name}님</Button>
+                <Logout />
             </div>
         </nav>
     );

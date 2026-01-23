@@ -84,7 +84,7 @@ function StudentNav() {
                 {!loginId ? (
                     <Button size="sm"><Link to="/auth/login">로그인</Link></Button>)
                     :(<>
-                        <span variant="ghost" className="text-sm">{users.name}님</span>
+                        <Button variant="ghost" className="text-sm">{users.name}님</Button>
                         <Logout />
                     </>)}
 

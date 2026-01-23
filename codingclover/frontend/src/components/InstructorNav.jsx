@@ -19,6 +19,8 @@ function InstructorNav() {
     const [loginId, setLoginId] = useState(false);
     const [users, setUsers] = useState({ name: '' });
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         const storedLoginId = localStorage.getItem("loginId");
         const storedUsers = localStorage.getItem("users");
@@ -33,7 +35,7 @@ function InstructorNav() {
     return (
         <nav className="container mx-auto flex items-center justify-between py-3 border-b bg-background">
             <div className="flex items-center gap-6">
-                <Link to="/" className="text-xl font-bold text-primary no-underline">
+                <Link to="/instructor/dashboard" className="text-xl font-bold text-primary no-underline">
                     Coding-Clover
                 </Link>
                 <Menubar>
@@ -76,15 +78,8 @@ function InstructorNav() {
                     />
                 </div>
 
-                {!loginId ? (
-                    <Button size="sm"><Link to="/auth/login">로그인</Link></Button>)
-                    : (<>
-                        <span variant="ghost" className="text-sm">{users.name}님</span>
-                        <Logout />
-                    </>)}
-                {/* <Button variant="ghost" size="sm"><Link to="/instructor/dashboard">강사 페이지</Link></Button>
-                <Button size="sm"><Link to="/">로그아웃</Link></Button> */}
-                {/* 로그인 로그아웃 구현해야 함 */}
+                <Button variant="ghost" className="text-sm">{users.name}님</Button>
+                <Logout />
             </div>
         </nav >
     );

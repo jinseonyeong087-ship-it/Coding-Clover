@@ -12,7 +12,7 @@ function Logout() {
 
         alert('로그아웃 완료');
         navigate('/');
-        window.location.reload(); // Nav 상태 새로고침
+        window.location.reload(); // 새로고침
     };
 
     return (
