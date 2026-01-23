@@ -73,6 +73,11 @@ public class SecurityConfig {
     filter.setAuthenticationManager(authenticationManager());
     filter.setAuthenticationSuccessHandler(apiLoginSuccess());
     filter.setAuthenticationFailureHandler(apiLoginFail());
+
+    // 세션에 인증 정보 저장 (중요)
+    filter.setSecurityContextRepository(
+        new org.springframework.security.web.context.HttpSessionSecurityContextRepository());
+
     return filter;
   }
 
