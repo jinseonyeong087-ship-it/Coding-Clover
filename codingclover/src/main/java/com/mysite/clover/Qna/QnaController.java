@@ -13,6 +13,7 @@ import com.mysite.clover.Course.CourseRepository;
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.Users.UsersRepository;
 import lombok.Data;
+import com.mysite.clover.QnaAnswer.QnaAnswerService;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -21,6 +22,7 @@ public class QnaController {
   private final QnaService qnaService;
   private final UsersRepository usersRepository;
   private final CourseRepository courseRepository;
+  private final QnaAnswerService qnaAnswerService;
 
   // 학생
   // =================================================================================
@@ -87,5 +89,21 @@ public class QnaController {
     return qnaService.getCourseList(course).stream()
         .map(QnaDto::new)
         .toList();
+  }
+
+  // 답변 등록 DTO
+  @Data
+  public static class AnswerCreateRequest {
+    private Long instructorId; // 답변하는 강사 ID
+    private String content; // 답변 내용
+  }
+
+  // 답변 등록
+  @PostMapping("/instructor/qna/{id}/add")
+  public void createAnswer(@PathVariable("id") Long qnaId, @RequestBody AnswerCreateRequest request) {
+    Qna qna = qnaService.getDetail(qnaId);
+    Users instructor = usersRepository.findById(request.getInstructorId()).get();
+
+    qnaAnswerService.create(qna, instructor, request.getContent());
   }
 }
