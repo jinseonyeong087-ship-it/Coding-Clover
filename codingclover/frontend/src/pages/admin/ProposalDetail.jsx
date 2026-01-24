@@ -24,17 +24,10 @@ function ProposalDetail() {
     const [course, setCourse] = useState(null);
 
     useEffect(() => {
-        axios.get('/admin/course/${id}', { withCredentials: true })
+        axios.get('/admin/course', { withCredentials: true })
             .then((response) => {
-                const resData = response.data;
-                if (Array.isArray(resData)) {
-                    setCourse(resData);
-                    console.log("데이터 로드 성공", response.data);
-                } else if (resData && typeof resData === 'object') {
-                    // 혹시 모르니 객체 내부의 배열 필드 확인 (보통 content나 list라는 이름으로 옴)
-                    const list = resData.content || resData.list || [resData];
-                    setCourse(Array.isArray(list) ? list : [list]);
-                }
+                const found = response.data.find(c => c.courseId === Number(id));
+                setCourse(found);
             })
             .catch((err) => {
                 console.error('데이터 로딩 실패', err);
@@ -58,31 +51,14 @@ function ProposalDetail() {
             });
     };
 
-
-    // const { proposal, handleSubmit } = useForm();
-
-    useEffect(() => {
-        axios.post('/admin/course', {
-            proposalStatus: course.proposalStatus,
-        }, { withCredentials: true })
-            .then((response) => {
-                console.log(response.data);
-                console.log("강좌 상태 변경됨");
-            })
-            .catch((err) => {
-                console.log('실패', err);
-                if (err.response?.status === 401) {
-                    alert("로그인 정보가 없습니다.")
-                } else if (err.response?.status === 500) {
-                    alert("서버가 응답하지 않습니다.")
-                }
-            });
-    }, []);
-
     const handleSubmit = (data) => {
         console.log(data); // 폼 데이터 유효성 검사 통과 후 디비에 저장하고 adminmain으로 돌아가기
         setCourse(prev => ({ ...prev, proposal_status: 'APPROVED' }))
     };
+
+    if (!course) {
+        return <div className="p-6">로딩 중...</div>;
+    }
 
     return (
         <div className="p-6">
@@ -91,9 +67,9 @@ function ProposalDetail() {
                     <div className="leading-none font-bold text-lg">강좌명</div>
                     <div className="text-xl">{course.title}</div>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <span className="font-semibold">난이도:</span> {course.level}단계
@@ -138,7 +114,7 @@ function ProposalDetail() {
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
-                    
+
                     <Button variant="ghost" onClick={() => navigate(-1)}>뒤로 가기</Button>
                 </div>
             </div>
