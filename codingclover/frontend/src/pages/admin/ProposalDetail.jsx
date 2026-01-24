@@ -26,8 +26,13 @@ function ProposalDetail() {
     useEffect(() => {
         axios.get('/admin/course', { withCredentials: true })
             .then((response) => {
-                const found = response.data.find(c => c.courseId === Number(id));
-                setCourse(found);
+                console.log("받은 데이터:", response.data);
+                const found = response.data.find(c => String(c.courseId) === String(id));
+                if (found) {
+                    setCourse(found);
+                } else {
+                    console.error("해당 ID의 강좌를 찾을 수 없습니다.");
+                }
             })
             .catch((err) => {
                 console.error('데이터 로딩 실패', err);
@@ -53,7 +58,7 @@ function ProposalDetail() {
 
     const handleSubmit = (data) => {
         console.log(data); // 폼 데이터 유효성 검사 통과 후 디비에 저장하고 adminmain으로 돌아가기
-        setCourse(prev => ({ ...prev, proposal_status: 'APPROVED' }))
+        setCourse(prev => ({ ...prev, proposalStatus: 'APPROVED' }))
     };
 
     if (!course) {
