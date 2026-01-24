@@ -40,6 +40,13 @@ function AdminMain() {
         proposal_status: ['PENDING', 'APPROVED', 'REJECTED'],
     })
 
+    axios.get('admin/dashboard', {
+        level: '123' ,
+        title: '123' ,
+        created_by: '123',
+        proposal_status: ['PENDING', 'APPROVED', 'REJECTED'],
+    })
+
     // 강좌 승인 백엔파일을 찾아라
 
     return (

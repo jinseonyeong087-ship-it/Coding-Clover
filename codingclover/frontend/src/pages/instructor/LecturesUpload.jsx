@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label"
 
 function LecturesUpload() {
   const [course, setCourse] = useState({ title: '', level: 1, description: '', price: 0 });
-  const [users, setUsers] = useState();
 
   // useEffect(() => { 
   //   fetch('http://localhost:3333/instructor/course/new')
@@ -55,10 +54,12 @@ function LecturesUpload() {
         console.log('결과 : ', response.data);
         alert("개설 신청이 완료되었습니다.")
       })
-      .catch((err) => { console.log('실패', err) });
-    if (err.response?.status === 401 || err.response?.status === 500) {
-      alert("세션이 만료되었습니다. 다시 로그인해주세요.");
-    }
+      .catch((err) => {
+        console.log('실패', err);
+        if (err.response?.status === 401 || err.response?.status === 500) {
+          alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+        }
+      });
   };
 
   const dataToSend = {
