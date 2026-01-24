@@ -12,51 +12,67 @@ import { Label } from "@/components/ui/label"
 function LecturesUpload() {
   const [course, setCourse] = useState({ title: '', level: 1, description: '', price: 0 });
   const [users, setUsers] = useState();
+
+  // useEffect(() => { 
+  //   fetch('http://localhost:3333/instructor/course/new')
+  //   .then(res => res.json())
+  //   .then(data => setCourse(prev => ({ ...prev, ...data })))
+  //   .catch(err => console.log('에러:', err))
+  // }, []);
+
+  const levelMapping = [
+    { id: 1, level: 1, name: "초급" },
+    { id: 2, level: 2, name: "중급" },
+    { id: 3, level: 3, name: "고급" }
+  ]
+
   const [selectLevel, setSelectLevel] = useState(null);
-  // const [course, setCourse] = useState([]);
 
-  useEffect(() => { fetch('/instructor/course/new').then(res => res.json()).then(data => setCourse(data)) }, []);
-
-
-// 요고는 유저가 입력한 걸 State에 저장해주는 고얌
+  // 요고는 유저가 입력한 걸 State에 저장해주는 고얌
   const handleChange = (event) => {
     const { name, value } = event.target;
     setCourse(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleCheckboxChange = () => {
-    setSelectLevel(!selectLevel);
+  const handleCheckboxChange = (level) => {
+    setSelectLevel(selectLevel === level ? null : level);
   };
 
   const handleClick = () => {
     console.log('제출버튼누름');
     // 유저 정보 가져오기
-    const storedUser = localStorage.getItem(users);
-    const users = storedUser ? JSON.parse(storedUser) : null;
-    const instructorId = users ? (users.userId || users.id) : null;
+    const storedUser = localStorage.getItem('users');
+    const userData = storedUser ? JSON.parse(storedUser) : null;
+    const instructorId = userData ? (userData.userId || userData.id) : null;
 
     axios.post('/instructor/course/new', {
-      instructorId: Number(instructorId),
       title: course.title,
-      level: course.level,
+      level: selectLevel,
       description: course.description,
-      price: course.price,
-    })
-      .then((response) => console.log('결과 : ', response.data))
+      price: Number(course.price),
+    }, { withCredentials: true })
+      .then((response) => {
+        console.log('결과 : ', response.data);
+        alert("개설 신청이 완료되었습니다.")
+      })
       .catch((err) => { console.log('실패', err) });
+    if (err.response?.status === 401 || err.response?.status === 500) {
+      alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+    }
   };
 
-
+  const dataToSend = {
+    level: setSelectLevel // 여기서 이미 숫자(TINYINT용)인 1, 2, 3이 전송됨
+  };
 
   return (
     <>
       <InstructorNav />
 
       <section className="container mx-auto px-4 py-16">
-        <h1 className="text-3xl font-bold mb-8">강좌 개설</h1>
-
         <Card className="max-w-4xl mx-auto">
-          <CardHeader></CardHeader>
+
+          <CardHeader><h1 className="text-3xl font-bold mb-8">강좌 개설</h1></CardHeader>
 
           <CardContent className="space-y-2">
             <div className="grid grid-cols-4 items-center gap-6">
@@ -72,12 +88,16 @@ function LecturesUpload() {
             <div className="grid grid-cols-4 items-center gap-6">
               <label className="text-right font-medium">난이도</label>
               <div className="flex justify-between gap-6">
-                <div className="flex justify-between"><Checkbox id="terms-checkbox1" name="level" onChange={handleCheckboxChange} />
-                  <Label htmlFor="terms-checkbox">초급</Label></div>
-                <div className="flex justify-between"><Checkbox id="terms-checkbox2" name="level" onChange={handleCheckboxChange} />
-                  <Label htmlFor="terms-checkbox">중급</Label></div>
-                <div className="flex justify-between"><Checkbox id="terms-checkbox3" name="level" onChange={handleCheckboxChange} />
-                  <Label htmlFor="terms-checkbox">고급</Label></div>
+                {levelMapping.map((grade) => {
+                  return (
+                    <div className="flex justify-between items-center" key={grade.id}>
+                      <>
+                        <Checkbox checked={selectLevel === grade.level} name={grade.id} onCheckedChange={() => handleCheckboxChange(grade.level)} />
+                        <Label>{grade.name}</Label>
+                      </>
+                    </div>
+                  )
+                })}
               </div>
             </div>
 

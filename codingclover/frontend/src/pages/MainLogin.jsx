@@ -46,12 +46,10 @@ const MainLogin = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    loginId: loginId,    // state 값 사용
-                    password: password   // state 값 사용
+                    loginId: loginId,
+                    password: password
                 })
-            
-            }
-        );
+            });
 
         console.log("try 구문 성공");
 
@@ -128,9 +126,9 @@ const MainLogin = () => {
                             <Button className="w-full" onClick={handleLogin}>
                                 로그인
                             </Button>
-                            <Button variant="outline" className="w-full" onClick={() => setIsRegistering(true)}>
+                            <Link to="/auth/register"><Button variant="outline" className="w-full">
                                 회원가입
-                            </Button>
+                            </Button></Link>
                             <CardDescription>
                                 <Link to="/auth/findaccount" className='text-center items-center text-sm text-dark'>
                                     아이디/비밀번호 찾기
