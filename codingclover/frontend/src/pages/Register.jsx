@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/RadioGroup';
 import { cn } from '@/lib/utils';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Register = ({ onToLogin }) => {
   const [formData, setFormData] = useState({
@@ -20,6 +21,9 @@ const Register = ({ onToLogin }) => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -117,7 +121,7 @@ const Register = ({ onToLogin }) => {
 
       if (response.ok) {
         alert('회원가입이 완료되었습니다!');
-        if (onToLogin) onToLogin();
+        navigate("/auth/login");
       } else {
         const errorData = await response.json();
         alert(errorData.message || '회원가입에 실패했습니다.');
@@ -295,8 +299,15 @@ const Register = ({ onToLogin }) => {
                   onChange={handleChange}
                   placeholder="8자 이상의 비밀번호를 입력해 주세요"
                   maxLength={255}
-                  className={cn(errors.password && "border-destructive focus-visible:ring-destructive")}
+                  className={cn("pr-10", errors.password && "border-destructive focus-visible:ring-destructive")}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
                 {errors.password && (
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
@@ -314,11 +325,18 @@ const Register = ({ onToLogin }) => {
                   value={formData.passwordConfirm}
                   onChange={handleChange}
                   placeholder="비밀번호를 다시 입력하세요"
-                  className={cn(errors.passwordConfirm && "border-destructive focus-visible:ring-destructive")}
+                  className={cn("pr-10", errors.passwordConfirm && "border-destructive focus-visible:ring-destructive")}
                 />
                 {errors.passwordConfirm && (
                   <p className="text-sm text-destructive">{errors.passwordConfirm}</p>
                 )}
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPasswordConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
 
               {/* 제출 버튼 */}
