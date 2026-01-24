@@ -1,18 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import AdminNav from '@/components/AdminNav';
-import Tail from '@/components/Tail';
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+import React, { useState, useEffect } from "react";
+import AdminNav from "@/components/AdminNav";
+import Tail from "@/components/Tail";
+import { Link, Route } from "react-router-dom";
 import {
     Table,
     TableBody,
@@ -21,60 +10,35 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import {
-    flexRender,
-    getCoreRowModel,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
-    useReactTable,
-} from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
-import axios from 'axios';
+import { Badge } from "@/components/ui/badge"
+import axios from "axios";
+
 
 function AdminMain() {
 
-    const [course, setCourse] = useState({
-        course_id: '',
-        level: '',
-        title: '',
-        created_by: '',
-        proposal_status: '',
-    })
+    /**id, 난이도, 강좌명, 강사명, 승인상태 */
+    const [course, setCourse] = useState([]);
 
     useEffect(() => {
-        fetch('http://localhost:3333/admin/dashboard')
-            .then(res => res.json())
-            .then(data => setCourse())
-            .catch(err => console.log('에러:', err))
+        axios.get('/admin/dashboard')
+            .then((response) => {
+                const realData = response.data.list || response.data.courses || response.data;
+                setCourse(Array.isArray(realData) ? realData : [realData]);
+                console.log("실제 데이터:", realData);
+            })
+            .catch((err) => {
+                console.log('실패', err);
+                if (err.response?.status === 401) {
+                    alert("로그인 정보가 없습니다.")
+                } else if (err.response?.status === 500) {
+                    alert("서버가 응답하지 않습니다.")
+                }
+
+            })
     }, []);
 
-    const [proposal, setProposal] = useState({ proposal_status: ['PENDING', 'APPROVED', 'REJECTED'] })
 
-    axios.get('/admin/dashboard', {
-        course_id: '',
-        level: '',
-        title: '',
-        created_by: '',
-        proposal_status: ['PENDING', 'APPROVED', 'REJECTED'],
-    }.then((response) => {
-        console.log("개설 신청 리스트를 가져왔습니다");
-    })
-        .then((err) => {
-            console.log('실패', err);
-            if (err.response ? status === 401 : null) {
-                alert("로그인 정보가 없습니다.")
-            } else if (err.response ? status === 500 : null) {
-                alert("서버가 응답하지 않습니다.")
-            }
-
-        }))
-
-    axios.post('/admin/dashboard', {
-        proposal_status: ['PENDING', 'APPROVED', 'REJECTED'],
-    })
-
-
+    // 'PENDING'=보류, 'APPROVED'=생존, 'REJECTED'=탈락
 
     // 강좌 승인 백엔파일을 찾아라
 
@@ -86,22 +50,32 @@ function AdminMain() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>생성번호</TableHead>
-                            <TableHead>등급</TableHead>
                             <TableHead>강좌명</TableHead>
-                            <TableHead>강사</TableHead>
+                            <TableHead>난이도</TableHead>
                             <TableHead>승인상태</TableHead>
                         </TableRow>
                     </TableHeader>
+                    {/* id, 난이도, 강좌명, 강사명, 승인상태  */}
                     <TableBody>
-                        <TableRow>
-                            <TableCell>{course.course_id}</TableCell>
-                            <TableCell>{course.level}</TableCell>
-                            <TableCell>{course.title}</TableCell>
-                            <TableCell>{course.created_by}</TableCell>
-                            <TableCell>
-                                <DropdownMenu>{course.proposal_status}</DropdownMenu>
-                            </TableCell>
-                        </TableRow>
+                        {course.map((item, index) => {
+                            const rowKey = item.courseId ? item.course_id : `course-${index}`;
+                            return (
+                                <TableRow key={item.courseId}>
+                                    <TableCell>{item.courseId}</TableCell>
+                                    <TableCell>
+                                        <Link to={`/admin/course/${item.courseId}`}>{item.title}</Link>
+                                    </TableCell>
+                                    <TableCell>{item.level}</TableCell>
+                                    <TableCell>
+                                        {item.proposalStatus === 'PENDING' ? (
+                                            <Badge variant="destructive">승인 필요</Badge>
+                                        ) : (
+                                            <Badge variant="secondary">승인 완료</Badge>
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
                     </TableBody>
                 </Table>
             </section>
