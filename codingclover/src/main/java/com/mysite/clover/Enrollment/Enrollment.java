@@ -67,7 +67,7 @@ public class Enrollment {
   private LocalDateTime cancelledAt;
 
   // JPA 기본 생성자
-  protected Enrollment() {
+  public Enrollment() {
   }
 
   // 수강 신청 시 사용하는 생성자

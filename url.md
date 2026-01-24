@@ -37,8 +37,8 @@
 /student/payment/refunds   → 환불 내역 -->
 
 ## 수강생 내 강의실
-/student/course/{courseId} → 강좌 상세
-/student/course/{courseId}/lectures → 강의 목록
+/student/course/{courseId} → 강좌 목록
+/student/course/{courseId}/lectures → 강좌 상세
 /student/lecture/{lectureId} → 강의 시청
 /student/enrollment/{courseId}/enroll → 수강 신청
 /student/enrollment/{courseId}/cancel → 수강 취소
@@ -95,8 +95,11 @@
 /instructor/course/{courseId}/enrollment  → 특정 강좌 수강생 목록
 
 ### 📌 강의 관리
-/instructor/lecture         → 강의 관리
-/instructor/lecture/upload  → 강의 업로드 요청
+/instructor/lecture         → 강좌 관리
+/instructor/course/new  → 강좌 개설 요청
+/instructor/course/{id} → 강좌 상세
+/instructor/course/{id}/edit → 강좌 수정
+/instructor/course/{id}/delete → 강좌 삭제
 
 ### 📌 시험 관리
 /instructor/course/{courseId}/exam
@@ -142,7 +145,6 @@
 /admin/course/pending       → 승인 대기 강좌
 /admin/course/{id}/approve  → 승인
 /admin/course/{id}/reject   → 반려
-/admin/course/{id}/close    → 강좌 신규 모집 종료
 /admin/enrollment/{id}/cancel → 수강 강제 취소
 /admin/course/{courseId}/enrollment → 특정 강좌 수강생 조회
 

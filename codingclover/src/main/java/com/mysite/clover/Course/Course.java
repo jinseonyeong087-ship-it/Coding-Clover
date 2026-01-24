@@ -78,4 +78,8 @@ public class Course {
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE)
     private List<Qna> qnaList;
+
+    public Users getInstructor() {
+        throw new UnsupportedOperationException("Unimplemented method 'getInstructor'");
+    }
 }
