@@ -7,9 +7,6 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { User, Edit } from "lucide-react";
 
-/* ===============================
-   공통 유틸
-================================ */
 
 // 로그인 ID 추출
 const getLoginId = () => {
@@ -22,7 +19,7 @@ const getLoginId = () => {
   }
 };
 
-// 관심분야 문자열 → 배열
+// 관심분야 배열
 const parseInterests = (value) => {
   if (!value || value === "미설정") return [];
   return value.split(', ').filter(v => v && v !== "미설정");
@@ -30,10 +27,7 @@ const parseInterests = (value) => {
 
 function MyPage() {
 
-  /* ===============================
-     상태
-  ================================ */
-
+  //마이페이지 화면 상태
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -46,30 +40,21 @@ function MyPage() {
 
   const [selectedInterests, setSelectedInterests] = useState([]);
 
-  /* ===============================
-     옵션
-  ================================ */
-
+  // 코딩 학습 수준 드롭다운
   const educationOptions = [
-    "초등학교 졸업",
-    "중학교 졸업",
-    "고등학교 졸업",
-    "대학교 재학",
-    "대학교 졸업",
-    "대학원",
-    "기타"
+    "입문 (코딩 경험 없음)",
+    "초급 (기초 문법 이해)",
+    "중급 (프로젝트 경험 있음)"
   ];
 
+  //관심분야 체크박스
   const interestOptions = [
     "C", "C++", "Java", "Python",
     "HTML/CSS", "JavaScript",
     "Kotlin", "Swift", "Dart", "Database"
   ];
 
-  /* ===============================
-     데이터 조회
-  ================================ */
-
+  //백엔드 api 호출
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -84,19 +69,19 @@ function MyPage() {
         if (!response.ok) {
           throw new Error(`서버 오류 (${response.status})`);
         }
-
+        //백엔드 json을 js 객체로 변환
         const data = await response.json();
-
+        //user 상태 설정
         setUser({
           ...data,
           joinDate: new Date(data.joinDate).toLocaleDateString('ko-KR')
         });
-
+        //수정 폼 초기값 설정
         setEditForm({
           name: data.name,
           educationLevel: data.educationLevel || ''
         });
-
+        //관심분야 문자열 ->체크박스 배열 변환
         setSelectedInterests(parseInterests(data.interestCategory));
       } catch (err) {
         setError(err.message);
@@ -108,10 +93,7 @@ function MyPage() {
     fetchProfile();
   }, []);
 
-  /* ===============================
-     이벤트 핸들러
-  ================================ */
-
+  //수정모드 전환
   const handleEditToggle = () => {
     if (!isEditing && user) {
       setEditForm({
@@ -123,6 +105,7 @@ function MyPage() {
     setIsEditing(prev => !prev);
   };
 
+  //체크박스 상태 관리
   const handleInterestChange = (interest, checked) => {
     setSelectedInterests(prev =>
       checked
@@ -131,13 +114,15 @@ function MyPage() {
     );
   };
 
+  //db 업데이트
+  // 프론트엔드에서 저장버튼 → 컨트롤러 → 서비스 → 레포지토리 → DB
   const handleSave = async () => {
     try {
       const interestCategory =
         selectedInterests.length > 0
           ? selectedInterests.join(', ')
           : "미설정";
-
+      //백엔드에 수정내용 전송
       const response = await fetch('/api/student/mypage', {
         method: 'PUT',
         headers: {
@@ -171,6 +156,7 @@ function MyPage() {
     }
   };
 
+  //수정 취소
   const handleCancel = () => {
     if (user) {
       setEditForm({
@@ -182,10 +168,7 @@ function MyPage() {
     setIsEditing(false);
   };
 
-  /* ===============================
-     렌더링
-  ================================ */
-
+  //화면
   return (
     <>
       <StudentNav />
@@ -289,8 +272,8 @@ function MyPage() {
           </>
         )}
         {/* ===============================
-    내가 듣는 강좌 (더미)
-=============================== */}
+            내가 듣는 강좌 (더미)
+           =============================== */}
         <div className="max-w-4xl mx-auto mt-12">
           <h2 className="text-2xl font-bold mb-6">내가 듣는 강좌</h2>
 
