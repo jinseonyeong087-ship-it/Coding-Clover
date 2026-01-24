@@ -95,11 +95,11 @@
 /instructor/course/{courseId}/enrollment  → 특정 강좌 수강생 목록
 
 ### 📌 강의 관리
-/instructor/lecture         → 강좌 관리
-/instructor/course/new  → 강좌 개설 요청
-/instructor/course/{id} → 강좌 상세
-/instructor/course/{id}/edit → 강좌 수정
-/instructor/course/{id}/delete → 강좌 삭제
+/instructor/course               → 강좌 목록
+/instructor/course/new           → 강좌 개설 요청
+/instructor/course/{id}          → 강좌 상세
+/instructor/course/{id}/edit     → 강좌 수정
+/instructor/course/{id}/delete   → 강좌 삭제
 
 ### 📌 시험 관리
 /instructor/course/{courseId}/exam

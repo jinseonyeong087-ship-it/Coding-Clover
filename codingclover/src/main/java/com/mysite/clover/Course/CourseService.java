@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // jakarta 대신 spring꺼 권장
+import org.springframework.transaction.annotation.Transactional;
 
 import com.mysite.clover.Enrollment.Enrollment;
 import com.mysite.clover.Enrollment.EnrollmentRepository;
 import com.mysite.clover.Enrollment.EnrollmentStatus;
 import com.mysite.clover.Users.Users;
-import com.mysite.clover.Users.UsersRepository; // 추가됨
+import com.mysite.clover.Users.UsersRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,49 +21,43 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
-    private final UsersRepository usersRepository; // 1. 이게 누락되어 에러가 났던 것입니다.
+    private final UsersRepository usersRepository;
 
-    // ==========================================
-    // 🟦 조회 및 관리 로직
-    // ==========================================
-
+    // [조회 로직]
     public List<Course> getList() {
         return courseRepository.findAll();
     }
 
-    public List<Course> getStudentList(Users student) {
-        return enrollmentRepository.findWithUserAndCourseByUser(student).stream()
-                .map(Enrollment::getCourse)
-                .collect(Collectors.toList());
-    }
-
+    // 승인 대기중인 강좌 목록 조회
     public List<Course> getPendingList() {
         return courseRepository.findByProposalStatus(CourseProposalStatus.PENDING);
     }
 
+    // 승인된 강좌 목록 조회
     public List<Course> getPublicList() {
         return courseRepository.findByProposalStatus(CourseProposalStatus.APPROVED);
     }
 
+    // 승인된 강좌 목록 조회 (레벨별)
     public List<Course> getPublicListByLevel(int level) {
         return courseRepository.findByProposalStatusAndLevel(CourseProposalStatus.APPROVED, level);
     }
 
+    // 강사의 강좌 목록 조회
     public List<Course> getInstructorList(Users instructor) {
         return courseRepository.findByCreatedByUserId(instructor.getUserId());
     }
 
+    // 강좌 조회
     public Course getCourse(Long id) {
         return courseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("강좌 없음"));
     }
 
-    // ==========================================
-    // 🟩 강사 기능 (생성 / 수정 / 삭제)
-    // ==========================================
-
+    // [강사 기능: 생성/수정/삭제]
     @Transactional
-    public void create(String title, String description, int level, int price, Users user, CourseProposalStatus status) {
+    public void create(String title, String description, int level, int price, Users user,
+            CourseProposalStatus status) {
         Course course = new Course();
         course.setTitle(title);
         course.setDescription(description);
@@ -75,6 +69,7 @@ public class CourseService {
         courseRepository.save(course);
     }
 
+    // 강좌 수정
     @Transactional
     public void update(Long id, String title, String description, int level, int price) {
         Course course = getCourse(id);
@@ -82,44 +77,53 @@ public class CourseService {
         course.setDescription(description);
         course.setLevel(level);
         course.setPrice(price);
-        // Dirty Check로 자동 저장됨
     }
 
+    // 강좌 삭제
     @Transactional
     public void delete(Course course) {
         courseRepository.delete(course);
     }
 
-    // ==========================================
-    // 🟨 수강 신청 기능 (DB 저장 핵심)
-    // ==========================================
+    // 수강생 조회
+    public List<Course> getStudentList(Users student) {
+        return enrollmentRepository.findWithUserAndCourseByUser(student).stream()
+                .map(Enrollment::getCourse)
+                .collect(Collectors.toList());
+    }
 
-    @Transactional // 2. 이 어노테이션이 있어야 실제 DB에 Commit이 됩니다.
+    // 수강 신청
+    @Transactional
     public void enroll(Long courseId, String loginId) {
-        // 유저 정보 조회
         Users user = usersRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        
-        // 강좌 정보 조회
-        Course course = courseRepository.findById(courseId)
+        Course course = courseRepository.findById(courseId) // ID로 Course 객체 확보
                 .orElseThrow(() -> new RuntimeException("강좌를 찾을 수 없습니다."));
 
-        // 수강 신청 데이터 생성 및 저장
+        // 중복 체크 로직
+        if (enrollmentRepository.existsByUserAndCourseAndStatus(user, course, EnrollmentStatus.ENROLLED)) {
+            throw new RuntimeException("이미 수강 중인 강좌입니다.");
+        }
+
         Enrollment enrollment = new Enrollment();
         enrollment.setUser(user);
         enrollment.setCourse(course);
+        // 필드명은 엔티티 설정에 따라 setEnrollDate 또는 setCreatedAt으로 확인 필요
         enrollment.setEnrolledAt(LocalDateTime.now());
-        
-        // 주의: 프로젝트의 EnrollStatus 상숫값이 ACTIVE인지 ENROLLED인지 확인 후 맞추세요.
-        enrollment.setStatus(EnrollmentStatus.ENROLLED);
+        enrollment.setStatus(EnrollmentStatus.ENROLLED); // 레포지토리에 정의된 Enum 사용
 
-        enrollmentRepository.save(enrollment); 
+        enrollmentRepository.save(enrollment);
     }
 
-    // ==========================================
-    // 🟥 관리자 기능 (승인 / 반려)
-    // ==========================================
+    // 수강생 조회
+    public List<Users> getEnrolledStudents(Long courseId) {
+        Course course = getCourse(courseId); // 먼저 Course 객체를 가져옴
+        return enrollmentRepository.findAdminByCourse(course).stream()
+                .map(Enrollment::getUser)
+                .collect(Collectors.toList());
+    }
 
+    // 관리자 승인
     @Transactional
     public void approve(Course course, Users admin) {
         course.setProposalStatus(CourseProposalStatus.APPROVED);
@@ -128,6 +132,7 @@ public class CourseService {
         courseRepository.save(course);
     }
 
+    // 관리자 반려
     @Transactional
     public void reject(Course course, String reason) {
         course.setProposalStatus(CourseProposalStatus.REJECTED);

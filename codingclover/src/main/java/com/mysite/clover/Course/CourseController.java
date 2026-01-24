@@ -58,6 +58,15 @@ public class CourseController {
     // 수강생 : 강좌 상세 조회==========================
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/student/course/{courseId}")
+    public ResponseEntity<List<StudentCourseDto>> studentCourseList() {
+        return ResponseEntity.ok(courseService.getPublicList().stream()
+                .map(StudentCourseDto::fromEntity)
+                .toList());
+    }
+
+    // 수강생 : 강좌 상세 조회==========================
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/student/course/{courseId}/lectures")
     public ResponseEntity<StudentCourseDto> studentCourseDetail(@PathVariable Long courseId) {
         return ResponseEntity.ok(StudentCourseDto.fromEntity(courseService.getCourse(courseId)));
     }
@@ -124,9 +133,9 @@ public class CourseController {
         Course course = courseService.getCourse(id);
 
         // 본인 확인 로직
-        if (!course.getInstructor().getLoginId().equals(principal.getName())) {
-            return ResponseEntity.status(403).body("본인의 강좌만 수정할 수 있습니다.");
-        }
+        if (!course.getCreatedBy().getLoginId().equals(principal.getName())) {
+    return ResponseEntity.status(403).body("본인의 강좌만 수정할 수 있습니다.");
+}
 
         courseService.update(id, request.getTitle(), request.getDescription(), request.getLevel(), request.getPrice());
         return ResponseEntity.ok("강좌 수정 성공");
