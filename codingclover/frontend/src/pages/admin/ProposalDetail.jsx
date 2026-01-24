@@ -16,23 +16,16 @@ import axios from "axios";
 
 function ProposalDetail() {
 
-    const [course, setCourse] = useState([
-        { course_id: '' },
-        { level: '' },
-        { title: '' },
-        { created_by: '' },
-        { description: '' },
-        { proposal_status: '' },
-    ])
+    const [course, setCourse] = useState([]);
 
     useEffect(() => {
-        axios.get('/admin/dashboard', {
-            course_id: course.course_id,
+        axios.get('/admin/dashboard', { withCredentials: true }, {
+            courseId: course.courseId,
             level: course.level,
             title: course.title,
             created_by: course.created_by,
             description: course.description,
-            proposal_status: course.proposal_status,
+            proposalStatus: course.proposalStatus,
         }, { 
             headers: { 'Content-Type': 'application/json' }, 
         })
@@ -55,7 +48,7 @@ function ProposalDetail() {
 
     useEffect(() => {
         axios.post('/admin/dashboard', {
-            proposal_status: course.proposal_status,
+            proposal_status: course.proposalStatus,
         }.then((response) => {
             response => console.log(response.json())
             console.log("강좌 상태 변경됨");
@@ -101,7 +94,7 @@ function ProposalDetail() {
                 </div>
 
                 <div>
-                    {course.proposal_status}
+                    {course.proposalStatus}
                 </div>
 
             </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AdminNav from "@/components/AdminNav";
 import Tail from "@/components/Tail";
-import { Link, Route } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
     Table,
     TableBody,
@@ -20,20 +20,20 @@ function AdminMain() {
     const [course, setCourse] = useState([]);
 
     useEffect(() => {
-        axios.get('/admin/dashboard')
+        axios.get('/admin/course', { withCredentials: true })
             .then((response) => {
-                const realData = response.data.list || response.data.courses || response.data;
-                setCourse(Array.isArray(realData) ? realData : [realData]);
-                console.log("실제 데이터:", realData);
+                const resData = response.data;
+                if (Array.isArray(resData)) {
+                    setCourse(resData);
+                    console.log("데이터 로드 성공", response.data);
+                } else if (resData && typeof resData === 'object') {
+                    // 혹시 모르니 객체 내부의 배열 필드 확인 (보통 content나 list라는 이름으로 옴)
+                    const list = resData.content || resData.list || [resData];
+                    setCourse(Array.isArray(list) ? list : [list]);
+                }
             })
             .catch((err) => {
-                console.log('실패', err);
-                if (err.response?.status === 401) {
-                    alert("로그인 정보가 없습니다.")
-                } else if (err.response?.status === 500) {
-                    alert("서버가 응답하지 않습니다.")
-                }
-
+                console.error('데이터 로딩 실패', err);
             })
     }, []);
 
@@ -57,25 +57,44 @@ function AdminMain() {
                     </TableHeader>
                     {/* id, 난이도, 강좌명, 강사명, 승인상태  */}
                     <TableBody>
-                        {course.map((item, index) => {
-                            const rowKey = item.courseId ? item.course_id : `course-${index}`;
-                            return (
-                                <TableRow key={item.courseId}>
-                                    <TableCell>{item.courseId}</TableCell>
-                                    <TableCell>
-                                        <Link to={`/admin/course/${item.courseId}`}>{item.title}</Link>
-                                    </TableCell>
-                                    <TableCell>{item.level}</TableCell>
-                                    <TableCell>
-                                        {item.proposalStatus === 'PENDING' ? (
-                                            <Badge variant="destructive">승인 필요</Badge>
-                                        ) : (
-                                            <Badge variant="secondary">승인 완료</Badge>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            )
-                        })}
+                        {course && course.length > 0 ? (
+                            course.map((item, index) => {
+                                // 1. 서버 엔티티 필드명인 courseId를 사용하여 key 설정
+                                // 2. 만약 courseId가 없다면 index를 조합하여 유니크한 키 생성
+                                const uniqueKey = item.courseId || `course-idx-${index}`;
+
+                                return (
+                                    <TableRow key={uniqueKey}>
+                                        {/* 3. Java 필드명인 courseId, title, level, proposalStatus 사용 */}
+                                        <TableCell>{item.courseId}</TableCell>
+                                        <TableCell>
+                                            <Link to={`/admin/course/${item.courseId}`} className="hover:underline">
+                                                {item.title}
+                                            </Link>
+                                        </TableCell>
+                                        <TableCell>
+                                            {item.level === 1 ? "초급" : item.level === 2 ? "중급" : "고급"}
+                                        </TableCell>
+                                        <TableCell>
+                                            {/* 4. DB ENUM 값인 PENDING 상태 확인 */}
+                                            {item.proposalStatus === 'PENDING' ? (
+                                                <Badge variant="destructive">승인 필요</Badge>
+                                            ) : item.proposalStatus === 'APPROVED' ? (
+                                                <Badge variant="secondary">승인 완료</Badge>
+                                            ) : (
+                                                <Badge variant="outline">반려됨</Badge>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center py-10">
+                                    표시할 강좌 데이터가 없습니다.
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </section>
