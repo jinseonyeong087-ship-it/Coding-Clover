@@ -55,9 +55,9 @@ public class CourseController {
     // 🟩 수강생 영역
     // ==========================================
 
-    // 수강생 : 강좌 상세 조회==========================
+    // 수강생 : 강좌 목록 조회==========================
     @PreAuthorize("hasRole('STUDENT')")
-    @GetMapping("/student/course/{courseId}")
+    @GetMapping("/student/course")
     public ResponseEntity<List<StudentCourseDto>> studentCourseList() {
         return ResponseEntity.ok(courseService.getPublicList().stream()
                 .map(StudentCourseDto::fromEntity)

@@ -108,9 +108,7 @@ public class CourseService {
         Enrollment enrollment = new Enrollment();
         enrollment.setUser(user);
         enrollment.setCourse(course);
-        // 필드명은 엔티티 설정에 따라 setEnrollDate 또는 setCreatedAt으로 확인 필요
-        enrollment.setEnrolledAt(LocalDateTime.now());
-        enrollment.setStatus(EnrollmentStatus.ENROLLED); // 레포지토리에 정의된 Enum 사용
+        enrollment.setStatus(EnrollmentStatus.ENROLLED);
 
         enrollmentRepository.save(enrollment);
     }
