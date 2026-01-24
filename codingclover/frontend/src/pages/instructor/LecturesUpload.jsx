@@ -12,13 +12,6 @@ import { Label } from "@/components/ui/label"
 function LecturesUpload() {
   const [course, setCourse] = useState({ title: '', level: 1, description: '', price: 0 });
 
-  // useEffect(() => { 
-  //   fetch('http://localhost:3333/instructor/course/new')
-  //   .then(res => res.json())
-  //   .then(data => setCourse(prev => ({ ...prev, ...data })))
-  //   .catch(err => console.log('에러:', err))
-  // }, []);
-
   const levelMapping = [
     { id: 1, level: 1, name: "초급" },
     { id: 2, level: 2, name: "중급" },
@@ -60,10 +53,6 @@ function LecturesUpload() {
           alert("세션이 만료되었습니다. 다시 로그인해주세요.");
         }
       });
-  };
-
-  const dataToSend = {
-    level: setSelectLevel // 여기서 이미 숫자(TINYINT용)인 1, 2, 3이 전송됨
   };
 
   return (
