@@ -1,330 +1,354 @@
 import React, { useState, useEffect } from 'react';
 import StudentNav from '../../components/StudentNav';
 import Tail from '../../components/Tail';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card"
-import { Button } from "@/components/ui/Button"
-import { Input } from "@/components/ui/Input"
-import { Label } from "@/components/ui/Label"
-import { User, Edit } from "lucide-react"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
+import { User, Edit } from "lucide-react";
+
+/* ===============================
+   공통 유틸
+================================ */
+
+// 로그인 ID 추출
+const getLoginId = () => {
+  const storedUsers = localStorage.getItem("users");
+  if (!storedUsers) return "student";
+  try {
+    return JSON.parse(storedUsers).loginId || "student";
+  } catch {
+    return "student";
+  }
+};
+
+// 관심분야 문자열 → 배열
+const parseInterests = (value) => {
+  if (!value || value === "미설정") return [];
+  return value.split(', ').filter(v => v && v !== "미설정");
+};
 
 function MyPage() {
-  // 사용자 데이터 (API에서 가져옴)
-  const [user, setUser] = useState({
-    name: '',
-    email: '',
-    joinDate: '',
-    educationLevel: '',
-    interestCategory: ''
-  });
+
+  /* ===============================
+     상태
+  ================================ */
+
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState(user);
 
-  // 학습 수준 옵션
+  const [editForm, setEditForm] = useState({
+    name: '',
+    educationLevel: '',
+  });
+
+  const [selectedInterests, setSelectedInterests] = useState([]);
+
+  /* ===============================
+     옵션
+  ================================ */
+
   const educationOptions = [
-    "초등학교",
-    "중학교", 
-    "고등학교",
+    "초등학교 졸업",
+    "중학교 졸업",
+    "고등학교 졸업",
     "대학교 재학",
     "대학교 졸업",
     "대학원",
     "기타"
   ];
 
-  // 관심 분야 옵션
   const interestOptions = [
-    "Web Development",
-    "Mobile App Development", 
-    "Data Science",
-    "AI/Machine Learning",
-    "Game Development",
-    "Backend Development",
-    "Frontend Development",
-    "DevOps",
-    "Cybersecurity",
-    "Database",
-    "Cloud Computing",
-    "Blockchain"
+    "C", "C++", "Java", "Python",
+    "HTML/CSS", "JavaScript",
+    "Kotlin", "Swift", "Dart", "Database"
   ];
 
-  // 관심 분야 체크박스 상태
-  const [selectedInterests, setSelectedInterests] = useState([]);
+  /* ===============================
+     데이터 조회
+  ================================ */
 
-  // 사용자 데이터 로드 시 관심 분야 파싱
   useEffect(() => {
-    if (user.interestCategory && user.interestCategory !== "미설정") {
-      const interests = user.interestCategory
-        .split(', ')
-        .filter(item => item.length > 0 && item !== "미설정");
-      setSelectedInterests(interests);
-    } else {
-      setSelectedInterests([]);
-    }
-  }, [user.interestCategory]);
-
-  // 컴포넌트 마운트 시 사용자 정보 조회
-  useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchProfile = async () => {
       try {
-        // localStorage에서 현재 로그인한 사용자 정보 가져오기
-        const storedUsers = localStorage.getItem("users");
-        let currentLoginId = null;
-        
-        if (storedUsers) {
-          const userInfo = JSON.parse(storedUsers);
-          currentLoginId = userInfo.loginId;
-          console.log("현재 로그인한 사용자:", currentLoginId);
-        }
-        
         const response = await fetch('/api/student/mypage', {
-          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'X-Login-Id': currentLoginId || 'student' // 사용자 정보를 헤더로 전달
+            'X-Login-Id': getLoginId()
           },
           credentials: 'include'
         });
 
         if (!response.ok) {
-          throw new Error(`서버 오류: ${response.status}`);
+          throw new Error(`서버 오류 (${response.status})`);
         }
 
         const data = await response.json();
-        
+
         setUser({
-          name: data.name,
-          email: data.email,
-          joinDate: new Date(data.joinDate).toLocaleDateString('ko-KR'),
-          educationLevel: data.educationLevel || '',
-          interestCategory: data.interestCategory || ''
+          ...data,
+          joinDate: new Date(data.joinDate).toLocaleDateString('ko-KR')
         });
+
+        setEditForm({
+          name: data.name,
+          educationLevel: data.educationLevel || ''
+        });
+
+        setSelectedInterests(parseInterests(data.interestCategory));
       } catch (err) {
         setError(err.message);
-        console.error('Error fetching user profile:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserProfile();
+    fetchProfile();
   }, []);
 
+  /* ===============================
+     이벤트 핸들러
+  ================================ */
+
   const handleEditToggle = () => {
-    setIsEditing(!isEditing);
-    if (!isEditing) {
-      setEditForm(user);
-      // 편집 모드 진입 시 현재 관심 분야를 체크박스에 반영
-      if (user.interestCategory) {
-        setSelectedInterests(user.interestCategory.split(', ').filter(item => item.length > 0));
-      }
+    if (!isEditing && user) {
+      setEditForm({
+        name: user.name,
+        educationLevel: user.educationLevel || ''
+      });
+      setSelectedInterests(parseInterests(user.interestCategory));
     }
+    setIsEditing(prev => !prev);
   };
 
-  // 관심 분야 체크박스 핸들러
   const handleInterestChange = (interest, checked) => {
-    if (checked) {
-      setSelectedInterests([...selectedInterests, interest]);
-    } else {
-      setSelectedInterests(selectedInterests.filter(item => item !== interest));
-    }
+    setSelectedInterests(prev =>
+      checked
+        ? [...prev, interest]
+        : prev.filter(i => i !== interest)
+    );
   };
 
   const handleSave = async () => {
     try {
-      // localStorage에서 현재 로그인한 사용자 정보 가져오기
-      const storedUsers = localStorage.getItem("users");
-      let currentLoginId = null;
-      
-      if (storedUsers) {
-        const userInfo = JSON.parse(storedUsers);
-        currentLoginId = userInfo.loginId;
-      }
-      
-      // 관심 분야를 문자열로 결합
-      const interestCategoryString = selectedInterests.length > 0 
-        ? selectedInterests.join(', ')
-        : "미설정";
-      
-      const dataToSend = {
-        name: editForm.name,
-        educationLevel: editForm.educationLevel,
-        interestCategory: interestCategoryString
-      };
-      
+      const interestCategory =
+        selectedInterests.length > 0
+          ? selectedInterests.join(', ')
+          : "미설정";
+
       const response = await fetch('/api/student/mypage', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Login-Id': currentLoginId || 'student' // 사용자 정보를 헤더로 전달
+          'X-Login-Id': getLoginId()
         },
         credentials: 'include',
-        body: JSON.stringify(dataToSend)
+        body: JSON.stringify({
+          name: editForm.name,
+          educationLevel: editForm.educationLevel,
+          interestCategory
+        })
       });
 
-      const result = await response.text();
-
-      if (response.ok) {
-        setIsEditing(false);
-        alert(`저장 완료!`);
-        // 페이지 새로고침으로 DB에서 최신 데이터 다시 로드
-        window.location.reload();
-      } else {
-        alert(`서버 오류 (${response.status}): ${result}`);
+      if (!response.ok) {
+        throw new Error("저장 실패");
       }
-      
+
+      // 상태만 갱신 (reload 제거)
+      setUser(prev => ({
+        ...prev,
+        name: editForm.name,
+        educationLevel: editForm.educationLevel,
+        interestCategory
+      }));
+
+      setIsEditing(false);
+      alert("저장 완료!");
     } catch (err) {
-      alert(`네트워크 오류: ${err.message}`);
-      console.error('Error calling API:', err);
+      alert(err.message);
     }
   };
 
   const handleCancel = () => {
-    setEditForm(user);
-    setIsEditing(false);
-    // 관심 분야도 원래대로 되돌리기
-    if (user.interestCategory) {
-      setSelectedInterests(user.interestCategory.split(', ').filter(item => item.length > 0));
-    } else {
-      setSelectedInterests([]);
+    if (user) {
+      setEditForm({
+        name: user.name,
+        educationLevel: user.educationLevel || ''
+      });
+      setSelectedInterests(parseInterests(user.interestCategory));
     }
+    setIsEditing(false);
   };
+
+  /* ===============================
+     렌더링
+  ================================ */
 
   return (
     <>
       <StudentNav />
 
       <section className="container mx-auto px-4 py-16">
-        {loading && (
-          <div className="text-center py-16">
-            <p className="text-lg">사용자 정보를 불러오는 중...</p>
-          </div>
-        )}
 
-        {error && (
-          <div className="text-center py-16">
-            <p className="text-lg text-red-600">오류: {error}</p>
-            <Button onClick={() => window.location.reload()} className="mt-4">
-              다시 시도
-            </Button>
-          </div>
-        )}
+        {loading && <p className="text-center">사용자 정보를 불러오는 중...</p>}
+        {error && <p className="text-center text-red-600">오류: {error}</p>}
 
-        {!loading && !error && (
+        {!loading && !error && user && (
           <>
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex justify-between mb-8">
               <h1 className="text-3xl font-bold">마이페이지</h1>
-              <Button onClick={handleEditToggle} variant="outline">
+              <Button variant="outline" onClick={handleEditToggle}>
                 <Edit className="w-4 h-4 mr-2" />
-                {isEditing ? '취소' : '정보 수정'}
+                {isEditing ? "취소" : "정보 수정"}
               </Button>
             </div>
 
             <Card className="max-w-4xl mx-auto">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  프로필 정보
+                  <User className="w-5 h-5" /> 프로필 정보
                 </CardTitle>
-                <CardDescription>
-                  회원가입 시 입력한 기본 정보입니다.
-                </CardDescription>
+                <CardDescription>회원 기본 정보</CardDescription>
               </CardHeader>
+
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">이름</Label>
+                <div className="grid md:grid-cols-2 gap-6">
+
+                  <div>
+                    <Label>이름</Label>
                     {isEditing ? (
                       <Input
-                        id="name"
                         value={editForm.name}
-                        onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                        onChange={e => setEditForm({ ...editForm, name: e.target.value })}
                       />
                     ) : (
                       <Input value={user.name} readOnly />
                     )}
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">이메일</Label>
-                    <Input value={user.email} readOnly className="bg-gray-50" />
+
+                  <div>
+                    <Label>이메일</Label>
+                    <Input value={user.email} readOnly />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="joinDate">가입일</Label>
-                    <Input value={user.joinDate} readOnly className="bg-gray-50" />
+                  <div>
+                    <Label>가입일</Label>
+                    <Input value={user.joinDate} readOnly />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="educationLevel">학습 수준</Label>
+                  <div>
+                    <Label>학습 수준</Label>
                     {isEditing ? (
-                      <select 
-                        value={editForm.educationLevel} 
-                        onChange={(e) => setEditForm({...editForm, educationLevel: e.target.value})}
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                      <select
+                        className="w-full border rounded px-2 py-1"
+                        value={editForm.educationLevel}
+                        onChange={e => setEditForm({ ...editForm, educationLevel: e.target.value })}
                       >
-                        <option value="">학습 수준을 선택하세요</option>
-                        {educationOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
+                        <option value="">선택</option>
+                        {educationOptions.map(o => (
+                          <option key={o} value={o}>{o}</option>
                         ))}
                       </select>
                     ) : (
-                      <Input value={user.educationLevel || '미설정'} readOnly />
+                      <Input value={user.educationLevel || "미설정"} readOnly />
                     )}
                   </div>
 
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="interestCategory">관심 분야</Label>
+                  <div className="md:col-span-2">
+                    <Label>관심 분야</Label>
+
                     {isEditing ? (
-                      <div className="space-y-3">
-                        <p className="text-sm text-gray-600">관심있는 분야를 모두 선택하세요 (복수 선택 가능)</p>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {interestOptions.map((interest) => (
-                            <div key={interest} className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                id={interest}
-                                checked={selectedInterests.includes(interest)}
-                                onChange={(e) => handleInterestChange(interest, e.target.checked)}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                              />
-                              <Label 
-                                htmlFor={interest}
-                                className="text-sm font-normal cursor-pointer"
-                              >
-                                {interest}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                        {selectedInterests.length > 0 && (
-                          <div className="text-sm text-gray-600">
-                            선택된 항목: {selectedInterests.join(', ')}
-                          </div>
-                        )}
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {interestOptions.map(i => (
+                          <label key={i} className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={selectedInterests.includes(i)}
+                              onChange={e => handleInterestChange(i, e.target.checked)}
+                            />
+                            {i}
+                          </label>
+                        ))}
                       </div>
                     ) : (
-                      <Input value={user.interestCategory || '미설정'} readOnly />
+                      <Input value={user.interestCategory || "미설정"} readOnly />
                     )}
                   </div>
                 </div>
 
                 {isEditing && (
-                  <div className="flex justify-end gap-3 pt-6 border-t">
-                    <Button variant="outline" onClick={handleCancel}>
-                      취소
-                    </Button>
-                    <Button onClick={handleSave}>
-                      저장하기
-                    </Button>
+                  <div className="flex justify-end gap-3 pt-4 border-t">
+                    <Button variant="outline" onClick={handleCancel}>취소</Button>
+                    <Button onClick={handleSave}>저장</Button>
                   </div>
                 )}
               </CardContent>
             </Card>
           </>
         )}
+        {/* ===============================
+    내가 듣는 강좌 (더미)
+=============================== */}
+        <div className="max-w-4xl mx-auto mt-12">
+          <h2 className="text-2xl font-bold mb-6">내가 듣는 강좌</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            {/* 더미 강좌 1 */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="text-lg">파이썬 기초 프로그래밍</CardTitle>
+                <CardDescription>김강사 | 초급</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-gray-600">진행률: 65% (13/20강)</p>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: "65%" }} />
+                </div>
+                <p className="text-sm text-gray-500">마지막 수강: 2026.01.23</p>
+                <Button className="w-full">강좌 계속하기</Button>
+              </CardContent>
+            </Card>
+
+            {/* 더미 강좌 2 */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="text-lg">JavaScript 웹 개발</CardTitle>
+                <CardDescription>박강사 | 중급</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-gray-600">진행률: 40% (8/20강)</p>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-green-600 h-2 rounded-full" style={{ width: "40%" }} />
+                </div>
+                <p className="text-sm text-gray-500">마지막 수강: 2026.01.22</p>
+                <Button className="w-full" variant="outline">
+                  강좌 계속하기
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* 더미 강좌 3 */}
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="text-lg">Java 객체지향 프로그래밍</CardTitle>
+                <CardDescription>이강사 | 중급</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-gray-600">진행률: 85% (17/20강)</p>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-purple-600 h-2 rounded-full" style={{ width: "85%" }} />
+                </div>
+                <p className="text-sm text-gray-500">마지막 수강: 2026.01.24</p>
+                <Button className="w-full">강좌 계속하기</Button>
+              </CardContent>
+            </Card>
+
+          </div>
+        </div>
+
       </section>
 
       <Tail />
@@ -333,5 +357,3 @@ function MyPage() {
 }
 
 export default MyPage;
-
- 

@@ -23,7 +23,7 @@ public class StudentProfile {
     @Column(name = "user_id")
     private Long userId;
 
-  //1:1 Users와 매핑 - MapsId 제거
+  //1:1 Users와 매핑
   @OneToOne
     @JoinColumn(name = "user_id")
     private Users user;
