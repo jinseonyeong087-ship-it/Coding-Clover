@@ -19,7 +19,6 @@ const MainLogin = () => {
     const [loginId, setLoginId] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [isRegistering, setIsRegistering] = useState(false);
 
     const navigate = useNavigate();
 
