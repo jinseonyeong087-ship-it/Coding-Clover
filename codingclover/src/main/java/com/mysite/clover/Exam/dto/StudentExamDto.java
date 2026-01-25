@@ -5,27 +5,24 @@ import com.mysite.clover.Exam.Exam;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/**
- * 수강생용 시험 정보 DTO
- * 수강생이 강좌 학습 후 응시할 시험의 정보를 제공합니다.
- * 시험 응시에 필요한 최소한의 정보(제목, 시간, 난이도 등)만 노출합니다.
- */
+// 수강생(학생)에게 보여주는 시험 정보 DTO
 @Getter
 @AllArgsConstructor
 public class StudentExamDto {
+    // 시험 ID
     private Long examId;
+    // 소속 강좌 ID
     private Long courseId;
+    // 시험 제목
     private String title;
+    // 제한 시간(분)
     private Integer timeLimit;
+    // 난이도
     private Integer level;
+    // 합격 기준 점수
     private Integer passScore;
 
-    /**
-     * Entity -> DTO 변환 메서드
-     * 
-     * @param exam 시험 Entity
-     * @return StudentExamDto
-     */
+    // Exam 엔티티 -> StudentExamDto 변환 메서드
     public static StudentExamDto fromEntity(Exam exam) {
         return new StudentExamDto(
                 exam.getExamId(),

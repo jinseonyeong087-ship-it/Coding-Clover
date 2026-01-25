@@ -10,43 +10,39 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-/**
- * 시험 응시 기록 엔티티
- * 학생이 응시한 시험의 이력과 결과를 저장합니다.
- * 몇 번째 시도인지(attemptNo), 점수는 몇 점인지(score), 통과 여부(passed) 등을 상세하게 기록합니다.
- */
+// 사용자의 시험 응시 내역(시도 기록)을 저장하는 엔티티
 @Getter
 @Setter
 @Entity
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners(AuditingEntityListener.class) // 생성일 자동 주입을 위한 리스너
 @Table(name = "exam_attempt")
 public class ExamAttempt {
 
-    /** 응시 기록 ID (Primary Key) */
+    // 응시 기록 고유 ID (PK)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long attemptId;
 
-    /** 응시한 시험 */
+    // 어떤 시험을 응시했는지 (시험 정보)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "exam_id")
     private Exam exam;
 
-    /** 응시자 (학생) */
+    // 누가 응시했는지 (사용자/학생 정보)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private Users user;
 
-    /** 시도 횟수 (1부터 시작) */
+    // 몇 번째 시도인지 (1회차, 2회차...)
     private Integer attemptNo;
 
-    /** 응시 일시 */
+    // 실제 응시한 날짜 및 시간 (자동 저장)
     @CreatedDate
     private LocalDateTime attemptedAt;
 
-    /** 획득 점수 */
+    // 이번 시도에서 획득한 점수
     private Integer score;
 
-    /** 합격 여부 */
+    // 합격 여부 (true: 합격, false: 불합격)
     private Boolean passed;
 }

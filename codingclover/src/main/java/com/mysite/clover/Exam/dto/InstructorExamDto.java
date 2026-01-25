@@ -5,27 +5,24 @@ import com.mysite.clover.Exam.Exam;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/**
- * 강사용 시험 정보 DTO
- * 강사가 본인의 시험 목록을 관리할 때 사용하는 DTO입니다.
- * 시험 수정 및 관리에 필요한 핵심 데이터를 담고 있습니다.
- */
+// 강사 본인이 출제한 시험 목록 등을 조회할 때 사용하는 DTO
 @Getter
 @AllArgsConstructor
 public class InstructorExamDto {
+    // 시험 ID
     private Long examId;
+    // 소속 강좌 ID
     private Long courseId;
+    // 시험 제목
     private String title;
+    // 제한 시간(분)
     private Integer timeLimit;
+    // 난이도
     private Integer level;
+    // 합격 기준 점수
     private Integer passScore;
 
-    /**
-     * Entity -> DTO 변환 메서드
-     * 
-     * @param exam 시험 Entity
-     * @return InstructorExamDto
-     */
+    // Exam 엔티티 -> InstructorExamDto 변환 메서드
     public static InstructorExamDto fromEntity(Exam exam) {
         return new InstructorExamDto(
                 exam.getExamId(),

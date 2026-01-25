@@ -7,18 +7,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * 시험 응시 기록 리포지토리
- * 시험 응시 이력을 조회하는 메서드를 제공합니다.
- * 강사를 위한 시험별 전체 이력 조회, 수강생을 위한 본인 이력 조회 기능 등이 포함됩니다.
- */
+// 시험 응시 기록(ExamAttempt) 데이터에 대한 DB 접근 리포지토리
 public interface ExamAttemptRepository extends JpaRepository<ExamAttempt, Long> {
-    // 특정 시험의 모든 응시 기록 (강사용)
+
+    // 특정 시험에 대한 모든 응시 기록 조회 (강사가 전체 학생의 성적을 확인할 때 등)
     List<ExamAttempt> findByExam(Exam exam);
 
-    // 특정 사용자의 특정 시험 응시 기록 (수강생용)
+    // 특정 사용자가 특정 시험에 응시한 모든 기록 조회 (사용자가 본인의 이력을 볼 때)
     List<ExamAttempt> findByExamAndUser(Exam exam, Users user);
 
-    // 가장 최근 응시 기록 찾기 (횟수 계산용)
+    // 특정 사용자의 특정 시험 응시 기록 중 '시도 횟수(attemptNo)'가 가장 높은(최근) 기록 1개 조회
+    // 다음 시도 횟수를 결정하거나, 최종 성적을 확인할 때 유용함
     Optional<ExamAttempt> findTopByExamAndUserOrderByAttemptNoDesc(Exam exam, Users user);
 }

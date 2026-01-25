@@ -7,29 +7,20 @@ import com.mysite.clover.ExamAttempt.ExamAttempt;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/**
- * 시험 응시 기록 DTO
- * 학생의 시험 응시 기록과 결과를 전달하기 위한 DTO입니다.
- * 프론트엔드에 노출할 응시 번호, 점수, 합격 여부 등의 데이터를 포함합니다.
- */
+// 시험 응시 내역을 클라이언트에게 전달할 때 사용하는 DTO
 @Getter
 @AllArgsConstructor
 public class ExamAttemptDto {
-    private Long attemptId;
-    private Long examId;
-    private Long userId;
-    private String userName;
-    private Integer attemptNo;
-    private Integer score;
-    private Boolean passed;
-    private LocalDateTime attemptedAt;
+    private Long attemptId; // 응시 기록 ID
+    private Long examId; // 시험 ID
+    private Long userId; // 응시자(학생) ID
+    private String userName; // 응시자 이름
+    private Integer attemptNo; // 시도 횟수
+    private Integer score; // 점수
+    private Boolean passed; // 합격 여부
+    private LocalDateTime attemptedAt; // 응시 일시
 
-    /**
-     * Entity -> DTO 변환 메서드
-     * 
-     * @param attempt 응시 기록 Entity
-     * @return ExamAttemptDto
-     */
+    // ExamAttempt 엔티티를 DTO로 변환
     public static ExamAttemptDto fromEntity(ExamAttempt attempt) {
         return new ExamAttemptDto(
                 attempt.getAttemptId(),

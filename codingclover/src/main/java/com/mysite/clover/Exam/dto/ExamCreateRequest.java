@@ -5,35 +5,30 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/**
- * 시험 생성 요청 DTO
- * 강사가 새로운 시험을 출제할 때 전송하는 데이터입니다.
- * 강좌 ID, 제목, 제한 시간, 난이도, 합격 기준 점수, 공개 여부 등을 포함하며,
- * 필수 항목에 대한 유효성 검증(Validation)이 적용되어 있습니다.
- */
+// 강사가 시험을 생성하거나 수정할 때 사용하는 요청 DTO
 @Getter
 @AllArgsConstructor
 public class ExamCreateRequest {
-    /** 소속 강좌 ID */
+    // 시험이 속할 강좌 ID (필수)
     @NotNull(message = "강좌 ID는 필수입니다.")
     private Long courseId;
 
-    /** 시험 제목 */
+    // 시험 제목 (필수)
     @NotBlank(message = "시험 제목은 필수입니다.")
     private String title;
 
-    /** 제한 시간 (분 단위) */
+    // 제한 시간 (분 단위, 필수)
     @NotNull(message = "제한시간은 필수입니다.")
     private Integer timeLimit;
 
-    /** 난이도 (1:초급, 2:중급, 3:고급) */
+    // 난이도 (1, 2, 3... - 필수)
     @NotNull(message = "난이도는 필수입니다.")
     private Integer level;
 
-    /** 합격 기준 점수 */
+    // 합격 기준 점수 (100점 만점 기준 등 - 필수)
     @NotNull(message = "통과 기준 점수는 필수입니다.")
     private Integer passScore;
 
-    /** 공개 여부 */
+    // 시험 공개 여부 (체크하지 않으면 false = 비공개)
     private Boolean isPublished = false;
 }

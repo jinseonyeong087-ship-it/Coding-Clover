@@ -29,25 +29,32 @@ public class CourseController {
     // 🟦 공통 영역 (비로그인 / 로그인 공통)
     // ==========================================
 
-    // 전체 : 강좌 목록 조회 (공통)======================
+    // 전체 : 강좌 목록 조회 (공통, 승인된 강좌만)
     @GetMapping("/course")
     public ResponseEntity<List<StudentCourseDto>> list() {
+        // 공개된 강좌(승인 완료된) 목록을 서비스에서 조회
         return ResponseEntity.ok(courseService.getPublicList().stream()
+                // 조회된 Course 엔티티를 수강생용 DTO(StudentCourseDto)로 변환
                 .map(StudentCourseDto::fromEntity)
+                // 변환된 DTO들을 리스트 형태로 수집
                 .toList());
     }
 
-    // 전체 : 레벨별 강좌 목록 조회===================
+    // 전체 : 레벨별 강좌 목록 조회 (필터링)
     @GetMapping("/course/level/{level}")
     public ResponseEntity<List<StudentCourseDto>> listByLevel(@PathVariable int level) {
+        // 특정 레벨에 해당하고 공개된 강좌 목록을 서비스에서 조회
         return ResponseEntity.ok(courseService.getPublicListByLevel(level).stream()
+                // 조회된 Course 엔티티를 수강생용 DTO로 변환
                 .map(StudentCourseDto::fromEntity)
+                // 리스트 형태로 수집하여 반환
                 .toList());
     }
 
-    // 전체 : 강좌 상세 조회 (비로그인/공통)==========================
+    // 전체 : 강좌 상세 조회 (비로그인/공통 접근 가능)
     @GetMapping("/course/{id}")
     public ResponseEntity<StudentCourseDto> detail(@PathVariable Long id) {
+        // ID에 해당하는 강좌 정보를 서비스에서 조회 (공개 여부 등은 서비스에서 처리하거나 이 메서드에서 확인 필요)
         return ResponseEntity.ok(StudentCourseDto.fromEntity(courseService.getCourse(id)));
     }
 
@@ -55,19 +62,23 @@ public class CourseController {
     // 🟩 수강생 영역
     // ==========================================
 
-    // 수강생 : 강좌 목록 조회==========================
-    @PreAuthorize("hasRole('STUDENT')")
-    @GetMapping("/student/course")
+    // 수강생 : 수강생 전용 강좌 목록 조회 (필요 시 특정 로직 추가 가능)
+    @PreAuthorize("hasRole('STUDENT')") // 수강생(STUDENT) 권한만 접근 가능
+    @GetMapping("/student/course/{courseId}")
     public ResponseEntity<List<StudentCourseDto>> studentCourseList() {
+        // 공개된 강좌 목록을 조회하여 반환 (위의 /course와 동일한 로직처럼 보임, 필요 시 로직 수정)
         return ResponseEntity.ok(courseService.getPublicList().stream()
+                // 엔티티를 수강생용 DTO로 변환
                 .map(StudentCourseDto::fromEntity)
+                // 리스트화
                 .toList());
     }
 
-    // 수강생 : 강좌 상세 조회==========================
-    @PreAuthorize("hasRole('STUDENT')")
+    // 수강생 : 강좌 상세 조회 (수강생 권한)
+    @PreAuthorize("hasRole('STUDENT')") // 수강생 권한 체크
     @GetMapping("/student/course/{courseId}/lectures")
     public ResponseEntity<StudentCourseDto> studentCourseDetail(@PathVariable Long courseId) {
+        // 강좌 상세 내용을 조회하여 DTO로 변환 후 반환
         return ResponseEntity.ok(StudentCourseDto.fromEntity(courseService.getCourse(courseId)));
     }
 
@@ -78,89 +89,116 @@ public class CourseController {
     // 🟨 강사 영역
     // ==========================================
 
-    // 강사 : 내 강좌 목록 조회==========================
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    // 강사 : 본인이 개설한 강좌 목록 조회
+    @PreAuthorize("hasRole('INSTRUCTOR')") // 강사(INSTRUCTOR) 권한만 접근 가능
     @GetMapping("/instructor/course")
     public ResponseEntity<List<InstructorCourseDto>> instructorList(Principal principal) {
+        // 1. 현재 로그인한 사용자의 정보를 유저 리포지토리에서 조회 (Principal 객체에서 ID 추출)
         Users user = usersRepository.findByLoginId(principal.getName())
+                // 사용자가 존재하지 않을 경우 예외 발생
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
+
+        // 2. 해당 강사가 개설한 강좌 목록을 서비스에서 조회
         return ResponseEntity.ok(courseService.getInstructorList(user).stream()
+                // 3. 엔티티를 강사용 DTO(InstructorCourseDto)로 변환
                 .map(InstructorCourseDto::fromEntity)
+                // 4. 리스트 형태로 수집하여 반환
                 .toList());
     }
 
-    // 강사 : 신규 강좌 개설 요청===================
+    // 강사 : 신규 강좌 개설 요청
     @PostMapping("/instructor/course/new")
     public ResponseEntity<?> createCourse(
+            // 요청 본문(body) 데이터를 DTO로 매핑하며 유효성 검사 수행
             @Valid @RequestBody CourseCreateRequest request,
+            // 유효성 검사 결과를 담는 객체
             BindingResult bindingResult,
+            // 현재 로그인한 사용자 정보
             Principal principal) {
 
-        // 1. 유효성 검사
+        // 1. 입력값 유효성 검사 결과 확인
         if (bindingResult.hasErrors()) {
+            // 유효성 검증 실패 시, 400 Bad Request 에러와 첫 번째 에러 메시지 반환
             return ResponseEntity.badRequest()
                     .body(bindingResult.getAllErrors().get(0).getDefaultMessage());
         }
 
-        // 2. 실제 로그인한 유저(강사)를 찾음
+        // 2. 실제 로그인한 유저(강사) 정보를 DB에서 조회
         Users loginUser = usersRepository.findByLoginId(principal.getName())
+                // 사용자 정보가 없으면 예외 발생
                 .orElseThrow(() -> new RuntimeException("유저 정보가 없습니다."));
 
-        // 3. 서비스 호출
+        // 3. 강좌 생성 서비스 호출 (초기 상태는 승인 대기)
         courseService.create(
-                request.getTitle(),
-                request.getDescription(),
-                request.getLevel(),
-                request.getPrice(),
-                loginUser,
-                CourseProposalStatus.PENDING);
+                request.getTitle(), // 강좌 제목
+                request.getDescription(), // 강좌 설명
+                request.getLevel(), // 난이도
+                request.getPrice(), // 수강료
+                request.getThumbnailUrl(), // 썸네일 이미지 URL
+                loginUser, // 강좌 개설자(강사)
+                CourseProposalStatus.PENDING); // 초기 상태는 승인 대기(PENDING)로 설정
 
+        // 4. 성공 메시지 반환
         return ResponseEntity.ok("강좌 개설 신청이 완료되었습니다.");
     }
 
-    // 강사 : 강좌 상세 조회============================
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    // 강사 : 개별 강좌 상세 조회
+    @PreAuthorize("hasRole('INSTRUCTOR')") // 강사 권한 체크
     @GetMapping("/instructor/course/{id}")
     public ResponseEntity<InstructorCourseDto> instructorCourseDetail(@PathVariable Long id) {
+        // 강좌 ID로 상세 정보를 조회하여 강사용 DTO로 변환 후 반환
         return ResponseEntity.ok(InstructorCourseDto.fromEntity(courseService.getCourse(id)));
     }
 
-    // 강사 : 강좌 수정 기능============================
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    // 강사 : 강좌 정보 수정 기능
+    @PreAuthorize("hasRole('INSTRUCTOR')") // 강사 권한 체크
     @PutMapping("/instructor/course/{id}/edit")
     public ResponseEntity<String> updateCourse(@PathVariable Long id, @RequestBody CourseCreateRequest request,
             Principal principal) {
+        // 1. 수정하려는 강좌 엔티티 조회
         Course course = courseService.getCourse(id);
 
-        // 본인 확인 로직
+        // 2. 본인 확인 (강좌 개설자와 현재 로그인한 사용자가 일치하는지 검사)
         if (!course.getCreatedBy().getLoginId().equals(principal.getName())) {
+            // 본인이 아니라면 403 Forbidden 상태와 에러 메시지 반환
             return ResponseEntity.status(403).body("본인의 강좌만 수정할 수 있습니다.");
         }
 
-        courseService.update(id, request.getTitle(), request.getDescription(), request.getLevel(), request.getPrice());
+        // 3. 강좌 수정 서비스 호출 (제목, 설명, 레벨 등 업데이트)
+        courseService.update(id, request.getTitle(), request.getDescription(), request.getLevel(), request.getPrice(),
+                request.getThumbnailUrl());
+
+        // 4. 성공 메시지 반환
         return ResponseEntity.ok("강좌 수정 성공");
     }
 
-    // 수강 신청 엔드포인트 확인
-    @PreAuthorize("hasRole('STUDENT')")
+    // 학생 : 수강 신청 엔드포인트
+    @PreAuthorize("hasRole('STUDENT')") // 수강생 권한 체크
     @PostMapping("/course/{id}/enroll")
     public ResponseEntity<String> enroll(@PathVariable Long id, Principal principal) {
+        // 1. 수강 신청 서비스 호출 (강좌 ID와 로그인한 사용자 ID 전달)
         courseService.enroll(id, principal.getName());
+        // 2. 성공 메시지 반환
         return ResponseEntity.ok("수강 신청이 완료되었습니다.");
     }
 
-    // 강사 : 강좌 삭제==================
-    @PreAuthorize("hasRole('INSTRUCTOR')")
+    // 강사 : 강좌 삭제 기능
+    @PreAuthorize("hasRole('INSTRUCTOR')") // 강사 권한 체크
     @DeleteMapping("/instructor/course/{id}/delete")
     public ResponseEntity<String> delete(@PathVariable Long id, Principal principal) {
+        // 1. 삭제 대상 강좌 조회
         Course course = courseService.getCourse(id);
 
-        // 본인 확인 로직 반드시 추가
+        // 2. 본인 확인 (강좌 생성자와 로그인 사용자가 같은지 체크)
         if (!course.getCreatedBy().getLoginId().equals(principal.getName())) {
+            // 권한이 없으면 403 에러 리턴
             return ResponseEntity.status(403).body("본인의 강좌만 삭제할 수 있습니다.");
         }
 
+        // 3. 강좌 삭제 서비스 호출
         courseService.delete(course);
+
+        // 4. 성공 메시지 반환
         return ResponseEntity.ok("강좌 삭제 성공");
     }
 
@@ -168,41 +206,60 @@ public class CourseController {
     // 🟥 관리자 영역
     // ==========================================
 
-    // 관리자 : 전체 강좌 목록 조회
-    @PreAuthorize("hasRole('ADMIN')")
+    // 관리자 : 전체 강좌 목록 조회 (승인/미승인 포함)
+    @PreAuthorize("hasRole('ADMIN')") // 관리자(ADMIN) 권한만 접근 가능
     @GetMapping("/admin/course")
     public ResponseEntity<List<AdminCourseDto>> adminList() {
+        // 1. 모든 강좌 목록을 서비스에서 조회
         return ResponseEntity.ok(courseService.getList().stream()
+                // 2. 조회된 엔티티를 관리자용 DTO(AdminCourseDto)로 변환
                 .map(AdminCourseDto::fromEntity)
+                // 3. 리스트로 수집하여 반환
                 .toList());
     }
 
     // 관리자 : 승인 대기중인 강좌 목록 조회
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/course/pending")
+    @PreAuthorize("hasRole('ADMIN')") // 관리자 권한 체크
+    @GetMapping("/admin/course/{id}/pending")
     public ResponseEntity<List<AdminCourseDto>> adminPendingList() {
+        // 1. 승인 상태가 PENDING인 강좌들을 서비스에서 조회
         return ResponseEntity.ok(courseService.getPendingList().stream()
+                // 2. 관리자용 DTO로 변환
                 .map(AdminCourseDto::fromEntity)
+                // 3. 리스트로 반환
                 .toList());
     }
 
-    // 관리자 : 강좌 승인
-    @PreAuthorize("hasRole('ADMIN')")
+    // 관리자 : 강좌 승인 처리
+    @PreAuthorize("hasRole('ADMIN')") // 관리자 권한 체크
     @PostMapping("/admin/course/{id}/approve")
     public ResponseEntity<String> approve(@PathVariable Long id, Principal principal) {
+        // 1. 승인 요청을 수행하는 관리자 정보 조회
         Users admin = usersRepository.findByLoginId(principal.getName())
+                // 관리자 정보가 없으면 예외 발생
                 .orElseThrow(() -> new RuntimeException("관리자 없음"));
+
+        // 2. 대상 강좌 조회
         Course course = courseService.getCourse(id);
+
+        // 3. 강좌 승인 처리 서비스 호출 (상태 변경 및 승인자 정보 기록)
         courseService.approve(course, admin);
+
+        // 4. 성공 메시지 반환
         return ResponseEntity.ok("승인 완료");
     }
 
-    // 관리자 : 강좌 반려
-    @PreAuthorize("hasRole('ADMIN')")
+    // 관리자 : 강좌 반려 처리
+    @PreAuthorize("hasRole('ADMIN')") // 관리자 권한 체크
     @PostMapping("/admin/course/{id}/reject")
     public ResponseEntity<String> reject(@PathVariable Long id, @RequestBody RejectRequest req) {
+        // 1. 반려 대상 강좌 조회
         Course course = courseService.getCourse(id);
+
+        // 2. 강좌 반려 처리 서비스 호출 (상태 변경 및 반려 사유 기록)
         courseService.reject(course, req.getReason());
+
+        // 3. 성공 메시지 반환
         return ResponseEntity.ok("반려 완료");
     }
 }
