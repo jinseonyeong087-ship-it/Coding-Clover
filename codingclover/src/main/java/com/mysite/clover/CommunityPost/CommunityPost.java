@@ -8,8 +8,14 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
+/**
+ * 커뮤니티 게시글 엔티티
+ * 사용자 간의 소통을 위한 게시글 정보를 저장합니다.
+ * 작성자(User), 제목, 내용, 공개 상태 등을 관리합니다.
+ */
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @Table(name = "community_post")
 public class CommunityPost {
 

@@ -8,6 +8,8 @@ import lombok.Getter;
 /**
  * 시험 생성 요청 DTO
  * 강사가 새로운 시험을 출제할 때 전송하는 데이터입니다.
+ * 강좌 ID, 제목, 제한 시간, 난이도, 합격 기준 점수, 공개 여부 등을 포함하며,
+ * 필수 항목에 대한 유효성 검증(Validation)이 적용되어 있습니다.
  */
 @Getter
 @AllArgsConstructor
@@ -33,5 +35,5 @@ public class ExamCreateRequest {
     private Integer passScore;
 
     /** 공개 여부 */
-    private Boolean isPublished= false;
+    private Boolean isPublished = false;
 }

@@ -19,6 +19,12 @@ import com.mysite.clover.Users.UsersRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 시험 컨트롤러
+ * 시험 관련 API 요청을 처리합니다.
+ * 수강생(응시, 성적 조회), 강사(시험 출제, 응시생 관리), 관리자(로그 조회) 등
+ * 역할별로 세분화된 기능을 제공합니다.
+ */
 @RequiredArgsConstructor
 @RestController
 public class ExamController {

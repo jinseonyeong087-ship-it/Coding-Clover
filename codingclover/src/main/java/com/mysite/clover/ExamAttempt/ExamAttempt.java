@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 
 /**
  * 시험 응시 기록 엔티티
- * 학생의 시험 응시 기록과 결과를 저장합니다.
+ * 학생이 응시한 시험의 이력과 결과를 저장합니다.
+ * 몇 번째 시도인지(attemptNo), 점수는 몇 점인지(score), 통과 여부(passed) 등을 상세하게 기록합니다.
  */
 @Getter
 @Setter

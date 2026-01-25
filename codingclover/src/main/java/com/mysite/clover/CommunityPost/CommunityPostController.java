@@ -17,6 +17,11 @@ import lombok.RequiredArgsConstructor;
 import com.mysite.clover.Users.UsersRepository;
 import com.mysite.clover.Users.Users;
 
+/**
+ * 커뮤니티 게시글 컨트롤러
+ * 클라이언트의 게시글 관련 요청(조회, 등록, 수정, 삭제)을 처리합니다.
+ * REST API 형태로 동작하며, 요청 URL과 HTTP 메서드에 따라 적절한 서비스 로직을 호출합니다.
+ */
 @RestController
 @RequiredArgsConstructor
 public class CommunityPostController {

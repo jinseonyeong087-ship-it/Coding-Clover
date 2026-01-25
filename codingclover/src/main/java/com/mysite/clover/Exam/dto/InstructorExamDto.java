@@ -7,7 +7,8 @@ import lombok.Getter;
 
 /**
  * 강사용 시험 정보 DTO
- * 강사가 출제한 시험의 정보를 담습니다.
+ * 강사가 본인의 시험 목록을 관리할 때 사용하는 DTO입니다.
+ * 시험 수정 및 관리에 필요한 핵심 데이터를 담고 있습니다.
  */
 @Getter
 @AllArgsConstructor

@@ -7,6 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import com.mysite.clover.Users.Users;
 
+/**
+ * 커뮤니티 게시글 서비스
+ * 게시글과 관련된 비즈니스 로직을 처리합니다.
+ * 게시글 생성, 조회, 수정, 삭제(숨김 처리) 기능을 제공하며, 권한 검증 로직을 포함합니다.
+ */
 @Service
 @RequiredArgsConstructor
 public class CommunityPostService {

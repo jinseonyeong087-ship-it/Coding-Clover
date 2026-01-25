@@ -18,10 +18,16 @@ import com.mysite.clover.Exam.dto.ExamCreateRequest;
 import com.mysite.clover.ExamAttempt.ExamAttempt;
 import com.mysite.clover.ExamAttempt.ExamAttemptRepository;
 import com.mysite.clover.Lecture.LectureRepository;
+import com.mysite.clover.Lecture.LectureApprovalStatus;
 import com.mysite.clover.LectureProgress.LectureProgressRepository;
 import com.mysite.clover.ScoreHistory.ScoreHistory;
 import com.mysite.clover.ScoreHistory.ScoreHistoryRepository;
 
+/**
+ * 시험 서비스
+ * 시험 출제, 응시, 결과 처리 등 시험과 관련된 핵심 비즈니스 로직을 담당합니다.
+ * 수강생의 진도율을 체크하여 시험 응시 자격을 부여하는 로직도 포함되어 있습니다.
+ */
 @Service
 @RequiredArgsConstructor
 public class ExamService {
@@ -34,32 +40,44 @@ public class ExamService {
     private final LectureProgressRepository lectureProgressRepository;
     private final ScoreHistoryRepository scoreHistoryRepository;
 
+    // 시험 단건 조회
     public Exam getExam(Long examId) {
+        // 시험 ID로 시험 조회
         return examRepository.findById(examId)
                 .orElseThrow(() -> new IllegalArgumentException("시험을 찾을 수 없습니다."));
     }
 
-    /** 시험 생성 */
+    // 시험 생성
     @Transactional
     public void createExam(Long courseId, String title, Integer timeLimit, Integer level, Integer passScore,
             Boolean isPublished, Users instructor) {
+        // 강좌 ID로 강좌 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("강좌를 찾을 수 없습니다."));
 
+        // 시험 생성
         Exam exam = new Exam();
+        // 강좌 설정
         exam.setCourse(course);
+        // 제목 설정
         exam.setTitle(title);
+        // 시간 제한 설정
         exam.setTimeLimit(timeLimit);
+        // 난이도 설정
         exam.setLevel(level);
+        // 합격 점수 설정
         exam.setPassScore(passScore);
+        // 공개 여부 설정
         exam.setIsPublished(isPublished);
+        // 생성자 설정
         exam.setCreatedBy(instructor);
 
+        // 시험 저장
         examRepository.save(exam);
     }
 
     /**
-     * * 시험 응시 기록 저장
+     * 시험 응시 기록 저장
      * ScoreHistory(명세서 테이블)와 ExamAttempt(기존 테이블)를 동시에 저장합니다.
      */
     @Transactional
@@ -106,7 +124,8 @@ public class ExamService {
 
         for (Enrollment enrollment : enrollments) {
             Course course = enrollment.getCourse();
-            long totalLectures = lectureRepository.countByCourseAndApprovalStatus(course, "APPROVED");
+            long totalLectures = lectureRepository.countByCourseAndApprovalStatus(course,
+                    LectureApprovalStatus.APPROVED);
             if (totalLectures == 0)
                 continue;
 

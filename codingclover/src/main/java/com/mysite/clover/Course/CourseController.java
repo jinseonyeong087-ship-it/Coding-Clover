@@ -134,8 +134,8 @@ public class CourseController {
 
         // 본인 확인 로직
         if (!course.getCreatedBy().getLoginId().equals(principal.getName())) {
-    return ResponseEntity.status(403).body("본인의 강좌만 수정할 수 있습니다.");
-}
+            return ResponseEntity.status(403).body("본인의 강좌만 수정할 수 있습니다.");
+        }
 
         courseService.update(id, request.getTitle(), request.getDescription(), request.getLevel(), request.getPrice());
         return ResponseEntity.ok("강좌 수정 성공");

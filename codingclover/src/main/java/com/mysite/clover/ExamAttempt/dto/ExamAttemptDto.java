@@ -10,6 +10,7 @@ import lombok.Getter;
 /**
  * 시험 응시 기록 DTO
  * 학생의 시험 응시 기록과 결과를 전달하기 위한 DTO입니다.
+ * 프론트엔드에 노출할 응시 번호, 점수, 합격 여부 등의 데이터를 포함합니다.
  */
 @Getter
 @AllArgsConstructor
@@ -40,5 +41,5 @@ public class ExamAttemptDto {
                 attempt.getPassed(),
                 attempt.getAttemptedAt());
     }
-    
+
 }
