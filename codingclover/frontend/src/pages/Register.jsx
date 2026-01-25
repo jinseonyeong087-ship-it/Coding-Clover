@@ -291,23 +291,25 @@ const Register = ({ onToLogin }) => {
                 <Label htmlFor="password">
                   비밀번호 <span className="text-destructive">*</span>
                 </Label>
-                <Input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="8자 이상의 비밀번호를 입력해 주세요"
-                  maxLength={255}
-                  className={cn("pr-10", errors.password && "border-destructive focus-visible:ring-destructive")}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="8자 이상의 비밀번호를 입력해 주세요"
+                    maxLength={255}
+                    className={cn("pr-10", errors.password && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 {errors.password && (
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
@@ -318,25 +320,27 @@ const Register = ({ onToLogin }) => {
                 <Label htmlFor="passwordConfirm">
                   비밀번호 확인 <span className="text-destructive">*</span>
                 </Label>
-                <Input
-                  type="password"
-                  id="passwordConfirm"
-                  name="passwordConfirm"
-                  value={formData.passwordConfirm}
-                  onChange={handleChange}
-                  placeholder="비밀번호를 다시 입력하세요"
-                  className={cn("pr-10", errors.passwordConfirm && "border-destructive focus-visible:ring-destructive")}
-                />
+                <div className="relative">
+                  <Input
+                    type={showPasswordConfirm ? "text" : "password"}
+                    id="passwordConfirm"
+                    name="passwordConfirm"
+                    value={formData.passwordConfirm}
+                    onChange={handleChange}
+                    placeholder="비밀번호를 다시 입력하세요"
+                    className={cn("pr-10", errors.passwordConfirm && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPasswordConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 {errors.passwordConfirm && (
                   <p className="text-sm text-destructive">{errors.passwordConfirm}</p>
                 )}
-                <button
-                  type="button"
-                  onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPasswordConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
               </div>
 
               {/* 제출 버튼 */}
