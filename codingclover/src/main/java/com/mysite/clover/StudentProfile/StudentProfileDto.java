@@ -17,3 +17,6 @@ public class StudentProfileDto {
   private String educationLevel;
   private String interestCategory;
 }
+
+//화면 전용 데이터 전송 객체(DTO)
+//두 엔티티를 하나로 묶는 중간 객체

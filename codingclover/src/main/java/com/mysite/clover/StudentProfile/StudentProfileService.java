@@ -19,10 +19,6 @@ public class StudentProfileService {
     private final StudentProfileRepository studentProfileRepository;
     private final UsersRepository usersRepository;
 
-    /* =========================
-       조회
-    ========================= */
-
     // loginId 기반 조회 (컨트롤러용)
     @Transactional(readOnly = true)
     public StudentProfileDto getStudentProfileByLoginId(String loginId) {
@@ -33,7 +29,7 @@ public class StudentProfileService {
         return getStudentProfile(user.getUserId());
     }
 
-    // userId 기반 조회 (내부 공용)
+    // userId 조회 (userId 기준으로 Users + StudentProfile 조회)
     @Transactional(readOnly = true)
     public StudentProfileDto getStudentProfile(Long userId) {
 
@@ -43,7 +39,7 @@ public class StudentProfileService {
         StudentProfile profile = studentProfileRepository
                 .findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("수강생 정보가 없습니다."));
-
+        //반환 DTO 구성
         return new StudentProfileDto(
                 user.getUserId(),
                 user.getLoginId(),
@@ -55,10 +51,6 @@ public class StudentProfileService {
         );
     }
 
-    /* =========================
-       수정
-    ========================= */
-
     // loginId 기반 수정 (컨트롤러용)
     public void updateStudentProfileByLoginId(String loginId, Map<String, String> requestData) {
 
@@ -68,7 +60,7 @@ public class StudentProfileService {
         updateStudentProfile(user.getUserId(), requestData);
     }
 
-    // userId 기반 수정 (내부 공용)
+    // userId 기반 수정 (userId 기준으로 Users + StudentProfile 동시 수정)
     public void updateStudentProfile(Long userId, Map<String, String> requestData) {
 
         String name = requestData.get("name");
@@ -99,11 +91,7 @@ public class StudentProfileService {
         studentProfileRepository.save(profile);
     }
 
-    /* =========================
-       내부 유틸
-    ========================= */
-
-    // 관심분야 문자열 정제
+    // 관심분야 문자열 정제(데이터 일관성 유지 목적)
     private String cleanInterestCategory(String raw) {
 
         String cleaned = raw.trim();
@@ -117,3 +105,6 @@ public class StudentProfileService {
     }
 }
 
+//Users와 StudentProfile을 동시에 수정·생성하기 때문에 트랜잭션이 없으면 데이터 불일치가 발생할 수 있음
+//loginId / userId 진입 메서드는 분리하고 실제 로직은 userId 기준으로 통합
+//Users + StudentProfile 결합 책임을 Service가 담당

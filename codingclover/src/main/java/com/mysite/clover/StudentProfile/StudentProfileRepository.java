@@ -10,6 +10,6 @@ public interface StudentProfileRepository extends JpaRepository<StudentProfile, 
   boolean existsByUserId(Long userId);
 
   
-  //수강생 정보 가져오기 - 두 가지 방식 모두 지원
+  //수강생 정보 가져오기
   Optional<StudentProfile> findByUserId(Long userId);
 }
