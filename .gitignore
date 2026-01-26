@@ -23,3 +23,6 @@ Thumbs.db
 # Build outputs
 dist/
 build/
+
+gradle.properties
+run_server.ps1
