@@ -12,12 +12,12 @@ import {
     TableRow,
 } from "@/components/ui/table";
 
-function InstructorMain() {
+function CourseDetail() {
 
     const [courses, setCourses] = useState([]);
 
     useEffect(() => {
-        fetch('/instructor/course', { credentials: 'include' })
+        fetch(`/instructor/course/${id}`, { credentials: 'include' })
             .then((res) => {
                 if (!res.ok) throw new Error('인증 필요');
                 return res.json();
@@ -73,8 +73,8 @@ function InstructorMain() {
                             </TableRow>
                         ) : (
                             courses.map((course) => (
-                                <TableRow key={course.courseId}>
-                                    <TableCell className="font-medium"><Link to={`/instructor/course/${course.courseId}`}>{course.title}</Link></TableCell>
+                                <TableRow key={course.courseId}>/instructor/course/{id}
+                                    <TableCell className="font-medium"><Link to={`/instructor/course/${id}`}>{course.title}</Link></TableCell>
                                     <TableCell>{getLevelText(course.level)}</TableCell>
                                     <TableCell>{course.price?.toLocaleString()}원</TableCell>
                                     <TableCell>{getStatusText(course.proposalStatus)}</TableCell>
@@ -90,4 +90,4 @@ function InstructorMain() {
 
 }
 
-export default InstructorMain;
+export default CourseDetail;

@@ -18,7 +18,9 @@ import SubmissionTest from './pages/SubmissionTest'
 import ProtectedRoute from '@/components/ProtectdRoute'
 import Noroll from '@/pages/Noroll'
 import CommunityPostTest from './pages/CommunityPostTest'
-import ProposalDetail from "@/pages/admin/ProposalDetail";
+import ProposalDetail from '@/pages/admin/ProposalDetail'
+import CourseDetail from '@/pages/instructor/CourseDetail'
+
 
 function App() {
   return (
@@ -55,11 +57,12 @@ function App() {
         }>
           <Route path="dashboard" element={<InstructorMain />} />
           <Route path="course/new" element={<CourseCreateRequest />} />
+          <Route path="course/:courseId" element={<CourseDetail />} />
         </Route>
         {/* 관리자 */}
         <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="dashboard" element={<AdminMain />} />
-          <Route path="course/:courseId" element={<ProposalDetail />} />
+          <Route path="course/:courseId/pending" element={<ProposalDetail />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
         {/*강사 프로필 <Route path="/api/instructor/profile" element={<InstructorProfile />} /> */}

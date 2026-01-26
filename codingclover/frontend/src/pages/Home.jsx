@@ -74,13 +74,13 @@ function Home() {
                 {/* 탭 활성화 중복방지 */}
                 {course.filter((item) => item.level === String(tab.id))
                   .map((item) =>
-                    <Card key={item.course_id} className="hover:shadow-lg transition-shadow">
+                    <Card key={item.courseId} className="hover:shadow-lg transition-shadow">
                       <CardHeader>
                         <CardTitle className="text-lg">{item.title}</CardTitle>
                         <CardDescription>{item.description}</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm text-muted-foreground">{item.created_at}</p>
+                        <p className="text-sm text-muted-foreground">{item.createdAt}</p>
                       </CardContent>
                       <CardFooter>
                         <Button variant="outline" size="sm" className="w-full">

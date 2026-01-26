@@ -68,7 +68,7 @@ function AdminMain() {
                                         {/* 3. Java 필드명인 courseId, title, level, proposalStatus 사용 */}
                                         <TableCell>{item.courseId}</TableCell>
                                         <TableCell>
-                                            <Link to={`/admin/course/${item.courseId}`} className="hover:underline">
+                                            <Link to={`/admin/course/${item.courseId}/pending`} className="hover:underline">
                                                 {item.title}
                                             </Link>
                                         </TableCell>
