@@ -42,7 +42,7 @@ public class CourseController {
 
     // 전체 : 레벨별 강좌 목록 조회 (필터링)
     @GetMapping("/course/level/{level}")
-    public ResponseEntity<List<StudentCourseDto>> listByLevel(@PathVariable int level) {
+    public ResponseEntity<List<StudentCourseDto>> listByLevel(@PathVariable("level") int level) {
         // 특정 레벨에 해당하고 공개된 강좌 목록을 서비스에서 조회
         return ResponseEntity.ok(courseService.getPublicListByLevel(level).stream()
                 // 조회된 Course 엔티티를 수강생용 DTO로 변환
@@ -53,7 +53,7 @@ public class CourseController {
 
     // 전체 : 강좌 상세 조회 (비로그인/공통 접근 가능)
     @GetMapping("/course/{id}")
-    public ResponseEntity<StudentCourseDto> detail(@PathVariable Long id) {
+    public ResponseEntity<StudentCourseDto> detail(@PathVariable("id") Long id) {
         // ID에 해당하는 강좌 정보를 서비스에서 조회 (공개 여부 등은 서비스에서 처리하거나 이 메서드에서 확인 필요)
         return ResponseEntity.ok(StudentCourseDto.fromEntity(courseService.getCourse(id)));
     }
@@ -77,7 +77,7 @@ public class CourseController {
     // 수강생 : 강좌 상세 조회 (수강생 권한)
     @PreAuthorize("hasRole('STUDENT')") // 수강생 권한 체크
     @GetMapping("/student/course/{courseId}/lectures")
-    public ResponseEntity<StudentCourseDto> studentCourseDetail(@PathVariable Long courseId) {
+    public ResponseEntity<StudentCourseDto> studentCourseDetail(@PathVariable("courseId") Long courseId) {
         // 강좌 상세 내용을 조회하여 DTO로 변환 후 반환
         return ResponseEntity.ok(StudentCourseDto.fromEntity(courseService.getCourse(courseId)));
     }
@@ -188,7 +188,7 @@ public class CourseController {
     // 학생 : 수강 신청 엔드포인트
     @PreAuthorize("hasRole('STUDENT')") // 수강생 권한 체크
     @PostMapping("/course/{id}/enroll")
-    public ResponseEntity<String> enroll(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<String> enroll(@PathVariable("id") Long id, Principal principal) {
         // 1. 수강 신청 서비스 호출 (강좌 ID와 로그인한 사용자 ID 전달)
         courseService.enroll(id, principal.getName());
         // 2. 성공 메시지 반환
@@ -198,7 +198,7 @@ public class CourseController {
     // 강사 : 강좌 삭제 기능
     @PreAuthorize("hasRole('INSTRUCTOR')") // 강사 권한 체크
     @DeleteMapping("/instructor/course/{id}/delete")
-    public ResponseEntity<String> delete(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<String> delete(@PathVariable("id") Long id, Principal principal) {
         // 1. 삭제 대상 강좌 조회
         Course course = courseService.getCourse(id);
 
@@ -246,7 +246,7 @@ public class CourseController {
     // 관리자 : 강좌 승인 처리
     @PreAuthorize("hasRole('ADMIN')") // 관리자 권한 체크
     @PostMapping("/admin/course/{id}/approve")
-    public ResponseEntity<String> approve(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<String> approve(@PathVariable("id") Long id, Principal principal) {
         // 1. 승인 요청을 수행하는 관리자 정보 조회
         Users admin = usersRepository.findByLoginId(principal.getName())
                 // 관리자 정보가 없으면 예외 발생
@@ -265,7 +265,7 @@ public class CourseController {
     // 관리자 : 강좌 반려 처리
     @PreAuthorize("hasRole('ADMIN')") // 관리자 권한 체크
     @PostMapping("/admin/course/{id}/reject")
-    public ResponseEntity<String> reject(@PathVariable Long id, @RequestBody RejectRequest req) {
+    public ResponseEntity<String> reject(@PathVariable("id") Long id, @RequestBody RejectRequest req) {
         // 1. 반려 대상 강좌 조회
         Course course = courseService.getCourse(id);
 

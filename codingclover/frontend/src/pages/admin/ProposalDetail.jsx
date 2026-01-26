@@ -16,6 +16,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import axios from "axios";
 import { Badge } from "@/components/ui/badge"
 
@@ -24,10 +25,12 @@ function ProposalDetail() {
     const { courseId } = useParams(); // URL에서 courseId 추출
     const navigate = useNavigate();
     const [course, setCourse] = useState(null);
+    const [rejectReason, setRejectReason] = useState(""); // 반려 사유
+    const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false); // 반려 다이얼로그 상태
 
     useEffect(() => {
         // 전체 강좌 목록에서 해당 ID 찾기
-        axios.get('/admin/course', { withCredentials: true })
+        axios.get(`/admin/course/${courseId}/pending`, { withCredentials: true })
             .then((response) => {
                 console.log("받은 데이터:", response.data);
                 const found = response.data.find(c => String(c.courseId) === String(courseId));
@@ -47,7 +50,7 @@ function ProposalDetail() {
         axios.post(`/admin/course/${courseId}/approve`, {}, { withCredentials: true })
             .then((response) => {
                 alert("강좌 승인이 완료되었습니다.");
-                navigate("/admin/course"); // 승인 후 목록으로 이동
+                navigate("/admin/dashboard"); // 승인 후 목록으로 이동
             })
             .catch((err) => {
                 console.error('승인 실패', err);
@@ -59,9 +62,32 @@ function ProposalDetail() {
             });
     };
 
-    const handleSubmit = (data) => {
-        console.log(data); // 폼 데이터 유효성 검사 통과 후 디비에 저장하고 adminmain으로 돌아가기
-        setCourse(prev => ({ ...prev, proposalStatus: 'APPROVED' }))
+    const handleReject = async () => {
+        if (!rejectReason.trim()) {
+            alert("반려 사유를 입력해주세요.");
+            return;
+        }
+        try {
+            const response = await fetch(`/admin/course/${courseId}/reject`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ reason: rejectReason })
+            });
+            if (response.ok) {
+                alert("강좌가 반려되었습니다.");
+                setIsRejectDialogOpen(false);
+                setRejectReason("");
+                navigate("/admin/dashboard");
+            } else if (response.status === 403) {
+                alert("관리자 권한이 없습니다.");
+            } else {
+                alert("반려 처리 중 오류가 발생했습니다.");
+            }
+        } catch (err) {
+            console.error('반려 실패', err);
+            alert("반려 처리 중 오류가 발생했습니다.");
+        }
     };
 
     const getLevelText = (level) => {
@@ -117,20 +143,59 @@ function ProposalDetail() {
                     )}
                 </div>
 
+                {/* 반려 사유 표시 (반려된 경우에만) */}
+                {course.proposalStatus === 'REJECTED' && course.proposalRejectReason && (
+                    <div className="mt-4">
+                        <div className="font-semibold mb-1 text-red-600">반려 사유</div>
+                        <div className="bg-red-50 p-4 rounded-md border border-red-200 text-red-800">
+                            {course.proposalRejectReason}
+                        </div>
+                    </div>
+                )}
+
                 <div className="flex gap-3 mt-6">
+                    {/* 승인 다이얼로그 */}
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button disabled={course.proposalStatus === 'APPROVED'}>
-                                {course.proposalStatus === 'APPROVED' ? "승인 완료됨" : "강좌 승인"}
+                            <Button disabled={course.proposalStatus !== 'PENDING'}>
+                                {course.proposalStatus === 'APPROVED' ? "승인 완료됨" :
+                                 course.proposalStatus === 'REJECTED' ? "반려됨" : "강좌 승인"}
                             </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>강좌 개설을 승인하시겠습니까?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    승인 후에는 해당 강좌가 수강생들에게 공개됩니다.
+                                </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>아니오</AlertDialogCancel>
                                 <AlertDialogAction onClick={handleApprove}>네, 승인합니다</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+
+                    {/* 반려 다이얼로그 */}
+                    <AlertDialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" disabled={course.proposalStatus !== 'PENDING'}>
+                                강좌 반려
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>강좌 개설을 반려하시겠습니까?</AlertDialogTitle>
+                            </AlertDialogHeader>
+                            <Textarea
+                                placeholder="반려 사유를 입력하세요."
+                                value={rejectReason}
+                                onChange={(e) => setRejectReason(e.target.value)}
+                                className="min-h-[100px]"
+                            />
+                            <AlertDialogFooter>
+                                <AlertDialogCancel onClick={() => setRejectReason("")}>취소</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleReject}>반려하기</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>

@@ -68,13 +68,21 @@ function InstructorCourseCreate() {
                         {course.price?.toLocaleString()}원
                     </div>
                     <div>
-                        <span className="font-semibold">상태: </span>
-                        {getStatusText(course.proposalStatus)}
-                    </div>
-                    <div>
                         <span className="font-semibold">설명: </span>
                         <p className="mt-2 bg-slate-50 p-4 rounded-md border">{course.description}</p>
                     </div>
+                    <div>
+                        <span className="font-semibold">상태: </span>
+                        {getStatusText(course.proposalStatus)}
+                    </div>
+                    {course.proposalStatus === 'REJECTED' && course.proposalRejectReason && (
+                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                            <h3 className="text-red-800 font-bold mb-2">반려 사유 안내</h3>
+                            <p className="text-red-700 whitespace-pre-wrap">
+                                {course.proposalRejectReason}
+                            </p>
+                        </div>
+                    )}
                 </div>
             </section>
             <Tail />
