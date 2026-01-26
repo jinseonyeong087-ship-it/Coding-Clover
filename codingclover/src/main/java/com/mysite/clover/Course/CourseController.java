@@ -153,8 +153,21 @@ public class CourseController {
     // 강사 : 강좌 정보 수정 기능
     @PreAuthorize("hasRole('INSTRUCTOR')") // 강사 권한 체크
     @PutMapping("/instructor/course/{id}/edit")
-    public ResponseEntity<String> updateCourse(@PathVariable Long id, @RequestBody CourseCreateRequest request,
-            Principal principal) {
+    // @Valid : 요청 본문(body) 데이터를 DTO로 매핑하며 유효성 검사 수행
+    public ResponseEntity<?> updateCourse(@PathVariable Long id, @Valid @RequestBody 
+        // 요청 본문(body) 데이터를 DTO로 매핑하며 유효성 검사 수행
+        CourseCreateRequest request,
+        // 유효성 검사 결과를 담는 객체
+        BindingResult bindingResult,
+        // 현재 로그인한 사용자 정보
+        Principal principal) {
+
+        // 입력값 유효성 검사
+        if (bindingResult.hasErrors()) {
+            // 유효성 검증 실패 시, 400 Bad Request 에러와 첫 번째 에러 메시지 반환
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors().get(0).getDefaultMessage());
+        }
+
         // 1. 수정하려는 강좌 엔티티 조회
         Course course = courseService.getCourse(id);
 
