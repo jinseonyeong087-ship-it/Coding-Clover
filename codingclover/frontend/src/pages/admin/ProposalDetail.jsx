@@ -24,7 +24,7 @@ function ProposalDetail() {
     const [course, setCourse] = useState(null);
 
     useEffect(() => {
-        axios.get('/admin/course', { withCredentials: true })
+        axios.get('/admin/course/pending', { withCredentials: true })
             .then((response) => {
                 console.log("받은 데이터:", response.data);
                 const found = response.data.find(c => String(c.courseId) === String(id));
