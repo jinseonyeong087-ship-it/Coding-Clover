@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import StudentNav from '../components/StudentNav';
 import Tail from '../components/Tail';
 import { Link, useNavigate } from 'react-router-dom';
@@ -11,33 +11,23 @@ function Home() {
 
   // const navigate = useNavigate();
 
+  const [course, setCourse] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [tabs] = useState([
     { id: 1, tablabel: "초급" },
     { id: 2, tablabel: "중급" },
     { id: 3, tablabel: "고급" }
   ]);
 
-  const [course] = useState([
-    { course_id: 1, title: "초급강좌", level: "1", description: "초보를위한어쩌구", created_at: "26.02.13" },
-    { course_id: 2, title: "중급강좌", level: "2", description: "이거알면중타는감", created_at: "26.02.13" },
-    { course_id: 3, title: "고급강좌", level: "3", description: "회사가서 써먹어라", created_at: "26.02.13" },
-    { course_id: 4, title: "초급강좌", level: "1", description: "초보를위한어쩌구", created_at: "26.02.13" },
-    { course_id: 5, title: "중급강좌", level: "2", description: "이거알면중타는감", created_at: "26.02.13" },
-    { course_id: 6, title: "고급강좌", level: "3", description: "회사가서 써먹어라", created_at: "26.02.13" },
-    { course_id: 7, title: "초급강좌", level: "1", description: "초보를위한어쩌구", created_at: "26.02.13" },
-    { course_id: 8, title: "중급강좌", level: "2", description: "이거알면중타는감", created_at: "26.02.13" },
-    { course_id: 9, title: "고급강좌", level: "3", description: "회사가서 써먹어라", created_at: "26.02.13" },
-    { course_id: 10, title: "중급강좌", level: "2", description: "이거알면중타는감", created_at: "26.02.13" },
-    { course_id: 11, title: "고급강좌", level: "3", description: "회사가서 써먹어라", created_at: "26.02.13" },
-    { course_id: 12, title: "초급강좌", level: "1", description: "초보를위한어쩌구", created_at: "26.02.13" },
-    { course_id: 13, title: "중급강좌", level: "2", description: "이거알면중타는감", created_at: "26.02.13" },
-    { course_id: 14, title: "고급강좌", level: "3", description: "회사가서 써먹어라", created_at: "26.02.13" },
-  ])
-
-  // 서버 데이터 사용 시
-  // const [course, setCourse] = useState([]);
-
-  // useEffect(()=>{ fetch('/course').then(res=>res.json()).then(data => setCourse(data))})
+  useEffect(() => {
+    fetch('/course', {method:'GET', Headers:{ 'Content-Type': 'application/json' }})
+      .then((res) => res.json())
+      .then((json) => {
+        setCourse(json);
+        setLoading(false);
+      }).catch((err)=>console.err(err))
+    }, []);
 
   return (
     <>
@@ -81,6 +71,7 @@ function Home() {
           {tabs.map((tab) => (
             <TabsContent key={tab.id} value={tab.id}>
               <div className="grid coursesrid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {/* 탭 활성화 중복방지 */}
                 {course.filter((item) => item.level === String(tab.id))
                   .map((item) =>
                     <Card key={item.course_id} className="hover:shadow-lg transition-shadow">

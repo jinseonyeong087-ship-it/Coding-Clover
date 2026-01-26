@@ -11,7 +11,7 @@ import Lecture from './pages/student/Lecture'
 import MyPage from './pages/student/MyPage'
 import CodingTest from './pages/CodingTest'
 import EmailTest from './pages/EmailTest'
-import LecturesUpload from './pages/instructor/LecturesUpload'
+import CourseCreateRequest from './pages/instructor/CourseCreateRequest'
 import FindAccount from '@/pages/FindAccount'
 import QnaTest from './pages/QnaTest'
 import SubmissionTest from './pages/SubmissionTest'
@@ -54,7 +54,7 @@ function App() {
           <ProtectedRoute allowedRoles={['INSTRUCTOR']} />
         }>
           <Route path="dashboard" element={<InstructorMain />} />
-          <Route path="course/new" element={<LecturesUpload />} />
+          <Route path="course/new" element={<CourseCreateRequest />} />
         </Route>
         {/* 관리자 */}
         <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']} />}>

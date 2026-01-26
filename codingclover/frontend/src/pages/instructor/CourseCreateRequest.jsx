@@ -9,8 +9,10 @@ import axios from 'axios';
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 
-function LecturesUpload() {
+function CourseCreateRequest() {
   const [course, setCourse] = useState({ title: '', level: 1, description: '', price: 0 });
+  const [errors, setErrors] = useState({});
+  const [selectLevel, setSelectLevel] = useState(null);
 
   const levelMapping = [
     { id: 1, level: 1, name: "초급" },
@@ -18,12 +20,14 @@ function LecturesUpload() {
     { id: 3, level: 3, name: "고급" }
   ]
 
-  const [selectLevel, setSelectLevel] = useState(null);
+  
 
   // 요고는 유저가 입력한 걸 State에 저장해주는 고얌
+  // 입력하면 에러메세지 없애줌
   const handleChange = (event) => {
     const { name, value } = event.target;
     setCourse(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
   };
 
   const handleCheckboxChange = (level) => {
@@ -31,6 +35,7 @@ function LecturesUpload() {
   };
 
   const handleClick = () => {
+    setErrors({});
     console.log('제출버튼누름');
     // 유저 정보 가져오기
     const storedUser = localStorage.getItem('users');
@@ -48,9 +53,13 @@ function LecturesUpload() {
         alert("개설 신청이 완료되었습니다.")
       })
       .catch((err) => {
-        console.log('실패', err);
-        if (err.response?.status === 401 || err.response?.status === 500) {
-          alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+        if (err.response && err.response.status === 400) {
+          // CourseCreateRequest의 에러 데이터
+          setErrors(err.response.data); 
+        } else if (err.response?.status === 401) {
+          alert("세션이 만료되었습니다.");
+        } else {
+          console.error('실패', err);
         }
       });
   };
@@ -68,6 +77,7 @@ function LecturesUpload() {
             <div className="grid grid-cols-4 items-center gap-6">
               <label className="text-right font-medium">강좌명</label>
               <Input name="title" type="text" onChange={handleChange} value={course.title} className="col-span-3" method="post" />
+              {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
             </div>
 
             {/* <div className="grid grid-cols-4 items-center gap-6">
@@ -89,16 +99,19 @@ function LecturesUpload() {
                   )
                 })}
               </div>
+              {errors.level && <p className="text-red-500 text-sm mt-1">{errors.level}</p>}
             </div>
 
             <div className="grid grid-cols-4 items-center gap-6">
               <label className="text-right font-medium">강좌 개요</label>
               <Input name="description" type="text" onChange={handleChange} value={course.description} className="col-span-3" method="post" />
+              {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
             </div>
 
             <div className="grid grid-cols-4 items-center gap-6">
               <label className="text-right font-medium">강좌 이용료</label>
               <Input name="price" type="text" onChange={handleChange} value={course.price} className="col-span-3" method="post" />
+              {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
             </div>
 
             <CardFooter className="flex justify-end gap-3">
@@ -114,4 +127,4 @@ function LecturesUpload() {
   );
 }
 
-export default LecturesUpload;
+export default CourseCreateRequest;
