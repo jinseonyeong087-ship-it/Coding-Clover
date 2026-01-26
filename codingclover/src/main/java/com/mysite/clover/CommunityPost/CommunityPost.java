@@ -40,10 +40,9 @@ public class CommunityPost {
     // 게시글 생성 일시 (자동 생성)
     @CreationTimestamp
     private LocalDateTime createdAt;
-}
 
-// 게시글 상태를 정의하는 열거형 (공개/숨김)
-enum PostStatus {
-    VISIBLE, // 공개
-    HIDDEN // 숨김 (삭제 시 실제 데이터 삭제 대신 이 상태로 변경)
+    // 댓글 목록 (일대다 관계, 게시글 삭제 시 댓글도 함께 삭제)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("createdAt ASC")
+    private java.util.List<CommunityComment> comments;
 }

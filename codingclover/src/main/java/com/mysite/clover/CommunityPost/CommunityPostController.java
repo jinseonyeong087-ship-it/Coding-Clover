@@ -9,13 +9,18 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 
-import java.util.Map;
 import java.util.List;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import com.mysite.clover.Users.UsersRepository;
 import com.mysite.clover.Users.Users;
+import com.mysite.clover.CommunityPost.dto.PostCreateRequest;
+import com.mysite.clover.CommunityPost.dto.PostResponse;
+import com.mysite.clover.CommunityPost.dto.CommentRequest;
+
+import jakarta.validation.Valid;
 
 // 커뮤니티 게시판 기능을 제공하는 컨트롤러
 @RestController
@@ -26,70 +31,126 @@ public class CommunityPostController {
     private final UsersRepository usersRepository;
 
     // 1. 게시글 목록 조회
-    // 인증된 사용자(학생, 관리자 등)라면 누구나 접근 가능 (보통 커뮤니티는 공개)
-    // @PreAuthorize("hasAnyRole('STUDENT', 'ADMIN')") // 필요 시 주석 해제하여 권한 제한
+    // 누구나 조회 가능 (로그인 여부 무관)
     @GetMapping("/api/community/posts")
-    public ResponseEntity<List<CommunityPost>> list(Principal principal) {
-        // [DEBUG] 요청자 정보 로깅 (실제 운영 시에는 제거하거나 Logger 사용 권장)
-        System.out.println("=== DEBUG: /api/community/posts ===");
-        if (principal == null) {
-            System.out.println("Principal is NULL (Anonymous)");
-        } else {
-            System.out.println("Principal Name: " + principal.getName());
-            System.out.println("Authentication: "
-                    + org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication());
-        }
-
-        // VISIBLE 상태인 게시글 목록을 조회하여 반환
-        return ResponseEntity.ok(communityPostService.getVisiblePosts());
+    public ResponseEntity<List<PostResponse>> list() {
+        List<PostResponse> posts = communityPostService.getVisiblePosts();
+        return ResponseEntity.ok(posts);
     }
 
     // 2. 게시글 상세 조회
-    // 로그인한 사용자(학생, 관리자)만 접근 가능
-    @PreAuthorize("hasAnyRole('STUDENT', 'ADMIN')")
+    // 로그인 체크 : 수동
     @GetMapping("/api/community/posts/{id}")
-    public ResponseEntity<CommunityPost> detail(@PathVariable Long id) {
-        // ID에 해당하는 게시글 상세 정보 반환
-        return ResponseEntity.ok(communityPostService.getPost(id));
+    public ResponseEntity<PostResponse> detail(@PathVariable Long id) {
+        PostResponse post = communityPostService.getPost(id);
+        return ResponseEntity.ok(post);
     }
 
     // 3. 게시글 등록
-    // 학생(STUDENT) 권한만 등록 가능
-    @PreAuthorize("hasRole('STUDENT')")
+    // 로그인한 사용자만 가능
     @PostMapping("/api/community/posts/new")
-    public ResponseEntity<String> create(@RequestBody Map<String, String> params, Principal principal) {
-        // 로그인한 사용자(작성자) 정보 조회
+    public ResponseEntity<?> create(@Valid @RequestBody PostCreateRequest request,
+            BindingResult bindingResult, Principal principal) {
+
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors().get(0).getDefaultMessage());
+        }
+
+        // 로그인 체크
+        if (principal == null) {
+            System.out.println("DEBUG: Create Post Failed - Principal is NULL");
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        // 권한 체크 (학생만)
         Users user = usersRepository.findByLoginId(principal.getName()).orElseThrow();
+        if ("INSTRUCTOR".equals(user.getRole().name())) {
+            return ResponseEntity.status(403).body("강사는 글을 쓸 수 없습니다.");
+        }
 
-        // 게시글 등록 서비스 호출 (제목, 내용, 작성자)
-        communityPostService.create(params.get("title"), params.get("content"), user);
-
+        communityPostService.create(request.getTitle(), request.getContent(), user);
         return ResponseEntity.ok("등록 성공");
     }
 
     // 4. 게시글 수정
-    // 학생(STUDENT) 권한 필요 (서비스 내부에서 본인 확인 수행)
-    @PreAuthorize("hasRole('STUDENT')")
     @PutMapping("/api/community/posts/{id}/edit")
-    public ResponseEntity<String> update(@PathVariable Long id, @RequestBody Map<String, String> params,
-            Principal principal) {
-        // 게시글 수정 서비스 호출 (ID, 제목, 내용, 요청자 로그인 ID)
-        communityPostService.updatePost(id, params.get("title"), params.get("content"), principal.getName());
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody PostCreateRequest request,
+            BindingResult bindingResult, Principal principal) {
 
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors().get(0).getDefaultMessage());
+        }
+
+        if (principal == null)
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+
+        // 권한 체크는 Service에서 본인 확인 수행
+        communityPostService.updatePost(id, request.getTitle(), request.getContent(), principal.getName());
         return ResponseEntity.ok("수정 성공");
     }
 
     // 5. 게시글 삭제
-    // 학생(작성자 본인) 또는 관리자만 삭제 가능
-    @PreAuthorize("hasAnyRole('STUDENT', 'ADMIN')")
     @DeleteMapping("/api/community/posts/{id}/delete")
     public ResponseEntity<String> delete(@PathVariable Long id, Principal principal) {
-        // 요청자 정보 조회
+        if (principal == null)
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+
+        Users user = usersRepository.findByLoginId(principal.getName()).orElseThrow();
+        communityPostService.deletePost(id, user); // Service logs logic handles admin/owner check
+        return ResponseEntity.ok("삭제 성공");
+    }
+
+    // ==========================================
+    // 💬 댓글 Endpoints
+    // ==========================================
+
+    // 6. 댓글 등록
+    @PostMapping("/api/community/posts/{postId}/comments")
+    public ResponseEntity<?> createComment(@PathVariable Long postId,
+            @Valid @RequestBody CommentRequest request,
+            BindingResult bindingResult,
+            Principal principal) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors().get(0).getDefaultMessage());
+        }
+
+        if (principal == null)
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
         Users user = usersRepository.findByLoginId(principal.getName()).orElseThrow();
 
-        // 게시글 삭제 서비스 호출 (권한 체크는 서비스 내부에서 수행)
-        communityPostService.deletePost(id, user);
+        // 강사 제한 필요시 추가
+        if ("INSTRUCTOR".equals(user.getRole().name())) {
+            return ResponseEntity.status(403).body("강사는 댓글을 쓸 수 없습니다.");
+        }
 
-        return ResponseEntity.ok("삭제 성공");
+        communityPostService.createComment(postId, request.getContent(), user);
+        return ResponseEntity.ok("댓글 등록 성공");
+    }
+
+    // 7. 댓글 수정
+    @PutMapping("/api/community/comments/{commentId}")
+    public ResponseEntity<?> updateComment(@PathVariable Long commentId,
+            @Valid @RequestBody CommentRequest request,
+            BindingResult bindingResult,
+            Principal principal) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors().get(0).getDefaultMessage());
+        }
+        if (principal == null)
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+
+        communityPostService.updateComment(commentId, request.getContent(), principal.getName());
+        return ResponseEntity.ok("댓글 수정 성공");
+    }
+
+    // 8. 댓글 삭제
+    @DeleteMapping("/api/community/comments/{commentId}")
+    public ResponseEntity<String> deleteComment(@PathVariable Long commentId, Principal principal) {
+        if (principal == null)
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+
+        Users user = usersRepository.findByLoginId(principal.getName()).orElseThrow();
+        communityPostService.deleteComment(commentId, user);
+        return ResponseEntity.ok("댓글 삭제 성공");
     }
 }

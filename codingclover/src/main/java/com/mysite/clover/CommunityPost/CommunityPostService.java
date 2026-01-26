@@ -1,17 +1,19 @@
 package com.mysite.clover.CommunityPost;
 
 import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import com.mysite.clover.Users.Users;
+import java.util.stream.Collectors;
+import com.mysite.clover.CommunityPost.dto.PostResponse;
 
 // 커뮤니티 게시글 관련 비즈니스 로직 처리 서비스
 @Service
 @RequiredArgsConstructor
 public class CommunityPostService {
     private final CommunityPostRepository communityPostRepository;
+    private final CommunityCommentRepository communityCommentRepository;
 
     // 수강생 전용: 신규 게시글 등록
     @Transactional
@@ -31,14 +33,28 @@ public class CommunityPostService {
     }
 
     // 공통(수강생/관리자): 전체 공개 게시글 목록 조회
-    public List<CommunityPost> getVisiblePosts() {
-        // 상태가 VISIBLE(공개)인 게시글만 최신순(작성일 내림차순)으로 조회
-        return communityPostRepository.findByStatusOrderByCreatedAtDesc(PostStatus.VISIBLE);
+    @Transactional(readOnly = true)
+    public List<PostResponse> getVisiblePosts() {
+        // 상태가 VISIBLE(공개)인 게시글만 최신순(작성일 내림차순)으로 조회하여 DTO로 변환
+        return communityPostRepository.findByStatusOrderByCreatedAtDesc(PostStatus.VISIBLE).stream()
+                .map(PostResponse::fromEntity)
+                .collect(Collectors.toList());
     }
 
     // 공통(수강생/관리자): 게시글 상세 조회
-    public CommunityPost getPost(Long id) {
+    @Transactional(readOnly = true)
+    public PostResponse getPost(Long id) {
         // ID로 게시글 조회, 없으면 예외 발생
+        CommunityPost post = communityPostRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+        // 조회된 엔티티를 응답용 DTO로 변환하여 반환
+        return PostResponse.fromEntity(post);
+    }
+
+    // 내부 조회용 (엔티티 반환 - 컨트롤러가 아닌 서비스 내부 로직용)
+    @Transactional(readOnly = true)
+    public CommunityPost getPostEntity(Long id) {
+        // ID로 게시글 엔티티 조회
         return communityPostRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
     }
@@ -46,27 +62,27 @@ public class CommunityPostService {
     // 수강생 전용: 본인이 작성한 게시글 수정
     @Transactional
     public void updatePost(Long id, String title, String content, String loginId) {
-        // 1. 게시글 조회
-        CommunityPost post = getPost(id);
+        // 1. 게시글 엔티티 조회
+        CommunityPost post = getPostEntity(id);
 
         // 2. 작성자 본인 확인 (로그인한 ID와 게시글 작성자 ID 비교)
         if (!post.getUser().getLoginId().equals(loginId)) {
             throw new RuntimeException("본인의 글만 수정할 수 있습니다.");
         }
 
-        // 3. 제목 및 내용 수정 (Setter -> Dirty Checking)
+        // 3. 제목 및 내용 수정 (Setter -> Dirty Checking으로 자동 업데이트)
         post.setTitle(title);
         post.setContent(content);
 
-        // 4. 저장 (명시적 save 호출은 선택사항이나 확실히 하기 위해)
+        // 4. 저장 (명시적 호출)
         communityPostRepository.save(post);
     }
 
     // 수강생(본인) 및 관리자(강제): 게시글 삭제 (실제 삭제가 아닌 숨김 처리)
     @Transactional
     public void deletePost(Long id, Users user) {
-        // 1. 게시글 조회
-        CommunityPost post = getPost(id);
+        // 1. 삭제할 게시글 조회
+        CommunityPost post = getPostEntity(id);
 
         // 2. 작성자 본인 여부 확인
         boolean isOwner = post.getUser().getLoginId().equals(user.getLoginId());
@@ -81,6 +97,61 @@ public class CommunityPostService {
             communityPostRepository.save(post);
         } else {
             // 권한이 없으면 예외 발생
+            throw new RuntimeException("삭제 권한이 없습니다.");
+        }
+    }
+
+    // ==========================================
+    // 💬 댓글 기능
+    // ==========================================
+
+    // 댓글 등록
+    @Transactional
+    public void createComment(Long postId, String content, Users user) {
+        // 1. 댓글을 달 게시글 조회
+        CommunityPost post = getPostEntity(postId);
+
+        // 2. 댓글 엔티티 생성 및 정보 설정
+        CommunityComment comment = new CommunityComment();
+        comment.setContent(content);
+        comment.setPost(post);
+        comment.setUser(user);
+
+        // 3. DB 저장
+        communityCommentRepository.save(comment);
+    }
+
+    // 댓글 수정
+    @Transactional
+    public void updateComment(Long commentId, String content, String loginId) {
+        // 1. 수정할 댓글 조회
+        CommunityComment comment = communityCommentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("댓글이 존재하지 않습니다."));
+
+        // 2. 본인 확인
+        if (!comment.getUser().getLoginId().equals(loginId)) {
+            throw new RuntimeException("본인의 댓글만 수정할 수 있습니다.");
+        }
+
+        // 3. 내용 수정 (Dirty Checking)
+        comment.setContent(content);
+    }
+
+    // 댓글 삭제
+    @Transactional
+    public void deleteComment(Long commentId, Users user) {
+        // 1. 삭제할 댓글 조회
+        CommunityComment comment = communityCommentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("댓글이 존재하지 않습니다."));
+
+        // 2. 권한 확인 (본인 또는 관리자)
+        boolean isOwner = comment.getUser().getLoginId().equals(user.getLoginId());
+        boolean isAdmin = user.getRole().name().equals("ADMIN");
+
+        // 3. 삭제 수행
+        if (isOwner || isAdmin) {
+            communityCommentRepository.delete(comment); // 댓글은 실제 삭제 (또는 숨김 처리 정책에 따라 변경 가능)
+        } else {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
     }
