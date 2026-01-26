@@ -33,10 +33,10 @@ const MainLogin = () => {
 
         setError('');
 
-        if (!loginId || !password) {
-            setError('아이디, 비밀번호를 입력해 주세요.');
-            return;
-        };
+        // if (!loginId || !password) {
+        //     setError('아이디, 비밀번호를 입력해 주세요.');
+        //     return;
+        // };
 
         try {
             const response = await fetch('/auth/login', {
@@ -54,7 +54,8 @@ const MainLogin = () => {
         console.log("try 구문 성공");
 
             if (!response.ok) {
-                setError('아이디 또는 비밀번호가 일치하지 않습니다.');
+                const errorData = await response.json();
+                setError(errorData.message || '새로고침 후 시도해 주세요.');
                 return;
             }
 
@@ -63,7 +64,6 @@ const MainLogin = () => {
             localStorage.setItem("users", JSON.stringify(userData));
 
             if (loginId && password) {
-                console.log("try 구문 성공");
                 localStorage.setItem("loginId", true);
                 setLoginId(false);
                 switch (userData.role) {

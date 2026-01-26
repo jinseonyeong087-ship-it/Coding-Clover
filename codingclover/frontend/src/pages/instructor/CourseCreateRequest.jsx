@@ -54,8 +54,13 @@ function CourseCreateRequest() {
       })
       .catch((err) => {
         if (err.response && err.response.status === 400) {
-          // CourseCreateRequest의 에러 데이터
-          setErrors(err.response.data); 
+          const errorData = err.response.data;
+          // 서버에서 문자열로 반환하면 global 에러로 처리
+          if (typeof errorData === 'string') {
+            setErrors({ global: errorData });
+          } else {
+            setErrors(errorData);
+          }
         } else if (err.response?.status === 401) {
           alert("세션이 만료되었습니다.");
         } else {
@@ -74,6 +79,7 @@ function CourseCreateRequest() {
           <CardHeader><h1 className="text-3xl font-bold mb-8">강좌 개설</h1></CardHeader>
 
           <CardContent className="space-y-2">
+            {errors.global && <p className="text-red-500 text-sm text-center mb-4">{errors.global}</p>}
             <div className="grid grid-cols-4 items-center gap-6">
               <label className="text-right font-medium">강좌명</label>
               <Input name="title" type="text" onChange={handleChange} value={course.title} className="col-span-3" method="post" />

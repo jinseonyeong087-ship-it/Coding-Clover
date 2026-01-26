@@ -124,7 +124,8 @@ const Register = ({ onToLogin }) => {
         navigate("/auth/login");
       } else {
         const errorData = await response.json();
-        alert(errorData.message || '회원가입에 실패했습니다.');
+        // 서버에서 반환한 필드별 에러를 errors 상태에 반영
+        setErrors(errorData);
       }
     } catch (error) {
       console.error('회원가입 에러:', error);
@@ -149,6 +150,10 @@ const Register = ({ onToLogin }) => {
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* 전역 에러 메시지 */}
+              {errors.global && (
+                <p className="text-sm text-destructive text-center">{errors.global}</p>
+              )}
               {/* 회원 유형 선택 */}
               <div className="space-y-3">
                 <Label className="text-base font-semibold">
