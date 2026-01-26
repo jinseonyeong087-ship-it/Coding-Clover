@@ -182,10 +182,12 @@ function MyPage() {
           <>
             <div className="flex justify-between mb-8">
               <h1 className="text-3xl font-bold">마이페이지</h1>
-              <Button variant="outline" onClick={handleEditToggle}>
-                <Edit className="w-4 h-4 mr-2" />
-                {isEditing ? "취소" : "정보 수정"}
-              </Button>
+              {!isEditing && (
+                <Button variant="outline" onClick={handleEditToggle}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  정보 수정
+                </Button>
+              )}
             </div>
 
             <Card className="max-w-4xl mx-auto">
@@ -213,12 +215,20 @@ function MyPage() {
 
                   <div>
                     <Label>이메일</Label>
-                    <Input value={user.email} readOnly />
+                    <Input 
+                      value={user.email} 
+                      readOnly 
+                      className={isEditing ? "bg-gray-50 text-gray-600 cursor-not-allowed" : ""}
+                    />
                   </div>
 
                   <div>
                     <Label>가입일</Label>
-                    <Input value={user.joinDate} readOnly />
+                    <Input 
+                      value={user.joinDate} 
+                      readOnly 
+                      className={isEditing ? "bg-gray-50 text-gray-600 cursor-not-allowed" : ""}
+                    />
                   </div>
 
                   <div>
