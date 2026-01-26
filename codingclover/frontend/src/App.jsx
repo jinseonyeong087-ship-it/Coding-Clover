@@ -11,7 +11,7 @@ import Lecture from './pages/student/Lecture'
 import MyPage from './pages/student/MyPage'
 import CodingTest from './pages/CodingTest'
 import EmailTest from './pages/EmailTest'
-import CourseCreateRequest from './pages/instructor/CourseCreateRequest'
+import CourseCreateRequest from '@/pages/instructor/CourseCreateRequest'
 import FindAccount from '@/pages/FindAccount'
 import QnaTest from './pages/QnaTest'
 import SubmissionTest from './pages/SubmissionTest'
@@ -19,7 +19,7 @@ import ProtectedRoute from '@/components/ProtectdRoute'
 import Noroll from '@/pages/Noroll'
 import CommunityPostTest from './pages/CommunityPostTest'
 import ProposalDetail from '@/pages/admin/ProposalDetail'
-import CourseDetail from '@/pages/instructor/CourseDetail'
+import InstructorCourseCreate from '@/pages/instructor/InstructorCourseDetail'
 
 
 function App() {
@@ -57,7 +57,7 @@ function App() {
         }>
           <Route path="dashboard" element={<InstructorMain />} />
           <Route path="course/new" element={<CourseCreateRequest />} />
-          <Route path="course/:courseId" element={<CourseDetail />} />
+          <Route path="course/:courseId" element={<InstructorCourseCreate />} />
         </Route>
         {/* 관리자 */}
         <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']} />}>

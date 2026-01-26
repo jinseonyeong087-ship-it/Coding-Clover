@@ -4,7 +4,7 @@ import InstructorNav from "@/components/InstructorNav";
 import Tail from "@/components/Tail";
 import { Button } from "@/components/ui/Button";
 
-function CourseDetail() {
+function InstructorCourseCreate() {
 
     const { courseId } = useParams();
     const [course, setCourse] = useState(null);
@@ -12,11 +12,17 @@ function CourseDetail() {
     useEffect(() => {
         fetch(`/instructor/course/${courseId}`, { credentials: 'include' })
             .then((res) => {
-                if (!res.ok) throw new Error('인증 필요');
+                if (res.status === 401 || res.status === 403) {
+                    throw new Error('인증 필요: 강사로 로그인해주세요.');
+                }
+                if (res.status === 500) {
+                    throw new Error('서버 에러: 해당 강좌가 존재하지 않거나 접근 권한이 없습니다.');
+                }
+                if (!res.ok) throw new Error(`에러 발생: ${res.status}`);
                 return res.json();
             })
             .then((data) => setCourse(data))
-            .catch((err) => console.error(err));
+            .catch((err) => console.error(err.message));
     }, [courseId]);
 
     const getStatusText = (status) => {
@@ -77,4 +83,4 @@ function CourseDetail() {
 
 }
 
-export default CourseDetail;
+export default InstructorCourseCreate;

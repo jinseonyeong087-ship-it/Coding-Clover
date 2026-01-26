@@ -145,7 +145,7 @@ public class CourseController {
     // 강사 : 개별 강좌 상세 조회
     @PreAuthorize("hasRole('INSTRUCTOR')") // 강사 권한 체크
     @GetMapping("/instructor/course/{id}")
-    public ResponseEntity<InstructorCourseDto> instructorCourseDetail(@PathVariable Long id) {
+    public ResponseEntity<InstructorCourseDto> instructorCourseDetail(@PathVariable("id") Long id) {
         // 강좌 ID로 상세 정보를 조회하여 강사용 DTO로 변환 후 반환
         return ResponseEntity.ok(InstructorCourseDto.fromEntity(courseService.getCourse(id)));
     }
@@ -154,7 +154,7 @@ public class CourseController {
     @PreAuthorize("hasRole('INSTRUCTOR')") // 강사 권한 체크
     @PutMapping("/instructor/course/{id}/edit")
     // @Valid : 요청 본문(body) 데이터를 DTO로 매핑하며 유효성 검사 수행
-    public ResponseEntity<?> updateCourse(@PathVariable Long id, @Valid @RequestBody 
+    public ResponseEntity<?> updateCourse(@PathVariable("id") Long id, @Valid @RequestBody 
         // 요청 본문(body) 데이터를 DTO로 매핑하며 유효성 검사 수행
         CourseCreateRequest request,
         // 유효성 검사 결과를 담는 객체

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import AdminNav from "@/components/AdminNav";
+import Tail from "@/components/Tail";
 import { useParams, useNavigate } from "react-router-dom";
 // import { useForm } from "react-hook-form";
 import { Separator } from "@/components/ui/separator"
@@ -62,12 +64,24 @@ function ProposalDetail() {
         setCourse(prev => ({ ...prev, proposalStatus: 'APPROVED' }))
     };
 
+    const getLevelText = (level) => {
+        switch (level) {
+            case 1: return '초급';
+            case 2: return '중급';
+            case 3: return '고급';
+            default: return level;
+        }
+    };
+
     if (!course) {
         return <div className="p-6">로딩 중...</div>;
     }
 
     return (
-        <div className="p-6">
+        <>
+        <AdminNav />
+
+        <div className="container mx-auto px-4 py-16">
             <div className="flex max-w-2xl flex-col gap-4 text-sm">
                 <div className="flex flex-col gap-1.5">
                     <div className="leading-none font-bold text-lg">강좌명</div>
@@ -78,7 +92,7 @@ function ProposalDetail() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <span className="font-semibold">난이도:</span> {course.level}단계
+                        <span className="font-semibold">난이도:</span> {getLevelText(course.level)}
                     </div>
                     <div>
                         <span className="font-semibold">가격:</span> {course.price?.toLocaleString()}원
@@ -125,6 +139,9 @@ function ProposalDetail() {
                 </div>
             </div>
         </div>
+        <Tail />
+        </>
+        
     );
 
 
