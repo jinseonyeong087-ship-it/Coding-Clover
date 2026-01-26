@@ -19,15 +19,16 @@ import { Badge } from "@/components/ui/badge"
 
 function ProposalDetail() {
 
-    const { id } = useParams(); // URL에서 courseId 추출
+    const { courseId } = useParams(); // URL에서 courseId 추출
     const navigate = useNavigate();
     const [course, setCourse] = useState(null);
 
     useEffect(() => {
-        axios.get(`/admin/course/${id}/pending`, { withCredentials: true })
+        // 전체 강좌 목록에서 해당 ID 찾기
+        axios.get('/admin/course', { withCredentials: true })
             .then((response) => {
                 console.log("받은 데이터:", response.data);
-                const found = response.data.find(c => String(c.courseId) === String(id));
+                const found = response.data.find(c => String(c.courseId) === String(courseId));
                 if (found) {
                     setCourse(found);
                 } else {
@@ -37,11 +38,11 @@ function ProposalDetail() {
             .catch((err) => {
                 console.error('데이터 로딩 실패', err);
             })
-    }, [id]);
+    }, [courseId]);
 
     const handleApprove = () => {
         // 백엔드 CourseController의 @PostMapping("/admin/course/{id}/approve") 호출
-        axios.post(`/admin/course/${id}/approve`, {}, { withCredentials: true })
+        axios.post(`/admin/course/${courseId}/approve`, {}, { withCredentials: true })
             .then((response) => {
                 alert("강좌 승인이 완료되었습니다.");
                 navigate("/admin/course"); // 승인 후 목록으로 이동
