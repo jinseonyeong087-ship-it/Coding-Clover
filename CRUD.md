@@ -1,70 +1,92 @@
-# 🍀 코딩 클로버 기능 구현 지도 (CRUD Map)
+# 🍀 코딩 클로버 백엔드 전체 기능 명세 (Backend CRUD Map)
 
-이 문서는 **"어떤 기능이 어떤 파일의 몇 번째 줄에 있는지"** 아주 쉽게 찾을 수 있도록 정리한 지도입니다.
-코드를 잘 모르는 분들도 **"게시글 작성 기능이 어디 있지?"** 하면 바로 찾아가실 수 있습니다.
-
----
-
-## 🛠️ 들어가기 전에: 용어 설명
-*   **Controller (컨트롤러)**: **"주문 받는 곳"** (식당 카운터). 사용자가 버튼을 누르면 가장 먼저 연락받는 파일입니다.
-*   **Service (서비스)**: **"요리하는 곳"** (주방). 실제 데이터를 저장하고, 계산하고, 검사하는 핵심 작업장입니다.
-*   **CRUD**: 데이터 관리의 기본 4박자. (**C**:만들기, **R**:읽기, **U**:수정하기, **D**:삭제하기)
+이 문서는 **"프론트엔드 연동 여부와 상관없이"** 현재 백엔드(Java/Spring Boot) 코드에 실제로 구현되어 있는 모든 기능을 정리한 지도입니다.
+(백엔드 로직 자체는 개발되어 있으나, 프론트 화면이 아직 없는 기능까지 포함됩니다.)
 
 ---
 
-## 1. 📢 커뮤니티 게시판 (Community)
-> 사람들이 글을 쓰고 댓글을 다는 공간입니다. 가장 기능이 많고 완벽하게 구현되어 있습니다.
+## 1. 📢 커뮤니티 게시판 (CommunityPost)
+> 게시글과 댓글에 대한 완전한 CRUD 로직이 `Controller`와 `Service`에 모두 구현되어 있습니다.
 
-| 내가 하고 싶은 것 | 기능(CRUD) | 📂 여기를 보세요 (Controller) | 🛠️ 실제 작업하는 곳 (Service) |
-| :--- | :---: | :--- | :--- |
-| **글 쓰기** | **Create** | `CommunityPostController` (51번째 줄) | `CommunityPostService` (20번째 줄) |
-| **글 목록 보기** | **Read** | `CommunityPostController` (35번째 줄) | `CommunityPostService` (37번째 줄) |
-| **글 내용 보기** | **Read** | `CommunityPostController` (43번째 줄) | `CommunityPostService` (46번째 줄) |
-| **내 글 수정하기** | **Update** | `CommunityPostController` (76번째 줄) | `CommunityPostService` (64번째 줄) |
-| **내 글 지우기** | **Delete** | `CommunityPostController` (93번째 줄) | `CommunityPostService` (83번째 줄) |
-| **댓글 달기** | **Create** | `CommunityPostController` (108번째 줄) | `CommunityPostService` (110번째 줄) |
-
----
-
-## 2. 🔔 공지사항 (Notice)
-> 관리자가 "필독하세요!" 하고 올리는 게시판입니다. 일반 회원은 보기만 할 수 있습니다.
-
-| 내가 하고 싶은 것 | 기능(CRUD) | 📂 여기를 보세요 (Controller) | 🛠️ 실제 작업하는 곳 (Service) |
-| :--- | :---: | :--- | :--- |
-| **공지 목록 보기** | **Read** | `NoticeController` (35번째 줄) | `NoticeService` (21번째 줄) |
-| **공지 내용 보기** | **Read** | `NoticeController` (43번째 줄) | `NoticeService` (27번째 줄) |
-| **(관리자) 공지 등록** | **Create** | `NoticeController` (65번째 줄) | `NoticeService` (41번째 줄) |
-| **(관리자) 공지 삭제** | **Delete** | `NoticeController` (86번째 줄) | `NoticeService` (62번째 줄) |
+| 기능 | 동작 설명 | 백엔드 구현 위치 |
+| :--- | :--- | :--- |
+| **게시글 작성** | 제목, 내용을 받아 저장하며 작성자를 기록함 (초기 상태: Visible) | `CommunityPostController` (`/api/community/posts/new`) |
+| **게시글 목록** | 삭제되지 않은(Visible) 게시글만 필터링하여 최신순 조회 | `CommunityPostService` (`getVisiblePosts`) |
+| **게시글 상세** | 특정 게시글의 내용을 조회하며 조회수 증가 로직 포함 | `CommunityPostController` (`/api/community/posts/{id}`) |
+| **게시글 수정** | 작성자 본인 확인 후 제목과 내용 수정 | `CommunityPostService` (`updatePost`) |
+| **게시글 삭제** | 작성자 본인 확인 후 실제 삭제 대신 '숨김(HIDDEN)' 상태로 변경 (**Soft Delete**) | `CommunityPostService` (`deletePost`) |
+| **댓글 작성** | 특정 게시글에 종속된 댓글 저장 | `CommunityPostController` (`.../comments`) |
+| **댓글 수정/삭제** | 댓글 작성자 본인 확인 후 수정 및 삭제 처리 | `CommunityPostService` (`updateComment`/`deleteComment`) |
 
 ---
 
-## 3. 🎓 강좌 및 수강신청 (Course & Enrollment)
-> 선생님이 강의를 만들고, 학생이 수강 신청하는 기능입니다.
+## 2. � 회원 관리 (Users)
+> 회원가입 로직과 인증(Security) 필터 연동이 완료되어 있습니다.
 
-| 내가 하고 싶은 것 | 기능(CRUD) | 📂 여기를 보세요 (Controller) | 🛠️ 실제 작업하는 곳 (Service) |
-| :--- | :---: | :--- | :--- |
-| **강좌 개설 신청**<br>(선생님) | **Create** | `CourseController` (110번째 줄) | `CourseService` (62번째 줄) |
-| **전체 강좌 구경** | **Read** | `CourseController` (33번째 줄) | `CourseService` (39번째 줄) |
-| **수강 신청 하기**<br>(학생) | **Create** | `CourseController` (190번째 줄)<br>또는 `EnrollmentController` (30번째 줄) | `CourseService` (119번째 줄)<br>또는 `EnrollmentService` (88번째 줄) |
-| **내 수강 목록** | **Read** | `EnrollmentController` (64번째 줄) | `EnrollmentService` (74번째 줄) |
-| **강좌 승인 하기**<br>(관리자) | **Update** | `CourseController` (248번째 줄) | `CourseService` (160번째 줄) |
+| 기능 | 동작 설명 | 백엔드 구현 위치 |
+| :--- | :--- | :--- |
+| **회원가입** | 아이디, 비밀번호(암호화), 이름, 이메일, 역할(STUDENT/INSTRUCTOR) 저장 | `UsersController` (`/auth/register`) |
+| **로그인 인증** | Spring Security 필터 체인에서 ID/PW 검증 및 세션/토큰 발급 | `SecurityConfig` & `UserSecurityService` |
+| **내 정보 조회** | SecurityContext에서 현재 로그인한 유저 정보를 추출하여 반환 | `UsersController` (또는 각 도메인 마이페이지 로직) |
 
 ---
 
-## 4. 🧩 코딩 문제 풀이 (Problem)
-> 문제를 풀고 채점받는 곳입니다.
+## 3. 🎓 강좌 관리 (Course)
+> 강사, 관리자, 학생의 역할별 로직이 분리되어 정교하게 구현되어 있습니다.
 
-| 내가 하고 싶은 것 | 기능(CRUD) | 📂 여기를 보세요 (Controller) | 🛠️ 실제 작업하는 곳 |
-| :--- | :---: | :--- | :--- |
-| **문제 목록 보기** | **Read** | `ProblemController` (27번째 줄) | (바로 DB에서 가져옴) |
-| **문제 풀고 채점** | **Create** | `ProblemController` (55번째 줄) | `SubmissionService` (18번째 줄)<br>*(결과 저장)* |
-| **내 풀이 기록** | **Read** | `SubmissionController` (26번째 줄) | (바로 DB에서 가져옴) |
+| 기능 | 동작 설명 | 백엔드 구현 위치 |
+| :--- | :--- | :--- |
+| **강좌 개설 신청** | (강사) 제목, 설명, 가격 등을 입력하여 생성. 초기 상태는 `PENDING` | `CourseController` (`/instructor/course/new`) |
+| **본인 강좌 조회** | (강사) 본인이 만든 강좌 목록 조회 | `CourseService` (`getInstructorList`) |
+| **강좌 수정** | (강사) 본인 강좌인지 확인 후 정보 수정 | `CourseController` (`/instructor/course/{id}/edit`) |
+| **강좌 삭제** | (강사) 본인 강좌인지 확인 후 삭제 | `CourseController` (`/instructor/course/{id}/delete`) |
+| **전체 강좌 조회** | (학생/비회원) 승인된(`APPROVED`) 공개 강좌만 조회 | `CourseService` (`getPublicList`) |
+| **강좌 승인/반려** | (관리자) 대기 중인 강좌를 승인(`APPROVED`)하거나 반려(`REJECTED`) 처리 | `CourseController` (`/admin/course/...`) |
 
 ---
 
-## 5. 👤 회원 가입 (Users)
-> 사이트에 가입하는 기능입니다.
+## 4. 📺 강의 콘텐츠 관리 (Lecture)
+> 강좌(Course) 내에 속하는 상세 영상/수업(Lecture) 관리 로직입니다.
 
-| 내가 하고 싶은 것 | 기능(CRUD) | 📂 여기를 보세요 (Controller) | 🛠️ 실제 작업하는 곳 (Service) |
-| :--- | :---: | :--- | :--- |
-| **회원 가입** | **Create** | `UsersController` (24번째 줄) | `UsersService` (14번째 줄) |
+| 기능 | 동작 설명 | 백엔드 구현 위치 |
+| :--- | :--- | :--- |
+| **강의 등록** | (강사) 특정 강좌에 포함될 영상 URL, 순서, 제목 등록 | `LectureController` (`/instructor/lecture/upload`) |
+| **강의 목록 조회** | (강사) 승인 여부와 관계없이 본인이 올린 전체 강의 조회 | `LectureController` (`/instructor/lecture/{courseId}`) |
+| **수강생용 강의 조회** | (학생) 해당 강좌의 '승인된' 강의만 순서대로 조회 | `LectureController` (`/student/lecture/...`) |
+| **강의 승인/반려** | (관리자) 개별 강의 콘텐츠 검수 후 승인 또는 반려 | `LectureService` (`approve`/`reject`) |
+| **강의 비활성화** | (관리자) 문제 있는 강의를 강제로 안 보이게 숨김 처리 (`INACTIVE`) | `LectureService` (`inactive`) |
+
+---
+
+## 5. 📝 수강 신청 (Enrollment)
+> 학생의 수강 등록과 이력을 관리합니다.
+
+| 기능 | 동작 설명 | 백엔드 구현 위치 |
+| :--- | :--- | :--- |
+| **수강 신청** | 학생이 특정 강좌를 신청. **중복 신청 방지** 로직 포함 | `EnrollmentService` (`enrollCourse`) |
+| **수강 취소** | 신청한 수강 내역 취소 (상태 변경 또는 삭제) | `EnrollmentService` (`cancelMyEnrollment`) |
+| **내 수강 이력** | 학생 본인이 신청한 강좌 목록(Active) 조회 | `EnrollmentController` (`.../active`) |
+
+---
+
+## 6. 🔔 공지사항 (Notice)
+> 관리자 전용 게시판 로직입니다.
+
+| 기능 | 동작 설명 | 백엔드 구현 위치 |
+| :--- | :--- | :--- |
+| **공지 등록** | (관리자) 제목, 내용 작성. 일반 게시판과 달리 관리자 권한 체크 필수 | `NoticeController` (`/admin/notice`) |
+| **공지 수정/삭제** | (관리자) 등록된 공지사항 수정 및 삭제 로직 | `NoticeService` (`update`/`delete`) |
+| **공지 조회** | (전체) 모든 사용자가 공지사항 목록 및 상세 내용 조회 | `NoticeController` (`/notice`) |
+
+---
+
+## 7. 🧩 코딩 문제 및 채점 (Problem/Submission)
+> 문제 은행 및 채점 엔진 로직입니다.
+
+| 기능 | 동작 설명 | 백엔드 구현 위치 |
+| :--- | :--- | :--- |
+| **문제 등록** | (관리자) 문제 지문, 난이도 등 기본 정보 저장 | `ProblemController` (`create`) |
+| **문제 목록/상세** | 전체 문제 리스트 및 특정 문제 상세 조회 | `ProblemRepository` 직접 호출 |
+| **코드 실행/채점** | 사용자가 제출한 코드를 **별도 프로세스로 실행**하여 테스트 케이스와 비교 판정 (**Pass/Fail**) | `ProblemController` (`submitCode`) & `JavaNativeExecutor` |
+| **제출 이력 저장** | 채점 결과(성공 여부, 실행 시간)를 유저 정보와 함께 DB에 영구 저장 | `SubmissionService` (`create`) |
+| **내 풀이 조회** | 유저별 제출 이력(내가 푼 문제들) 조회 | `SubmissionController` (`getHistory`) |
