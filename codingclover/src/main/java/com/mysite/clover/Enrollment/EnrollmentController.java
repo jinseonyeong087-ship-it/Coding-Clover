@@ -44,7 +44,7 @@ public class EnrollmentController {
         }
     }
 
-    // 수강 취소
+    // 수강 취소(학생 취소는 이력 보존을 위한 상태 변경이므로 POST로 처리)
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/student/enrollment/{courseId}/cancel")
     public ResponseEntity<String> cancelMyEnrollment(
@@ -108,7 +108,7 @@ public class EnrollmentController {
         return ResponseEntity.ok(students);
     }
 
-    // 수강 강제 취소 (관리자 권한)
+    // 수강 강제 취소 (관리자의 강제 취소는 관리 행위이기 때문에 DELETE)
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/admin/enrollment/{enrollmentId}/cancel")
     public ResponseEntity<String> adminCancelEnrollment(

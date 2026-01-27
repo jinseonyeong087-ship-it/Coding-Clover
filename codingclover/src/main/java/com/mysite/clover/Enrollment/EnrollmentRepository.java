@@ -35,7 +35,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
       EnrollmentStatus status
   );
 
-  //화면 출력용 (N+1 방지)
+  //내 수강 목록 조회 (N+1 방지 : Enrollment 목록 N개를 조회하더라도 user / course 접근 시 추가 쿼리가 발생하지 않도록 미리 JOIN으로 다 가져온다)
   @Query("""
       SELECT e FROM Enrollment e
       JOIN FETCH e.user

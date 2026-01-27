@@ -70,7 +70,7 @@ public class Enrollment {
   public Enrollment() {
   }
 
-  // 수강 신청 시 사용하는 생성자
+  // 수강 신청 시 사용하는 생성자(진단할 수 있는 시험 기능이 없어 일단 초급으로 설정)
   public Enrollment(Users user, Course course) {
     this.user = user;
     this.course = course;
