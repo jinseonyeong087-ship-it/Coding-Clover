@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.mysite.clover.Course.Course;
-import com.mysite.clover.Course.CourseRepository;
 import com.mysite.clover.Users.Users;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 public class EnrollmentService {
 
   private final EnrollmentRepository enrollmentRepository;
-  private final CourseRepository courseRepository;
 
   @Transactional
   public void enroll(Users user, Course course) {
@@ -84,19 +82,9 @@ public class EnrollmentService {
         .collect(Collectors.toList());
   }
 
-  // 학생 - 강좌 수강 신청
-  @Transactional
-  public void enrollCourse(Users student, Long courseId) {
-    Course course = courseRepository.findById(courseId)
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
-    enroll(student, course);
-  }
-
   // 학생 - 내 수강 취소
   @Transactional
-  public void cancelMyEnrollment(Users student, Long courseId) {
-    Course course = courseRepository.findById(courseId)
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
+  public void cancelMyEnrollment(Users student, Course course) {
     cancel(student, student, course);
   }
 
@@ -104,10 +92,7 @@ public class EnrollmentService {
 
   // 강사 - 특정 강좌의 수강생 조회
   @Transactional(readOnly = true)
-  public List<InstructorEnrollmentDto> getCourseStudents(Users instructor, Long courseId) {
-    Course course = courseRepository.findById(courseId)
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
-    
+  public List<InstructorEnrollmentDto> getCourseStudents(Users instructor, Course course) {
     List<Enrollment> enrollments = enrollmentRepository.findByInstructorAndCourse(instructor, course);
     return enrollments.stream()
         .map(e -> new InstructorEnrollmentDto(
@@ -172,10 +157,7 @@ public class EnrollmentService {
 
   // 관리자 - 특정 강좌의 수강생 조회
   @Transactional(readOnly = true)
-  public List<AdminEnrollmentDto> getAdminCourseStudents(Long courseId) {
-    Course course = courseRepository.findById(courseId)
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
-        
+  public List<AdminEnrollmentDto> getAdminCourseStudents(Course course) {
     List<Enrollment> enrollments = enrollmentRepository.findAdminByCourse(course);
     return enrollments.stream()
         .map(e -> new AdminEnrollmentDto(

@@ -42,4 +42,4 @@ public class AdminProfileService {
 }
 
 
-//validateAdmin 관리자가 아니면 예외를 던짐(통과or예외
+//validateAdmin 관리자가 아니면 예외를 던짐(통과or예외)

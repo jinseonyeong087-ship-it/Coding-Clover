@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mysite.clover.Course.Course;
+import com.mysite.clover.Course.CourseRepository;
 import com.mysite.clover.Users.Users;
 
 import lombok.RequiredArgsConstructor;
@@ -20,9 +22,10 @@ import lombok.RequiredArgsConstructor;
 public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
+    private final CourseRepository courseRepository;
 
     // ==========================================
-    // 🟩 수강생 영역
+    // 수강생 영역
     // ==========================================
 
     // 수강 신청
@@ -32,7 +35,9 @@ public class EnrollmentController {
             @PathVariable("courseId") Long courseId,
             @AuthenticationPrincipal Users student) {
         try {
-            enrollmentService.enrollCourse(student, courseId);
+            Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
+            enrollmentService.enroll(student, course);
             return ResponseEntity.ok("수강 신청이 완료되었습니다.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -46,42 +51,17 @@ public class EnrollmentController {
             @PathVariable("courseId") Long courseId,
             @AuthenticationPrincipal Users student) {
         try {
-            enrollmentService.cancelMyEnrollment(student, courseId);
+            Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
+            enrollmentService.cancelMyEnrollment(student, course);
             return ResponseEntity.ok("수강이 취소되었습니다.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    // 내 수강 내역 조회 (전체) - url.md에는 없지만 필요할 수 있음.
-    // url.md에 /student/enrollment/active 가 있음. 이는 CourseController의
-    // /student/course/active 와 중복될 수 있으나
-    // 여기서는 Enrollment 객체를 반환하거나 Course를 반환.
-    // CourseController에서 이미 담당하므로 여기서는 생략하거나, EnrollmentDTO를 반환하는 용도로 사용.
-    // 일단 url.md에 명시된 /student/enrollment/active 구현 (EnrollmentDto 반환 가정)
-
-    @PreAuthorize("hasRole('STUDENT')")
-    @GetMapping("/student/enrollment/active")
-    public ResponseEntity<List<StudentEnrollmentDto>> getMyActiveEnrollments(
-            @AuthenticationPrincipal Users student) {
-        // EnrollmentService에 active만 가져오는 메소드 필요 (현재 getMyEnrollmentsForStudent는 전체)
-        // 일단 전체 반환 후 필터링하거나 새로 추가해야 함.
-        // 여기서는 전체를 반환하는 getMyEnrollmentsForStudent 사용 (임시)
-        List<StudentEnrollmentDto> enrollments = enrollmentService.getMyEnrollmentsForStudent(student);
-        return ResponseEntity.ok(enrollments);
-    }
-
-    @PreAuthorize("hasRole('STUDENT')")
-    @GetMapping("/student/enrollment/completed")
-    public ResponseEntity<List<StudentEnrollmentDto>> getMyCompletedEnrollments(
-            @AuthenticationPrincipal Users student) {
-        // 상동
-        List<StudentEnrollmentDto> enrollments = enrollmentService.getMyEnrollmentsForStudent(student);
-        return ResponseEntity.ok(enrollments);
-    }
-
     // ==========================================
-    // 🟨 강사 영역
+    // 강사 영역
     // ==========================================
 
     // 내 모든 강좌의 수강생 현황
@@ -99,12 +79,14 @@ public class EnrollmentController {
     public ResponseEntity<List<InstructorEnrollmentDto>> getCourseStudents(
             @PathVariable("courseId") Long courseId,
             @AuthenticationPrincipal Users instructor) {
-        List<InstructorEnrollmentDto> students = enrollmentService.getCourseStudents(instructor, courseId);
+        Course course = courseRepository.findById(courseId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
+        List<InstructorEnrollmentDto> students = enrollmentService.getCourseStudents(instructor, course);
         return ResponseEntity.ok(students);
     }
 
     // ==========================================
-    // 🟥 관리자 영역
+    // 관리자 영역
     // ==========================================
 
     // 전체 수강 내역 관리
@@ -120,7 +102,9 @@ public class EnrollmentController {
     @GetMapping("/admin/course/{courseId}/enrollment")
     public ResponseEntity<List<AdminEnrollmentDto>> getAdminCourseStudents(
             @PathVariable("courseId") Long courseId) {
-        List<AdminEnrollmentDto> students = enrollmentService.getAdminCourseStudents(courseId);
+        Course course = courseRepository.findById(courseId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
+        List<AdminEnrollmentDto> students = enrollmentService.getAdminCourseStudents(course);
         return ResponseEntity.ok(students);
     }
 
@@ -128,7 +112,7 @@ public class EnrollmentController {
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/admin/enrollment/{enrollmentId}/cancel")
     public ResponseEntity<String> adminCancelEnrollment(
-            @PathVariable("enrollmentI") Long enrollmentId,
+            @PathVariable("enrollmentId") Long enrollmentId,
             @AuthenticationPrincipal Users admin) {
         try {
             enrollmentService.adminCancelEnrollment(admin, enrollmentId);
