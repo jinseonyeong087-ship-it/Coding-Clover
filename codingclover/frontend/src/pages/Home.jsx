@@ -26,7 +26,7 @@ function Home() {
       .then((json) => {
         setCourse(json);
         setLoading(false);
-      }).catch((err)=>console.err(err))
+      }).catch((err)=>console.error(err))
     }, []);
 
   return (
@@ -70,9 +70,9 @@ function Home() {
 
           {tabs.map((tab) => (
             <TabsContent key={tab.id} value={tab.id}>
-              <div className="grid coursesrid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {/* 탭 활성화 중복방지 */}
-                {course.filter((item) => item.level === String(tab.id))
+                {course.filter((item) => item.level === tab.id)
                   .map((item) =>
                     <Card key={item.courseId} className="hover:shadow-lg transition-shadow">
                       <CardHeader>
