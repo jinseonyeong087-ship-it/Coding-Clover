@@ -7,8 +7,20 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { User, Edit } from "lucide-react";
 
+// 상수
+ const EDUCATION_OPTIONS = [
+  "입문 (코딩 경험 없음)",
+  "초급 (기초 문법 이해)",
+  "중급 (프로젝트 경험 있음)"
+];
 
-// 로그인 ID 추출
+const INTEREST_OPTIONS = [
+  "C", "C++", "Java", "Python",
+  "HTML/CSS", "JavaScript",
+  "Kotlin", "Swift", "Dart", "Database"
+];
+
+// 유틸리티 함수
 const getLoginId = () => {
   const storedUsers = localStorage.getItem("users");
   if (!storedUsers) return "student";
@@ -19,82 +31,133 @@ const getLoginId = () => {
   }
 };
 
-// 관심분야 배열
 const parseInterests = (value) => {
   if (!value || value === "미설정") return [];
   return value.split(', ').filter(v => v && v !== "미설정");
 };
 
-function MyPage() {
+const getCachedData = (key) => {
+  try {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+  } catch {
+    return null;
+  }
+};
 
-  //마이페이지 화면 상태
+const setCachedData = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (e) {
+    console.error('Cache error:', e);
+  }
+};
+
+function MyPage() {
   const [user, setUser] = useState(null);
   const [enrollments, setEnrollments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-
-  const [editForm, setEditForm] = useState({
-    name: '',
-    educationLevel: '',
-  });
-
+  const [editForm, setEditForm] = useState({ name: '', educationLevel: '' });
   const [selectedInterests, setSelectedInterests] = useState([]);
 
-  // 코딩 학습 수준 드롭다운
-  const educationOptions = [
-    "입문 (코딩 경험 없음)",
-    "초급 (기초 문법 이해)",
-    "중급 (프로젝트 경험 있음)"
-  ];
+  const initFormData = (userData) => {
+    setEditForm({ name: userData.name, educationLevel: userData.educationLevel || '' });
+    setSelectedInterests(parseInterests(userData.interestCategory));
+  };
 
-  //관심분야 체크박스
-  const interestOptions = [
-    "C", "C++", "Java", "Python",
-    "HTML/CSS", "JavaScript",
-    "Kotlin", "Swift", "Dart", "Database"
-  ];
+  const loadCachedData = () => {
+    const cachedUser = getCachedData('cachedUserProfile');
+    const cachedEnrollments = getCachedData('cachedEnrollments');
+    
+    if (cachedUser) {
+      setUser(cachedUser);
+      initFormData(cachedUser);
+    }
+    if (cachedEnrollments) {
+      setEnrollments(cachedEnrollments);
+    }
+  };
 
   //백엔드 api 호출
   useEffect(() => {
-    const fetchData = async () => {
+    // 데이터 캐싱 채크
+    const cachedUser = localStorage.getItem('cachedUserProfile');
+    const cachedEnrollments = localStorage.getItem('cachedEnrollments');
+    
+    // 캐시된 데이터가 있으면 먼저 표시
+    if (cachedUser) {
       try {
-        // 프로필 정보 가져오기
-        const profileResponse = await fetch('/api/student/mypage', {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Login-Id': getLoginId()
-          },
-          credentials: 'include'
-        });
-
-        if (!profileResponse.ok) {
-          throw new Error(`프로필 조회 실패 (${profileResponse.status})`);
-        }
-
-        const userData = await profileResponse.json();
-        setUser({
-          ...userData,
-          joinDate: new Date(userData.joinDate).toLocaleDateString('ko-KR')
-        });
+        const userData = JSON.parse(cachedUser);
+        setUser(userData);
         setEditForm({
           name: userData.name,
           educationLevel: userData.educationLevel || ''
         });
         setSelectedInterests(parseInterests(userData.interestCategory));
+      } catch (e) {
+        console.error('Cached user data parse error:', e);
+      }
+    }
+    
+    if (cachedEnrollments) {
+      try {
+        setEnrollments(JSON.parse(cachedEnrollments));
+      } catch (e) {
+        console.error('Cached enrollments data parse error:', e);
+      }
+    }
 
-        // 수강 목록 가져오기
-        const enrollmentResponse = await fetch('/student/enrollment', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include'
-        });
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // 두 API를 병렬로 호출
+        const [profileResponse, enrollmentResponse] = await Promise.all([
+          fetch('/api/student/mypage', {
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Login-Id': getLoginId()
+            },
+            credentials: 'include'
+          }),
+          fetch('/student/enrollment', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+          })
+        ]);
 
+        // 프로필 데이터 처리
+        if (profileResponse.ok) {
+          const userData = await profileResponse.json();
+          const processedUserData = {
+            ...userData,
+            joinDate: new Date(userData.joinDate).toLocaleDateString('ko-KR')
+          };
+          setUser(processedUserData);
+          setEditForm({
+            name: userData.name,
+            educationLevel: userData.educationLevel || ''
+          });
+          setSelectedInterests(parseInterests(userData.interestCategory));
+          
+          // 캐시에 저장
+          localStorage.setItem('cachedUserProfile', JSON.stringify(processedUserData));
+        } else {
+          throw new Error(`프로필 조회 실패 (${profileResponse.status})`);
+        }
+
+        // 수강 목록 데이터 처리
         if (enrollmentResponse.ok) {
           const enrollmentData = await enrollmentResponse.json();
           setEnrollments(enrollmentData);
+          
+          // 캐시에 저장
+          localStorage.setItem('cachedEnrollments', JSON.stringify(enrollmentData));
         } else {
           console.error('수강 목록 조회 실패:', enrollmentResponse.status);
           setEnrollments([]);
@@ -160,12 +223,17 @@ function MyPage() {
       }
 
       // 상태만 갱신 (reload 제거)
-      setUser(prev => ({
-        ...prev,
+      const updatedUser = {
+        ...user,
         name: editForm.name,
         educationLevel: editForm.educationLevel,
         interestCategory
-      }));
+      };
+      
+      setUser(updatedUser);
+      
+      // 캐시도 업데이트
+      localStorage.setItem('cachedUserProfile', JSON.stringify(updatedUser));
 
       setIsEditing(false);
       alert("저장 완료!");
@@ -258,9 +326,7 @@ function MyPage() {
                         onChange={e => setEditForm({ ...editForm, educationLevel: e.target.value })}
                       >
                         <option value="">선택</option>
-                        {educationOptions.map(o => (
-                          <option key={o} value={o}>{o}</option>
-                        ))}
+                        {EDUCATION_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
                       </select>
                     ) : (
                       <Input value={user.educationLevel || "미설정"} readOnly />
@@ -272,7 +338,7 @@ function MyPage() {
 
                     {isEditing ? (
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {interestOptions.map(i => (
+                        {INTEREST_OPTIONS.map(i => (
                           <label key={i} className="flex items-center gap-2">
                             <input
                               type="checkbox"
