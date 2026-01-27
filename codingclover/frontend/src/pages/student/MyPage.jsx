@@ -299,9 +299,7 @@ function MyPage() {
             </Card>
           </>
         )}
-        {/* ===============================
-            내가 듣는 강좌 (더미)
-           =============================== */}
+      {/* 수강 목록 */}
         <div className="max-w-4xl mx-auto mt-12">
           <h2 className="text-2xl font-bold mb-6">내가 듣는 강좌</h2>
 
