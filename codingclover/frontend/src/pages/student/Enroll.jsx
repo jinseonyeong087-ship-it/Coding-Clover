@@ -9,35 +9,15 @@ import { Input } from "@/components/ui/Input"
 function Enroll() {
 
   const { id } = useParams()
-
-  const [course, setCourse] = useState([
-    { title: '' },
-    { createBy: '' },
-    { level: '' },
-    { description: '' },
-  ])
-
-  const [lecture, setLecture] = useState([
-    { lectureId: '' },
-    { courseId: '' },
-    { title: '' },
-    { orderNo: '' },
-    { videoUrl: '' },
-    { duration: '' },
-  ])
-
-  // 수강신청 시 필요한 데이터
-  const [enroll, setEnroll] = useState([
-    { enrollmentId: '' },
-    { user: '' },
-    { course: '' },
-    { enrolledAt: '' },
-    { status: '' },
-    { initialLevel: '' },
-    { currentLevel: '' },
-  ])
-
   const [loading, setLoading] = useState(true);
+  const [isEnrolled, setIsEnrolled] = useState(false); // 수강신청 완료 여부
+
+  const [course, setCourse] = useState({
+    title: '',
+    instructorName: '',
+    level: '',
+    description: '',
+  })
 
   useEffect(() => {
     fetch(`/course/${id}`, { method: 'GET', headers: { 'Content-Type': 'application/json' } })
@@ -58,6 +38,7 @@ function Enroll() {
       if (response.ok) {
         const message = await response.text();
         alert(message);
+        setIsEnrolled(true); // 수강신청 성공
       } else {
         const errorMessage = await response.text();
         alert(errorMessage);
@@ -85,8 +66,8 @@ function Enroll() {
 
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
-            <CardTitle>{course.title || '강좌명'}</CardTitle>
-            <CardDescription>강사: {course.instructorName || '미정'}</CardDescription>
+            <CardTitle>{course.title}</CardTitle>
+            <CardDescription>강사: {course.instructorName}</CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
@@ -113,7 +94,11 @@ function Enroll() {
 
           <CardFooter className="flex justify-end gap-3">
             <Button variant="outline">취소</Button>
-            <Button onClick={handleSubmit}>수강 신청하기</Button>
+            {!isEnrolled ? (
+              <Button onClick={handleSubmit}>수강 신청하기</Button>
+            ) : (
+              <Button variant="ghost" disabled>수강 신청 완료</Button>
+            )}
           </CardFooter>
         </Card>
       </section>
