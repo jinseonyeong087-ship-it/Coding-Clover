@@ -10,8 +10,7 @@ function Enroll() {
     title: 'React 기초 강좌',
     create_by: '홍길동',
     level: '초급',
-    description: '리액트의 기초부터 배우는 강좌입니다.',
-    thumbnail_url: ''
+    description: '리액트의 기초부터 배우는 강좌입니다.'
   }
 
   return (
@@ -46,11 +45,6 @@ function Enroll() {
             <div className="grid grid-cols-4 items-center gap-4">
               <label className="text-right font-medium">목차</label>
               <Input value={course.description} className="col-span-3" readOnly />
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label className="text-right font-medium">썸네일</label>
-              <Input value={course.thumbnail_url} placeholder="이미지 URL" className="col-span-3" readOnly />
             </div>
           </CardContent>
 

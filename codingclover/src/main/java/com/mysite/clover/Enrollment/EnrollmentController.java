@@ -29,7 +29,7 @@ public class EnrollmentController {
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/student/enrollment/{courseId}/enroll")
     public ResponseEntity<String> enrollCourse(
-            @PathVariable Long courseId,
+            @PathVariable("courseId") Long courseId,
             @AuthenticationPrincipal Users student) {
         try {
             enrollmentService.enrollCourse(student, courseId);
@@ -43,7 +43,7 @@ public class EnrollmentController {
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/student/enrollment/{courseId}/cancel")
     public ResponseEntity<String> cancelMyEnrollment(
-            @PathVariable Long courseId,
+            @PathVariable("courseId") Long courseId,
             @AuthenticationPrincipal Users student) {
         try {
             enrollmentService.cancelMyEnrollment(student, courseId);
@@ -97,7 +97,7 @@ public class EnrollmentController {
     @PreAuthorize("hasRole('INSTRUCTOR')")
     @GetMapping("/instructor/course/{courseId}/enrollment")
     public ResponseEntity<List<InstructorEnrollmentDto>> getCourseStudents(
-            @PathVariable Long courseId,
+            @PathVariable("courseId") Long courseId,
             @AuthenticationPrincipal Users instructor) {
         List<InstructorEnrollmentDto> students = enrollmentService.getCourseStudents(instructor, courseId);
         return ResponseEntity.ok(students);
@@ -119,7 +119,7 @@ public class EnrollmentController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/course/{courseId}/enrollment")
     public ResponseEntity<List<AdminEnrollmentDto>> getAdminCourseStudents(
-            @PathVariable Long courseId) {
+            @PathVariable("courseId") Long courseId) {
         List<AdminEnrollmentDto> students = enrollmentService.getAdminCourseStudents(courseId);
         return ResponseEntity.ok(students);
     }
@@ -128,7 +128,7 @@ public class EnrollmentController {
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/admin/enrollment/{enrollmentId}/cancel")
     public ResponseEntity<String> adminCancelEnrollment(
-            @PathVariable Long enrollmentId,
+            @PathVariable("enrollmentI") Long enrollmentId,
             @AuthenticationPrincipal Users admin) {
         try {
             enrollmentService.adminCancelEnrollment(admin, enrollmentId);
