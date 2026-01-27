@@ -30,43 +30,34 @@ public class EnrollmentController {
     // 수강생 영역
     // ==========================================
 
-    // 학생 - 내 수강 목록 조회 (마이페이지용)
-    // @PreAuthorize("hasRole('STUDENT')") // 임시로 주석 처리
+    // 학생 - 내 수강(enrollment) 목록 조회
     @GetMapping("/student/enrollment")
+    // 로그인한 학생의 수강 목록을 조회
     public ResponseEntity<List<StudentEnrollmentDto>> getMyEnrollments(Principal principal) {
+
         try {
-            System.out.println("=== 수강 목록 조회 시작 ===");
-            
-            // Principal이 null일 때 빈 리스트 반환
+            //로그인(인증) 여부 확인
             if (principal == null) {
-                System.out.println("Principal is null");
                 return ResponseEntity.ok(new java.util.ArrayList<>());
             }
-            
-            System.out.println("Login ID: " + principal.getName());
-            
+
+            //로그인 ID로 사용자 조회
             Users student = usersRepository.findByLoginId(principal.getName())
-                .orElse(null);
-            
+                    .orElse(null);
+
+            //DB에 사용자 정보가 없는 경우(성공 응답(200)을 주되, 데이터는 비어 있다고 처리)
             if (student == null) {
-                System.out.println("Student not found for login ID: " + principal.getName());
                 return ResponseEntity.ok(new java.util.ArrayList<>());
             }
-            
-            System.out.println("Found student: " + student.getName() + " (ID: " + student.getUserId() + ")");
-            
+
+            //학생의 수강 목록 조회
             List<StudentEnrollmentDto> enrollments = enrollmentService.getMyEnrollmentsForStudent(student);
-            System.out.println("Found enrollments count: " + enrollments.size());
-            
-            for (StudentEnrollmentDto enrollment : enrollments) {
-                System.out.println("Enrollment: " + enrollment.getCourseTitle() + " - " + enrollment.getStatus());
-            }
-            
+
             return ResponseEntity.ok(enrollments);
+
         } catch (Exception e) {
-            System.err.println("Error in getMyEnrollments: " + e.getMessage());
+            // 조회 중 예외 발생 시에도 빈 리스트 반환
             e.printStackTrace();
-            // 에러 시에도 빈 리스트 반환
             return ResponseEntity.ok(new java.util.ArrayList<>());
         }
     }
@@ -80,10 +71,10 @@ public class EnrollmentController {
         try {
             // 로그인한 사용자 정보 조회
             Users student = usersRepository.findByLoginId(principal.getName())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-            
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
             Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
             enrollmentService.enroll(student, course);
             return ResponseEntity.ok("수강 신청이 완료되었습니다.");
         } catch (Exception e) {
@@ -100,10 +91,10 @@ public class EnrollmentController {
         try {
             // 로그인한 사용자 정보 조회
             Users student = usersRepository.findByLoginId(principal.getName())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-            
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
             Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
             enrollmentService.cancelMyEnrollment(student, course);
             return ResponseEntity.ok("수강이 취소되었습니다.");
         } catch (Exception e) {
@@ -121,7 +112,7 @@ public class EnrollmentController {
     public ResponseEntity<List<InstructorEnrollmentDto>> getMyAllCourseStudents(
             Principal principal) {
         Users instructor = usersRepository.findByLoginId(principal.getName())
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         List<InstructorEnrollmentDto> students = enrollmentService.getMyAllCourseStudents(instructor);
         return ResponseEntity.ok(students);
     }
@@ -133,9 +124,9 @@ public class EnrollmentController {
             @PathVariable("courseId") Long courseId,
             Principal principal) {
         Users instructor = usersRepository.findByLoginId(principal.getName())
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         Course course = courseRepository.findById(courseId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
         List<InstructorEnrollmentDto> students = enrollmentService.getCourseStudents(instructor, course);
         return ResponseEntity.ok(students);
     }
@@ -158,7 +149,7 @@ public class EnrollmentController {
     public ResponseEntity<List<AdminEnrollmentDto>> getAdminCourseStudents(
             @PathVariable("courseId") Long courseId) {
         Course course = courseRepository.findById(courseId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
         List<AdminEnrollmentDto> students = enrollmentService.getAdminCourseStudents(course);
         return ResponseEntity.ok(students);
     }
@@ -171,7 +162,7 @@ public class EnrollmentController {
             Principal principal) {
         try {
             Users admin = usersRepository.findByLoginId(principal.getName())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
             enrollmentService.adminCancelEnrollment(admin, enrollmentId);
             return ResponseEntity.ok("수강이 취소되었습니다.");
         } catch (Exception e) {
