@@ -42,6 +42,8 @@ public class SecurityConfig {
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf((csrf) -> csrf.disable())
         .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
+            .requestMatchers(new AntPathRequestMatcher("/student/**")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/debug/**")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/**")).permitAll())
         .formLogin((formLogin) -> formLogin.disable())
         .addFilterBefore(apiLoginFilter(), UsernamePasswordAuthenticationFilter.class)

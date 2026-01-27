@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.mysite.clover.Course.Course;
 import com.mysite.clover.Users.Users;
@@ -42,7 +43,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
       JOIN FETCH e.course
       WHERE e.user = :user
       """)
-  List<Enrollment> findWithUserAndCourseByUser(Users user);
+  List<Enrollment> findWithUserAndCourseByUser(@Param("user") Users user);
 
   // 강사의 강좌별 수강생 조회
   @Query("""
@@ -51,7 +52,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
       JOIN FETCH e.course 
       WHERE e.course.createdBy = :instructor AND e.course = :course
       """)
-  List<Enrollment> findByInstructorAndCourse(Users instructor, Course course);
+  List<Enrollment> findByInstructorAndCourse(@Param("instructor") Users instructor, @Param("course") Course course);
 
   // 강사의 모든 강좌 수강생 조회
   @Query("""
@@ -60,7 +61,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
       JOIN FETCH e.course 
       WHERE e.course.createdBy = :instructor
       """)
-  List<Enrollment> findByInstructor(Users instructor);
+  List<Enrollment> findByInstructor(@Param("instructor") Users instructor);
 
   // 관리자용 전체 조회 (N+1 방지)
   @Query("""
@@ -79,7 +80,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
       LEFT JOIN FETCH e.cancelledBy
       WHERE e.course = :course
       """)
-  List<Enrollment> findAdminByCourse(Course course);
+  List<Enrollment> findAdminByCourse(@Param("course") Course course);
 
   
 }
