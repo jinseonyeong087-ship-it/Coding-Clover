@@ -33,6 +33,9 @@ function StudentNav() {
         }
     }, []);
 
+    // 저장할 때: JSON.stringify()로 객체 → 문자열 변환
+    // 불러올 때: JSON.parse()로 문자열 → 객체 변환
+
     return (
         <nav className="container mx-auto flex items-center justify-between py-3 border-b bg-background">
             {/* 로고 + 메뉴바 */}

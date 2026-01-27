@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import StudentNav from '../../components/StudentNav';
 import Tail from '../../components/Tail';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card"
@@ -12,7 +12,7 @@ function Enroll() {
 
   const [course, setCourse] = useState([
     { title: '' },
-    { create_by: '' },
+    { createBy: '' },
     { level: '' },
     { description: '' },
   ])
@@ -37,23 +37,26 @@ function Enroll() {
     { currentLevel: '' },
   ])
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    fetch('/course', { method: 'GET', Headers: { 'Content-Type': 'application/json' } })
+    fetch(`/course/${id}`, { method: 'GET', headers: { 'Content-Type': 'application/json' } })
       .then((res) => res.json())
       .then((json) => {
         setCourse(json);
         setLoading(false);
       }).catch((error) => console.error(error))
-  }, []);
+  }, [id]);
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch(`/student/enrollment/${courseId}/enroll`, {
+      const response = await fetch(`/student/enrollment/${id}/enroll`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include'
       });
       if (response.ok) {
         const message = await response.text();
-      } else if {
+        alert(message);
+      } else {
         const errorMessage = await response.text();
         alert(errorMessage);
       }
@@ -61,6 +64,10 @@ function Enroll() {
       console.error('수강 신청 오류:', error);
     }
   }
+
+  // res.json()이 아닌 res.text()를 사용
+  // 성공 시: ResponseEntity.ok("수강 신청이 완료되었습니다.") → 문자열 반환
+  // 실패 시: ResponseEntity.badRequest().body(e.getMessage()) → 에러 메시지 반환
 
   // 그래서 Promise가 뭔데
   // async = 해당 함수를 Promise를 반환하는 함수로 만든다
@@ -77,7 +84,7 @@ function Enroll() {
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <CardTitle>{course.title || '강좌명'}</CardTitle>
-            <CardDescription>강사: {course.create_by || '미정'}</CardDescription>
+            <CardDescription>강사: {course.createBy || '미정'}</CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
@@ -88,7 +95,7 @@ function Enroll() {
 
             <div className="grid grid-cols-4 items-center gap-4">
               <label className="text-right font-medium">강사명</label>
-              <Input value={course.create_by} className="col-span-3" readOnly />
+              <Input value={course.createBy} className="col-span-3" readOnly />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
@@ -104,12 +111,10 @@ function Enroll() {
 
           <CardFooter className="flex justify-end gap-3">
             <Button variant="outline">취소</Button>
-            <Button onClink={handleSubmit}>수강 신청하기</Button>
+            <Button onClick={handleSubmit}>수강 신청하기</Button>
           </CardFooter>
         </Card>
       </section>
-
-      <Link to={`/student/enroll/{courseId}/enroll`}></Link>
 
       <Tail />
     </>
