@@ -1,10 +1,10 @@
 package com.mysite.clover.Enrollment;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mysite.clover.Course.Course;
 import com.mysite.clover.Course.CourseRepository;
 import com.mysite.clover.Users.Users;
+import com.mysite.clover.Users.UsersRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +24,7 @@ public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
     private final CourseRepository courseRepository;
+    private final UsersRepository usersRepository;
 
     // ==========================================
     // 수강생 영역
@@ -33,8 +35,12 @@ public class EnrollmentController {
     @PostMapping("/student/enrollment/{courseId}/enroll")
     public ResponseEntity<String> enrollCourse(
             @PathVariable("courseId") Long courseId,
-            @AuthenticationPrincipal Users student) {
+            Principal principal) {
         try {
+            // 로그인한 사용자 정보 조회
+            Users student = usersRepository.findByLoginId(principal.getName())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            
             Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
             enrollmentService.enroll(student, course);
@@ -49,8 +55,12 @@ public class EnrollmentController {
     @PostMapping("/student/enrollment/{courseId}/cancel")
     public ResponseEntity<String> cancelMyEnrollment(
             @PathVariable("courseId") Long courseId,
-            @AuthenticationPrincipal Users student) {
+            Principal principal) {
         try {
+            // 로그인한 사용자 정보 조회
+            Users student = usersRepository.findByLoginId(principal.getName())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            
             Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
             enrollmentService.cancelMyEnrollment(student, course);
@@ -68,7 +78,9 @@ public class EnrollmentController {
     @PreAuthorize("hasRole('INSTRUCTOR')")
     @GetMapping("/instructor/enrollment")
     public ResponseEntity<List<InstructorEnrollmentDto>> getMyAllCourseStudents(
-            @AuthenticationPrincipal Users instructor) {
+            Principal principal) {
+        Users instructor = usersRepository.findByLoginId(principal.getName())
+            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         List<InstructorEnrollmentDto> students = enrollmentService.getMyAllCourseStudents(instructor);
         return ResponseEntity.ok(students);
     }
@@ -78,7 +90,9 @@ public class EnrollmentController {
     @GetMapping("/instructor/course/{courseId}/enrollment")
     public ResponseEntity<List<InstructorEnrollmentDto>> getCourseStudents(
             @PathVariable("courseId") Long courseId,
-            @AuthenticationPrincipal Users instructor) {
+            Principal principal) {
+        Users instructor = usersRepository.findByLoginId(principal.getName())
+            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         Course course = courseRepository.findById(courseId)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
         List<InstructorEnrollmentDto> students = enrollmentService.getCourseStudents(instructor, course);
@@ -113,8 +127,10 @@ public class EnrollmentController {
     @DeleteMapping("/admin/enrollment/{enrollmentId}/cancel")
     public ResponseEntity<String> adminCancelEnrollment(
             @PathVariable("enrollmentId") Long enrollmentId,
-            @AuthenticationPrincipal Users admin) {
+            Principal principal) {
         try {
+            Users admin = usersRepository.findByLoginId(principal.getName())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
             enrollmentService.adminCancelEnrollment(admin, enrollmentId);
             return ResponseEntity.ok("수강이 취소되었습니다.");
         } catch (Exception e) {

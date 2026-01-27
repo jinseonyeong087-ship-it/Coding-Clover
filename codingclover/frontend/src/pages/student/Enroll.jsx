@@ -51,7 +51,9 @@ function Enroll() {
   const handleSubmit = async () => {
     try {
       const response = await fetch(`/student/enrollment/${id}/enroll`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include'
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        credentials: 'include'
       });
       if (response.ok) {
         const message = await response.text();
@@ -84,7 +86,7 @@ function Enroll() {
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <CardTitle>{course.title || '강좌명'}</CardTitle>
-            <CardDescription>강사: {course.createBy || '미정'}</CardDescription>
+            <CardDescription>강사: {course.instructorName || '미정'}</CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
@@ -95,7 +97,7 @@ function Enroll() {
 
             <div className="grid grid-cols-4 items-center gap-4">
               <label className="text-right font-medium">강사명</label>
-              <Input value={course.createBy} className="col-span-3" readOnly />
+              <Input value={course.instructorName} className="col-span-3" readOnly />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
