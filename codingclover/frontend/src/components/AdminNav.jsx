@@ -68,6 +68,9 @@ function AdminNav() {
                             </MenubarGroup>
                         </MenubarContent>
                     </MenubarMenu>
+                    <MenubarMenu>
+                        <MenubarTrigger onClick={() => navigate('/admin/mypage')} className="cursor-pointer">마이 페이지</MenubarTrigger>
+                    </MenubarMenu>
                 </Menubar>
             </div>
 

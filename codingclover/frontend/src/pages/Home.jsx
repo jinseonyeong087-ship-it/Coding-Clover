@@ -84,10 +84,9 @@ function Home() {
                       </CardContent>
                       <CardFooter>
                         <Button variant="outline" size="sm" className="w-full">
-                          <Link to="/student/courses/courseId/lectures" variant="outline" size="sm" className="w-full flex items-center justify-center">
+                          <Link to={`/course/${item.courseId}`} variant="outline" size="sm" className="w-full flex items-center justify-center">
                             자세히 보기 <ArrowRight className="ml-2 h-4 w-4" />
                           </Link>
-                          {/* 링크 수정 필요함 */}
                         </Button>
                       </CardFooter>
                     </Card>
@@ -102,24 +101,26 @@ function Home() {
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-2xl font-bold mb-6">수강 신청하기</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="text-lg">강좌명 불러오기</CardTitle>
-              <CardDescription>고급 · 실무 경험 권장</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                고급 컴포넌트
-              </p>
-            </CardContent>
-            <CardFooter>
-              {/* <Button  variant="outline" size="sm" className="w-full"> */}
-              <Link to="/enroll" className="w-full flex items-center justify-center">
-                수강신청하기 <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-              {/* </Button> */}
-            </CardFooter>
-          </Card>
+          {course.map((item) => (
+            <Card key={item.courseId} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="text-lg">{item.title}</CardTitle>
+                <CardDescription>레벨 {item.level}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  {item.description}
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" size="sm" className="w-full">
+                  <Link to={`/course/${item.courseId}`} className="w-full flex items-center justify-center">
+                    수강신청하기 <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
       </section>
 

@@ -20,6 +20,8 @@ import Noroll from '@/pages/Noroll'
 import CommunityPostTest from './pages/CommunityPostTest'
 import ProposalDetail from '@/pages/admin/ProposalDetail'
 import InstructorCourseCreate from '@/pages/instructor/InstructorCourseDetail'
+import AdminMypage from '@/pages/admin/AdminMypage'
+import InstructorMypage from '@/pages/instructor/InstructorMypage'
 
 
 function App() {
@@ -44,13 +46,17 @@ function App() {
         {/* <Route path="/auth/oauth element={FindAccount} /> 소셜 로그인 아이콘도 없음*/}
         {/* 권한 없음 페이지 */}
         <Route path="/noroll" element={<Noroll />} />
-        {/* 학생 강좌 */}
         <Route path="/course/level/:level" element={<Level />} />
-        <Route path="/student/course/courseId/lectures" element={<Lecture />} />
-        <Route path="/student/mypage" element={<MyPage />} />
-        <Route path="/enroll" element={<Enroll />} />
+        <Route path="/course/:id" element={<Enroll />} />
         {/* 디비 연동하고 /student/course/{courseId}/enroll로 경로수정 */}
         {/* 럭쳐 링크 수정 필요함 */}
+        {/* 수강생 페이지 */}
+        <Route path="/student/*" element={
+          <ProtectedRoute allowedRoles={['STUDENT']} />
+        }>
+          <Route path="mypage" element={<MyPage />} />
+          <Route path="course/:courseId/lectures" element={<Lecture />} />
+        </Route>
         {/* 강사페이지 */}
         <Route path="/instructor/*" element={
           <ProtectedRoute allowedRoles={['INSTRUCTOR']} />
@@ -58,11 +64,13 @@ function App() {
           <Route path="dashboard" element={<InstructorMain />} />
           <Route path="course/new" element={<CourseCreateRequest />} />
           <Route path="course/:courseId" element={<InstructorCourseCreate />} />
+          <Route path="mypage" element={<InstructorMypage />} />
         </Route>
         {/* 관리자 */}
         <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="dashboard" element={<AdminMain />} />
           <Route path="course/:courseId/pending" element={<ProposalDetail />} />
+          <Route path="mypage" element={<AdminMypage />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
         {/*강사 프로필 <Route path="/api/instructor/profile" element={<InstructorProfile />} /> */}

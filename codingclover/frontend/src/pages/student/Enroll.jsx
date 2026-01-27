@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom'
 import StudentNav from '../../components/StudentNav';
 import Tail from '../../components/Tail';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card"
@@ -6,12 +7,65 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 
 function Enroll() {
-  let course = {
-    title: 'React 기초 강좌',
-    create_by: '홍길동',
-    level: '초급',
-    description: '리액트의 기초부터 배우는 강좌입니다.'
+
+  const { id } = useParams()
+
+  const [course, setCourse] = useState([
+    { title: '' },
+    { create_by: '' },
+    { level: '' },
+    { description: '' },
+  ])
+
+  const [lecture, setLecture] = useState([
+    { lectureId: '' },
+    { courseId: '' },
+    { title: '' },
+    { orderNo: '' },
+    { videoUrl: '' },
+    { duration: '' },
+  ])
+
+  // 수강신청 시 필요한 데이터
+  const [enroll, setEnroll] = useState([
+    { enrollmentId: '' },
+    { user: '' },
+    { course: '' },
+    { enrolledAt: '' },
+    { status: '' },
+    { initialLevel: '' },
+    { currentLevel: '' },
+  ])
+
+  useEffect(() => {
+    fetch('/course', { method: 'GET', Headers: { 'Content-Type': 'application/json' } })
+      .then((res) => res.json())
+      .then((json) => {
+        setCourse(json);
+        setLoading(false);
+      }).catch((error) => console.error(error))
+  }, []);
+
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch(`/student/enrollment/${courseId}/enroll`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include'
+      });
+      if (response.ok) {
+        const message = await response.text();
+      } else if {
+        const errorMessage = await response.text();
+        alert(errorMessage);
+      }
+    } catch (error) {
+      console.error('수강 신청 오류:', error);
+    }
   }
+
+  // 그래서 Promise가 뭔데
+  // async = 해당 함수를 Promise를 반환하는 함수로 만든다
+  // await = Promise가 처리될 때까지 기다린다
+  // res = response, 서버가 돌려준 응답 객체, 프로미스 내장 객체일까?
 
   return (
     <>
@@ -50,10 +104,12 @@ function Enroll() {
 
           <CardFooter className="flex justify-end gap-3">
             <Button variant="outline">취소</Button>
-            <Button>수강 신청하기</Button>
+            <Button onClink={handleSubmit}>수강 신청하기</Button>
           </CardFooter>
         </Card>
       </section>
+
+      <Link to={`/student/enroll/{courseId}/enroll`}></Link>
 
       <Tail />
     </>

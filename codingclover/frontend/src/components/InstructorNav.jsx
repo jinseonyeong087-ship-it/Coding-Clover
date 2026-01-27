@@ -63,7 +63,7 @@ function InstructorNav() {
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer">수익 정산</MenubarTrigger>
+                        <MenubarTrigger onClick={() => navigate('/instructor/mypage')} className="cursor-pointer">마이 페이지</MenubarTrigger>
                     </MenubarMenu>
                 </Menubar>
             </div>
