@@ -30,6 +30,47 @@ public class EnrollmentController {
     // 수강생 영역
     // ==========================================
 
+    // 학생 - 내 수강 목록 조회 (마이페이지용)
+    // @PreAuthorize("hasRole('STUDENT')") // 임시로 주석 처리
+    @GetMapping("/student/enrollment")
+    public ResponseEntity<List<StudentEnrollmentDto>> getMyEnrollments(Principal principal) {
+        try {
+            System.out.println("=== 수강 목록 조회 시작 ===");
+            
+            // Principal이 null일 때 빈 리스트 반환
+            if (principal == null) {
+                System.out.println("Principal is null");
+                return ResponseEntity.ok(new java.util.ArrayList<>());
+            }
+            
+            System.out.println("Login ID: " + principal.getName());
+            
+            Users student = usersRepository.findByLoginId(principal.getName())
+                .orElse(null);
+            
+            if (student == null) {
+                System.out.println("Student not found for login ID: " + principal.getName());
+                return ResponseEntity.ok(new java.util.ArrayList<>());
+            }
+            
+            System.out.println("Found student: " + student.getName() + " (ID: " + student.getUserId() + ")");
+            
+            List<StudentEnrollmentDto> enrollments = enrollmentService.getMyEnrollmentsForStudent(student);
+            System.out.println("Found enrollments count: " + enrollments.size());
+            
+            for (StudentEnrollmentDto enrollment : enrollments) {
+                System.out.println("Enrollment: " + enrollment.getCourseTitle() + " - " + enrollment.getStatus());
+            }
+            
+            return ResponseEntity.ok(enrollments);
+        } catch (Exception e) {
+            System.err.println("Error in getMyEnrollments: " + e.getMessage());
+            e.printStackTrace();
+            // 에러 시에도 빈 리스트 반환
+            return ResponseEntity.ok(new java.util.ArrayList<>());
+        }
+    }
+
     // 수강 신청
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/student/enrollment/{courseId}/enroll")

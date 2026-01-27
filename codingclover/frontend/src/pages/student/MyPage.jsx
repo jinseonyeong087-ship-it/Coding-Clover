@@ -29,6 +29,7 @@ function MyPage() {
 
   //마이페이지 화면 상태
   const [user, setUser] = useState(null);
+  const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -56,9 +57,10 @@ function MyPage() {
 
   //백엔드 api 호출
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/student/mypage', {
+        // 프로필 정보 가져오기
+        const profileResponse = await fetch('/api/student/mypage', {
           headers: {
             'Content-Type': 'application/json',
             'X-Login-Id': getLoginId()
@@ -66,31 +68,47 @@ function MyPage() {
           credentials: 'include'
         });
 
-        if (!response.ok) {
-          throw new Error(`서버 오류 (${response.status})`);
+        if (!profileResponse.ok) {
+          throw new Error(`프로필 조회 실패 (${profileResponse.status})`);
         }
-        //백엔드 json을 js 객체로 변환
-        const data = await response.json();
-        //user 상태 설정
+
+        const userData = await profileResponse.json();
         setUser({
-          ...data,
-          joinDate: new Date(data.joinDate).toLocaleDateString('ko-KR')
+          ...userData,
+          joinDate: new Date(userData.joinDate).toLocaleDateString('ko-KR')
         });
-        //수정 폼 초기값 설정
         setEditForm({
-          name: data.name,
-          educationLevel: data.educationLevel || ''
+          name: userData.name,
+          educationLevel: userData.educationLevel || ''
         });
-        //관심분야 문자열 ->체크박스 배열 변환
-        setSelectedInterests(parseInterests(data.interestCategory));
+        setSelectedInterests(parseInterests(userData.interestCategory));
+
+        // 수강 목록 가져오기
+        const enrollmentResponse = await fetch('/student/enrollment', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+
+        if (enrollmentResponse.ok) {
+          const enrollmentData = await enrollmentResponse.json();
+          setEnrollments(enrollmentData);
+        } else {
+          console.error('수강 목록 조회 실패:', enrollmentResponse.status);
+          setEnrollments([]);
+        }
+
       } catch (err) {
         setError(err.message);
+        setEnrollments([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProfile();
+    fetchData();
   }, []);
 
   //수정모드 전환
@@ -289,55 +307,46 @@ function MyPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-            {/* 더미 강좌 1 */}
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-lg">파이썬 기초 프로그래밍</CardTitle>
-                <CardDescription>김강사 | 초급</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-gray-600">진행률: 65% (13/20강)</p>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: "65%" }} />
-                </div>
-                <p className="text-sm text-gray-500">마지막 수강: 2026.01.23</p>
-                <Button className="w-full">강좌 계속하기</Button>
-              </CardContent>
-            </Card>
-
-            {/* 더미 강좌 2 */}
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-lg">JavaScript 웹 개발</CardTitle>
-                <CardDescription>박강사 | 중급</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-gray-600">진행률: 40% (8/20강)</p>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-600 h-2 rounded-full" style={{ width: "40%" }} />
-                </div>
-                <p className="text-sm text-gray-500">마지막 수강: 2026.01.22</p>
-                <Button className="w-full" variant="outline">
-                  강좌 계속하기
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* 더미 강좌 3 */}
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-lg">Java 객체지향 프로그래밍</CardTitle>
-                <CardDescription>이강사 | 중급</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-gray-600">진행률: 85% (17/20강)</p>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-purple-600 h-2 rounded-full" style={{ width: "85%" }} />
-                </div>
-                <p className="text-sm text-gray-500">마지막 수강: 2026.01.24</p>
-                <Button className="w-full">강좌 계속하기</Button>
-              </CardContent>
-            </Card>
+            {enrollments.length === 0 ? (
+              <div className="col-span-full text-center py-8">
+                <p className="text-gray-500">아직 수강 중인 강좌가 없습니다.</p>
+                <p className="text-sm text-gray-400 mt-2">강좌를 둘러보고 수강 신청해보세요!</p>
+              </div>
+            ) : (
+              enrollments.map((enrollment) => (
+                <Card key={enrollment.enrollmentId} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="text-lg">{enrollment.courseTitle}</CardTitle>
+                    <CardDescription>
+                      수강 상태: {enrollment.status === 'ENROLLED' ? '수강중' : 
+                                 enrollment.status === 'COMPLETED' ? '완료' : '취소됨'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-gray-600">
+                      수강 신청일: {new Date(enrollment.enrolledAt).toLocaleDateString('ko-KR')}
+                    </p>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${
+                          enrollment.status === 'ENROLLED' ? 'bg-blue-600' :
+                          enrollment.status === 'COMPLETED' ? 'bg-green-600' : 'bg-gray-400'
+                        }`} 
+                        style={{ width: "0%" }} 
+                      />
+                    </div>
+                    <Button 
+                      className="w-full" 
+                      disabled={enrollment.status === 'CANCELLED'}
+                      variant={enrollment.status === 'COMPLETED' ? 'outline' : 'default'}
+                    >
+                      {enrollment.status === 'ENROLLED' ? '강의 보기' :
+                       enrollment.status === 'COMPLETED' ? '다시 보기' : '취소된 강좌'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
+            )}
 
           </div>
         </div>
