@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
-import StudentNav from '@/components/StudentNav';
+import Nav from '@/components/Nav';
 import Tail from '@/components/Tail'
 
 function FindAccount() {
     return (
         <>
 
-        <StudentNav />
+        <Nav />
         <p>계정 찾기 페이지</p>
         <Tail />
         

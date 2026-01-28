@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import StudentNav from '@/components/StudentNav';
+import Nav from '@/components/Nav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';

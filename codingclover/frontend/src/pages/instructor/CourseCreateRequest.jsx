@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import InstructorNav from '@/components/InstructorNav';
+import Nav from '@/components/Nav';
 import Tail from '@/components/Tail';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
@@ -71,7 +71,7 @@ function InstructorCourseCreate() {
 
   return (
     <>
-      <InstructorNav />
+      <Nav />
 
       <section className="container mx-auto px-4 py-16">
         <Card className="max-w-4xl mx-auto">

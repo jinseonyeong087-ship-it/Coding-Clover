@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import StudentNav from '@/components/StudentNav';
+import Nav from '@/components/Nav';
 import Tail from '@/components/Tail';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/Button";
@@ -42,7 +42,7 @@ function Level() {
 
   return (
     <>
-      <StudentNav />
+      <Nav />
       <section className="container mx-auto px-4 py-16">
         <Tabs value={level} onValueChange={handleTabChange}>{/*Number 함수 사용해서 여기에 뿌리는 거구먼*/}
           <div className='flex items-center gap-10'>

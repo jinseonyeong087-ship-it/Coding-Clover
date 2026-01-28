@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import StudentNav from '../components/StudentNav';
+import Nav from '@/components/Nav';
 import Tail from '../components/Tail';
 import { Link, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
@@ -31,7 +31,7 @@ function Home() {
 
   return (
     <>
-      <StudentNav />
+      <Nav />
 
       {/* 히어로 섹션 */}
       <section className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white py-24 text-center">

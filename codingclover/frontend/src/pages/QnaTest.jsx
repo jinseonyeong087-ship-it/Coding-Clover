@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import StudentNav from '@/components/StudentNav';
+import Nav from '@/components/Nav';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -291,7 +291,7 @@ const QnaTest = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative">
-      <StudentNav />
+      <Nav />
       <div className="container mx-auto py-10 px-4">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">QnA 테스트 페이지</h1>

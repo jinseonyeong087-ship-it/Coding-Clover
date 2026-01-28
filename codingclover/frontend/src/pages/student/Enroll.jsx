@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import StudentNav from '../../components/StudentNav';
+import Nav from '@/components/Nav';
 import Tail from '../../components/Tail';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
@@ -68,7 +68,7 @@ function Enroll() {
 
   return (
     <>
-      <StudentNav />
+      <Nav />
 
       <section className="container mx-auto px-4 py-16">
         <h1 className="text-3xl font-bold mb-8">수강 신청</h1>

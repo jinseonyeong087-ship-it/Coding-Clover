@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import AdminNav from "@/components/AdminNav";
+import Nav from '@/components/Nav';
 import Tail from "@/components/Tail";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,7 +78,7 @@ function AdminApproch() {
 
     return (
         <>
-            <AdminNav />
+            <Nav />
             {loading === true ? (<p className="text-center">로딩 중...</p>) : (
                 <section className="container mx-auto px-4 py-16 max-w-2xl">
                     <Card>
