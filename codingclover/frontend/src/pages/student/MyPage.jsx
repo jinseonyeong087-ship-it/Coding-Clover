@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/Label";
 import { User, Edit } from "lucide-react";
 
 // 상수
- const EDUCATION_OPTIONS = [
+const EDUCATION_OPTIONS = [
   "입문 (코딩 경험 없음)",
   "초급 (기초 문법 이해)",
   "중급 (프로젝트 경험 있음)"
@@ -21,12 +21,13 @@ const INTEREST_OPTIONS = [
 ];
 
 // 유틸리티 함수
-const getLoginId = () => {
+const getUserIdentifier = () => {
   const storedUsers = localStorage.getItem("users");
   if (!storedUsers) return null;
   try {
     const userData = JSON.parse(storedUsers);
-    return userData.loginId || null;
+    // loginId가 없으면 email을 반환 (소셜 로그인 대비)
+    return userData.loginId || userData.email || null;
   } catch {
     return null;
   }
@@ -51,8 +52,8 @@ function MyPage() {
   //백엔드 api 호출
   useEffect(() => {
     // 로그인 상태 체크
-    const loginId = getLoginId();
-    if (!loginId) {
+    const identifier = getUserIdentifier();
+    if (!identifier) {
       setError('로그인이 필요한 서비스입니다.');
       setLoading(false);
       return;
@@ -63,9 +64,9 @@ function MyPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        const currentLoginId = getLoginId();
-        if (!currentLoginId) {
+
+        const currentIdentifier = getUserIdentifier();
+        if (!currentIdentifier) {
           throw new Error('로그인이 필요합니다.');
         }
 
@@ -74,7 +75,7 @@ function MyPage() {
           fetch('/api/student/mypage', {
             headers: {
               'Content-Type': 'application/json',
-              'X-Login-Id': currentLoginId
+              'X-Login-Id': currentIdentifier
             },
             credentials: 'include'
           }),
@@ -160,8 +161,8 @@ function MyPage() {
   // 프론트엔드에서 저장버튼 → 컨트롤러 → 서비스 → 레포지토리 → DB
   const handleSave = async () => {
     try {
-      const currentLoginId = getLoginId();
-      if (!currentLoginId) {
+      const currentIdentifier = getUserIdentifier();
+      if (!currentIdentifier) {
         alert('로그인이 필요합니다.');
         return;
       }
@@ -175,7 +176,7 @@ function MyPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Login-Id': currentLoginId
+          'X-Login-Id': currentIdentifier
         },
         credentials: 'include',
         body: JSON.stringify({
@@ -196,7 +197,7 @@ function MyPage() {
         educationLevel: editForm.educationLevel,
         interestCategory
       };
-      
+
       setUser(updatedUser);
       setIsEditing(false);
       alert("저장 완료!");
@@ -225,7 +226,7 @@ function MyPage() {
       <section className="container mx-auto px-4 py-16">
 
         {loading && <p className="text-center">사용자 정보를 불러오는 중...</p>}
-        
+
         {error && (
           <div className="max-w-2xl mx-auto">
             <Card className="border-destructive">
@@ -291,18 +292,18 @@ function MyPage() {
 
                   <div>
                     <Label>이메일</Label>
-                    <Input 
-                      value={user.email} 
-                      readOnly 
+                    <Input
+                      value={user.email}
+                      readOnly
                       className={isEditing ? "bg-gray-50 text-gray-600 cursor-not-allowed" : ""}
                     />
                   </div>
 
                   <div>
                     <Label>가입일</Label>
-                    <Input 
-                      value={user.joinDate} 
-                      readOnly 
+                    <Input
+                      value={user.joinDate}
+                      readOnly
                       className={isEditing ? "bg-gray-50 text-gray-600 cursor-not-allowed" : ""}
                     />
                   </div>
@@ -355,7 +356,7 @@ function MyPage() {
             </Card>
           </>
         )}
-      {/* 수강 목록 */}
+        {/* 수강 목록 */}
         <div className="max-w-4xl mx-auto mt-12">
           <h2 className="text-2xl font-bold mb-6">내가 듣는 강좌</h2>
 
@@ -372,8 +373,8 @@ function MyPage() {
                   <CardHeader>
                     <CardTitle className="text-lg">{enrollment.courseTitle}</CardTitle>
                     <CardDescription>
-                      수강 상태: {enrollment.status === 'ENROLLED' ? '수강중' : 
-                                 enrollment.status === 'COMPLETED' ? '완료' : '취소됨'}
+                      수강 상태: {enrollment.status === 'ENROLLED' ? '수강중' :
+                        enrollment.status === 'COMPLETED' ? '완료' : '취소됨'}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
@@ -381,21 +382,20 @@ function MyPage() {
                       수강 신청일: {new Date(enrollment.enrolledAt).toLocaleDateString('ko-KR')}
                     </p>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className={`h-2 rounded-full ${
-                          enrollment.status === 'ENROLLED' ? 'bg-blue-600' :
+                      <div
+                        className={`h-2 rounded-full ${enrollment.status === 'ENROLLED' ? 'bg-blue-600' :
                           enrollment.status === 'COMPLETED' ? 'bg-green-600' : 'bg-gray-400'
-                        }`} 
-                        style={{ width: "0%" }} 
+                          }`}
+                        style={{ width: "0%" }}
                       />
                     </div>
-                    <Button 
-                      className="w-full" 
+                    <Button
+                      className="w-full"
                       disabled={enrollment.status === 'CANCELLED'}
                       variant={enrollment.status === 'COMPLETED' ? 'outline' : 'default'}
                     >
                       {enrollment.status === 'ENROLLED' ? '강의 보기' :
-                       enrollment.status === 'COMPLETED' ? '다시 보기' : '취소된 강좌'}
+                        enrollment.status === 'COMPLETED' ? '다시 보기' : '취소된 강좌'}
                     </Button>
                   </CardContent>
                 </Card>

@@ -78,7 +78,7 @@ public class UsersController {
         return ResponseEntity.ok("강사 승인이 완료되었습니다.");
     }
 
-    // 소셜 로그인을 하면 react에서 로그인을 한게 아니기에 쿠키나 react가 로그인된거지 모름 그래서 
+    // 소셜 로그인을 하면 react에서 로그인을 한게 아니기에 쿠키나 react가 로그인된거지 모름 그래서
     // 로그인 상태를 확인하기 위해 추가함
     @GetMapping("/auth/status")
     @ResponseBody
@@ -107,6 +107,7 @@ public class UsersController {
             userData.put("role", user.getRole());
             userData.put("name", user.getName());
             userData.put("email", user.getEmail());
+            userData.put("loginId", user.getLoginId());
 
             response.put("user", userData);
 

@@ -19,24 +19,25 @@ public class StudentProfileService {
     private final StudentProfileRepository studentProfileRepository;
     private final UsersRepository usersRepository;
 
-    // loginId 기반 조회 (컨트롤러용)
+    // loginId 혹은 email 기반 조회 (컨트롤러용)
     @Transactional(readOnly = true)
-    public StudentProfileDto getStudentProfileByLoginId(String loginId) {
+    public StudentProfileDto getStudentProfileByLoginId(String identifier) {
 
-        Users user = usersRepository.findByLoginId(loginId)
+        Users user = usersRepository.findByLoginId(identifier)
+                .or(() -> usersRepository.findByEmail(identifier)) // loginId 없으면 email로 검색
                 .orElseThrow(() -> new EntityNotFoundException("사용자 정보가 없습니다."));
-        
+
         // StudentProfile이 있으면 가져오고, 없으면 기본값으로 DTO 생성
         StudentProfile profile = studentProfileRepository.findByUserId(user.getUserId()).orElse(null);
-        
+
         String educationLevel = "미설정";
         String interestCategory = "미설정";
-        
+
         if (profile != null) {
             educationLevel = profile.getEducationLevel() != null ? profile.getEducationLevel() : "미설정";
             interestCategory = profile.getInterestCategory() != null ? profile.getInterestCategory() : "미설정";
         }
-        
+
         return new StudentProfileDto(
                 user.getUserId(),
                 user.getLoginId(),
@@ -44,8 +45,7 @@ public class StudentProfileService {
                 user.getEmail(),
                 user.getCreatedAt(),
                 educationLevel,
-                interestCategory
-        );
+                interestCategory);
     }
 
     // userId 조회 (userId 기준으로 Users + StudentProfile 조회)
@@ -64,8 +64,8 @@ public class StudentProfileService {
                     newProfile.setInterestCategory("미설정");
                     return studentProfileRepository.save(newProfile);
                 });
-                
-        //반환 DTO 구성
+
+        // 반환 DTO 구성
         return new StudentProfileDto(
                 user.getUserId(),
                 user.getLoginId(),
@@ -73,14 +73,14 @@ public class StudentProfileService {
                 user.getEmail(),
                 user.getCreatedAt(),
                 profile.getEducationLevel(),
-                profile.getInterestCategory()
-        );
+                profile.getInterestCategory());
     }
 
-    // loginId 기반 수정 (컨트롤러용)
-    public void updateStudentProfileByLoginId(String loginId, Map<String, String> requestData) {
+    // loginId 혹은 email 기반 수정 (컨트롤러용)
+    public void updateStudentProfileByLoginId(String identifier, Map<String, String> requestData) {
 
-        Users user = usersRepository.findByLoginId(loginId)
+        Users user = usersRepository.findByLoginId(identifier)
+                .or(() -> usersRepository.findByEmail(identifier))
                 .orElseThrow(() -> new EntityNotFoundException("사용자 정보가 없습니다."));
 
         updateStudentProfile(user.getUserId(), requestData);
@@ -99,14 +99,14 @@ public class StudentProfileService {
 
         if (name != null && !name.isBlank()) {
             user.setName(name.trim());
-            usersRepository.save(user);  // Users 먼저 저장
+            usersRepository.save(user); // Users 먼저 저장
         }
 
         // StudentProfile 처리 (별도 트랜잭션)
         StudentProfile profile = studentProfileRepository
                 .findByUserId(userId)
                 .orElse(null);
-        
+
         if (profile == null) {
             profile = new StudentProfile(userId);
         }

@@ -20,17 +20,49 @@ function StudentNav() {
     const [users, setUsers] = useState({ name: '' });
 
     useEffect(() => {
-        const storedLoginId = localStorage.getItem("loginId");
-        const storedUsers = localStorage.getItem("users");
+        const checkLoginStatus = async () => {
+            const storedLoginId = localStorage.getItem("loginId");
+            const storedUsers = localStorage.getItem("users");
 
-        if (storedLoginId === "true") {
-            setLoginId(true);
-        }
-        if (storedUsers) {
-            const parsedUsers = JSON.parse(storedUsers);
-            setUsers(parsedUsers);
-            console.log("현재 로그인한 사용자:", parsedUsers);
-        }
+            if (storedLoginId === "true" && storedUsers) {
+                setLoginId(true);
+                const parsedUsers = JSON.parse(storedUsers);
+                setUsers(parsedUsers);
+                console.log("현재 로그인한 사용자:", parsedUsers);
+            }
+
+            // 소셜 로그인 리다이렉트 처리 (세션 확인)
+            if (!storedLoginId || !storedUsers) {
+                try {
+                    const res = await fetch('/auth/status', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include' // 세션 쿠키 포함 필수
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.loggedIn) {
+                            localStorage.setItem("loginId", "true");
+                            localStorage.setItem("users", JSON.stringify(data.user));
+
+                            setLoginId(true);
+                            setUsers(data.user);
+                            console.log("소셜 로그인 감지 및 정보 갱신:", data.user);
+
+                            // 상태 갱신을 위해 새로고침 (선택 사항, 필요시 주석 해제)
+                            // window.location.reload(); 
+                        }
+                    }
+                } catch (e) {
+                    console.error("Login status check failed:", e);
+                }
+            }
+        };
+
+        checkLoginStatus();
     }, []);
 
     // 저장할 때: JSON.stringify()로 객체 → 문자열 변환
