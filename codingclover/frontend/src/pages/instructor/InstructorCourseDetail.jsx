@@ -53,9 +53,12 @@ function InstructorCourseCreate() {
             <section className="container mx-auto px-4 py-16">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold">{course.title}</h1>
-                    <Link to="/instructor/dashboard">
-                        <Button variant="outline">목록으로</Button>
-                    </Link>
+                    <div>
+                        <Button size="sm">수정하기</Button>
+                        <Link to="/instructor/dashboard">
+                            <Button variant="outline">목록으로</Button>
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="space-y-4">
@@ -83,6 +86,7 @@ function InstructorCourseCreate() {
                             </p>
                         </div>
                     )}
+
                 </div>
             </section>
             <Tail />

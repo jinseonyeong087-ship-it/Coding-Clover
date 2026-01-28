@@ -41,10 +41,10 @@ function AdminNav() {
 
                 <Menubar className="border-none shadow-none bg-transparent">
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer">강좌 관리</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer">관리</MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem>승인 대기 강좌</MenubarItem>
-                            <MenubarItem></MenubarItem>
+                            <MenubarItem>강좌 관리</MenubarItem>
+                            <MenubarItem>강사 승인</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     {/* <MenubarMenu>
