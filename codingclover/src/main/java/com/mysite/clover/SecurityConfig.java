@@ -50,8 +50,14 @@ public class SecurityConfig {
         .logout((logout) -> logout
             .logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout"))
             .logoutSuccessUrl("/")
-            .invalidateHttpSession(true));
+            .invalidateHttpSession(true))
 
+            .oauth2Login(oauth2 -> oauth2 
+            .userInfoEndpoint(userInfo -> userInfo 
+                .userService(socialLoginService) 
+            )
+            .defaultSuccessUrl("http://localhost:5173", true) 
+        )
     return http.build();
   }
 
