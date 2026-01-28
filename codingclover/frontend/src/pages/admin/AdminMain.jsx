@@ -50,7 +50,7 @@ function AdminMain() {
     }, []);
 
     const approveInstructor = (userId) => {
-        fetch(`/admin/users/instructors/${userId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include' })
+        fetch(`/admin/users/instructors`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include' })
             .then((response) => response.json())
         .then(() => {
             setStatus(prev => prev.filter(item => item.userId !== userId));
@@ -94,7 +94,7 @@ return (
                                             {/* 3. Java 필드명인 courseId, title, level, proposalStatus 사용 */}
                                             <TableCell>{item.courseId}</TableCell>
                                             <TableCell>
-                                                <Link to={`/admin/course/${item.courseId}/pending`} className="hover:underline">
+                                                <Link to={`/admin/users/instructors/${userId}`} className="hover:underline">
                                                     {item.title}
                                                 </Link>
                                             </TableCell>
@@ -160,7 +160,7 @@ return (
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={3} className="text-center py-10">
-                                        승인할 강사가 없습니다.
+                                        승인할 강사가 없습니다. 유저 목록 불러오는 api수정하셈
                                     </TableCell>
                                 </TableRow>
                             )}
