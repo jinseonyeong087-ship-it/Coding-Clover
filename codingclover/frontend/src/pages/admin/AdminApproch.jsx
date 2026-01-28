@@ -123,7 +123,7 @@ function AdminApproch() {
                                 <p className="text-sm text-muted-foreground mb-2">이력서</p>
                                 {instructor.resumeFilePath ? (
                                     <a
-                                        href={instructor.resumeFilePath}
+                                        href={`/admin/users/instructors/${userId}/resume`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-blue-600 hover:underline"

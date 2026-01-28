@@ -52,14 +52,71 @@ public class UsersService {
     public List<InstructorDTO> getInstructorList() {
         List<Users> instructors = usersRepository.findByRole(UsersRole.INSTRUCTOR);
 
-        return instructors.stream().map(user -> new InstructorDTO(
+        return instructors.stream().map(user -> {
+            // 리스트 조회 시에는 프로필 정보는 필요없거나 null로 처리, 혹은 필요한 값만 채움
+            // loginId는 추가
+            return new InstructorDTO(
+                    user.getUserId(),
+                    user.getName(),
+                    user.getEmail(),
+                    user.getLoginId(),
+                    user.getRole().name(),
+                    user.getStatus().name(),
+                    null, // profileStatus
+                    null, // careerYears
+                    null, // bio
+                    null, // resumeFilePath
+                    user.getCreatedAt(),
+                    user.getUpdatedAt(),
+                    null, // appliedAt
+                    null // approvedAt
+            );
+        }).collect(Collectors.toList());
+    }
+
+    public InstructorDTO getInstructorDetail(Long userId) {
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        InstructorDTO dto = new InstructorDTO();
+        // 기본 정보
+        dto = new InstructorDTO(
                 user.getUserId(),
                 user.getName(),
                 user.getEmail(),
+                user.getLoginId(),
                 user.getRole().name(),
                 user.getStatus().name(),
+                null, null, null, null,
                 user.getCreatedAt(),
-                user.getUpdatedAt())).collect(Collectors.toList());
+                user.getUpdatedAt(),
+                null, null);
+
+        // 프로필 정보 조회 및 병합 (Builder 패턴이 없어서 생성자로 다시 만듦)
+        // 실제로는 Setter를 쓰거나 Builder를 쓰는게 좋음.
+        // InstructorDTO에 @Setter가 없으므로 생성자 사용
+
+        var profileOpt = instructorProfileRepository.findById(userId);
+        if (profileOpt.isPresent()) {
+            var p = profileOpt.get();
+            dto = new InstructorDTO(
+                    user.getUserId(),
+                    user.getName(),
+                    user.getEmail(),
+                    user.getLoginId(),
+                    user.getRole().name(),
+                    user.getStatus().name(),
+                    p.getStatus().name(),
+                    p.getCareerYears(),
+                    p.getBio(),
+                    p.getResumeFilePath(),
+                    user.getCreatedAt(),
+                    user.getUpdatedAt(),
+                    p.getAppliedAt(),
+                    p.getApprovedAt());
+        }
+
+        return dto;
     }
 
     // 강사 승인 처리

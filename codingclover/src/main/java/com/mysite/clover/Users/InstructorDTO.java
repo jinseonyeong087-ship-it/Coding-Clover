@@ -15,8 +15,15 @@ public class InstructorDTO {
   private Long userId;
   private String name;
   private String email;
+  private String loginId;
   private String role;
-  private String status;
+  private String status; // Users status
+  private String profileStatus; // InstructorProfile status
+  private Integer careerYears;
+  private String bio;
+  private String resumeFilePath;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
+  private LocalDateTime appliedAt;
+  private LocalDateTime approvedAt;
 }

@@ -29,7 +29,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-         {/* 커뮤니티 테스트 페이지 */}
+        {/* 커뮤니티 테스트 페이지 */}
         <Route path="/test/community" element={<CommunityPostTest />} />
         {/* 임시 코딩 테스트 페이지 */}
         <Route path="/test/coding" element={<CodingTest />} />
@@ -70,7 +70,7 @@ function App() {
         <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="dashboard" element={<AdminMain />} />
           <Route path="course/:courseId/pending" element={<ProposalDetail />} />
-          <Route path="users/instructors/:userId/approve" element={<AdminApproch />} />
+          <Route path="users/instructors/:userId" element={<AdminApproch />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
         {/*강사 프로필 <Route path="/api/instructor/profile" element={<InstructorProfile />} /> */}

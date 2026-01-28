@@ -63,7 +63,12 @@ public class SecurityConfig {
                 .authorizationRequestResolver(authorizationRequestResolver(clientRegistrationRepository)))
             .userInfoEndpoint(userInfo -> userInfo
                 .userService(socialLoginService))
-            .defaultSuccessUrl("http://localhost:5173", true));
+            .defaultSuccessUrl("http://localhost:5173", true))
+        .exceptionHandling(e -> e
+            // 인증되지 않은 요청에 대해 로그인 페이지 리다이렉트 대신 401 상태 코드 반환
+            // (브라우저의 fetch 요청이 CORS 오류 없이 실패를 감지할 수 있도록 함)
+            .authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(
+                org.springframework.http.HttpStatus.UNAUTHORIZED)));
     return http.build();
   }
 
