@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+// 구글 로그인
 public class SocialLoginService extends DefaultOAuth2UserService {
 
     private final UsersRepository usersRepository;
