@@ -11,19 +11,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-@RequestMapping("/auth")
 @Controller
 public class UsersController {
 
     private final UsersService usersService;
 
-    @PostMapping("/register")
+    @PostMapping("auth/register")
     @ResponseBody // JSON 본문 응답을 위해 필수
     public ResponseEntity<?> signup(@RequestBody Map<String, String> userMap) {
 
