@@ -21,7 +21,7 @@ const MainLogin = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const handleSocialLogin = (provider) => {
-        window.location.href = `http://localhost:8080/oauth2/authorization/${provider}`;
+        window.location.href = `http://localhost:3333/oauth2/authorization/${provider}`;
     };
 
     useEffect(() => {
@@ -53,7 +53,7 @@ const MainLogin = () => {
                 })
             });
 
-        console.log("try 구문 성공");
+            console.log("try 구문 성공");
 
             if (!response.ok) {
                 const errorData = await response.json();
