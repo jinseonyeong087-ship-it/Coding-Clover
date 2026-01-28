@@ -87,39 +87,6 @@ public class UsersController {
         return ResponseEntity.ok(instructor);
     }
 
-    // 강사 이력서 다운로드
-    @GetMapping("/admin/users/instructors/{userId}/resume")
-    public ResponseEntity<org.springframework.core.io.Resource> downloadInstructorResume(
-            @org.springframework.web.bind.annotation.PathVariable Long userId) throws java.io.IOException {
-        // 1. 강사 정보 및 프로필 조회 via Service
-        InstructorDTO instructor = usersService.getInstructorDetail(userId);
-        if (instructor == null || instructor.getResumeFilePath() == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        // 2. 파일 경로 구성
-        String filename = instructor.getResumeFilePath();
-        // InstructorProfileService와 동일한 경로 사용
-        String uploadPathStr = System.getProperty("user.home") + "/coding-clover/uploads";
-        // 주의: application.properties의 설정과 일치해야 함.
-        // 일단 하드코딩된 기본값과 맞춤. 실제로는 Service에서 Path를 받아오는게 좋음.
-
-        java.nio.file.Path path = java.nio.file.Paths.get(uploadPathStr).resolve(filename);
-
-        if (!java.nio.file.Files.exists(path)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        org.springframework.core.io.Resource resource = new org.springframework.core.io.UrlResource(path.toUri());
-
-        return ResponseEntity.ok()
-                .contentType(org.springframework.http.MediaType.APPLICATION_PDF) // 혹은
-                                                                                 // MediaType.APPLICATION_OCTET_STREAM
-                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + filename + "\"")
-                .body(resource);
-    }
-
     // 소셜 로그인을 하면 react에서 로그인을 한게 아니기에 쿠키나 react가 로그인된거지 모름 그래서
     // 로그인 상태를 확인하기 위해 추가함
     @GetMapping("/auth/status")
