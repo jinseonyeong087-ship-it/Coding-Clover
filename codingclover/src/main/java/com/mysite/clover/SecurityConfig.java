@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysite.clover.Users.ApiLoginFail;
 import com.mysite.clover.Users.ApiLoginFilter;
 import com.mysite.clover.Users.ApiLoginSuccess;
+import com.mysite.clover.Users.SocialLoginService;
 import com.mysite.clover.Users.UsersRepository;
 import com.mysite.clover.Users.UsersSecurityService;
 
@@ -33,87 +34,85 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-  private final ObjectMapper objectMapper;
-  private final UsersRepository usersRepository;
+    private final ObjectMapper objectMapper;
+    private final UsersRepository usersRepository;
+    private final SocialLoginService socialLoginService;
 
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf((csrf) -> csrf.disable())
-        .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
-            .requestMatchers(new AntPathRequestMatcher("/student/**")).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/debug/**")).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/**")).permitAll())
-        .formLogin((formLogin) -> formLogin.disable())
-        .addFilterBefore(apiLoginFilter(), UsernamePasswordAuthenticationFilter.class)
-        .logout((logout) -> logout
-            .logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout"))
-            .logoutSuccessUrl("/")
-            .invalidateHttpSession(true))
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(new AntPathRequestMatcher("/student/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/debug/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/**")).permitAll())
+            .formLogin(form -> form.disable())
+            .addFilterBefore(apiLoginFilter(), UsernamePasswordAuthenticationFilter.class)
+            .logout(logout -> logout
+                .logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout"))
+                .logoutSuccessUrl("/")
+                .invalidateHttpSession(true))
+            .oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(socialLoginService)
+                )
+                .defaultSuccessUrl("http://localhost:5173", true)
+            );
 
-            .oauth2Login(oauth2 -> oauth2 
-            .userInfoEndpoint(userInfo -> userInfo 
-                .userService(socialLoginService) 
-            )
-            .defaultSuccessUrl("http://localhost:5173", true) 
-        )
-    return http.build();
-  }
+        return http.build();
+    }
 
-  @Bean
-  public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
-    configuration.addAllowedOrigin("http://localhost:5173");
-    configuration.addAllowedOrigin("http://localhost:5174");
-    configuration.addAllowedMethod("*");
-    configuration.addAllowedHeader("*");
-    configuration.setAllowCredentials(true);
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOrigin("http://localhost:5173");
+        configuration.addAllowedOrigin("http://localhost:5174");
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(true);
 
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
-    return source;
-  }
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
-  @Bean
-  public ApiLoginFilter apiLoginFilter() {
-    ApiLoginFilter filter = new ApiLoginFilter(objectMapper);
-    filter.setAuthenticationManager(authenticationManager());
-    filter.setAuthenticationSuccessHandler(apiLoginSuccess());
-    filter.setAuthenticationFailureHandler(apiLoginFail());
+    @Bean
+    public ApiLoginFilter apiLoginFilter() {
+        ApiLoginFilter filter = new ApiLoginFilter(objectMapper);
+        filter.setAuthenticationManager(authenticationManager());
+        filter.setAuthenticationSuccessHandler(apiLoginSuccess());
+        filter.setAuthenticationFailureHandler(apiLoginFail());
+        filter.setSecurityContextRepository(
+            new org.springframework.security.web.context.HttpSessionSecurityContextRepository());
+        return filter;
+    }
 
-    // 세션에 인증 정보 저장 (중요)
-    filter.setSecurityContextRepository(
-        new org.springframework.security.web.context.HttpSessionSecurityContextRepository());
+    @Bean
+    public ApiLoginSuccess apiLoginSuccess() {
+        return new ApiLoginSuccess(objectMapper, usersRepository);
+    }
 
-    return filter;
-  }
+    @Bean
+    public ApiLoginFail apiLoginFail() {
+        return new ApiLoginFail(objectMapper);
+    }
 
-  @Bean
-  public ApiLoginSuccess apiLoginSuccess() {
-    return new ApiLoginSuccess(objectMapper, usersRepository);
-  }
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(passwordEncoder());
+        provider.setUserDetailsService(userDetailsService());
+        return new ProviderManager(provider);
+    }
 
-  @Bean
-  public ApiLoginFail apiLoginFail() {
-    return new ApiLoginFail(objectMapper);
-  }
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return new UsersSecurityService(usersRepository);
+    }
 
-  @Bean
-  public AuthenticationManager authenticationManager() {
-    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-    provider.setPasswordEncoder(passwordEncoder());
-    provider.setUserDetailsService(userDetailsService());
-    return new ProviderManager(provider);
-  }
-
-  @Bean
-  public UserDetailsService userDetailsService() {
-    return new UsersSecurityService(usersRepository);
-  }
-
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }

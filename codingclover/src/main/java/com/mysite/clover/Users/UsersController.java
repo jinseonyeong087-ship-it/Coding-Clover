@@ -59,6 +59,7 @@ public class UsersController {
     }
 
     @GetMapping("/admin/users/instructors")
+    @ResponseBody
     public ResponseEntity<List<InstructorDTO>> getInstructor() {
         List<InstructorDTO> instructorList = usersService.getInstructorList();
         return ResponseEntity.ok(instructorList);
@@ -66,6 +67,7 @@ public class UsersController {
 
     // 관리자: 강사 승인
     @PostMapping("/admin/users/instructors/{userId}/approve")
+    @ResponseBody
     public ResponseEntity<String> approveInstructor(@org.springframework.web.bind.annotation.PathVariable Long userId) {
         usersService.approveInstructor(userId);
         return ResponseEntity.ok("강사 승인이 완료되었습니다.");
