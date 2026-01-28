@@ -90,6 +90,8 @@
 /instructor/course/new      → 강좌 개설 요청
 /instructor/course/{id}     → 강좌 상세
 
+/instructor/suspended/{id}    → 이력서 제출 페이지 - 수정은 폼에서 하기 추가적 페이지 x
+
 ### 📌 수강생 관리
 /instructor/enrollment                    → 내 강좌 수강생 현황
 /instructor/course/{courseId}/enrollment  → 특정 강좌 수강생 목록
