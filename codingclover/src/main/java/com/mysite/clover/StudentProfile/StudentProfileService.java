@@ -111,22 +111,22 @@ public class StudentProfileService {
         String educationLevel = requestData.get("educationLevel");
         String interestCategory = requestData.get("interestCategory");
 
-        // Users 업데이트
+        // Users 업데이트 (분리해서 처리)
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자 정보가 없습니다."));
 
         if (name != null && !name.isBlank()) {
             user.setName(name.trim());
+            usersRepository.save(user);  // Users 먼저 저장
         }
 
-        // StudentProfile 조회 (없으면 생성)
+        // StudentProfile 처리 (별도 트랜잭션)
         StudentProfile profile = studentProfileRepository
                 .findByUserId(userId)
-                .orElse(new StudentProfile(userId));
+                .orElse(null);
         
-        // 새로 생성된 경우 User와 연결
-        if (profile.getUser() == null) {
-            profile.setUser(user);
+        if (profile == null) {
+            profile = new StudentProfile(userId);
         }
 
         if (educationLevel != null && !educationLevel.isBlank()) {
