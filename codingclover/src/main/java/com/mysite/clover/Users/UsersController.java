@@ -24,7 +24,7 @@ public class UsersController {
     @PostMapping("/register")
     @ResponseBody // JSON 본문 응답을 위해 필수
     public ResponseEntity<?> signup(@RequestBody Map<String, String> userMap) {
-        // 프론트엔드에서 1차 검증한다고 가정하고 백엔드 유효성 검사(BindingResult) 삭제함
+    
 
         String password = userMap.get("password");
         String passwordConfirm = userMap.get("passwordConfirm");
