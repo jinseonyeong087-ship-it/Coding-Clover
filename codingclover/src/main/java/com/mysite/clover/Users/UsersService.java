@@ -3,6 +3,9 @@ package com.mysite.clover.Users;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -38,5 +41,20 @@ public class UsersService {
         // (회원가입 시 생성하지 않음으로써 안정성 확보)
 
         return savedUser;
+
+        // 관리자 - 강사 관리에서 사용
+    }
+    public List<InstructorDTO> getInstructorList() {
+        List<Users> instructors = usersRepository.findByRole(UsersRole.INSTRUCTOR);
+
+        return instructors.stream().map(user -> new InstructorDTO(
+                user.getUserId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole().name(),
+                user.getStatus().name(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        )).collect(Collectors.toList());
     }
 }

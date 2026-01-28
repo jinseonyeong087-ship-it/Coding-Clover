@@ -1,12 +1,14 @@
 package com.mysite.clover.Users;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,7 +26,6 @@ public class UsersController {
     @PostMapping("/register")
     @ResponseBody // JSON 본문 응답을 위해 필수
     public ResponseEntity<?> signup(@RequestBody Map<String, String> userMap) {
-    
 
         String password = userMap.get("password");
         String passwordConfirm = userMap.get("passwordConfirm");
@@ -57,5 +58,11 @@ public class UsersController {
         Map<String, String> response = new HashMap<>();
         response.put("message", "회원가입이 완료되었습니다.");
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/admin/users/instructors")
+    public ResponseEntity<List<InstructorDTO>> getInstructor() {
+        List<InstructorDTO> instructorList = usersService.getInstructorList();
+        return ResponseEntity.ok(instructorList);
     }
 }

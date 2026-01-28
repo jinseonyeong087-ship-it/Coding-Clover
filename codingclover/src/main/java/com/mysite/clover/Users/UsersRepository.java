@@ -1,5 +1,6 @@
 package com.mysite.clover.Users;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +16,6 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
   // 이메일 중복 체크
   boolean existsByEmail(String Email);
 
+  // 관리자 - 강사관리 탭에서 사용될 예정
+  List<Users> findByRole(UsersRole role);
 }
