@@ -20,6 +20,9 @@ const MainLogin = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const handleSocialLogin = (provider) => {
+        window.location.href = `http://localhost:8080/oauth2/authorization/${provider}`;
+    };
 
     useEffect(() => {
         const secureLocalStorage = localStorage.getItem("loginId");
@@ -133,9 +136,9 @@ const MainLogin = () => {
                                     아이디/비밀번호 찾기
                                 </Link>
                             </CardDescription>
-                            <Button>구글 로그인</Button>
-                            <Button>카카오 로그인</Button>
-                            <Button>네이버 로그인</Button>
+                            <Button onClick={() => handleSocialLogin('google')}>구글 로그인</Button>
+                            <Button onClick={() => handleSocialLogin('kakao')}>카카오 로그인</Button>
+                            <Button onClick={() => handleSocialLogin('naver')}>네이버 로그인</Button>
                         </div>
                     </CardContent>
                 </Card>
