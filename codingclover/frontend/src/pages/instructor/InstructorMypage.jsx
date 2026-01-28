@@ -272,7 +272,7 @@ function InstructorMypage() {
                         id="resumeFile"
                         type="file"
                         onChange={handleFileChange}
-                        accept=".pdf,.doc,.docx"
+                        accept=".pdf,.hwp"
                         className="hidden"
                       />
 
@@ -288,7 +288,7 @@ function InstructorMypage() {
                       </Button>
 
                       <p className="text-sm text-muted-foreground">
-                        PDF, DOC, DOCX 파일만 업로드 가능합니다.
+                        PDF, HWP 파일 업로드 가능합니다.
                       </p>
                     </div>
                   </div>
