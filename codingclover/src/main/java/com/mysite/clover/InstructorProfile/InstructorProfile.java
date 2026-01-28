@@ -17,22 +17,18 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
 @Table(name="instructor_profile")
 public class InstructorProfile {
   
   @Id // PK
-    @Column(name = "user_id")
-    private Long userId;
-
-  //1:1 Users와 매핑
-  @OneToOne
-    @MapsId  // userId를 Users의 PK와 매핑
-    @JoinColumn(name = "user_id")
-    private Users user;
+  @Column(name = "user_id")
+  private Long userId;
 
   @Column(name = "bio", columnDefinition = "TEXT")
   private String bio;
@@ -40,6 +36,10 @@ public class InstructorProfile {
   //경력
   @Column(name = "career_years")
   private Integer careerYears;
+
+  //이력서 파일 경로
+  @Column(name = "resume_file_path")
+  private String resumeFilePath;
 
   //승인상태
   @Enumerated(EnumType.STRING)
@@ -54,5 +54,10 @@ public class InstructorProfile {
   //관리자 승인 일시
   @Column(name = "approved_at")
   private LocalDateTime approvedAt;
+
+  // 생성자
+  public InstructorProfile(Long userId) {
+    this.userId = userId;
+  }
 
 }
