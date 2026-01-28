@@ -57,6 +57,15 @@ function Enroll() {
   // await = Promise가 처리될 때까지 기다린다
   // res = response, 서버가 돌려준 응답 객체, 프로미스 내장 객체일까?
 
+    const getLevelText = (level) => {
+    switch (level) {
+      case 1: return "초급";
+      case 2: return "중급";
+      case 3: return "고급";
+      default: return level;
+    }
+  };
+
   return (
     <>
       <StudentNav />
@@ -83,7 +92,7 @@ function Enroll() {
 
             <div className="grid grid-cols-4 items-center gap-4">
               <label className="text-right font-medium">난이도</label>
-              <Input value={course.level} className="col-span-3" readOnly />
+              <Input value={getLevelText(course.level)} className="col-span-3" readOnly />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
