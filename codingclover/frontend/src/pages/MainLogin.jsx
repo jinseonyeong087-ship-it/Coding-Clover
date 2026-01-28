@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import StudentNav from '@/components/StudentNav';
+import Nav from '@/components/Nav';
 import Tail from '@/components/Tail';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -91,7 +91,7 @@ const MainLogin = () => {
 
     return (
         <div className="min-h-screen flex flex-col bg-background">
-            <StudentNav />
+            <Nav />
             <main className="flex-1 flex items-center justify-center py-12 px-4">
                 <Card className="w-full max-w-sm">
                     <CardHeader className="space-y-1 text-center">

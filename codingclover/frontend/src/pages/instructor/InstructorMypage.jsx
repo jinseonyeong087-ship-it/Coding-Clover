@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import InstructorNav from '../../components/InstructorNav';
+import Nav from '@/components/Nav';
 import Tail from '../../components/Tail';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -146,7 +146,7 @@ function InstructorMypage() {
   if (loading) {
     return (
       <>
-        <InstructorNav />
+        <Nav />
         <section className="container mx-auto px-4 py-16">
           <p className="text-center">프로필 정보를 불러오는 중...</p>
         </section>
@@ -159,7 +159,7 @@ function InstructorMypage() {
   if (error) {
     return (
       <>
-        <InstructorNav />
+        <Nav />
         <section className="container mx-auto px-4 py-16">
           <Card className="max-w-2xl mx-auto border-destructive">
             <CardContent className="p-6 text-center">
@@ -181,7 +181,7 @@ function InstructorMypage() {
 
   return (
     <>
-      <InstructorNav />
+      <Nav />
 
       <section className="container mx-auto px-4 py-16">
         <div className="flex justify-between mb-8">

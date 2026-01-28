@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import AdminNav from "@/components/AdminNav";
+import Nav from '@/components/Nav';
 import Tail from "@/components/Tail";
 import { useParams, useNavigate } from "react-router-dom";
 // import { useForm } from "react-hook-form";
@@ -105,7 +105,7 @@ function ProposalDetail() {
 
     return (
         <>
-        <AdminNav />
+        <Nav />
 
         <div className="container mx-auto px-4 py-16">
             <div className="flex max-w-2xl flex-col gap-4 text-sm">

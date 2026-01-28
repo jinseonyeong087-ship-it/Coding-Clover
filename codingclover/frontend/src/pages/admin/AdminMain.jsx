@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import AdminNav from "@/components/AdminNav";
+import Nav from '@/components/Nav';
 import Tail from "@/components/Tail";
 import { Link } from "react-router-dom";
 import {
@@ -77,7 +77,7 @@ function AdminMain() {
 
     return (
         <>
-            <AdminNav />
+            <Nav />
             <section className="container mx-auto px-4 py-16">
                 <div className="flex justify-between gap-8">
                     <div className="flex-1">

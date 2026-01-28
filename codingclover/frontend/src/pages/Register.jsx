@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import StudentNav from '../components/StudentNav';
+import Nav from '@/components/Nav';
 import Tail from '../components/Tail';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -140,7 +140,7 @@ const Register = ({ onToLogin }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <StudentNav />
+      <Nav />
 
       <main className="flex-1 flex items-center justify-center py-12 px-4">
         <Card className="w-full max-w-md">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import InstructorNav from "@/components/InstructorNav";
+import Nav from '@/components/Nav';
 import Tail from "@/components/Tail";
 import { Button } from "@/components/ui/Button";
 import InstructorLecture from "@/pages/instructor/InstructorLecture";
@@ -66,7 +66,7 @@ function InstructorCourseCreate() {
 
     return (
         <>
-            <InstructorNav />
+            <Nav />
             {instructorStatus === 'SUSPENDED' ? (<p>마이페이지에서 강사이력을 추가해 주세요</p>) : (<section className="container mx-auto px-4 py-16">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold">{formData.title}</h1>

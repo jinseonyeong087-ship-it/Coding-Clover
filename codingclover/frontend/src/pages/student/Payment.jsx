@@ -1,11 +1,11 @@
 import React from "react";
-import StudentNav from "@/components/StudentNav";
+import Nav from "@/components/Nav";
 import Tail from "@/components/Tail";
 
 function Payment() {
     return(
         <>
-        <StudentNav/>
+        <Nav/>
         <Tail/>
         
         </>
