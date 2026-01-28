@@ -8,6 +8,7 @@ function InstructorCourseCreate() {
 
     const { courseId } = useParams();
     const [course, setCourse] = useState(null);
+    const [instructorStatus, setInstructorStatus] = useState(null);
 
     useEffect(() => {
         fetch(`/instructor/course/${courseId}`, { credentials: 'include' })
@@ -24,6 +25,12 @@ function InstructorCourseCreate() {
             .then((data) => setCourse(data))
             .catch((err) => console.error(err.message));
     }, [courseId]);
+
+    useEffect(() => {
+        fetch('/instructor/me', { credentials: 'include' })
+            .then(res => res.json())
+            .then(data => setInstructorStatus(data.status));
+    }, []);
 
     const getStatusText = (status) => {
         switch (status) {
@@ -50,7 +57,7 @@ function InstructorCourseCreate() {
     return (
         <>
             <InstructorNav />
-            <section className="container mx-auto px-4 py-16">
+            {instructorStatus === 'SUSPENDED' ? (<p>마이페이지에서 강사이력을 추가해 주세요</p>):(<section className="container mx-auto px-4 py-16">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold">{course.title}</h1>
                     <div>
@@ -88,7 +95,7 @@ function InstructorCourseCreate() {
                     )}
 
                 </div>
-            </section>
+            </section>)}
             <Tail />
         </>
     );

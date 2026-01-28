@@ -19,8 +19,6 @@ const MainLogin = () => {
     const [loginId, setLoginId] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    // const [hasRole, setHasRole] = useState('');
-
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -67,9 +65,6 @@ const MainLogin = () => {
             if (loginId && password) {
                 localStorage.setItem("loginId", true);
                 setLoginId(false);
-                // if (hasRole === 'SUSPENDED') {
-                //     alert("관리자의 승인이 필요합니다")
-                // };
                 switch (userData.role) {
                     case UsersRole.STUDENT:
                         navigate('/');
