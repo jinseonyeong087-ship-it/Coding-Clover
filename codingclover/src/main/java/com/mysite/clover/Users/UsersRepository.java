@@ -16,6 +16,9 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
   // 이메일 중복 체크
   boolean existsByEmail(String Email);
 
+  // 소셜 로그인
+  Optional<Users> findByEmail(String email);
+
   // 관리자 - 강사관리 탭에서 사용될 예정
   List<Users> findByRole(UsersRole role);
 }
