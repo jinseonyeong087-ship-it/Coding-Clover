@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/textarea";
-import { User, Edit, FileText, Clock, CheckCircle, XCircle } from "lucide-react";
+import { User, Edit, FileText, Clock, CheckCircle, XCircle, Upload } from "lucide-react";
 
 // 유틸리티 함수
 const getLoginId = () => {
@@ -137,6 +137,11 @@ function InstructorMypage() {
     setFormData(prev => ({ ...prev, resumeFile: file }));
   };
 
+  // 파일 선택 버튼 클릭
+  const handleFileButtonClick = () => {
+    document.getElementById('resumeFile').click();
+  };
+
   // 로딩 중
   if (loading) {
     return (
@@ -239,24 +244,53 @@ function InstructorMypage() {
                       type="number"
                       value={formData.careerYears}
                       onChange={(e) => setFormData(prev => ({ ...prev, careerYears: e.target.value }))}
-                      placeholder="관련 분야 경력 연차를 입력해주세요."
+                      placeholder="숫자만 입력해 주세요"
                       min="0"
                       required
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="resumeFile">이력서 첨부</Label>
-                    <Input
-                      id="resumeFile"
-                      type="file"
-                      onChange={handleFileChange}
-                      accept=".pdf,.doc,.docx"
-                      className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium"
-                    />
-                    <p className="text-sm text-muted-foreground mt-1">
-                      PDF, DOC, DOCX 파일만 업로드 가능합니다.
-                    </p>
+                    <Label>이력서 첨부 *</Label>
+                    <div className="space-y-3">
+                      {/* 선택된 파일 표시 박스 */}
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center bg-gray-50">
+                        {formData.resumeFile ? (
+                          <div className="flex items-center justify-center gap-2 text-sm text-gray-700">
+                            <FileText className="w-4 h-4" />
+                            <span>{formData.resumeFile.name}</span>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500">
+                            선택된 파일이 없습니다
+                          </p>
+                        )}
+                      </div>
+
+                      {/* 숨겨진 file input */}
+                      <input
+                        id="resumeFile"
+                        type="file"
+                        onChange={handleFileChange}
+                        accept=".pdf,.doc,.docx"
+                        className="hidden"
+                      />
+
+                      {/* 커스텀 파일 선택 버튼 */}
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={handleFileButtonClick}
+                        className="w-full"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        이력서 첨부하기
+                      </Button>
+
+                      <p className="text-sm text-muted-foreground">
+                        PDF, DOC, DOCX 파일만 업로드 가능합니다.
+                      </p>
+                    </div>
                   </div>
 
                   <div className="flex justify-end gap-3 pt-4 border-t">
