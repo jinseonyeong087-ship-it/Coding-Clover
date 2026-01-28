@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 
 function InstructorCourseCreate() {
-  const [course, setCourse] = useState({ title: '', level: 1, description: '', price: 0 });
+  const [course, setCourse] = useState({ title: '', createdBy: '', level: 1, description: '', price: 0 });
   const [errors, setErrors] = useState({});
   const [selectLevel, setSelectLevel] = useState(null);
 
@@ -86,10 +86,10 @@ function InstructorCourseCreate() {
               {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
             </div>
 
-            {/* <div className="grid grid-cols-4 items-center gap-6">
+            <div className="grid grid-cols-4 items-center gap-6">
               <label className="text-right font-medium">강사명</label>
-              <Input name={created_by} type="text" onChange={handleChange} value={course.create_by} className="col-span-3" method="post" />
-            </div> */}
+              <p name={createdBy} type="text" onChange={handleChange} className="col-span-3" method="post">{course.createBy}</p>
+            </div>
 
             <div className="grid grid-cols-4 items-center gap-6">
               <label className="text-right font-medium">난이도</label>

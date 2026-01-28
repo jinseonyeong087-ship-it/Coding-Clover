@@ -20,7 +20,7 @@ import Noroll from '@/pages/Noroll'
 import CommunityPostTest from './pages/CommunityPostTest'
 import ProposalDetail from '@/pages/admin/ProposalDetail'
 import InstructorCourseCreate from '@/pages/instructor/InstructorCourseDetail'
-import AdminMypage from '@/pages/admin/AdminMypage'
+import AdminApproch from '@/pages/admin/AdminApproch'
 import InstructorMypage from '@/pages/instructor/InstructorMypage'
 
 
@@ -70,7 +70,7 @@ function App() {
         <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="dashboard" element={<AdminMain />} />
           <Route path="course/:courseId/pending" element={<ProposalDetail />} />
-          <Route path="mypage" element={<AdminMypage />} />
+          <Route path="users/instructors/:userId/approve" element={<AdminApproch />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
         {/*강사 프로필 <Route path="/api/instructor/profile" element={<InstructorProfile />} /> */}
