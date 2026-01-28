@@ -37,23 +37,6 @@ const parseInterests = (value) => {
   return value.split(', ').filter(v => v && v !== "미설정");
 };
 
-const getCachedData = (key) => {
-  try {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : null;
-  } catch {
-    return null;
-  }
-};
-
-const setCachedData = (key, data) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch (e) {
-    console.error('Cache error:', e);
-  }
-};
-
 function MyPage() {
   const [user, setUser] = useState(null);
   const [enrollments, setEnrollments] = useState([]);
@@ -63,23 +46,7 @@ function MyPage() {
   const [editForm, setEditForm] = useState({ name: '', educationLevel: '' });
   const [selectedInterests, setSelectedInterests] = useState([]);
 
-  const initFormData = (userData) => {
-    setEditForm({ name: userData.name, educationLevel: userData.educationLevel || '' });
-    setSelectedInterests(parseInterests(userData.interestCategory));
-  };
 
-  const loadCachedData = () => {
-    const cachedUser = getCachedData('cachedUserProfile');
-    const cachedEnrollments = getCachedData('cachedEnrollments');
-    
-    if (cachedUser) {
-      setUser(cachedUser);
-      initFormData(cachedUser);
-    }
-    if (cachedEnrollments) {
-      setEnrollments(cachedEnrollments);
-    }
-  };
 
   //백엔드 api 호출
   useEffect(() => {
@@ -91,32 +58,7 @@ function MyPage() {
       return;
     }
 
-    // 데이터 캐싱 채크
-    const cachedUser = localStorage.getItem('cachedUserProfile');
-    const cachedEnrollments = localStorage.getItem('cachedEnrollments');
-    
-    // 캐시된 데이터가 있으면 먼저 표시
-    if (cachedUser) {
-      try {
-        const userData = JSON.parse(cachedUser);
-        setUser(userData);
-        setEditForm({
-          name: userData.name,
-          educationLevel: userData.educationLevel || ''
-        });
-        setSelectedInterests(parseInterests(userData.interestCategory));
-      } catch (e) {
-        console.error('Cached user data parse error:', e);
-      }
-    }
-    
-    if (cachedEnrollments) {
-      try {
-        setEnrollments(JSON.parse(cachedEnrollments));
-      } catch (e) {
-        console.error('Cached enrollments data parse error:', e);
-      }
-    }
+
 
     const fetchData = async () => {
       try {
@@ -160,9 +102,6 @@ function MyPage() {
             educationLevel: userData.educationLevel || ''
           });
           setSelectedInterests(parseInterests(userData.interestCategory));
-          
-          // 캐시에 저장
-          localStorage.setItem('cachedUserProfile', JSON.stringify(processedUserData));
         } else {
           // 에러 응답의 자세한 내용 확인
           let errorDetail = '';
@@ -180,7 +119,6 @@ function MyPage() {
         if (enrollmentResponse.ok) {
           const enrollmentData = await enrollmentResponse.json();
           setEnrollments(enrollmentData);
-          localStorage.setItem('cachedEnrollments', JSON.stringify(enrollmentData));
         } else {
           setEnrollments([]);
         }
@@ -260,10 +198,6 @@ function MyPage() {
       };
       
       setUser(updatedUser);
-      
-      // 캐시도 업데이트
-      localStorage.setItem('cachedUserProfile', JSON.stringify(updatedUser));
-
       setIsEditing(false);
       alert("저장 완료!");
     } catch (err) {
