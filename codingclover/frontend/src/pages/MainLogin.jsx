@@ -19,6 +19,7 @@ const MainLogin = () => {
     const [loginId, setLoginId] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    // const [hasRole, setHasRole] = useState('');
 
     const navigate = useNavigate();
 
@@ -66,6 +67,9 @@ const MainLogin = () => {
             if (loginId && password) {
                 localStorage.setItem("loginId", true);
                 setLoginId(false);
+                // if (hasRole === 'SUSPENDED') {
+                //     alert("관리자의 승인이 필요합니다")
+                // };
                 switch (userData.role) {
                     case UsersRole.STUDENT:
                         navigate('/');
@@ -134,6 +138,9 @@ const MainLogin = () => {
                                     아이디/비밀번호 찾기
                                 </Link>
                             </CardDescription>
+                            <Button>구글 로그인</Button>
+                            <Button>카카오 로그인</Button>
+                            <Button>네이버 로그인</Button>
                         </div>
                     </CardContent>
                 </Card>
