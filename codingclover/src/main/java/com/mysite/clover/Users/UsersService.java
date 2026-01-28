@@ -3,9 +3,6 @@ package com.mysite.clover.Users;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.mysite.clover.StudentProfile.StudentProfile;
-import com.mysite.clover.StudentProfile.StudentProfileRepository;
-
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -13,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 public class UsersService {
     private final UsersRepository usersRepository;
     private final PasswordEncoder passwordEncoder;
-    private final StudentProfileRepository studentProfileRepository;
 
     public Users create(String loginId, String password, String name, String email, String role) {
         Users user = new Users();
@@ -36,15 +32,10 @@ public class UsersService {
 
         // Users 저장
         Users savedUser = this.usersRepository.save(user);
+        System.out.println("Users 저장 완료 - userId: " + savedUser.getUserId());
         
-        // STUDENT 역할인 경우 StudentProfile도 함께 생성
-        if (UsersRole.STUDENT.equals(savedUser.getRole())) {
-            StudentProfile studentProfile = new StudentProfile(savedUser.getUserId());
-            studentProfile.setUser(savedUser);
-            studentProfile.setEducationLevel("미설정");
-            studentProfile.setInterestCategory("미설정");
-            studentProfileRepository.save(studentProfile);
-        }
+        // StudentProfile은 마이페이지 접근 시 자동 생성되도록 변경
+        // (회원가입 시 생성하지 않음으로써 안정성 확보)
 
         return savedUser;
     }
