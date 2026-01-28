@@ -166,7 +166,7 @@ function ProposalDetail() {
                             <AlertDialogHeader>
                                 <AlertDialogTitle>강좌 개설을 승인하시겠습니까?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    승인 후에는 해당 강좌가 수강생들에게 공개됩니다.
+                                    승인 후, 강사님들이 강의를 업로드할 수 있습니다.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

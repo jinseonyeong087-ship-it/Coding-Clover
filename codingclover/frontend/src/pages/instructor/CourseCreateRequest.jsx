@@ -88,7 +88,7 @@ function InstructorCourseCreate() {
 
             <div className="grid grid-cols-4 items-center gap-6">
               <label className="text-right font-medium">강사명</label>
-              <p name={createdBy} type="text" onChange={handleChange} className="col-span-3" method="post">{course.createBy}</p>
+              <p className="col-span-3">{course.createdBy}</p>
             </div>
 
             <div className="grid grid-cols-4 items-center gap-6">

@@ -10,6 +10,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import {
+  Card,
+} from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
@@ -81,13 +84,15 @@ function AdminMain() {
             <section className="container mx-auto px-4 py-16">
                 <div className="flex justify-between gap-8">
                     <div className="flex-1">
+                        <Card>
                         <Table>
                             <TableHeader>
+                                 <TableHead className="text-foreground font-semibold px-4 py-3">강좌 승인</TableHead>
                                 <TableRow>
-                                    <TableHead>생성번호</TableHead>
-                                    <TableHead>강좌명</TableHead>
-                                    <TableHead>난이도</TableHead>
-                                    <TableHead>승인상태</TableHead>
+                                    <TableHead className="px-4 py-3 text-center">생성번호</TableHead>
+                                    <TableHead className="px-4 py-3 text-center">강좌명</TableHead>
+                                    <TableHead className="px-4 py-3 text-center">난이도</TableHead>
+                                    <TableHead className="px-4 py-3 text-center">승인상태</TableHead>
                                 </TableRow>
                             </TableHeader>
                             {/* id, 난이도, 강좌명, 강사명, 승인상태  */}
@@ -101,16 +106,16 @@ function AdminMain() {
                                         return (
                                             <TableRow key={uniqueKey}>
                                                 {/* 3. Java 필드명인 courseId, title, level, proposalStatus 사용 */}
-                                                <TableCell>{item.courseId}</TableCell>
-                                                <TableCell>
+                                                <TableCell className="px-4 py-3 text-center">{item.courseId}</TableCell>
+                                                <TableCell className="px-4 py-3 text-center">
                                                     <Link to={`/admin/course/${item.courseId}/pending`} className="hover:underline">
                                                         {item.title}
                                                     </Link>
                                                 </TableCell>
-                                                <TableCell>
+                                                <TableCell className="px-4 py-3 text-center">
                                                     {item.level === 1 ? "초급" : item.level === 2 ? "중급" : "고급"}
                                                 </TableCell>
-                                                <TableCell>
+                                                <TableCell className="px-4 py-3 text-center">
                                                     {/* 4. DB ENUM 값인 PENDING 상태 확인 */}
                                                     {item.proposalStatus === 'PENDING' ? (
                                                         <Badge variant="destructive">승인 필요</Badge>
@@ -132,15 +137,17 @@ function AdminMain() {
                                 )}
                             </TableBody>
                         </Table>
+                        </Card>
                     </div>
-                    <Separator orientation="vertical" />
                     <div className="flex-1">
+                        <Card>
                         <Table>
                             <TableHeader>
+                                <TableHead className="text-foreground font-semibold px-4 py-3">강사 승인</TableHead>
                                 <TableRow>
-                                    <TableHead>가입번호</TableHead>
-                                    <TableHead>강사명</TableHead>
-                                    <TableHead>승인상태</TableHead>
+                                    <TableHead className="px-4 py-3 text-center">가입번호</TableHead>
+                                    <TableHead className="px-4 py-3 text-center">강사명</TableHead>
+                                    <TableHead className="px-4 py-3 text-center">승인상태</TableHead>
                                 </TableRow>
                             </TableHeader>
                             {/* id, 강사명, 승인상태  */}
@@ -150,15 +157,15 @@ function AdminMain() {
                                         const uniqueKey = users.userId || `user-idx-${index}`;
                                         return (
                                             <TableRow key={uniqueKey}>
-                                                <TableCell>{users.userId}</TableCell>
-                                                <TableCell>
+                                                <TableCell className="px-4 py-3 text-center">{users.userId}</TableCell>
+                                                <TableCell className="px-4 py-3 text-center">
                                                     <Link to={`/admin/users/instructors/${users.userId}`} className="hover:underline">
                                                         {users.name}
                                                     </Link>
                                                 </TableCell>
-                                                <TableCell>
+                                                <TableCell className="px-4 py-3 text-center">
                                                     {users.status === 'ACTIVE' ? (
-                                                        <Badge variant="secondary">강사 승인</Badge>
+                                                        <Badge variant="secondary">승인 완료</Badge>
                                                     ) : users.status === 'SUSPENDED' ? (
                                                         <Badge variant="destructive">승인 필요</Badge>
                                                     ) : null}
@@ -175,6 +182,7 @@ function AdminMain() {
                                 )}
                             </TableBody>
                         </Table>
+                        </Card>
                     </div>
                 </div>
 
