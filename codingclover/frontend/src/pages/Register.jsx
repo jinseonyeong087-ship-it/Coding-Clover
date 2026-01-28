@@ -9,7 +9,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/RadioGroup';
 import { cn } from '@/lib/utils';
 import { Eye, EyeOff } from 'lucide-react';
 
+import { useNavigate } from 'react-router-dom';
+
 const Register = ({ onToLogin }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     loginId: '',
     password: '',
