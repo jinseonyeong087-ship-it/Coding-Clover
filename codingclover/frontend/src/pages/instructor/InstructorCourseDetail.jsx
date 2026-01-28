@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import InstructorNav from "@/components/InstructorNav";
 import Tail from "@/components/Tail";
 import { Button } from "@/components/ui/Button";
+import InstructorLecture from "@/pages/instructor/InstructorLecture";
 
 function InstructorCourseCreate() {
 
@@ -16,7 +17,8 @@ function InstructorCourseCreate() {
         fetch(`/instructor/course/${courseId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include'})
+            credentials: 'include'
+        })
             .then((res) => {
                 if (res.status === 401 || res.status === 403) {
                     throw new Error('인증 필요: 강사로 로그인해주세요.');
@@ -62,10 +64,6 @@ function InstructorCourseCreate() {
         }
     };
 
-    if (!course) {
-        return <div className="p-6">로딩 중...</div>;
-    }
-
     return (
         <>
             <InstructorNav />
@@ -97,17 +95,27 @@ function InstructorCourseCreate() {
                         <span className="font-semibold">상태: </span>
                         {getStatusText(formData.proposalStatus)}
                     </div>
-                    {formData.proposalStatus === 'REJECTED' && formData.proposalRejectReason && (
-                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-md">
-                            <h3 className="text-red-800 font-bold mb-2">반려 사유 안내</h3>
-                            <p className="text-red-700 whitespace-pre-wrap">
-                                {formData.proposalRejectReason}
-                            </p>
-                        </div>
-                    )}
 
                 </div>
             </section>)}
+
+            <section className="container mx-auto px-4 py-16">
+                {formData.proposalStatus === 'APPROVED' ? (
+                    <>
+                        <p className="text-green-600 font-medium mb-4">강좌가 승인되었습니다. 강의를 추가해주세요.</p>
+                        <InstructorLecture />
+                    </>
+                ) : formData.proposalStatus === 'PENDING' ? (
+                    <p className="text-yellow-600">강좌 개설이 승인되면 강의를 업로드할 수 있습니다.</p>
+                ) : (
+                    <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                        <h3 className="text-red-800 font-bold mb-2">반려 사유 안내</h3>
+                        <p className="text-red-700 whitespace-pre-wrap">
+                            {formData.proposalRejectReason}
+                        </p>
+                    </div>
+                )}
+            </section>
             <Tail />
         </>
     );

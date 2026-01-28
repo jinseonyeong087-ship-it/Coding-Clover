@@ -90,7 +90,6 @@ function AdminApproch() {
                                 </div>
                                 <Badge variant={instructor.status === 'APPROVED' ? 'secondary' : 'destructive'}>
                                     {instructor.status === 'APPROVED' ? '승인됨' :
-                                        instructor.status === 'APPLIED' ? '승인 대기' :
                                             instructor.status === 'SUSPENDED' ? '승인 필요' : instructor.status}
                                 </Badge>
                             </div>

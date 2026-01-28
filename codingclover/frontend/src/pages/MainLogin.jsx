@@ -67,7 +67,7 @@ const MainLogin = () => {
 
             if (loginId && password) {
                 localStorage.setItem("loginId", true);
-                setLoginId(false);
+                setLoginId();
                 switch (userData.role) {
                     case UsersRole.STUDENT:
                         navigate('/');
