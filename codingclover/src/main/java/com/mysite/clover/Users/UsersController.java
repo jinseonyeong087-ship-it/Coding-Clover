@@ -4,6 +4,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -71,5 +76,43 @@ public class UsersController {
     public ResponseEntity<String> approveInstructor(@org.springframework.web.bind.annotation.PathVariable Long userId) {
         usersService.approveInstructor(userId);
         return ResponseEntity.ok("강사 승인이 완료되었습니다.");
+    }
+
+    // 소셜 로그인을 하면 react에서 로그인을 한게 아니기에 쿠키나 react가 로그인된거지 모름 그래서 
+    // 로그인 상태를 확인하기 위해 추가함
+    @GetMapping("/auth/status")
+    @ResponseBody
+    public ResponseEntity<?> getStatus(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
+            return ResponseEntity.ok(Map.of("loggedIn", false));
+        }
+
+        Users user = null;
+        if (authentication instanceof OAuth2AuthenticationToken) {
+            OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
+            OAuth2User oauth2User = token.getPrincipal(); // google, naver, kakao
+            String email = oauth2User.getAttribute("email");
+            user = usersService.getUserByEmail(email);
+        } else {
+            // General login
+            user = usersService.getUserByLoginId(authentication.getName());
+        }
+
+        if (user != null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("loggedIn", true);
+
+            Map<String, Object> userData = new HashMap<>();
+            userData.put("role", user.getRole());
+            userData.put("name", user.getName());
+            userData.put("email", user.getEmail());
+
+            response.put("user", userData);
+
+            return ResponseEntity.ok(response);
+        }
+
+        return ResponseEntity.ok(Map.of("loggedIn", false));
     }
 }

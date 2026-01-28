@@ -79,4 +79,12 @@ public class UsersService {
             instructorProfileRepository.save(profile);
         });
     }
+
+    public Users getUserByLoginId(String loginId) {
+        return usersRepository.findByLoginId(loginId).orElse(null);
+    }
+
+    public Users getUserByEmail(String email) {
+        return usersRepository.findByEmail(email).orElse(null);
+    }
 }

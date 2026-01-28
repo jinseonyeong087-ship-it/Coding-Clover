@@ -8,18 +8,37 @@ function Nav() {
     const [loginId, setLoginId] = useState(false);
 
     useEffect(() => {
-        const storedLoginId = localStorage.getItem("loginId");
-        const storedUsers = localStorage.getItem("users");
+        const checkLoginStatus = async () => {
+            const storedLoginId = localStorage.getItem("loginId");
+            const storedUsers = localStorage.getItem("users");
 
-        if (storedLoginId === "true") {
-            setLoginId(true);
-        }
+            if (storedLoginId === "true" && storedUsers) {
+                setLoginId(true);
+                setRole(JSON.parse(storedUsers).role);
+            }
 
-        if (storedUsers) {
-            const userData = JSON.parse(storedUsers);
-            // ApiLoginSuccess.java에서 "role"이라는 키로 응답을 보내므로 이를 참조합니다.
-            setRole(userData.role); 
-        }
+            // 항상 서버 세션과 동기화하거나, 로컬 스토리지가 없을 때 확인
+            // 소셜 로그인 리다이렉트 직후에는 로컬 스토리지가 비어있으므로 이 과정이 필수
+            if (!storedLoginId || !storedUsers) {
+                try {
+                    const res = await fetch('/auth/status');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.loggedIn) {
+                            localStorage.setItem("loginId", "true");
+                            localStorage.setItem("users", JSON.stringify(data.user));
+
+                            setLoginId(true);
+                            setRole(data.user.role);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Login status check failed:", e);
+                }
+            }
+        };
+
+        checkLoginStatus();
     }, []);
 
     // 1. 로그인하지 않은 상태일 때 (디폴트)

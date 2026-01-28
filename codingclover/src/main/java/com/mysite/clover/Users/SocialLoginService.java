@@ -1,6 +1,7 @@
 package com.mysite.clover.Users;
 
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -30,6 +31,7 @@ public class SocialLoginService extends DefaultOAuth2UserService {
                 .orElseGet(() -> {
                     Users newUser = new Users();
                     newUser.setLoginId(registrationId + "_" + attributes.get("sub"));
+                    newUser.setPassword(UUID.randomUUID().toString()); 
                     newUser.setName(name);
                     newUser.setEmail(email);
                     newUser.setRole(UsersRole.STUDENT);
