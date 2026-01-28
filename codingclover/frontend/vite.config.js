@@ -24,12 +24,6 @@ export default defineConfig({
         changeOrigin: true,
       },
 
-      // '/course': {
-      //   target: 'http://localhost:3333',
-      //   changeOrigin: true,
-      // },
-
-      // vite.config.js
       '/course': {
         target: 'http://localhost:3333',
         changeOrigin: true,
@@ -39,6 +33,7 @@ export default defineConfig({
           }
         }
       },
+
       '/student': {
         target: 'http://localhost:3333',
         changeOrigin: true,
@@ -48,6 +43,7 @@ export default defineConfig({
           }
         }
       },
+
       '/instructor': {
         target: 'http://localhost:3333',
         changeOrigin: true,
@@ -57,6 +53,7 @@ export default defineConfig({
           }
         }
       },
+      
       '/admin': {
         target: 'http://localhost:3333',
         changeOrigin: true,

@@ -73,7 +73,7 @@ public class UsersController {
     // 관리자: 강사 승인
     @PostMapping("/admin/users/instructors/{userId}/approve")
     @ResponseBody
-    public ResponseEntity<String> approveInstructor(@org.springframework.web.bind.annotation.PathVariable Long userId) {
+    public ResponseEntity<String> approveInstructor(@org.springframework.web.bind.annotation.PathVariable("userId") Long userId) {
         usersService.approveInstructor(userId);
         return ResponseEntity.ok("강사 승인이 완료되었습니다.");
     }
@@ -82,7 +82,7 @@ public class UsersController {
     @GetMapping("/admin/users/instructors/{userId}")
     @ResponseBody
     public ResponseEntity<InstructorDTO> getInstructorDetail(
-            @org.springframework.web.bind.annotation.PathVariable Long userId) {
+            @org.springframework.web.bind.annotation.PathVariable("userId") Long userId) {
         InstructorDTO instructor = usersService.getInstructorDetail(userId);
         return ResponseEntity.ok(instructor);
     }

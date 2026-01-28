@@ -79,7 +79,7 @@ function AdminApproch() {
     return (
         <>
             <Nav />
-            {loading === true ? (<p className="text-center">로딩 중...</p>) : (
+            {loading === true ? (<p className="text-center">로딩 중...</p>) : !instructor ? (<p className="text-center text-red-500">강사 정보를 불러올 수 없습니다.</p>) : (
                 <section className="container mx-auto px-4 py-16 max-w-2xl">
                     <Card>
                         <CardHeader>
@@ -88,10 +88,9 @@ function AdminApproch() {
                                     <CardTitle className="text-2xl">{instructor.name}</CardTitle>
                                     <CardDescription>{instructor.email}</CardDescription>
                                 </div>
-                                <Badge variant={instructor.status === 'APPROVED' ? 'secondary' : 'destructive'}>
-                                    {instructor.status === 'APPROVED' ? '승인됨' :
-                                            instructor.status === 'SUSPENDED' ? '승인 필요' : instructor.status}
-                                </Badge>
+                                {instructor.status == 'ACTIVE' ? (
+                                <Badge variant="secondary">승인 완료</Badge>):(
+                                <Badge variant="destructive">승인 필요</Badge>)}
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-6">
@@ -152,14 +151,13 @@ function AdminApproch() {
 
                             {/* 버튼 영역 */}
                             <div className="flex gap-4 justify-end pt-4">
-                                <Button variant="outline" onClick={() => navigate('/admin')}>
+                                <Button variant="outline" onClick={() => navigate('/admin/dashboard')}>
                                     목록으로
                                 </Button>
-                                {instructor.status !== 'APPROVED' && (
-                                    <Button onClick={approveInstructor}>
-                                        강사 승인
-                                    </Button>
-                                )}
+                                {instructor.status == 'ACTIVE' ? (
+                                <Button variant="ghost" disable>승인완료</Button>):(
+                                <Button onClick={approveInstructor}>강사 승인</Button>)}
+                                
                             </div>
                         </CardContent>
                     </Card>
