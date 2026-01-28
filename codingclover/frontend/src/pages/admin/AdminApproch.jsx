@@ -79,7 +79,7 @@ function AdminApproch() {
     return (
         <>
             <Nav />
-            {loading === true ? (<p className="text-center">로딩 중...</p>) : !instructor ? (<p className="text-center text-red-500">강사 정보를 불러올 수 없습니다.</p>) : (
+            {!instructor ? (<p className="text-center text-red-500">강사 정보를 불러올 수 없습니다.</p>) : (
                 <section className="container mx-auto px-4 py-16 max-w-2xl">
                     <Card>
                         <CardHeader>

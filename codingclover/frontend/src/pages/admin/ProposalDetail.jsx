@@ -116,12 +116,15 @@ function ProposalDetail() {
 
                 <Separator />
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                     <div>
                         <span className="font-semibold">난이도:</span> {getLevelText(course.level)}
                     </div>
                     <div>
                         <span className="font-semibold">가격:</span> {course.price?.toLocaleString()}원
+                    </div>
+                    <div>
+                        <span className="font-semibold">강사명:</span> {course.instructorName}
                     </div>
                 </div>
 

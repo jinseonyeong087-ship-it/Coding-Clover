@@ -11,6 +11,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import InstructorPermit from "@/components/InsttuctorPermit"
+
+
 
 function InstructorMain() {
 
@@ -18,7 +21,8 @@ function InstructorMain() {
     const [instructorStatus, setInstructorStatus] = useState(null);
 
     useEffect(() => {
-        fetch('/instructor/course', {method: 'GET', headers: { 'Content-Type': 'application/json' }})
+        // 강좌 목록 조회
+        fetch('/instructor/course', { method: 'GET', headers: { 'Content-Type': 'application/json' } })
             .then((res) => {
                 if (!res.ok) throw new Error('인증 필요');
                 return res.json();
@@ -48,8 +52,8 @@ function InstructorMain() {
     return (
         <>
             <Nav />
-            {instructorStatus === 'SUSPENDED' ? (
-                <p>마이페이지에서 강사이력을 추가해 주세요</p>) : (
+            {instructorStatus !== 'APPROVED' ? (
+                <InstructorPermit />) : (
                 <section className="container mx-auto px-4 py-16">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-bold">내 강좌 목록</h1>
