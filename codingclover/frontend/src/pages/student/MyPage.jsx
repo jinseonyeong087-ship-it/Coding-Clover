@@ -59,7 +59,6 @@ function MyPage() {
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [serverWarning, setServerWarning] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', educationLevel: '' });
   const [selectedInterests, setSelectedInterests] = useState([]);
@@ -128,8 +127,6 @@ function MyPage() {
           throw new Error('로그인이 필요합니다.');
         }
 
-        console.log('API 호출 시작 - Login ID:', currentLoginId);
-
         // 두 API를 병렬로 호출
         const [profileResponse, enrollmentResponse] = await Promise.all([
           fetch('/api/student/mypage', {
@@ -148,12 +145,11 @@ function MyPage() {
           })
         ]);
 
-        console.log('프로필 API 응답 상태:', profileResponse.status);
-        console.log('수강목록 API 응답 상태:', enrollmentResponse.status);
-
         // 프로필 데이터 처리
+        console.log('프로필 API 응답 상태:', profileResponse.status);
         if (profileResponse.ok) {
           const userData = await profileResponse.json();
+          console.log('받은 사용자 데이터:', userData);
           const processedUserData = {
             ...userData,
             joinDate: new Date(userData.joinDate).toLocaleDateString('ko-KR')
@@ -167,79 +163,31 @@ function MyPage() {
           
           // 캐시에 저장
           localStorage.setItem('cachedUserProfile', JSON.stringify(processedUserData));
-        } else if (profileResponse.status === 500) {
-          // 서버 오류 세부 내용 확인
-          try {
-            const errorData = await profileResponse.text();
-            console.error('500 에러 세부 내용:', errorData);
-          } catch (e) {
-            console.error('에러 응답 파싱 실패:', e);
-          }
-          
-          // 서버 오류시 기본 사용자 정보 생성
-          const storedUsers = localStorage.getItem("users");
-          if (storedUsers) {
-            try {
-              const userData = JSON.parse(storedUsers);
-              const fallbackUserData = {
-                loginId: userData.loginId || '',
-                name: userData.name || '사용자',
-                email: userData.email || '',
-                role: userData.role || 'STUDENT',
-                educationLevel: '미설정',
-                interestCategory: '미설정',
-                joinDate: new Date().toLocaleDateString('ko-KR')
-              };
-              setUser(fallbackUserData);
-              setEditForm({
-                name: fallbackUserData.name,
-                educationLevel: ''
-              });
-              setSelectedInterests([]);
-              // 조용히 fallback 처리 (콘솔 메시지 없음)
-              setServerWarning(`${userData.loginId} 계정의 프로필 데이터가 아직 생성되지 않았습니다. 백엔드에서 프로필을 초기화하는 중일 수 있습니다.`);
-            } catch (e) {
-              console.error('localStorage 데이터 파싱 실패:', e);
-              throw new Error('사용자 정보를 불러올 수 없습니다. 다시 로그인해주세요.');
-            }
-          } else {
-            throw new Error('로그인이 필요합니다.');
-          }
         } else {
-          // 다른 상태 코드별 에러 메시지 처리
-          let errorMessage;
-          if (profileResponse.status === 404) {
-            errorMessage = '사용자 정보를 찾을 수 없습니다. 회원가입이 완료되었는지 확인해주세요.';
-          } else if (profileResponse.status === 401) {
-            errorMessage = '로그인이 필요합니다.';
-          } else {
-            errorMessage = `프로필 조회 실패 (오류 코드: ${profileResponse.status})`;
+          // 에러 응답의 자세한 내용 확인
+          let errorDetail = '';
+          try {
+            const errorText = await profileResponse.text();
+            console.error('서버 에러 응답:', errorText);
+            errorDetail = ` - ${errorText}`;
+          } catch (e) {
+            console.error('에러 응답 읽기 실패:', e);
           }
-          throw new Error(errorMessage);
+          throw new Error(`프로필 조회 실패 (${profileResponse.status})${errorDetail}`);
         }
 
         // 수강 목록 데이터 처리
         if (enrollmentResponse.ok) {
           const enrollmentData = await enrollmentResponse.json();
           setEnrollments(enrollmentData);
-          
-          // 캐시에 저장
           localStorage.setItem('cachedEnrollments', JSON.stringify(enrollmentData));
         } else {
-          console.error('수강 목록 조회 실패:', enrollmentResponse.status);
           setEnrollments([]);
         }
 
       } catch (err) {
         console.error('데이터 로딩 에러:', err);
-        console.error('에러 스택:', err.stack);
-        
-        // 네트워크 에러와 서버 에러를 구분
-        if (err.message.includes('Failed to fetch')) {
-          setError('서버에 연결할 수 없습니다. 백엔드 서버가 http://localhost:3333 에서 실행 중인지 확인해주세요.');
-        } else {
-          setError(err.message);
-        }
+        setError(err.message);
         setEnrollments([]);
       } finally {
         setLoading(false);
@@ -344,53 +292,28 @@ function MyPage() {
 
         {loading && <p className="text-center">사용자 정보를 불러오는 중...</p>}
         
-        {serverWarning && (
-          <div className="max-w-4xl mx-auto mb-6">
-            <Card className="border-yellow-500 bg-yellow-50">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3 text-yellow-800">
-                  <span className="text-xl mt-0.5">ℹ️</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium mb-1">프로필 정보 안내</p>
-                    <p className="text-sm">{serverWarning}</p>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-2 text-yellow-700 border-yellow-300 hover:bg-yellow-100"
-                      onClick={() => window.location.reload()}
-                    >
-                      다시 시도
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-        
         {error && (
           <div className="max-w-2xl mx-auto">
             <Card className="border-destructive">
               <CardContent className="p-6 text-center">
                 <h2 className="text-xl font-semibold text-destructive mb-2">
-                  {error.includes('로그인') ? '로그인 필요' : '오류 발생'}
+                  {error.includes('로그인') ? '로그인 필요' : '서버 오류'}
                 </h2>
                 <p className="text-muted-foreground mb-4">{error}</p>
+                {error.includes('백엔드 서버를 재시작') && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mb-4 text-sm text-yellow-800">
+                    <p className="font-medium">해결 방법:</p>
+                    <p>1. 백엔드 서버를 중지하고 재시작하세요</p>
+                    <p>2. 새로고침 버튼을 눌러 다시 시도하세요</p>
+                  </div>
+                )}
                 <div className="flex justify-center gap-3">
-                  {error.includes('로그인') ? (
-                    <Button onClick={() => window.location.href = '/auth/login'}>
-                      로그인하기
-                    </Button>
-                  ) : (
-                    <>
-                      <Button variant="outline" onClick={() => window.location.reload()}>
-                        새로고침
-                      </Button>
-                      <Button onClick={() => window.location.href = '/auth/login'}>
-                        로그인 페이지로
-                      </Button>
-                    </>
-                  )}
+                  <Button variant="outline" onClick={() => window.location.reload()}>
+                    새로고침
+                  </Button>
+                  <Button onClick={() => window.location.href = '/auth/login'}>
+                    로그인 페이지로
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -401,16 +324,10 @@ function MyPage() {
           <>
             <div className="flex justify-between mb-8">
               <h1 className="text-3xl font-bold">마이페이지</h1>
-              {!isEditing && !serverWarning && (
+              {!isEditing && (
                 <Button variant="outline" onClick={handleEditToggle}>
                   <Edit className="w-4 h-4 mr-2" />
                   정보 수정
-                </Button>
-              )}
-              {serverWarning && (
-                <Button variant="outline" disabled>
-                  <Edit className="w-4 h-4 mr-2" />
-                  정보 수정 (서버 오류)
                 </Button>
               )}
             </div>

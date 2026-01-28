@@ -31,8 +31,18 @@ public class StudentProfileController {
             HttpServletRequest request) {
         //1.resolveLoginId()로 loginId 추출
         String loginId = resolveLoginId(principal, request);
-        //2.Service에 loginId 전달 → 마이페이지 DTO 반환
-        return studentProfileService.getStudentProfileByLoginId(loginId);
+        System.out.println("마이페이지 요청 - loginId: " + loginId);
+        
+        try {
+            //2.Service에 loginId 전달 → 마이페이지 DTO 반환
+            StudentProfileDto result = studentProfileService.getStudentProfileByLoginId(loginId);
+            System.out.println("프로필 조회 성공: " + result.getLoginId());
+            return result;
+        } catch (Exception e) {
+            System.err.println("프로필 조회 중 에러 발생: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @PutMapping("/mypage")

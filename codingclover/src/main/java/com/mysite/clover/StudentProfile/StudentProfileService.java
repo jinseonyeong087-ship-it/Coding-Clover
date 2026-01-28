@@ -23,22 +23,66 @@ public class StudentProfileService {
     @Transactional(readOnly = true)
     public StudentProfileDto getStudentProfileByLoginId(String loginId) {
 
+        System.out.println("getStudentProfileByLoginId 호출됨 - loginId: " + loginId);
+        
         Users user = usersRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자 정보가 없습니다."));
+                .orElseThrow(() -> {
+                    System.err.println("사용자를 찾을 수 없음: " + loginId);
+                    return new EntityNotFoundException("사용자 정보가 없습니다.");
+                });
 
-        return getStudentProfile(user.getUserId());
+        System.out.println("사용자 발견 - userId: " + user.getUserId() + ", name: " + user.getName());
+        
+        // StudentProfile이 있으면 가져오고, 없으면 기본값으로 DTO 생성
+        StudentProfile profile = studentProfileRepository.findByUserId(user.getUserId()).orElse(null);
+        
+        String educationLevel = "미설정";
+        String interestCategory = "미설정";
+        
+        if (profile != null) {
+            educationLevel = profile.getEducationLevel() != null ? profile.getEducationLevel() : "미설정";
+            interestCategory = profile.getInterestCategory() != null ? profile.getInterestCategory() : "미설정";
+            System.out.println("기존 StudentProfile 발견 - educationLevel: " + educationLevel);
+        } else {
+            System.out.println("StudentProfile 없음 - 기본값 사용");
+        }
+        
+        return new StudentProfileDto(
+                user.getUserId(),
+                user.getLoginId(),
+                user.getName(),
+                user.getEmail(),
+                user.getCreatedAt(),
+                educationLevel,
+                interestCategory
+        );
     }
 
     // userId 조회 (userId 기준으로 Users + StudentProfile 조회)
-    @Transactional(readOnly = true)
+    @Transactional
     public StudentProfileDto getStudentProfile(Long userId) {
 
+        System.out.println("getStudentProfile 호출됨 - userId: " + userId);
+        
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자 정보가 없습니다."));
 
         StudentProfile profile = studentProfileRepository
                 .findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("수강생 정보가 없습니다."));
+                .orElseGet(() -> {
+                    System.out.println("StudentProfile이 없어서 새로 생성 - userId: " + userId);
+                    // 프로필이 없으면 기본 프로필 생성
+                    StudentProfile newProfile = new StudentProfile(userId);
+                    newProfile.setUser(user);
+                    newProfile.setEducationLevel("미설정");
+                    newProfile.setInterestCategory("미설정");
+                    StudentProfile saved = studentProfileRepository.save(newProfile);
+                    System.out.println("새 StudentProfile 생성 완료 - userId: " + userId);
+                    return saved;
+                });
+                
+        System.out.println("프로필 조회 완료 - educationLevel: " + profile.getEducationLevel());
+                
         //반환 DTO 구성
         return new StudentProfileDto(
                 user.getUserId(),
@@ -79,6 +123,11 @@ public class StudentProfileService {
         StudentProfile profile = studentProfileRepository
                 .findByUserId(userId)
                 .orElse(new StudentProfile(userId));
+        
+        // 새로 생성된 경우 User와 연결
+        if (profile.getUser() == null) {
+            profile.setUser(user);
+        }
 
         if (educationLevel != null && !educationLevel.isBlank()) {
             profile.setEducationLevel(educationLevel.trim());
