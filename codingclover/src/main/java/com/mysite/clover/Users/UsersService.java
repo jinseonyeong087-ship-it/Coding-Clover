@@ -152,10 +152,17 @@ public class UsersService {
         return user.getLoginId();
     }
 
-    // 비밀번호 찾기
-    public String findPw(String loginId, String name, String email) {
-        Users user = usersRepository.findByLoginIdAndNameAndEmail(loginId, name, email)
+    // 비밀번호 찾기 정보 일치 유무
+    public void verifyUserForPassword(String loginId, String name, String email) {
+        usersRepository.findByLoginIdAndNameAndEmail(loginId, name, email)
+                .orElseThrow(() -> new RuntimeException("입력하신 정보와 일치하는 사용자가 없습니다."));
+    }
+
+    // 비밀번호 변경
+    public void updatePassword(String loginId, String newPassword) {
+        Users user = usersRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        return user.getPassword();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        usersRepository.save(user);
     }
 }

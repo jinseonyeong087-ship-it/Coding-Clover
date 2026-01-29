@@ -73,7 +73,8 @@ public class UsersController {
     // 관리자: 강사 승인
     @PostMapping("/admin/users/instructors/{userId}/approve")
     @ResponseBody
-    public ResponseEntity<String> approveInstructor(@org.springframework.web.bind.annotation.PathVariable("userId") Long userId) {
+    public ResponseEntity<String> approveInstructor(
+            @org.springframework.web.bind.annotation.PathVariable("userId") Long userId) {
         usersService.approveInstructor(userId);
         return ResponseEntity.ok("강사 승인이 완료되었습니다.");
     }
@@ -124,5 +125,53 @@ public class UsersController {
         }
 
         return ResponseEntity.ok(Map.of("loggedIn", false));
+    }
+
+    // UsersController.java 추가 및 수정
+
+    // 아이디/비밀번호 찾기 통합 엔드포인트
+    @PostMapping("/auth/findRequest")
+    @ResponseBody
+    public ResponseEntity<?> handleFindRequest(@RequestBody Map<String, String> params) {
+        try {
+            String type = params.get("type"); // 프론트에서 'id' 또는 'pw'를 보냄
+
+            if ("id".equals(type)) {
+                // 아이디 찾기 로직 실행
+                String loginId = usersService.findId(params.get("name"), params.get("email"));
+                return ResponseEntity.ok(Map.of("loginId", loginId));
+
+            } else if ("pw".equals(type)) {
+                // 비밀번호 찾기 전 사용자 확인 로직 실행
+                usersService.verifyUserForPassword(
+                        params.get("loginId"),
+                        params.get("name"),
+                        params.get("email"));
+                return ResponseEntity.ok(Map.of("message", "사용자 정보가 확인되었습니다. 인증번호를 요청하세요."));
+            }
+
+            return ResponseEntity.badRequest().body(Map.of("message", "잘못된 요청 타입입니다."));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // 최종 비밀번호 변경 엔드포인트
+    // url findRequest 로 바꿔야함
+    @PostMapping("/auth/resetPassword")
+    @ResponseBody
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> params) {
+        try {
+            String loginId = params.get("loginId");
+            String newPassword = params.get("newPassword");
+
+            usersService.updatePassword(loginId, newPassword);
+            return ResponseEntity.ok(Map.of("message", "비밀번호 변경 완료"));
+
+        } catch (Exception e) {
+            // 유저 객체 획득 실패 시 "사용자를 찾을 수 없습니다" 예외 발생
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 }
