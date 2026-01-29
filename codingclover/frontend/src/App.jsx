@@ -22,6 +22,9 @@ import ProposalDetail from '@/pages/admin/ProposalDetail'
 import InstructorCourseCreate from '@/pages/instructor/InstructorCourseDetail'
 import AdminApproch from '@/pages/admin/AdminApproch'
 import InstructorMypage from '@/pages/instructor/InstructorMypage'
+import TestPayment from '@/pages/payment/TestPayment'
+import TestPaymentSuccess from '@/pages/payment/TestPaymentSuccess'
+import TestPaymentFail from '@/pages/payment/TestPaymentFail'
 
 
 function App() {
@@ -39,6 +42,11 @@ function App() {
         <Route path="/test/qna" element={<QnaTest />} />
         {/* Submission 테스트 페이지 */}
         <Route path="/test/submission" element={<SubmissionTest />} />
+
+        {/* 결제 테스트 (프론트/백엔드 연동) */}
+        <Route path="/test/payment/checkout" element={<TestPayment />} />
+        <Route path="/test/payment/success" element={<TestPaymentSuccess />} />
+        <Route path="/test/payment/fail" element={<TestPaymentFail />} />
         {/* 로그인 관련 */}
         <Route path="/auth/login" element={<MainLogin />} />
         <Route path="/auth/register" element={<Register />} />
