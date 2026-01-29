@@ -36,13 +36,15 @@ public class CourseService {
     }
 
     // 승인된(APPROVED) 강좌 목록 조회 (일반 사용자 및 학생에게 노출)
+    // [변경] 강의가 1개 이상 있는 강좌만 노출되도록 변경
     public List<Course> getPublicList() {
-        return courseRepository.findByProposalStatus(CourseProposalStatus.APPROVED);
+        return courseRepository.findApprovedCoursesWithLectures();
     }
 
     // 승인된 강좌 중 특정 레벨에 해당하는 목록 조회 (필터링)
+    // [변경] 강의가 1개 이상 있는 강좌만 노출되도록 변경
     public List<Course> getPublicListByLevel(int level) {
-        return courseRepository.findByProposalStatusAndLevel(CourseProposalStatus.APPROVED, level);
+        return courseRepository.findApprovedCoursesWithLecturesByLevel(level);
     }
 
     // 특정 강사가 개설한 강좌 목록 조회
