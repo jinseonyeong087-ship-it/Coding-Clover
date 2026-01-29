@@ -13,12 +13,54 @@ function InstructorCourseCreate() {
   const [course, setCourse] = useState({ title: '', createdBy: '', level: 1, description: '', price: 0 });
   const [errors, setErrors] = useState({});
   const [selectLevel, setSelectLevel] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const levelMapping = [
     { id: 1, level: 1, name: "초급" },
     { id: 2, level: 2, name: "중급" },
     { id: 3, level: 3, name: "고급" }
   ]
+
+  // 사용자 정보 로드
+  useEffect(() => {
+    const storedUser = localStorage.getItem('users');
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        const loginId = userData.loginId;
+        
+        // 강사 프로필에서 이름 가져오기
+        fetch('/api/instructor/mypage', {
+          method: 'GET',
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-Login-Id': loginId
+          },
+          credentials: 'include'
+        })
+        .then((res) => {
+          if (res.ok) return res.json();
+          throw new Error('프로필 조회 실패');
+        })
+        .then((data) => {
+          // 사용자 이름 자동 설정
+          setCourse(prev => ({ ...prev, createdBy: userData.name || loginId }));
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error('사용자 정보 조회 오류:', err);
+          // 프로필 조회 실패 시 localStorage의 이름 사용
+          setCourse(prev => ({ ...prev, createdBy: userData.name || userData.loginId || '강사명 없음' }));
+          setLoading(false);
+        });
+      } catch (error) {
+        console.error('localStorage 파싱 오류:', error);
+        setLoading(false);
+      }
+    } else {
+      setLoading(false);
+    }
+  }, []);
 
   
 
@@ -75,21 +117,32 @@ function InstructorCourseCreate() {
 
       <section className="container mx-auto px-4 py-16">
         <Card className="max-w-4xl mx-auto">
-
           <CardHeader><h1 className="text-3xl font-bold mb-8">강좌 개설</h1></CardHeader>
 
-          <CardContent className="space-y-2">
-            {errors.global && <p className="text-red-500 text-sm text-center mb-4">{errors.global}</p>}
-            <div className="grid grid-cols-4 items-center gap-6">
-              <label className="text-right font-medium">강좌명</label>
-              <Input name="title" type="text" onChange={handleChange} value={course.title} className="col-span-3" method="post" />
-              {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
-            </div>
+          {loading ? (
+            <CardContent className="text-center py-8">
+              <p>사용자 정보를 불러오는 중...</p>
+            </CardContent>
+          ) : (
+            <CardContent className="space-y-2">
+              {errors.global && <p className="text-red-500 text-sm text-center mb-4">{errors.global}</p>}
+              <div className="grid grid-cols-4 items-center gap-6">
+                <label className="text-right font-medium">강좌명</label>
+                <Input name="title" type="text" onChange={handleChange} value={course.title} className="col-span-3" method="post" />
+                {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+              </div>
 
-            <div className="grid grid-cols-4 items-center gap-6">
-              <label className="text-right font-medium">강사명</label>
-              <p className="col-span-3">{course.createdBy}</p>
-            </div>
+              <div className="grid grid-cols-4 items-center gap-6">
+                <label className="text-right font-medium">강사명</label>
+                <div className="col-span-3">
+                  <Input 
+                    value={course.createdBy} 
+                    readOnly 
+                    className="bg-gray-50 cursor-not-allowed" 
+                    placeholder="강사명이 자동으로 입력됩니다"
+                  />
+                </div>
+              </div>
 
             <div className="grid grid-cols-4 items-center gap-6">
               <label className="text-right font-medium">난이도</label>
@@ -125,6 +178,7 @@ function InstructorCourseCreate() {
               <Button onClick={handleClick} method="post">개설 신청</Button>
             </CardFooter>
           </CardContent>
+          )}
         </Card>
       </section>
 
