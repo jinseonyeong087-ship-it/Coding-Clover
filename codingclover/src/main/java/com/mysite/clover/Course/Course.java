@@ -1,10 +1,12 @@
 package com.mysite.clover.Course;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.mysite.clover.Qna.Qna;
 import com.mysite.clover.Users.Users;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,10 +17,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import lombok.Getter;
 import lombok.Setter;
-import java.util.List;
-import jakarta.persistence.CascadeType;
 
 // 강좌(강의들의 묶음) 정보를 저장하는 엔티티
 // (제목, 설명, 가격, 강사 정보, 승인 상태 등을 관리)
@@ -48,7 +50,7 @@ public class Course {
     // 강좌 썸네일 이미지의 URL 주소
     private String thumbnailUrl;
 
-    // 강좌 승인 상태 (대기, 승인, 반려, 종료 등) - 문자열로 저장
+    // 강좌 승인 상태 (대기, 승인, 반려 등)
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CourseProposalStatus proposalStatus = CourseProposalStatus.PENDING;
@@ -70,14 +72,37 @@ public class Course {
     private Users createdBy;
 
     // 강좌 생성 일시
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     // 강좌 정보 수정 일시
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    // 이 강좌에 달린 Q&A 목록 (강좌 삭제 시 Q&A도 함께 삭제됨 - CascadeType.REMOVE)
+    // 이 강좌에 달린 Q&A 목록 (강좌 삭제 시 Q&A도 함께 삭제됨)
     @OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE)
     private List<Qna> qnaList;
+
+    // ============================
+    // 📌 엔티티 생명주기 콜백
+    // ============================
+
+    // 강좌 최초 생성 시 자동 실행
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // 강좌 수정 시 자동 실행
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // ============================
+    // 📌 편의 메서드
+    // ============================
 
     // 강좌를 생성한 강사 정보를 반환하는 편의 메서드
     public Users getInstructor() {

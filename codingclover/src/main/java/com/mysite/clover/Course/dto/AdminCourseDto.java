@@ -32,6 +32,7 @@ public class AdminCourseDto {
     private LocalDateTime approvedAt; // 승인 일시
     private LocalDateTime createdAt; // 생성 일시
     private LocalDateTime updatedAt; // 수정 일시
+    
 
     // Course 엔티티를 AdminCourseDto로 변환하는 정적 팩토리 메서드
     public static AdminCourseDto fromEntity(Course course) {
