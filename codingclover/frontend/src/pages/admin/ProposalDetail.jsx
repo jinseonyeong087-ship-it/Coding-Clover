@@ -33,17 +33,20 @@ function ProposalDetail() {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
-        }).then((res) => {
-            if (!res.ok) {
-                throw new Error('fetch failed');
-            }
-            else if (!found) {
-                throw new Error('not found');
-            } else if (res.ok) {
-                res.json();
-                data.find(c => String(c.courseId) === String(courseId));
-            }
-        }).catch((error) => { console.error(error.message) })
+        })
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error!: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then((data) => {
+                console.log("응답 데이터:", data);
+                setCourse(data);
+            })
+            .catch((error) => {
+                console.error(error.message);
+            });
     }, [courseId]);
 
     // 강사 승인하기
