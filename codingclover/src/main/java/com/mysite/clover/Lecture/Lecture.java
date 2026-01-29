@@ -21,6 +21,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
+@JsonIgnore
 public class Lecture {
 
   // 강의 고유 식별자 (DB Primary Key, 자동 증가)

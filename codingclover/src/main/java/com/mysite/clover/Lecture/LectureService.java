@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.mysite.clover.Course.Course;
+import com.mysite.clover.Lecture.dto.LectureCreateRequest;
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.Users.UsersRepository;
 
@@ -39,6 +40,12 @@ public class LectureService {
             Users instructor,
             LectureUploadType uploadType,
             LocalDateTime scheduledAt) {
+        
+        // [중복 검사] DB 제약조건 대신 애플리케이션 레벨에서 막기
+        if (lectureRepository.existsByCourseCourseIdAndOrderNo(course.getCourseId(), orderNo)) {
+            throw new IllegalArgumentException("이미 존재하는 순서입니다.");
+        }
+
         // 1. 강의 엔티티 생성
         Lecture lecture = new Lecture();
 
@@ -49,13 +56,13 @@ public class LectureService {
         lecture.setVideoUrl(videoUrl);
         lecture.setDuration(duration);
         lecture.setCreatedBy(instructor);
-        lecture.setApprovalStatus(LectureApprovalStatus.PENDING); // 기본 상태는 승인 대기중
-        lecture.setCreatedAt(LocalDateTime.now()); // 생성 시간
+    
+        // 승인 대기 상태 및 생성 시간 설정 (중복 코드 제거됨)
+        lecture.setApprovalStatus(LectureApprovalStatus.PENDING); 
+        lecture.setCreatedAt(LocalDateTime.now());
+    
         lecture.setUploadType(uploadType);
         lecture.setScheduledAt(scheduledAt);
-
-        lecture.setApprovalStatus(LectureApprovalStatus.PENDING);
-        lecture.setCreatedAt(LocalDateTime.now());
 
         // 3. DB 저장
         lectureRepository.save(lecture);
@@ -64,7 +71,7 @@ public class LectureService {
     // 강의 ID로 단건 조회 (존재하지 않으면 예외 발생)
     public Lecture getLecture(Long id) {
         return lectureRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("강의 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다. ID: " + id));
     }
 
     // 관리자 기능: 강의 승인 처리
@@ -152,5 +159,38 @@ public class LectureService {
     public List<Lecture> getLecturesForStudent(Course course) {
         // 학생에게는 '공개 가능한' 강의만 필터링해서 반환
         return lectureRepository.findVisibleLecturesByCourseId(course);
+    }
+
+    // 강의 재제출 (반려된 강의 수정 후 재요청)
+    public void resubmitLecture(Long lectureId, LectureCreateRequest updateDto, String loginId) {
+        // 1. 기존 강의 조회
+        Lecture lecture = lectureRepository.findById(lectureId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다."));
+
+        // 2. 권한 체크 (강좌 작성자와 현재 로그인 사용자가 일치하는지)
+        if (!lecture.getCourse().getCreatedBy().getLoginId().equals(loginId)) {
+            throw new SecurityException("수정 권한이 없습니다.");
+        }
+
+        // 3. 필드 업데이트
+        lecture.setTitle(updateDto.getTitle());
+        lecture.setOrderNo(updateDto.getOrderNo());
+        lecture.setVideoUrl(updateDto.getVideoUrl());
+        lecture.setDuration(updateDto.getDuration());
+        lecture.setUploadType(updateDto.getUploadType());
+        // 예약 시간 설정
+        lecture.setScheduledAt(updateDto.getUploadType() == LectureUploadType.RESERVED 
+                               ? updateDto.getScheduledAt() : null);
+
+        // 4. 상태 초기화
+        // 강의 상태를 PENDING으로 변경하여 관리자 화면에 다시 노출
+        lecture.setApprovalStatus(LectureApprovalStatus.PENDING);
+        // 반려 사유 필드 초기화
+        lecture.setRejectReason(null);
+    }
+
+    // 강좌 ID로 강의 목록 조회
+    public List<Lecture> getLecturesByCourseId(Long courseId) {
+        return lectureRepository.findByCourse_CourseIdOrderByOrderNoAsc(courseId);
     }
 }

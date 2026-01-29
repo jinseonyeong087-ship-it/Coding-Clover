@@ -3,40 +3,45 @@ package com.mysite.clover.Lecture.dto;
 import java.time.LocalDateTime;
 
 import com.mysite.clover.Lecture.Lecture;
+import com.mysite.clover.Lecture.LectureApprovalStatus;
+import com.mysite.clover.Lecture.LectureUploadType;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-// 강사 본인이 업로드한 강의 정보를 조회할 때 사용하는 DTO
 @Getter
+@Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class InstructorLectureDto {
-    // 강의 ID
+
     private Long lectureId;
+    private Long courseId;      // 강좌 ID (형제 강의 찾기용)
+    private String title;
+    private Integer orderNo;
+    private String videoUrl;
+    private Integer duration;
+    private LectureUploadType uploadType;
+    private LocalDateTime scheduledAt;
+    private LectureApprovalStatus approvalStatus;
+    private String rejectReason;
 
-    // 강좌 및 기본 정보
-    private Long courseId; // 소속 강좌 ID
-    private String title; // 강의 제목
-    private Integer orderNo; // 강의 순서 (1강, 2강...)
-    private String videoUrl; // 영상 파일 경로/URL
-    private Integer duration; // 재생 시간 (초 단위)
-
-    // 승인 상태 (업로드 후 관리자 승인이 필요함)
-    private String approvalStatus; // 승인 상태 (PENDING/APPROVED/REJECTED)
-    private String rejectReason; // 반려된 경우 사유
-    private LocalDateTime approvedAt; // 승인된 경우 승인 날짜
-
-    // Lecture -> DTO 변환
+    // 엔티티 -> DTO 변환 메서드 (여기서 에러가 많이 납니다!)
     public static InstructorLectureDto fromEntity(Lecture lecture) {
-        return new InstructorLectureDto(
-                lecture.getLectureId(),
-                lecture.getCourse().getCourseId(),
-                lecture.getTitle(),
-                lecture.getOrderNo(),
-                lecture.getVideoUrl(),
-                lecture.getDuration(),
-                lecture.getApprovalStatus().name(),
-                lecture.getRejectReason(),
-                lecture.getApprovedAt());
+        return InstructorLectureDto.builder()
+                .lectureId(lecture.getLectureId())
+                // lecture.getCourse()가 null이면 에러가 나므로 안전하게 처리
+                .courseId(lecture.getCourse() != null ? lecture.getCourse().getCourseId() : null)
+                .title(lecture.getTitle())
+                .orderNo(lecture.getOrderNo())
+                .videoUrl(lecture.getVideoUrl())
+                .duration(lecture.getDuration())
+                .uploadType(lecture.getUploadType())
+                .scheduledAt(lecture.getScheduledAt())
+                .approvalStatus(lecture.getApprovalStatus())
+                .rejectReason(lecture.getRejectReason())
+                .build();
     }
 }

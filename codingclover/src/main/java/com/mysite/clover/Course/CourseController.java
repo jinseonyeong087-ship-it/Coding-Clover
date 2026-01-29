@@ -12,6 +12,8 @@ import com.mysite.clover.Course.dto.AdminCourseDto;
 import com.mysite.clover.Course.dto.CourseCreateRequest;
 import com.mysite.clover.Course.dto.InstructorCourseDto;
 import com.mysite.clover.Course.dto.StudentCourseDto;
+import com.mysite.clover.Lecture.Lecture;
+import com.mysite.clover.Lecture.LectureService;
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.Users.UsersRepository;
 
@@ -24,6 +26,7 @@ public class CourseController {
 
     private final CourseService courseService;
     private final UsersRepository usersRepository;
+    private final LectureService lectureService;
 
     // ==========================================
     // 🟦 공통 영역 (비로그인 / 로그인 공통)
@@ -226,6 +229,14 @@ public class CourseController {
     
     return ResponseEntity.ok(myCourses);
 }
+
+    // 강좌별 강의 목록 조회 API
+    @GetMapping("/instructor/course/{courseId}/lectures")
+    @ResponseBody // 리액트(JSON)로 데이터를 보낼 때 필수
+    public ResponseEntity<List<Lecture>> getLecturesByCourse(@PathVariable("courseId") Long courseId) {
+        List<Lecture> lectures = lectureService.getLecturesByCourseId(courseId);
+        return ResponseEntity.ok(lectures);
+    }
 
     // ==========================================
     // 🟥 관리자 영역

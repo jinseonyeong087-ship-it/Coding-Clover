@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.mysite.clover.Course.dto.AdminCourseDto;
 import com.mysite.clover.Enrollment.Enrollment;
 import com.mysite.clover.Enrollment.EnrollmentRepository;
 import com.mysite.clover.Enrollment.EnrollmentStatus;
@@ -189,4 +190,32 @@ public class CourseService {
     List<Course> list = courseRepository.findByCreatedBy_LoginId(loginId);
     return list != null ? list : new ArrayList<>(); // null 대신 빈 리스트 반환
 }
+
+    // 강좌 재제출 (반려된 강좌 수정 후 재요청)
+    @Transactional
+    public void resubmitCourse(Long courseId, AdminCourseDto updateDto, String loginId) {
+        // 1. 기존 강좌 조회
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
+
+        // 2. 소유자 권한 체크 (본인이 만든 강좌인지 확인)
+        if (!course.getCreatedBy().getLoginId().equals(loginId)) {
+            throw new SecurityException("본인의 강좌만 수정할 수 있습니다.");
+        }
+
+        // 3. 기존 데이터 업데이트 (수정 가능한 필드들)
+        course.setTitle(updateDto.getTitle());
+        course.setDescription(updateDto.getDescription());
+        course.setLevel(updateDto.getLevel());
+        course.setPrice(updateDto.getPrice());
+        course.setThumbnailUrl(updateDto.getThumbnailUrl());
+
+        // 4. 승인 상태 초기화 (핵심)
+        // 상태를 다시 PENDING으로 변경하여 관리자 대기 목록에 보이게 함
+        course.setProposalStatus(CourseProposalStatus.PENDING);
+        // 기존 반려 사유 제거
+        course.setProposalRejectReason(null);
+        
+        // Dirty Checking에 의해 트랜잭션 종료 시 자동 업데이트 (save 호출 생략 가능)
+    }
 }

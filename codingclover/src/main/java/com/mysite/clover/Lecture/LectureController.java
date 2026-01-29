@@ -29,6 +29,7 @@ public class LectureController {
     private final LectureService lectureService;
     private final CourseService courseService;
     private final UsersRepository usersRepository;
+    private final LectureRepository lectureRepository;
 
     // ==========================================
     // 🟩 수강생 영역
@@ -114,6 +115,27 @@ public class LectureController {
     public ResponseEntity<InstructorLectureDto> instructorGetLecture(@PathVariable Long lectureId) {
         // 1. 강의 상세 조회 후 강사용 DTO로 반환
         return ResponseEntity.ok(InstructorLectureDto.fromEntity(lectureService.getLecture(lectureId)));
+    }
+
+    // 사용된 강의 번호 조회 API
+    @GetMapping("/orders/{courseId}")
+    public ResponseEntity<List<Integer>> getUsedOrderNos(@PathVariable Long courseId) {
+        List<Integer> usedOrders = lectureRepository.findOrderNosByCourseId(courseId);
+        return ResponseEntity.ok(usedOrders);
+    }
+
+    // 강사용: 반려된 강의 수정 및 재승인 요청
+    @PreAuthorize("hasRole('INSTRUCTOR')") // 강사만 가능
+    @PutMapping("/instructor/lecture/{lectureId}/resubmit")
+    public ResponseEntity<String> resubmitLecture(
+            @PathVariable Long lectureId,
+            @RequestBody @Valid LectureCreateRequest form, // 수정할 데이터
+            Principal principal) {
+        
+        // 서비스의 재승인 로직 호출 (기존 데이터 업데이트 + 상태 PENDING으로 변경)
+        lectureService.resubmitLecture(lectureId, form, principal.getName());
+        
+        return ResponseEntity.ok("강의 수정 및 재승인 요청 완료");
     }
 
     // ==========================================

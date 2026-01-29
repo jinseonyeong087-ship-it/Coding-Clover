@@ -34,4 +34,14 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
            "AND (l.uploadType = 'IMMEDIATE' OR l.scheduledAt <= CURRENT_TIMESTAMP) " +
            "ORDER BY l.orderNo ASC")
     List<Lecture> findVisibleLecturesByCourseId(@Param("courseId") Course course);
+    
+    // 해당 강좌에 이미 존재하는 순서(orderNo)들만 조회 (프론트 드롭다운 처리용)
+    @Query("SELECT l.orderNo FROM Lecture l WHERE l.course.id = :courseId")
+    List<Integer> findOrderNosByCourseId(@Param("courseId") Long courseId);
+
+    // 저장 전 중복 검사용 (안전장치)
+    boolean existsByCourseCourseIdAndOrderNo(Long courseId, Integer orderNo);
+
+    // 특정 강좌(CourseId)에 속한 강의들을 순서(OrderNo)대로 조회
+    List<Lecture> findByCourse_CourseIdOrderByOrderNoAsc(Long courseId);
 }
