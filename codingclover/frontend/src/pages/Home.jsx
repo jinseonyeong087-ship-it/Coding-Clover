@@ -20,6 +20,14 @@ function Home() {
     { id: 3, tablabel: "고급" }
   ]);
 
+  const setNum = (level) => {
+    switch (level) {
+      case 1: return '초급';
+      case 2: return '중급';
+      case 3: return '고급';
+    }
+  }
+
   useEffect(() => {
     fetch('/course', {method:'GET', Headers:{ 'Content-Type': 'application/json' }})
       .then((res) => res.json())
@@ -105,7 +113,7 @@ function Home() {
             <Card key={item.courseId} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <CardTitle className="text-lg">{item.title}</CardTitle>
-                <CardDescription>레벨 {item.level}</CardDescription>
+                <CardDescription>{setNum(item.level)} 레벨 강좌</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
