@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import {
     Table,
     TableBody,
+    TableCaption,
     TableCell,
     TableHead,
     TableHeader,
@@ -12,8 +13,6 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
 
 function AdminMain() {
 
@@ -86,7 +85,6 @@ function AdminMain() {
     return (
         <>
             <Nav />
-
             <section className="container mx-auto px-4 py-16">
                 <div className="flex justify-between gap-8">
 
@@ -94,10 +92,8 @@ function AdminMain() {
                     <div className="flex-1">
                         <Card>
                             <Table>
+                                <TableCaption className="text-left text-foreground font-semibold text-lg caption-top px-4">강좌 승인</TableCaption>
                                 <TableHeader>
-                                    <TableHead className="text-foreground font-semibold px-4 py-3">
-                                        강좌 승인
-                                    </TableHead>
                                     <TableRow>
                                         <TableHead className="px-4 py-3 text-center">생성번호</TableHead>
                                         <TableHead className="px-4 py-3 text-center">강좌명</TableHead>
@@ -106,78 +102,76 @@ function AdminMain() {
                                         <TableHead className="px-4 py-3 text-center">승인상태</TableHead>
                                     </TableRow>
                                 </TableHeader>
+                                    <TableBody>
+                                        {course && course.length > 0 ? (
+                                            course.map((item, index) => {
+                                                // 1. 서버 엔티티 필드명인 courseId를 사용하여 key 설정
+                                                // 2. 만약 courseId가 없다면 index를 조합하여 유니크한 키 생성
+                                                const uniqueKey = item.courseId || `course-idx-${index}`;
 
-                                {/* id, 난이도, 강좌명, 강사명, 승인상태 */}
-                                <TableBody>
-                                    {course && course.length > 0 ? (
-                                        course.map((item, index) => {
-                                            // 1. 서버 엔티티 필드명인 courseId를 사용하여 key 설정
-                                            // 2. 만약 courseId가 없다면 index를 조합하여 유니크한 키 생성
-                                            const uniqueKey = item.courseId || `course-idx-${index}`;
+                                                return (
+                                                    <TableRow key={uniqueKey}>
+                                                        {/* 3. Java 필드명인 courseId, title, level, proposalStatus 사용 */}
+                                                        <TableCell className="px-4 py-3 text-center">
+                                                            {item.courseId}
+                                                        </TableCell>
 
-                                            return (
-                                                <TableRow key={uniqueKey}>
-                                                    {/* 3. Java 필드명인 courseId, title, level, proposalStatus 사용 */}
-                                                    <TableCell className="px-4 py-3 text-center">
-                                                        {item.courseId}
-                                                    </TableCell>
+                                                        <TableCell className="px-4 py-3 text-center">
+                                                            <Link
+                                                                to={`/admin/course/${item.courseId}`}
+                                                                className="hover:underline inline-flex items-center gap-2"
+                                                            >
+                                                                {item.title}
 
-                                                    <TableCell className="px-4 py-3 text-center">
-                                                        <Link
-                                                            to={`/admin/course/${item.courseId}/pending`}
-                                                            className="hover:underline inline-flex items-center gap-2"
-                                                        >
-                                                            {item.title}
+                                                                {/* 생성 후 24시간 이내 강좌 NEW 표시 */}
+                                                                {isNewCourse(item.createdAt) && (
+                                                                    <span
+                                                                        className="
+                                                                        inline-flex items-center justify-center
+                                                                        w-3.5 h-3.5 ml-1
+                                                                        text-[10px] font-bold leading-none
+                                                                        text-white bg-red-400
+                                                                        rounded-full
+                                                                        "
+                                                                    >
+                                                                        N
+                                                                    </span>
+                                                                )}
+                                                            </Link>
+                                                        </TableCell>
 
-                                                            {/* 생성 후 24시간 이내 강좌 NEW 표시 */}
-                                                            {isNewCourse(item.createdAt) && (
-                                                                <span
-                                                                    className="
-                                                                    inline-flex items-center justify-center
-                                                                    w-3.5 h-3.5 ml-1
-                                                                    text-[10px] font-bold leading-none
-                                                                    text-white bg-red-400
-                                                                    rounded-full
-                                                                    "
-                                                                >
-                                                                    N
-                                                                </span>
+                                                        <TableCell className="px-4 py-3 text-center">
+                                                            {item.instructorName}
+                                                        </TableCell>
+
+                                                        <TableCell className="px-4 py-3 text-center">
+                                                            {item.level === 1
+                                                                ? "초급"
+                                                                : item.level === 2
+                                                                    ? "중급"
+                                                                    : "고급"}
+                                                        </TableCell>
+
+                                                        <TableCell className="px-4 py-3 text-center">
+                                                            {item.proposalStatus === 'PENDING' ? (
+                                                                <Badge variant="destructive">승인 필요</Badge>
+                                                            ) : item.proposalStatus === 'APPROVED' ? (
+                                                                <Badge variant="secondary">승인 완료</Badge>
+                                                            ) : (
+                                                                <Badge variant="outline">반려됨</Badge>
                                                             )}
-                                                        </Link>
-                                                    </TableCell>
-
-                                                    <TableCell className="px-4 py-3 text-center">
-                                                        {item.instructorName}
-                                                    </TableCell>
-
-                                                    <TableCell className="px-4 py-3 text-center">
-                                                        {item.level === 1
-                                                            ? "초급"
-                                                            : item.level === 2
-                                                                ? "중급"
-                                                                : "고급"}
-                                                    </TableCell>
-
-                                                    <TableCell className="px-4 py-3 text-center">
-                                                        {item.proposalStatus === 'PENDING' ? (
-                                                            <Badge variant="destructive">승인 필요</Badge>
-                                                        ) : item.proposalStatus === 'APPROVED' ? (
-                                                            <Badge variant="secondary">승인 완료</Badge>
-                                                        ) : (
-                                                            <Badge variant="outline">반려됨</Badge>
-                                                        )}
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-10">
-                                                표시할 강좌 데이터가 없습니다.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={5} className="text-center py-10">
+                                                    표시할 강좌 데이터가 없습니다.
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
                             </Table>
                         </Card>
                     </div>
@@ -185,57 +179,45 @@ function AdminMain() {
                     {/* ================= 강사 승인 ================= */}
                     <div className="flex-1">
                         <Card>
-                            <Table>
-                                <TableHeader>
-                                    <TableHead className="text-foreground font-semibold px-4 py-3">
-                                        강사 승인
-                                    </TableHead>
+                        <Table>
+                            <TableCaption className="text-left text-foreground font-semibold text-lg caption-top px-4">강사 승인</TableCaption>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="px-4 py-3 text-center">가입번호</TableHead>
+                                    <TableHead className="px-4 py-3 text-center">강사명</TableHead>
+                                    <TableHead className="px-4 py-3 text-center">승인상태</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            {/* id, 강사명, 승인상태  */}
+                            <TableBody>
+                                {status && status.length > 0 ? (
+                                    status.map((users, index) => {
+                                        const uniqueKey = users.userId || `user-idx-${index}`;
+                                        return (
+                                            <TableRow key={uniqueKey}>
+                                                <TableCell className="px-4 py-3 text-center">{users.userId}</TableCell>
+                                                <TableCell className="px-4 py-3 text-center">
+                                                    <Link to={`/admin/users/instructors/${users.userId}`} className="hover:underline">
+                                                        {users.name}
+                                                    </Link>
+                                                </TableCell>
+                                                <TableCell className="px-4 py-3 text-center">
+                                                    {users.status === 'ACTIVE' ? (
+                                                        <Badge variant="secondary">승인 완료</Badge>
+                                                    ) : users.status === 'SUSPENDED' ? (
+                                                        <Badge variant="destructive">승인 필요</Badge>
+                                                    ) : null}
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                ) : (
                                     <TableRow>
-                                        <TableHead className="px-4 py-3 text-center">가입번호</TableHead>
-                                        <TableHead className="px-4 py-3 text-center">강사명</TableHead>
-                                        <TableHead className="px-4 py-3 text-center">승인상태</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-
-                                {/* id, 강사명, 승인상태 */}
-                                <TableBody>
-                                    {status && status.length > 0 ? (
-                                        status.map((users, index) => {
-                                            const uniqueKey = users.userId || `user-idx-${index}`;
-
-                                            return (
-                                                <TableRow key={uniqueKey}>
-                                                    <TableCell className="px-4 py-3 text-center">
-                                                        {users.userId}
-                                                    </TableCell>
-
-                                                    <TableCell className="px-4 py-3 text-center">
-                                                        <Link
-                                                            to={`/admin/users/instructors/${users.userId}`}
-                                                            className="hover:underline"
-                                                        >
-                                                            {users.name}
-                                                        </Link>
-                                                    </TableCell>
-
-                                                    <TableCell className="px-4 py-3 text-center">
-                                                        {users.status === 'ACTIVE' ? (
-                                                            <Badge variant="secondary">승인 완료</Badge>
-                                                        ) : users.status === 'SUSPENDED' ? (
-                                                            <Badge variant="destructive">승인 필요</Badge>
-                                                        ) : null}
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={3} className="text-center py-10">
-                                                승인할 강사가 없습니다.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
+                                        <TableCell colSpan={3} className="text-center py-10">
+                                            승인할 강사가 없습니다.
+                                        </TableCell>
+                                    </TableRow>)}
+                            </TableBody>
                             </Table>
                         </Card>
                     </div>

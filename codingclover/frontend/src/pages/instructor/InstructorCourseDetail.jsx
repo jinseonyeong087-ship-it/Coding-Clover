@@ -5,17 +5,18 @@ import Tail from "@/components/Tail";
 import { Button } from "@/components/ui/Button";
 import InstructorLecture from "@/pages/instructor/InstructorLecture";
 
-function InstructorCourseCreate() {
+function InstructorCourseDetail() {
 
     const { courseId } = useParams();
     const [instructorStatus, setInstructorStatus] = useState(null);
     const [isEditing, setIsEditing] = useState(false);  // 수정 모드 여부
-    const [formData, setFormData] = useState(initialData);
+    const [formData, setFormData] = useState(null);
+    const [sava, setSave] = useState();
     const navigate = useNavigate();
 
     useEffect(() => {
         fetch(`/instructor/course/${courseId}`, {
-            method: 'POST',
+            method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
         })
@@ -29,20 +30,21 @@ function InstructorCourseCreate() {
                 if (!res.ok) throw new Error(`에러 발생: ${res.status}`);
                 return res.json();
             })
-            .then((data) => setCourse(data))
+            .then((data) => setFormData(data))
             .catch((error) => console.error(error.message));
     }, [courseId]);
 
-    // useEffect(() => {
-    //     fetch('/instructor/me',
-    //          method: 'GET', 
-    //          headers: { 'Content-Type': 'application/json' },
-    //          credentials: 'include')
-    //         .then(res => res.json())
-    //         .then(data => setInstructorStatus(data.status));
-    // }, []);
+    const handleDelete = async () => {
+        await fetch(`/instructor/course/{id}/delete`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, credentials: 'include' })
+            .then((res) => { if (!res.ok) { throw new Error(`HTTP error! status: ${response.status}`); } else if (res.ok) { console.log("삭제 성공") } })
+            .catch((error) => { console.error('강사 상세 데이터 로딩 실패', error); })
+        setSave(true);  // 수정 모드 활성화
+    };
 
-    const handleEdit = () => {
+    const handleSave = async () => {
+        await fetch(`/instructor/course/{id}/edit`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include' })
+        .then((res) => { if (!res.ok) { throw new Error(`HTTP error! status: ${response.status}`); } else if (res.ok) { console.log("수정 성공") } })
+        .catch((error) => { console.error('강사 상세 데이터 로딩 실패', error); })
         setIsEditing(true);  // 수정 모드 활성화
     };
 
@@ -64,16 +66,19 @@ function InstructorCourseCreate() {
         }
     };
 
+    if (!formData) {
+        return <div className="p-6">로딩 중...</div>;
+    }
+
     return (
         <>
             <Nav />
-            {instructorStatus === 'SUSPENDED' ? (<p>마이페이지에서 강사이력을 추가해 주세요</p>) : (<section className="container mx-auto px-4 py-16">
+            <section className="container mx-auto px-4 py-16">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold">{formData.title}</h1>
                     <div>
-                        {setIsEditing === true ? (
-                            <Button size="sm" onClick={handleEdit}>저장하기</Button>
-                        ) : (<Button size="sm" onClick={handleChange}>수정하기</Button>)}
+                        <Button size="sm" variant="destructive" onClick={handleDelete}>삭제</Button>
+                        <Button size="sm" onClick={handleSave}>수정하기</Button>
                         <Button variant="outline" onClick={() => navigate('/instructor/dashboard')}>목록으로</Button>
                     </div>
                 </div>
@@ -97,7 +102,7 @@ function InstructorCourseCreate() {
                     </div>
 
                 </div>
-            </section>)}
+            </section>
 
             <section className="container mx-auto px-4 py-16">
                 {formData.proposalStatus === 'APPROVED' ? (
@@ -119,7 +124,6 @@ function InstructorCourseCreate() {
             <Tail />
         </>
     );
-
 }
 
-export default InstructorCourseCreate;
+export default InstructorCourseDetail;

@@ -71,23 +71,24 @@ function AdminApproch() {
 
     // 강사 승인 처리
     const approveInstructor = () => {
+        // 필수 자료 검증 (API 호출 전)
+        if (!instructor || !instructor.name || !instructor.email || !instructor.bio || !instructor.careerYears || !instructor.resumeFilePath) {
+            alert('등록된 강사 자료가 없습니다.');
+            return;
+        }
+
         fetch(`/admin/users/instructors/${userId}/approve`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
         })
             .then((response) => {
-
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 return response.text();
             })
             .then(() => {
-                if (!instructor || !instructor.name || !instructor.email || !instructor.bio || !instructor.careerYears || !instructor.resumeFilePath) {
-                    alert('등록된 강사 자료가 없습니다.');
-                    return;
-                }
                 setInstructor(prev => ({
                     ...prev,
                     status: 'ACTIVE'

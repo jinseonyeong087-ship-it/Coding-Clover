@@ -9,7 +9,7 @@ import axios from 'axios';
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 
-function InstructorCourseCreate() {
+function CourseCreateRequest() {
   const [course, setCourse] = useState({ title: '', createdBy: '', level: 1, description: '', price: 0 });
   const [errors, setErrors] = useState({});
   const [selectLevel, setSelectLevel] = useState(null);
@@ -187,4 +187,4 @@ function InstructorCourseCreate() {
   );
 }
 
-export default InstructorCourseCreate;
+export default CourseCreateRequest;

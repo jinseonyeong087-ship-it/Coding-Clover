@@ -11,7 +11,6 @@ import Lecture from './pages/student/Lecture'
 import MyPage from './pages/student/MyPage'
 import CodingTest from './pages/CodingTest'
 import EmailTest from './pages/EmailTest'
-import CourseCreateRequest from '@/pages/instructor/CourseCreateRequest'
 import FindAccount from '@/pages/FindAccount'
 import QnaTest from './pages/QnaTest'
 import SubmissionTest from './pages/SubmissionTest'
@@ -19,13 +18,13 @@ import ProtectedRoute from '@/components/ProtectdRoute'
 import Noroll from '@/pages/Noroll'
 import CommunityPostTest from './pages/CommunityPostTest'
 import ProposalDetail from '@/pages/admin/ProposalDetail'
-import InstructorCourseCreate from '@/pages/instructor/InstructorCourseDetail'
+import CourseCreateRequest from '@/pages/instructor/CourseCreateRequest'
 import AdminApproch from '@/pages/admin/AdminApproch'
 import InstructorMypage from '@/pages/instructor/InstructorMypage'
+import InstructorCourseDetail from '@/pages/instructor/InstructorCourseDetail'
 import TestPayment from '@/pages/payment/TestPayment'
 import TestPaymentSuccess from '@/pages/payment/TestPaymentSuccess'
 import TestPaymentFail from '@/pages/payment/TestPaymentFail'
-
 
 function App() {
   return (
@@ -71,13 +70,13 @@ function App() {
         }>
           <Route path="dashboard" element={<InstructorMain />} />
           <Route path="course/new" element={<CourseCreateRequest />} />
-          <Route path="course/:courseId" element={<InstructorCourseCreate />} />
+          <Route path="course/:courseId" element={<InstructorCourseDetail />} />
           <Route path="mypage" element={<InstructorMypage />} />
         </Route>
         {/* 관리자 */}
         <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="dashboard" element={<AdminMain />} />
-          <Route path="course/:courseId/pending" element={<ProposalDetail />} />
+          <Route path="course/:courseId" element={<ProposalDetail />} />
           <Route path="users/instructors/:userId" element={<AdminApproch />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
