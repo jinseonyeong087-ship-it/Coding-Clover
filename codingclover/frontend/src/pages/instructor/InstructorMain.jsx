@@ -13,7 +13,16 @@ import {
 } from "@/components/ui/table";
 import InstructorPermit from "@/components/InstructorPermit"
 
-
+const getLoginId = () => {
+    const storedUsers = localStorage.getItem("users");
+    if (!storedUsers) return null;
+    try {
+        const userData = JSON.parse(storedUsers);
+        return userData.loginId || null;
+    } catch {
+        return null;
+    }
+};
 
 function InstructorMain() {
 
@@ -21,22 +30,29 @@ function InstructorMain() {
     const [instructorStatus, setInstructorStatus] = useState(null);
 
     useEffect(() => {
+        const loginId = getLoginId();
+        console.log('loginId:', loginId);
+        // 강사 상태 조회
+        fetch('/api/instructor/mypage', { method: 'GET', headers: { 'Content-Type': 'application/json', 'X-Login-Id': loginId }, credentials: 'include' })
+            .then((res) => {
+                console.log('응답 상태:', res.status);
+                if (!res.ok) throw new Error('인증 필요');
+                return res.json();
+            })
+            .then((data) => {
+                console.log('강사 데이터:', data);
+                setInstructorStatus(data.status);
+            })
+            .catch((err) => console.error('에러:', err));
         // 강좌 목록 조회
-        fetch('/instructor/course', { method: 'GET', headers: { 'Content-Type': 'application/json' } })
+        fetch('/instructor/course', { method: 'GET', headers: { 'Content-Type': 'application/json' }, credentials: 'include' })
             .then((res) => {
                 if (!res.ok) throw new Error('인증 필요');
                 return res.json();
             })
             .then((data) => setCourses(data))
             .catch((err) => console.error(err));
-// 강사 상태 조회
-        fetch('/api/instructor/mypage', { method: 'GET', headers: { 'Content-Type': 'application/json' } })
-            .then((res) => {
-                if (!res.ok) throw new Error('인증 필요');
-                return res.json();
-            })
-            .then((data) => setInstructorStatus(data))
-            .catch((err) => console.error(err));
+
     }, []);
 
     const getStatusText = (status) => {
