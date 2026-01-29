@@ -91,6 +91,7 @@ function AdminMain() {
                                 <TableRow>
                                     <TableHead className="px-4 py-3 text-center">생성번호</TableHead>
                                     <TableHead className="px-4 py-3 text-center">강좌명</TableHead>
+                                    <TableHead className="px-4 py-3 text-center">강사명</TableHead>
                                     <TableHead className="px-4 py-3 text-center">난이도</TableHead>
                                     <TableHead className="px-4 py-3 text-center">승인상태</TableHead>
                                 </TableRow>
@@ -111,6 +112,11 @@ function AdminMain() {
                                                     <Link to={`/admin/course/${item.courseId}/pending`} className="hover:underline">
                                                         {item.title}
                                                     </Link>
+                                                </TableCell>
+                                                <TableCell className="px-4 py-3 text-center">
+                                                    {/* <Link to={`/admin/course/${item.courseId}/pending`} className="hover:underline"> */}
+                                                        {item.getInstructorName}
+                                                    {/* </Link> */}
                                                 </TableCell>
                                                 <TableCell className="px-4 py-3 text-center">
                                                     {item.level === 1 ? "초급" : item.level === 2 ? "중급" : "고급"}
