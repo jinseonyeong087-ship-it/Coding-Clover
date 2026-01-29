@@ -13,18 +13,56 @@ function AdminApproch() {
     const [instructor, setInstructor] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // 이력서 다운로드 함수
+    const downloadResume = async () => {
+        if (!instructor?.resumeFilePath) {
+            alert('이력서 파일이 없습니다.');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/instructor/download-resume?filePath=${encodeURIComponent(instructor.resumeFilePath)}`, {
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `resume_${instructor.userId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } else {
+                alert('파일 다운로드에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Error downloading resume:', error);
+            alert('파일 다운로드 중 오류가 발생했습니다.');
+        }
+    };
+
     // 강사 상세 정보 불러오기
     useEffect(() => {
-        fetch(`/admin/users/instructors/${userId}`, {
+        // 먼저 강사 프로필 정보 시도
+        fetch(`/api/instructor/admin/instructor/profile/${userId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
         })
             .then((response) => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    // 프로필 정보가 없으면 기존 API 시도
+                    return fetch(`/admin/users/instructors/${userId}`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include'
+                    }).then(res => res.json());
                 }
-                return response.json();
             })
             .then((data) => {
                 console.log("강사 상세 데이터 로드 성공", data);
@@ -120,14 +158,13 @@ function AdminApproch() {
                             <div>
                                 <p className="text-sm text-muted-foreground mb-2">이력서</p>
                                 {instructor.resumeFilePath ? (
-                                    <a
-                                        href={`/admin/users/instructors/${userId}/resume`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-600 hover:underline"
+                                    <Button
+                                        variant="outline"
+                                        onClick={downloadResume}
+                                        className="text-blue-600 hover:text-blue-800"
                                     >
-                                        이력서 다운로드
-                                    </a>
+                                        📁 이력서 다운로드
+                                    </Button>
                                 ) : (
                                     <p className="text-muted-foreground">등록된 이력서가 없습니다.</p>
                                 )}
