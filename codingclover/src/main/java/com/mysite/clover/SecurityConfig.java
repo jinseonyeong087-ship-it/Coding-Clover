@@ -49,9 +49,18 @@ public class SecurityConfig {
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
+            // 1. 강사 및 관리자 전용 경로를 가장 먼저 설정 (우선순위)
+            .requestMatchers(new AntPathRequestMatcher("/instructor/**")).hasRole("INSTRUCTOR")
+            .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
+            
+            // 2. 누구나 접근 가능한 경로
+            .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/student/**")).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/debug/**")).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/**")).permitAll())
+            
+            // 3. 나머지 모든 경로는 허용하되, 위 조건들을 먼저 체크함
+            .requestMatchers(new AntPathRequestMatcher("/**")).permitAll()
+            .anyRequest().authenticated()
+        )
         .formLogin(form -> form.disable())
         .addFilterBefore(apiLoginFilter(), UsernamePasswordAuthenticationFilter.class)
         .logout(logout -> logout

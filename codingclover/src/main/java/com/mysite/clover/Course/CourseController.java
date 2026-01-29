@@ -215,6 +215,18 @@ public class CourseController {
         return ResponseEntity.ok("강좌 삭제 성공");
     }
 
+    // 강사 : 본인이 개설한 강좌 목록 조회
+    @GetMapping("/instructor/course/my-list")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public ResponseEntity<List<Course>> getMyCourses(Principal principal) {
+        String loginId = principal.getName();
+        
+        // 서비스에서 실제 List<Course>를 반환하도록 타입을 맞춥니다.
+        List<Course> myCourses = (List<Course>) courseService.getCoursesByInstructor(loginId);
+    
+    return ResponseEntity.ok(myCourses);
+}
+
     // ==========================================
     // 🟥 관리자 영역
     // ==========================================
@@ -229,6 +241,17 @@ public class CourseController {
                 .map(AdminCourseDto::fromEntity)
                 // 3. 리스트로 수집하여 반환
                 .toList());
+    }
+
+    // 관리자 : 강좌 상세 조회
+    @PreAuthorize("hasRole('ADMIN')") // 관리자만 접근 가능
+    @GetMapping("/admin/course/{id}")
+    public ResponseEntity<AdminCourseDto> getCourseDetail(@PathVariable("id") Long id) {
+        // 1. 서비스에서 ID로 강좌 엔티티 조회
+        Course course = courseService.getCourse(id);
+    
+        // 2. 관리자용 DTO로 변환하여 반환
+        return ResponseEntity.ok(AdminCourseDto.fromEntity(course));
     }
 
     // 관리자 : 승인 대기중인 강좌 목록 조회

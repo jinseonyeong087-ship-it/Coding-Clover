@@ -1,6 +1,7 @@
 package com.mysite.clover.Course;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -183,4 +184,9 @@ public class CourseService {
         // 3. 변경사항 저장
         courseRepository.save(course);
     }
+
+    public List<Course> getCoursesByInstructor(String loginId) {
+    List<Course> list = courseRepository.findByCreatedBy_LoginId(loginId);
+    return list != null ? list : new ArrayList<>(); // null 대신 빈 리스트 반환
+}
 }

@@ -1,4 +1,5 @@
 import React from 'react'
+import axios from 'axios';
 import { Routes, Route, BrowserRouter } from 'react-router-dom'
 import Home from './pages/Home'
 import MainLogin from './pages/MainLogin'
@@ -25,6 +26,12 @@ import InstructorCourseDetail from '@/pages/instructor/InstructorCourseDetail'
 import TestPayment from '@/pages/payment/TestPayment'
 import TestPaymentSuccess from '@/pages/payment/TestPaymentSuccess'
 import TestPaymentFail from '@/pages/payment/TestPaymentFail'
+import LectureBatchTest from './pages/LectureBatchTest';
+import LectureCreateTest from './pages/LectureCreateTest';
+
+
+// 서버와의 통신에서 쿠키(세션)를 포함하도록 설정
+axios.defaults.withCredentials = true;
 
 function App() {
   return (
@@ -41,6 +48,9 @@ function App() {
         <Route path="/test/qna" element={<QnaTest />} />
         {/* Submission 테스트 페이지 */}
         <Route path="/test/submission" element={<SubmissionTest />} />
+        {/* 강의 일괄 승인 테스트 경로 추가 */}
+        <Route path="/test/lecture/batch" element={<LectureBatchTest />} />
+        <Route path="/test/lecture/create" element={<LectureCreateTest />} />
 
         {/* 결제 테스트 (프론트/백엔드 연동) */}
         <Route path="/test/payment/checkout" element={<TestPayment />} />
