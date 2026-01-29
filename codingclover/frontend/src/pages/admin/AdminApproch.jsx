@@ -56,6 +56,7 @@ function AdminApproch() {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                return response.json();
             })
             .then((data) => {
                 console.log("강사 상세 데이터 로드 성공", data);
