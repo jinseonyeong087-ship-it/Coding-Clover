@@ -57,6 +57,15 @@ public class SocialLoginService extends DefaultOAuth2UserService {
                 }
             }
         }
+        // 네이버일때
+        else if ("naver".equals(registrationId)) {
+            providerId = String.valueOf(attributes.get("id"));
+            Map<String, Object> naverAccount = (Map<String, Object>) attributes.get("response");
+            if (naverAccount != null) {
+                email = (String) naverAccount.get("email");
+                name = (String) naverAccount.get("name");
+            }
+        }
 
         String loginId = registrationId + "_" + providerId;
 
