@@ -19,12 +19,12 @@ function AdminApproch() {
             alert('이력서 파일이 없습니다.');
             return;
         }
-        
+
         try {
             const response = await fetch(`/api/instructor/download-resume?filePath=${encodeURIComponent(instructor.resumeFilePath)}`, {
                 credentials: 'include'
             });
-            
+
             if (response.ok) {
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
@@ -47,21 +47,14 @@ function AdminApproch() {
     // 강사 상세 정보 불러오기
     useEffect(() => {
         // 먼저 강사 프로필 정보 시도
-        fetch(`/api/instructor/admin/instructor/profile/${userId}`, {
+        fetch(`/admin/users/instructors/${userId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
         })
             .then((response) => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    // 프로필 정보가 없으면 기존 API 시도
-                    return fetch(`/admin/users/instructors/${userId}`, {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include'
-                    }).then(res => res.json());
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
             })
             .then((data) => {
@@ -83,15 +76,20 @@ function AdminApproch() {
             credentials: 'include'
         })
             .then((response) => {
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 return response.text();
             })
             .then(() => {
+                if (!instructor || !instructor.name || !instructor.email || !instructor.bio || !instructor.careerYears || !instructor.resumeFilePath) {
+                    alert('등록된 강사 자료가 없습니다.');
+                    return;
+                }
                 setInstructor(prev => ({
                     ...prev,
-                    status: 'APPROVED'
+                    status: 'ACTIVE'
                 }));
                 alert('강사 승인이 완료되었습니다.');
                 navigate('/admin/dashboard');
@@ -127,8 +125,8 @@ function AdminApproch() {
                                     <CardDescription>{instructor.email}</CardDescription>
                                 </div>
                                 {instructor.status == 'ACTIVE' ? (
-                                <Badge variant="secondary">승인 완료</Badge>):(
-                                <Badge variant="destructive">승인 필요</Badge>)}
+                                    <Badge variant="secondary">승인 완료</Badge>) : (
+                                    <Badge variant="destructive">승인 필요</Badge>)}
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-6">
@@ -192,9 +190,9 @@ function AdminApproch() {
                                     목록으로
                                 </Button>
                                 {instructor.status == 'ACTIVE' ? (
-                                <Button variant="ghost" disable>승인완료</Button>):(
-                                <Button onClick={approveInstructor}>강사 승인</Button>)}
-                                
+                                    <Button variant="ghost" disable>승인완료</Button>) : (
+                                    <Button onClick={approveInstructor}>강사 승인</Button>)}
+
                             </div>
                         </CardContent>
                     </Card>

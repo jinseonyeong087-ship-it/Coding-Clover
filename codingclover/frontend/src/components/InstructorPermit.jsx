@@ -13,6 +13,8 @@ const getLoginId = () => {
 };
 
 function InstructorPermit() {
+    const [instructorStatus, setInstructorStatus] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loginId = getLoginId();
@@ -38,7 +40,7 @@ function InstructorPermit() {
 
 
 
-    return (<p className="text-center py-16">마이페이지에서 강사이력을 추가하여 관리자 승인 후에 이용하실 수 있습니다.</p>)
+    return (<p className="text-center py-16">마이페이지에서 강사이력을 추가하신 후,<br></br> 관리자 승인 후에 이용하실 수 있습니다.</p>)
 }
 
 export default InstructorPermit;

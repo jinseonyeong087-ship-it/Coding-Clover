@@ -11,7 +11,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import InstructorPermit from "@/components/InsttuctorPermit"
+import InstructorPermit from "@/components/InstructorPermit"
 
 
 
@@ -28,6 +28,14 @@ function InstructorMain() {
                 return res.json();
             })
             .then((data) => setCourses(data))
+            .catch((err) => console.error(err));
+// 강사 상태 조회
+        fetch('/api/instructor/mypage', { method: 'GET', headers: { 'Content-Type': 'application/json' } })
+            .then((res) => {
+                if (!res.ok) throw new Error('인증 필요');
+                return res.json();
+            })
+            .then((data) => setInstructorStatus(data))
             .catch((err) => console.error(err));
     }, []);
 
@@ -52,8 +60,7 @@ function InstructorMain() {
     return (
         <>
             <Nav />
-            {instructorStatus !== 'APPROVED' ? (
-                <InstructorPermit />) : (
+            {instructorStatus == 'ACTIVE' ? (
                 <section className="container mx-auto px-4 py-16">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-bold">내 강좌 목록</h1>
@@ -91,8 +98,7 @@ function InstructorMain() {
                         </TableBody>
                     </Table>
                 </section>
-
-            )}
+            ) : (<InstructorPermit />)}
 
             <Tail />
         </>
