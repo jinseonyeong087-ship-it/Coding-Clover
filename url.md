@@ -17,6 +17,8 @@
 /auth/login             → 로그인
 /auth/register          → 회원가입
 /auth/oauth             → 소셜 로그인
+/auth/findId            → 아이디 찾기
+/auth/findPassword      → 비밀번호 찾기
 
 
 # 🟩 수강생 영역
@@ -28,7 +30,6 @@
 ## 수강생 마이페이지
 /student/mypage                         → 수강생 프로필
 /student/mypage/profile                 → 회원 정보
-/student/mypage/profile/password        → 비밀번호 변경
 
 <!-- ### 📌 결제 / 수강권
 /student/payment            → 결제 내역
@@ -84,7 +85,6 @@
 /instructor/dashboard        → 강사 대시보드
 /instructor/mypage                 → 회원 정보
 /instructor/mypage/profile         → 회원 정보 수정
-/instructor/mypage/password        → 비밀번호 변경
 
 /instructor/course          → 강좌 관리
 /instructor/course/new      → 강좌 개설 요청
