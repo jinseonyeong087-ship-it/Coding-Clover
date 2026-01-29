@@ -1,4 +1,4 @@
-package com.mysite.clover.Lecture;
+package com.mysite.clover.Lecture.dto;
 
 import java.util.List;
 

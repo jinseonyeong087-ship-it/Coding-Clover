@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import com.mysite.clover.Course.Course;
 import com.mysite.clover.Course.CourseService;
 import com.mysite.clover.Lecture.dto.AdminLectureDto;
+import com.mysite.clover.Lecture.dto.BatchApprovalRequest;
 import com.mysite.clover.Lecture.dto.InstructorLectureDto;
 import com.mysite.clover.Lecture.dto.LectureCreateRequest;
 import com.mysite.clover.Lecture.dto.RejectRequest;
@@ -154,13 +155,22 @@ public class LectureController {
     @PostMapping("/admin/lectures/batch-approve")
     // @RequestBody BatchApprovalRequest request: 요청 본문에서 BatchApprovalRequest 객체를 받음
     // Principal principal: 로그인한 사용자의 정보를 받음
-    public ResponseEntity<String> batchApprove(@RequestBody BatchApprovalRequest request, Principal principal) {
+    public ResponseEntity<String> batchApprove(
+            // @RequestBody: 요청 본문에서 BatchApprovalRequest 객체를 받음
+            @RequestBody BatchApprovalRequest request, 
+            // Principal: 로그인한 사용자의 정보를 받음
+            Principal principal) {
+        
         // 1. 로그인한 관리자 정보 조회
-        Users admin = usersRepository.findByLoginId(principal.getName()).orElseThrow();
+        Users admin = usersRepository.findByLoginId(principal.getName())
+                // orElseThrow: Optional에서 값을 가져오고, 값이 없으면 예외를 발생시킴
+                .orElseThrow(() -> new RuntimeException("관리자 정보를 찾을 수 없습니다."));
+
         // 2. 일괄 승인 처리 서비스 호출
         lectureService.approveMultiple(request.getLectureIds(), admin);
+        
         // 3. 성공 메시지 반환
-        return ResponseEntity.ok("선택한 강의들이 승인되었습니다.");
+        return ResponseEntity.ok("선택한 " + request.getLectureIds().size() + "건의 강의가 승인되었습니다.");
     }
 
     // 관리자: 강의 반려 처리
@@ -184,10 +194,12 @@ public class LectureController {
     @PostMapping("/admin/lectures/batch-reject")
     // @RequestBody BatchApprovalRequest request: 요청 본문에서 BatchApprovalRequest 객체를 받음
     public ResponseEntity<String> batchReject(@RequestBody BatchApprovalRequest request) {
+        
         // 1. 일괄 반려 처리 서비스 호출
         lectureService.rejectMultiple(request.getLectureIds(), request.getRejectReason());
+        
         // 2. 성공 메시지 반환
-        return ResponseEntity.ok("선택한 강의들이 반려되었습니다.");
+        return ResponseEntity.ok("선택한 " + request.getLectureIds().size() + "건의 강의가 반려되었습니다.");
     }
 
     // 관리자: 강의 강제 비활성화

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.mysite.clover.Course.Course;
 import com.mysite.clover.Users.Users;
+import com.mysite.clover.Users.UsersRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class LectureService {
 
     private final LectureRepository lectureRepository;
+    private final UsersRepository usersRepository;
 
     // 해당 강좌에 속한 모든 강의를 순서대로 조회 (강사용/관리자용, 상태 불문)
     public List<Lecture> getListByCourse(Course course) {
@@ -82,8 +84,10 @@ public class LectureService {
     public void approveMultiple(List<Long> ids, Users admin) {
         for (Long id : ids) {
             // 강의 ID로 강의 조회
-            Lecture lecture = getLecture(id);
-            // 강의 승인 처리
+            Lecture lecture = lectureRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다. ID: " + id));
+            
+            // 기존에 만든 단건 승인 로직(approve)을 재사용
             approve(lecture, admin);
         }
     }
@@ -102,10 +106,20 @@ public class LectureService {
     // 일괄 반려
     @Transactional
     public void rejectMultiple(List<Long> ids, String reason) {
+        // 반려 사유가 없으면 예외 발생
+        if (reason == null || reason.trim().isEmpty()) {
+            // TODO: 프론트엔드에서 반려 사유를 입력받도록 수정 후 이 부분 삭제
+            throw new IllegalArgumentException("반려 사유를 입력해야 합니다.");
+        }
+
+        // 선택된 강의 ID를 순회하며 반려 처리
         for (Long id : ids) {
             // 강의 ID로 강의 조회
-            Lecture lecture = getLecture(id);
-            // 강의 반려 처리
+            Lecture lecture = lectureRepository.findById(id)
+            // 없으면 예외 발생
+                .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다. ID: " + id));
+            
+            // 기존에 만든 단건 반려 로직(reject)을 재사용
             reject(lecture, reason);
         }
     }
