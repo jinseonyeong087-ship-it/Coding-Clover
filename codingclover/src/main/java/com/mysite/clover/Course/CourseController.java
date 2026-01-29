@@ -243,6 +243,17 @@ public class CourseController {
                 .toList());
     }
 
+    // 관리자 : 강좌 상세 조회
+    @PreAuthorize("hasRole('ADMIN')") // 관리자만 접근 가능
+    @GetMapping("/admin/course/{id}")
+    public ResponseEntity<AdminCourseDto> getCourseDetail(@PathVariable("id") Long id) {
+        // 1. 서비스에서 ID로 강좌 엔티티 조회
+        Course course = courseService.getCourse(id);
+    
+        // 2. 관리자용 DTO로 변환하여 반환
+        return ResponseEntity.ok(AdminCourseDto.fromEntity(course));
+    }
+
     // 관리자 : 승인 대기중인 강좌 목록 조회
     @PreAuthorize("hasRole('ADMIN')") // 관리자 권한 체크
     @GetMapping("/admin/course/{id}/pending")
