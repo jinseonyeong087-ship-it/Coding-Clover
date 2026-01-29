@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/textarea";
-import { User, Edit, FileText, Clock, CheckCircle, XCircle, Upload } from "lucide-react";
+import { FileText, Clock, CheckCircle, XCircle, Upload, Edit, User } from "lucide-react";
 
 // 유틸리티 함수
 const getLoginId = () => {

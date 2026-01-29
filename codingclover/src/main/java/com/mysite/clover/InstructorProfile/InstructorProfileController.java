@@ -59,7 +59,10 @@ public class InstructorProfileController {
     public ResponseEntity<Resource> downloadResume(@RequestParam("filePath") String filePath) {
         try {
             // DB에서 파일 정보 조회
-            InstructorProfile profile = instructorProfileService.getResumeByFilename(filePath);
+            InstructorProfile profile = instructorProfileService.findByResumeFilePath(filePath);
+            if (profile == null) {
+                return ResponseEntity.notFound().build();
+            }
 
             byte[] fileData = profile.getResumeFileData();
             if (fileData == null || fileData.length == 0) {
@@ -86,16 +89,4 @@ public class InstructorProfileController {
         }
     }
 
-    // 어드민 - 파일 경로 수정 (전체 경로를 파일명으로 변경)
-    @PostMapping("/admin/fix-file-paths")
-    public ResponseEntity<Map<String, String>> fixFilePaths() {
-        try {
-            instructorProfileService.fixFilePathsToFileNames();
-            Map<String, String> response = Map.of("message", "파일 경로 수정 완료");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> response = Map.of("message", "파일 경로 수정 실패: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
 }

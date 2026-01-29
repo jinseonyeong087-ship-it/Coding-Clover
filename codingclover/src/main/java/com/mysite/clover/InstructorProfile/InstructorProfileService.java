@@ -133,59 +133,86 @@ public class InstructorProfileService {
         }
     }
 
-    // 이력서 파일 저장 (더 이상 사용하지 않음 - DB 저장 방식 전환)
+    // 이력서 파일 저장
     private String saveResumeFile(MultipartFile file, String loginId) {
-        return null;
-    }
-
-    // 강사 승인 처리 (어드민용)
-    public void approveInstructor(Long userId) {
-        Users user = usersRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자 정보가 없습니다."));
-
-        InstructorProfile profile = instructorProfileRepository
-                .findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("강사 프로필이 없습니다."));
-
-        profile.setStatus(InstructorStatus.APPROVED);
-        profile.setApprovedAt(LocalDateTime.now());
-        instructorProfileRepository.save(profile);
-
-        // Users 상태를 활성화로 변경
-        user.setStatus(UsersStatus.ACTIVE);
-        usersRepository.save(user);
-    }
-
-    // 강사 거절 처리 (어드민용)
-    public void rejectInstructor(Long userId, String reason) {
-        InstructorProfile profile = instructorProfileRepository
-                .findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("강사 프로필이 없습니다."));
-
-        profile.setStatus(InstructorStatus.REJECTED);
-        instructorProfileRepository.save(profile);
-    }
-
-    // 기존 파일 경로를 파일명으로 수정하는 메소드
-    @Transactional
-    public void fixFilePathsToFileNames() {
-        List<InstructorProfile> profiles = instructorProfileRepository.findAll();
-        for (InstructorProfile profile : profiles) {
-            String filePath = profile.getResumeFilePath();
-            if (filePath != null && (filePath.contains("/") || filePath.contains("\\"))) {
-                // 전체 경로에서 파일명만 추출
-                String fileName = Paths.get(filePath).getFileName().toString();
-                profile.setResumeFilePath(fileName);
-                instructorProfileRepository.save(profile);
-                System.out.println("Updated file path for user " + profile.getUserId() + ": " + fileName);
+        try {
+            // 업로드 디렉토리 생성 (프로젝트 루트의 uploads 폴더)
+            Path uploadDir = Paths.get(uploadPath).toAbsolutePath();
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+                System.out.println("Created upload directory: " + uploadDir);
             }
+            
+            // 파일명 생성 (중복 방지)
+            String originalFilename = file.getOriginalFilename();
+            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String fileName = "resume_" + loginId + "_" + System.currentTimeMillis() + extension;
+            
+            Path filePath = uploadDir.resolve(fileName);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            
+            System.out.println("File saved to: " + filePath.toAbsolutePath());
+            return fileName; // 파일명만 저장 (전체 경로 아님)
+            
+        } catch (IOException e) {
+            throw new RuntimeException("파일 저장에 실패했습니다: " + e.getMessage());
         }
     }
 
-    // 이력서 파일 다운로드 (DB에서 조회)
+    // 강사 승인 처리 (어드민용)
+    public boolean approveInstructor(String userId) {
+        try {
+            InstructorProfile profile = instructorProfileRepository
+                    .findByUserId(Long.parseLong(userId))
+                    .orElseThrow(() -> new EntityNotFoundException("강사 프로필이 없습니다."));
+            
+            profile.setStatus(InstructorStatus.APPROVED);
+            profile.setApprovedAt(LocalDateTime.now());
+            instructorProfileRepository.save(profile);
+            
+            // Users 상태를 활성화로 변경
+            Users user = usersRepository.findById(Long.parseLong(userId))
+                    .orElseThrow(() -> new EntityNotFoundException("사용자 정보가 없습니다."));
+            user.setStatus(UsersStatus.ACTIVE);
+            usersRepository.save(user);
+            
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    // 강사 반료 처리 (어드민용)
+    public boolean rejectInstructor(String userId) {
+        try {
+            InstructorProfile profile = instructorProfileRepository
+                    .findByUserId(Long.parseLong(userId))
+                    .orElseThrow(() -> new EntityNotFoundException("강사 프로필이 없습니다."));
+            
+            profile.setStatus(InstructorStatus.REJECTED);
+            instructorProfileRepository.save(profile);
+            
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    // 모든 강사 프로필 조회 (어드민용)
     @Transactional(readOnly = true)
-    public InstructorProfile getResumeByFilename(String fileName) {
-        return instructorProfileRepository.findByResumeFilePath(fileName)
-                .orElseThrow(() -> new EntityNotFoundException("파일을 찾을 수 없습니다: " + fileName));
+    public List<InstructorProfile> getAllInstructorProfiles() {
+        return instructorProfileRepository.findAll();
+    }
+    
+    // 특정 강사 프로필 조회 (어드민용)
+    @Transactional(readOnly = true)
+    public InstructorProfile getInstructorProfileByUserId(String userId) {
+        return instructorProfileRepository.findByUserId(Long.parseLong(userId)).orElse(null);
+    }
+
+    // 이력서 파일 경로로 프로필 조회
+    public InstructorProfile findByResumeFilePath(String filePath) {
+        return instructorProfileRepository.findByResumeFilePath(filePath)
+                .orElse(null);
     }
 }

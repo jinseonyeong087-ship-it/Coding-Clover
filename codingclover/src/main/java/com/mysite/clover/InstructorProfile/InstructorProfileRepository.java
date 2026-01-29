@@ -11,7 +11,7 @@ public interface InstructorProfileRepository extends JpaRepository<InstructorPro
 
   // 강사 정보 가져오기
   Optional<InstructorProfile> findByUserId(Long userId);
-
-  // 이력서 파일명으로 조회
+  
+  // 이력서 파일 경로로 프로필 조회
   Optional<InstructorProfile> findByResumeFilePath(String resumeFilePath);
 }
