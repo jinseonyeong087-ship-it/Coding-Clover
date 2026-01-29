@@ -21,4 +21,10 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
 
   // 관리자 - 강사관리 탭에서 사용될 예정
   List<Users> findByRole(UsersRole role);
+
+  // 아이디 찾기
+  Optional<Users> findByNameAndEmail(String name, String email);
+
+  // 비밀번호 찾기
+  Optional<Users> findByLoginIdAndNameAndEmail(String loginId, String name, String email);
 }

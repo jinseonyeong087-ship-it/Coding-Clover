@@ -144,4 +144,18 @@ public class UsersService {
     public Users getUserByEmail(String email) {
         return usersRepository.findByEmail(email).orElse(null);
     }
+
+    // 아이디 찾기
+    public String findId(String name, String email) {
+        Users user = usersRepository.findByNameAndEmail(name, email)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        return user.getLoginId();
+    }
+
+    // 비밀번호 찾기
+    public String findPw(String loginId, String name, String email) {
+        Users user = usersRepository.findByLoginIdAndNameAndEmail(loginId, name, email)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        return user.getPassword();
+    }
 }

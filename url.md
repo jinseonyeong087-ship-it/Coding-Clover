@@ -17,8 +17,7 @@
 /auth/login             → 로그인
 /auth/register          → 회원가입
 /auth/oauth             → 소셜 로그인
-/auth/findId            → 아이디 찾기
-/auth/findPassword      → 비밀번호 찾기
+/auth/findRequest       → 아이디/비밀번호 찾기
 
 
 # 🟩 수강생 영역
