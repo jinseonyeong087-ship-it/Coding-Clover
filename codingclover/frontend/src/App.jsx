@@ -28,6 +28,9 @@ import TestPaymentSuccess from '@/pages/payment/TestPaymentSuccess'
 import TestPaymentFail from '@/pages/payment/TestPaymentFail'
 import LectureBatchTest from './pages/LectureBatchTest';
 import LectureCreateTest from './pages/LectureCreateTest';
+import TestInstructorCourseManage from './pages/instructor/TestInstructorCourseManage';
+import TestInstructorCourseEdit from './pages/instructor/TestInstructorCourseEdit';
+import TestInstructorLectureEdit from './pages/instructor/TestInstructorLectureEdit';
 
 
 // 서버와의 통신에서 쿠키(세션)를 포함하도록 설정
@@ -51,6 +54,16 @@ function App() {
         {/* 강의 일괄 승인 테스트 경로 추가 */}
         <Route path="/test/lecture/batch" element={<LectureBatchTest />} />
         <Route path="/test/lecture/create" element={<LectureCreateTest />} />
+
+        {/* 강사 통합 관리 테스트 영역 */}
+        <Route path="/instructor/*" element={<ProtectedRoute allowedRoles={['INSTRUCTOR']} />}>
+          {/* 1. 강좌/강의 통합 리스트 및 상태 확인 */}
+          <Route path="manage" element={<TestInstructorCourseManage />} />
+          {/* 2. 반려된 강좌 수정 (기존 ID 유지) */}
+          <Route path="course/edit/:courseId" element={<TestInstructorCourseEdit />} />
+          {/* 3. 반려된 강의 수정 (기존 ID 유지) */}
+          <Route path="lecture/edit/:lectureId" element={<TestInstructorLectureEdit />} />
+        </Route>
 
         {/* 결제 테스트 (프론트/백엔드 연동) */}
         <Route path="/test/payment/checkout" element={<TestPayment />} />
