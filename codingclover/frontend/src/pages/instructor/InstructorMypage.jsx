@@ -98,6 +98,45 @@ function InstructorMypage() {
       return;
     }
 
+    // 유효성 검사
+    const errors = [];
+    
+    if (!formData.bio || formData.bio.trim().length === 0) {
+      errors.push('자기소개를 입력해주세요.');
+    } else if (formData.bio.trim().length < 10) {
+      errors.push('자기소개는 최소 10자 이상 입력해주세요.');
+    }
+    
+    if (!formData.careerYears || formData.careerYears.toString().trim().length === 0) {
+      errors.push('경력 년수를 입력해주세요.');
+    } else if (isNaN(formData.careerYears) || parseInt(formData.careerYears) < 0) {
+      errors.push('경력 년수는 0 이상의 숫자를 입력해주세요.');
+    }
+    
+    // 신규 신청인 경우 이력서 필수
+    if (!profile?.resumeFilePath && !formData.resumeFile) {
+      errors.push('이력서 파일을 업로드해주세요.');
+    }
+    
+    // 이력서 파일 형식 확인 (업로드된 경우)
+    if (formData.resumeFile) {
+      const fileExtension = formData.resumeFile.name.split('.').pop().toLowerCase();
+      if (fileExtension !== 'pdf') {
+        errors.push('이력서는 PDF 파일만 업로드 가능합니다.');
+      }
+      
+      // 파일 크기 확인 (10MB 제한)
+      if (formData.resumeFile.size > 10 * 1024 * 1024) {
+        errors.push('파일 크기는 10MB 이하만 허용됩니다.');
+      }
+    }
+
+    if (errors.length > 0) {
+      alert(errors.join('\n'));
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const submitData = new FormData();
       submitData.append('bio', formData.bio);
@@ -226,43 +265,61 @@ function InstructorMypage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="bio">자기소개 *</Label>
+                    <Label htmlFor="bio">자기소개 <span className="text-red-500">*</span></Label>
                     <Textarea
                       id="bio"
                       value={formData.bio}
                       onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                      placeholder="강사로서의 경험과 전문 분야를 소개해주세요."
+                      placeholder="강사로서의 경험과 전문 분야를 소개해주세요. (최소 10자 이상)"
                       rows={4}
                       required
+                      className={formData.bio.trim().length > 0 && formData.bio.trim().length < 10 ? 'border-red-300' : ''}
                     />
+                    {formData.bio.trim().length > 0 && formData.bio.trim().length < 10 && (
+                      <p className="text-sm text-red-500 mt-1">자기소개는 최소 10자 이상 입력해주세요.</p>
+                    )}
                   </div>
 
                   <div>
-                    <Label htmlFor="careerYears">경력 연차 *</Label>
+                    <Label htmlFor="careerYears">경력 연차 <span className="text-red-500">*</span></Label>
                     <Input
                       id="careerYears"
                       type="number"
                       value={formData.careerYears}
                       onChange={(e) => setFormData(prev => ({ ...prev, careerYears: e.target.value }))}
-                      placeholder="숫자만 입력해 주세요"
+                      placeholder="숫자만 입력해 주세요 (0년 이상)"
                       min="0"
+                      max="50"
                       required
+                      className={formData.careerYears && (isNaN(formData.careerYears) || parseInt(formData.careerYears) < 0) ? 'border-red-300' : ''}
                     />
+                    {formData.careerYears && (isNaN(formData.careerYears) || parseInt(formData.careerYears) < 0) && (
+                      <p className="text-sm text-red-500 mt-1">경력은 0년 이상의 숫자를 입력해주세요.</p>
+                    )}
                   </div>
 
                   <div>
-                    <Label>이력서 첨부 *</Label>
+                    <Label>이력서 첨부 <span className="text-red-500">*</span></Label>
                     <div className="space-y-3">
                       {/* 선택된 파일 표시 박스 */}
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center bg-gray-50">
+                      <div className={`border-2 border-dashed rounded-lg p-4 text-center ${
+                        formData.resumeFile || profile?.resumeFilePath 
+                          ? 'border-green-300 bg-green-50' 
+                          : 'border-gray-300 bg-gray-50'
+                      }`}>
                         {formData.resumeFile ? (
-                          <div className="flex items-center justify-center gap-2 text-sm text-gray-700">
+                          <div className="flex items-center justify-center gap-2 text-sm text-green-700">
                             <FileText className="w-4 h-4" />
                             <span>{formData.resumeFile.name}</span>
                           </div>
+                        ) : profile?.resumeFilePath ? (
+                          <div className="flex items-center justify-center gap-2 text-sm text-green-700">
+                            <FileText className="w-4 h-4" />
+                            <span>기존 이력서 파일이 있습니다</span>
+                          </div>
                         ) : (
-                          <p className="text-sm text-gray-500">
-                            선택된 파일이 없습니다
+                          <p className="text-sm text-red-500">
+                            이력서 파일을 업로드해주세요 (필수)
                           </p>
                         )}
                       </div>
@@ -284,11 +341,14 @@ function InstructorMypage() {
                         className="w-full"
                       >
                         <Upload className="w-4 h-4 mr-2" />
-                        이력서 첨부하기
+                        이력서 첨부하기 (PDF만 가능)
                       </Button>
 
                       <p className="text-sm text-muted-foreground">
-                        PDF, HWP 파일 업로드 가능합니다.
+                        PDF 파일만 업로드 가능합니다. (최대 10MB)
+                        {!profile?.resumeFilePath && !formData.resumeFile && (
+                          <span className="text-red-500 font-medium"> - 필수 항목입니다</span>
+                        )}
                       </p>
                     </div>
                   </div>
