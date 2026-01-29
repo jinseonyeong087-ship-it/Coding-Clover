@@ -83,4 +83,9 @@ public class Course {
     public Users getInstructor() {
         return this.createdBy;
     }
+
+    // 강사 이름을 반환하는 편의 메서드
+    public String getInstructorName() {
+        return this.createdBy != null ? this.createdBy.getName() : null;
+    }
 }
