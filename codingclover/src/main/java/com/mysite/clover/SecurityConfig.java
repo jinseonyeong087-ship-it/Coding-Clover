@@ -127,13 +127,45 @@ public class SecurityConfig {
 
   private OAuth2AuthorizationRequestResolver authorizationRequestResolver(
       ClientRegistrationRepository clientRegistrationRepository) {
-    DefaultOAuth2AuthorizationRequestResolver authorizationRequestResolver = new DefaultOAuth2AuthorizationRequestResolver(
+
+    DefaultOAuth2AuthorizationRequestResolver defaultResolver = new DefaultOAuth2AuthorizationRequestResolver(
         clientRegistrationRepository, "/oauth2/authorization");
 
-    authorizationRequestResolver.setAuthorizationRequestCustomizer(
-        authorizationRequestCustomizer -> authorizationRequestCustomizer
-            .additionalParameters(params -> params.put("prompt", "select_account")));
+    return new OAuth2AuthorizationRequestResolver() {
+      @Override
+      public org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest resolve(
+          jakarta.servlet.http.HttpServletRequest request) {
+        org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest req = defaultResolver
+            .resolve(request);
+        return customize(req);
+      }
 
-    return authorizationRequestResolver;
+      @Override
+      public org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest resolve(
+          jakarta.servlet.http.HttpServletRequest request, String clientRegistrationId) {
+        org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest req = defaultResolver
+            .resolve(request, clientRegistrationId);
+        return customize(req);
+      }
+
+      private org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest customize(
+          org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest req) {
+        if (req == null)
+          return null;
+
+        String registrationId = req
+            .getAttribute(org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames.REGISTRATION_ID);
+        org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest.Builder builder = org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest
+            .from(req);
+
+        if ("google".equals(registrationId)) {
+          builder.additionalParameters(params -> params.put("prompt", "select_account"));
+        } else if ("naver".equals(registrationId)) {
+          builder.additionalParameters(params -> params.put("auth_type", "reprompt"));
+        }
+
+        return builder.build();
+      }
+    };
   }
 }
