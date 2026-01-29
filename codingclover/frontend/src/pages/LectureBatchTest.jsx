@@ -96,7 +96,7 @@ const LectureBatchTest = () => {
                                 </td>
                                 <td>{lecture.lectureId}</td>
                                 <td>{lecture.title}</td>
-                                <td>{lecture.instructorName}</td>
+                                <td>{lecture.createdByName}</td>
                                 <td>{lecture.approvalStatus}</td>
                             </tr>
                         ))
