@@ -59,36 +59,72 @@ public class InstructorProfileController {
     public ResponseEntity<Resource> downloadResume(@RequestParam("filePath") String filePath) {
         try {
             Path path;
-            // 파일 경로가 절대 경로가 아닌 경우, 업로드 폴더와 결합
-            if (!Paths.get(filePath).isAbsolute()) {
-                // 업로드 폴더 경로를 가져와서 결합
-                String uploadPath = System.getProperty("user.home") + "/coding-clover/uploads";
-                path = Paths.get(uploadPath, filePath);
-            } else {
+            
+            // 파일 경로 처리 로직 개선
+            if (Paths.get(filePath).isAbsolute()) {
+                // 절대 경로인 경우 그대로 사용
                 path = Paths.get(filePath);
+            } else if (filePath.contains("/") || filePath.contains("\\")) {
+                // 상대 경로인 경우 프로젝트 업로드 폴더와 결합
+                path = Paths.get("uploads", filePath).toAbsolutePath();
+            } else {
+                // 파일명만 있는 경우 프로젝트 업로드 폴더에서 찾기
+                path = Paths.get("uploads", filePath).toAbsolutePath();
             }
+            
+            System.out.println("Looking for file at: " + path.toAbsolutePath());
             
             File file = path.toFile();
             
             if (!file.exists()) {
                 System.out.println("File not found: " + path.toAbsolutePath());
-                return ResponseEntity.notFound().build();
+                // 파일이 없으면 다른 경로들도 시도
+                if (!path.isAbsolute()) {
+                    // 현재 작업 디렉토리에서도 찾아보기
+                    Path alternativePath = Paths.get(filePath);
+                    if (alternativePath.toFile().exists()) {
+                        file = alternativePath.toFile();
+                        path = alternativePath;
+                    } else {
+                        return ResponseEntity.notFound().build();
+                    }
+                } else {
+                    return ResponseEntity.notFound().build();
+                }
             }
             
             Resource resource = new FileSystemResource(file);
             String contentType = Files.probeContentType(path);
             if (contentType == null) {
-                contentType = "application/octet-stream";
+                contentType = "application/pdf"; // PDF로 기본값 설정
+            }
+            
+            String fileName = file.getName();
+            if (!fileName.toLowerCase().endsWith(".pdf")) {
+                fileName += ".pdf";
             }
             
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
                     .body(resource);
                     
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // 어드민 - 파일 경로 수정 (전체 경로를 파일명으로 변경)
+    @PostMapping("/admin/fix-file-paths")
+    public ResponseEntity<Map<String, String>> fixFilePaths() {
+        try {
+            instructorProfileService.fixFilePathsToFileNames();
+            Map<String, String> response = Map.of("message", "파일 경로 수정 완료");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> response = Map.of("message", "파일 경로 수정 실패: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }
