@@ -13,12 +13,11 @@ import {
 } from "@/components/ui/table";
 import InstructorPermit from "@/components/InstructorPermit"
 
-const getLoginId = () => {
+const getUserData = () => {
     const storedUsers = localStorage.getItem("users");
     if (!storedUsers) return null;
     try {
-        const userData = JSON.parse(storedUsers);
-        return userData.loginId || null;
+        return JSON.parse(storedUsers);
     } catch {
         return null;
     }
@@ -27,25 +26,19 @@ const getLoginId = () => {
 function InstructorMain() {
 
     const [courses, setCourses] = useState([]);
-    const [instructorStatus, setInstructorStatus] = useState(null);
+    const [instructorStatus, setInstructorStatus] = useState("");
 
     useEffect(() => {
-        const loginId = getLoginId();
-        console.log('loginId:', loginId);
-        // 강사 상태 조회
-        fetch('/api/instructor/mypage', { method: 'GET', headers: { 'Content-Type': 'application/json', 'X-Login-Id': loginId }, credentials: 'include' })
-            .then((res) => {
-                console.log('응답 상태:', res.status);
-                if (!res.ok) throw new Error('인증 필요');
-                return res.json();
-            })
-            .then((data) => {
-                console.log('강사 데이터:', data);
-                setInstructorStatus(data.status);
-            })
-            .catch((err) => console.error('에러:', err));
+        const userData = getUserData();
+        const loginId = userData?.loginId;
+        console.log('userData:', userData);
+
+        // localStorage에서 강사 상태 설정
+        if (userData?.status) {
+            setInstructorStatus(userData.status);
+        }
         // 강좌 목록 조회
-        fetch('/instructor/course', { method: 'GET', headers: { 'Content-Type': 'application/json' }, credentials: 'include' })
+        fetch('/instructor/course', { method: 'GET', headers: { 'Content-Type': 'application/json', 'X-Login-Id': loginId }, credentials: 'include' })
             .then((res) => {
                 if (!res.ok) throw new Error('인증 필요');
                 return res.json();
