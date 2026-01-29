@@ -31,6 +31,9 @@ import LectureCreateTest from './test/LectureCreateTest';
 import TestInstructorCourseManage from './pages/TestInstructorCourseManage';
 import TestInstructorCourseEdit from './pages/TestInstructorCourseEdit';
 import TestInstructorLectureEdit from './pages/TestInstructorLectureEdit';
+import FindAccountTest from './test/FindAccountTest';
+
+
 
 
 // 서버와의 통신에서 쿠키(세션)를 포함하도록 설정
@@ -55,6 +58,10 @@ function App() {
         {/* 강의 일괄 승인 테스트 경로 추가 */}
         <Route path="/test/lecture/batch" element={<LectureBatchTest />} />
         <Route path="/test/lecture/create" element={<LectureCreateTest />} />
+
+        {/* 아이디/비밀번호 찾기 테스트 */}
+        {/* 아이디/비밀번호 찾기 테스트 */}
+        <Route path="/test/findaccount" element={<FindAccountTest />} />
 
         {/* 강사 통합 관리 테스트 영역 */}
         <Route path="/test/*" element={<ProtectedRoute allowedRoles={['INSTRUCTOR']} />}>
