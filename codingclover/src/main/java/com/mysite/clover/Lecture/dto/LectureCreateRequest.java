@@ -8,9 +8,11 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 // 강사가 강의를 업로드할 때 사용하는 요청 DTO
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
 public class LectureCreateRequest {
     // 강의가 등록될 강좌의 ID (필수)

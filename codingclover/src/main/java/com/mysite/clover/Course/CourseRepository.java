@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 public interface CourseRepository extends JpaRepository<Course, Long> {
 
     // 특정 강사(User ID)가 생성한 모든 강좌 목록을 조회 (강사 마이페이지 등)
-    List<Course> findByCreatedByUserId(Long userId);
+    List<Course> findByCreatedByUserId(long loginId);
 
     // 특정 강사가 생성한 강좌 중, 특정 승인 상태(예: PENDING, APPROVED)인 강좌 목록 조회
     List<Course> findByCreatedByUserIdAndProposalStatus(Long userId, CourseProposalStatus proposalStatus);
@@ -32,4 +32,6 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     // [추가] 승인된 강좌 중, 특정 레벨이면서 강의(Lecture)가 1개 이상 존재하는 강좌만 조회
     @Query("SELECT DISTINCT c FROM Course c JOIN Lecture l ON c.courseId = l.course.courseId WHERE c.proposalStatus = 'APPROVED' AND c.level = :level")
     List<Course> findApprovedCoursesWithLecturesByLevel(@Param("level") int level);
+
+    List<Course> findByCreatedBy_LoginId(String loginId);
 }

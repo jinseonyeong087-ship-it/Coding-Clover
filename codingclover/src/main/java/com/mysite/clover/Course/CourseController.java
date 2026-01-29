@@ -215,6 +215,18 @@ public class CourseController {
         return ResponseEntity.ok("강좌 삭제 성공");
     }
 
+    // 강사 : 본인이 개설한 강좌 목록 조회
+    @GetMapping("/instructor/course/my-list")
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public ResponseEntity<List<Course>> getMyCourses(Principal principal) {
+        String loginId = principal.getName();
+        
+        // 서비스에서 실제 List<Course>를 반환하도록 타입을 맞춥니다.
+        List<Course> myCourses = (List<Course>) courseService.getCoursesByInstructor(loginId);
+    
+    return ResponseEntity.ok(myCourses);
+}
+
     // ==========================================
     // 🟥 관리자 영역
     // ==========================================
