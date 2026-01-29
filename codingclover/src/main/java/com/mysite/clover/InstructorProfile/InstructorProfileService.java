@@ -105,13 +105,11 @@ public class InstructorProfileService {
         // 파일 업로드 처리 (DB 저장 방식)
         if (resumeFile != null && !resumeFile.isEmpty()) {
             try {
-                String originalFilename = resumeFile.getOriginalFilename();
-                String extension = "";
-                if (originalFilename != null && originalFilename.contains(".")) {
-                    extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                // 원래 파일명 그대로 사용 (DB에 저장하므로 중복 걱정 없음)
+                String fileName = resumeFile.getOriginalFilename();
+                if (fileName == null || fileName.isBlank()) {
+                    fileName = "resume.pdf"; // 파일명이 없을 경우 기본값
                 }
-                // 파일명 생성 (다운로드 시 사용)
-                String fileName = "resume_" + loginId + "_" + System.currentTimeMillis() + extension;
 
                 profile.setResumeFilePath(fileName);
                 profile.setResumeFileData(resumeFile.getBytes());
