@@ -22,13 +22,13 @@ public class PaymentController {
   private final com.mysite.clover.Users.UsersRepository usersRepository;
 
   @PostMapping("/success")
-  public ResponseEntity<?> paymentSuccess(@RequestBody Map<String, Object> payload, Principal principal) {
+  public ResponseEntity<?> paymentSuccess(@RequestBody PaymentSuccessDto payload, Principal principal) {
     try {
-      String paymentKey = (String) payload.get("paymentKey");
-      String orderId = (String) payload.get("orderId");
-      Integer amount = Integer.parseInt(payload.get("amount").toString());
-      Long productId = Long.parseLong(payload.get("productId").toString());
-      String paymentMethod = (String) payload.get("paymentMethod");
+      String paymentKey = payload.getPaymentKey();
+      String orderId = payload.getOrderId();
+      Integer amount = payload.getAmount();
+      Long productId = payload.getProductId();
+      String paymentMethod = payload.getPaymentMethod();
 
       Long userId;
       if (principal != null) {

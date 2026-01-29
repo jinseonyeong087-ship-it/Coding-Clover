@@ -64,9 +64,8 @@ public class PaymentService {
           String.class);
 
       // 응답 파싱 (여기서는 간단히 성공으로 가정하고 진행)
-      ObjectMapper objectMapper = new ObjectMapper();
-      JsonNode root = objectMapper.readTree(response.getBody());
-      // String method = root.path("method").asText(); // 실제 응답에서 수단 가져오기 가능
+      // ObjectMapper objectMapper = new ObjectMapper();
+      // JsonNode root = objectMapper.readTree(response.getBody());
 
     } catch (Exception e) {
       // 결제 승인 실패 시 예외 발생
@@ -76,19 +75,21 @@ public class PaymentService {
     // 2. DB 저장
     Payment payment = new Payment();
 
-    // 유저 확인 (테스트용 임시 로직)
-    // 유저 확인
+    // 유저 존재 여부 확인
     if (!usersRepository.existsById(userId)) {
       throw new RuntimeException("User not found: " + userId);
     }
 
-    // 상품 ID 확인 (이니셜라이저가 생성한 상품이 아니라면, 요청받은 ID가 없을 수 있음)
-    // 하지만 프론트에서 정확한 ID를 모를 수 있으므로, 1원짜리 테스트 상품을 찾아서 매핑해줄 수도 있음.
-    // 여기서는 요청받은 productId가 유효하지 않으면 "테스트 수강권"을 찾아 사용하도록 함.
+    // 상품 ID 확인
+    // [개발용 로직]: 요청받은 productId가 유효하지 않으면 '테스트 수강권'으로 대체하여 결제 진행
+    // 운영 환경에서는 제거해야 함
     if (!productRepository.existsById(productId)) {
       Product testProduct = productRepository.findByName("테스트 수강권");
       if (testProduct != null) {
         productId = testProduct.getProductId();
+      } else {
+        // 테스트 상품도 없으면 에러
+        throw new RuntimeException("Product not found: " + productId);
       }
     }
 

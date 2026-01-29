@@ -8,4 +8,5 @@ public class PaymentSuccessDto {
   private String orderId;
   private Integer amount;
   private Long productId;
+  private String paymentMethod;
 }
