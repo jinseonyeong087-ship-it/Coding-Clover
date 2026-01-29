@@ -11,13 +11,17 @@ import { Input } from "@/components/ui/Input";
 
 function InstructorLecture() {
     const { courseId } = useParams();
+    const [myCourses, setMyCourses] = useState([]);
     const [lectures, setLectures] = useState([]);
     const [isAdding, setIsAdding] = useState(false);
     const [newLecture, setNewLecture] = useState({
+        courseId: '',
         title: '',
-        orderNo: 1,
+        orderNo: '',
         videoUrl: '',
-        duration: 0
+        duration: '',
+        uploadType: 'IMMEDIATE', // 기본값: 즉시 공개
+        scheduledAt: ''
     });
 
     // 강의 목록 조회
@@ -27,7 +31,7 @@ function InstructorLecture() {
             credentials: 'include'
         })
             .then(res => res.json())
-            .then(data => setLectures(data))
+            .then((data) => {setLectures(data)} )
             .catch(err => console.error('강의 목록 조회 실패:', err));
     }, [courseId]);
 
@@ -48,7 +52,7 @@ function InstructorLecture() {
             })
             .then(data => {
                 setLectures([...lectures, data]);
-                setNewLecture({ title: '', orderNo: lectures.length + 2, videoUrl: '', duration: 0 });
+                setNewLecture({ courseId: '', title: '', orderNo: '', videoUrl: '', duration: 0, uploadType: 'IMMEDIATE', scheduledAt: '' });
                 setIsAdding(false);
             })
             .catch(err => console.error(err));
@@ -85,6 +89,11 @@ function InstructorLecture() {
             {/* 강의 추가 폼 */}
             {isAdding && (
                 <div className="mb-6 p-4 border rounded-md bg-slate-50 space-y-4">
+                    <div>
+                        <h2 className="block text-sm font-medium mb-1">강좌명</h2>
+                        <p>{newLecture.courseId}</p>
+                        
+                    </div>
                     <div>
                         <label className="block text-sm font-medium mb-1">강의 제목</label>
                         <Input

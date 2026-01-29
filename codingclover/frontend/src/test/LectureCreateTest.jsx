@@ -21,8 +21,8 @@ const LectureCreateTest = () => {
             try {
                 // CourseController의 @GetMapping("/instructor/course/my-list") 호출
                 const response = await axios.get('/instructor/course/my-list', {
-    withCredentials: true // 여기에 직접 명시
-});
+                    withCredentials: true // 여기에 직접 명시
+                });
                 setMyCourses(response.data);
             } catch (error) {
                 console.error("강좌 목록을 불러오는데 실패했습니다.", error);
@@ -43,7 +43,7 @@ const LectureCreateTest = () => {
     // 2. 강의 업로드 요청 제출 핸들러
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!formData.courseId) {
             alert("강의를 추가할 강좌를 선택해주세요.");
             return;
@@ -65,7 +65,7 @@ const LectureCreateTest = () => {
             const response = await axios.post('/instructor/lecture/upload', submitData);
             alert("강의 업로드 요청 성공! 관리자 승인 완료 후 수강생에게 공개됩니다.");
             console.log("서버 응답:", response.data);
-            
+
             // 성공 시 폼 초기화 (선택창 제외)
             setFormData(prev => ({
                 ...prev,
@@ -86,20 +86,20 @@ const LectureCreateTest = () => {
         <div style={{ padding: '30px', maxWidth: '600px', margin: '20px auto', border: '1px solid #ddd', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
             <h2 style={{ textAlign: 'center', color: '#333' }}>신규 강의 업로드</h2>
             <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '20px', textAlign: 'center' }}>
-                강좌를 선택하고 강의 정보를 입력하세요. <br/>
+                강좌를 선택하고 강의 정보를 입력하세요. <br />
                 모든 강의는 <strong>관리자 승인 후</strong> 게시됩니다.
             </p>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                
+
                 {/* [핵심] 강좌 선택 드롭다운 */}
                 <div>
                     <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>강좌 선택</label>
-                    <select 
-                        name="courseId" 
-                        value={formData.courseId} 
-                        onChange={handleChange} 
-                        required 
+                    <select
+                        name="courseId"
+                        value={formData.courseId}
+                        onChange={handleChange}
+                        required
                         style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
                     >
                         <option value="">-- 강의를 올릴 강좌를 선택하세요 --</option>
@@ -147,17 +147,17 @@ const LectureCreateTest = () => {
                     )}
                 </div>
 
-                <button 
-                    type="submit" 
-                    style={{ 
-                        marginTop: '10px', 
-                        padding: '15px', 
-                        backgroundColor: '#28a745', 
-                        color: 'white', 
-                        border: 'none', 
-                        borderRadius: '5px', 
-                        fontWeight: 'bold', 
-                        cursor: 'pointer' 
+                <button
+                    type="submit"
+                    style={{
+                        marginTop: '10px',
+                        padding: '15px',
+                        backgroundColor: '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '5px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
                     }}
                 >
                     강의 업로드 승인 요청

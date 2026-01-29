@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.mysite.clover.Course.dto.AdminCourseDto;
+import com.mysite.clover.Course.dto.CourseCreateRequest;
 import com.mysite.clover.Enrollment.Enrollment;
 import com.mysite.clover.Enrollment.EnrollmentRepository;
 import com.mysite.clover.Enrollment.EnrollmentStatus;
@@ -192,8 +192,12 @@ public class CourseService {
 }
 
     // 강좌 재제출 (반려된 강좌 수정 후 재요청)
+    // [파라미터 설명]
+    // - courseId: 재심사 요청할 강좌의 ID
+    // - request: 프론트엔드에서 전달받은 수정된 강좌 정보 (CourseCreateRequest는 @Getter/@Setter가 있어서 값 설정/조회 가능)
+    // - loginId: 현재 로그인한 강사의 ID (본인 확인용)
     @Transactional
-    public void resubmitCourse(Long courseId, AdminCourseDto updateDto, String loginId) {
+    public void resubmitCourse(Long courseId, CourseCreateRequest request, String loginId) {
         // 1. 기존 강좌 조회
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
@@ -203,19 +207,19 @@ public class CourseService {
             throw new SecurityException("본인의 강좌만 수정할 수 있습니다.");
         }
 
-        // 3. 기존 데이터 업데이트 (수정 가능한 필드들)
-        course.setTitle(updateDto.getTitle());
-        course.setDescription(updateDto.getDescription());
-        course.setLevel(updateDto.getLevel());
-        course.setPrice(updateDto.getPrice());
-        course.setThumbnailUrl(updateDto.getThumbnailUrl());
+        // 3. 기존 데이터 업데이트 (CourseCreateRequest의 getter로 값 조회)
+        course.setTitle(request.getTitle());
+        course.setDescription(request.getDescription());
+        course.setLevel(request.getLevel());
+        course.setPrice(request.getPrice());
+        course.setThumbnailUrl(request.getThumbnailUrl());
 
         // 4. 승인 상태 초기화 (핵심)
         // 상태를 다시 PENDING으로 변경하여 관리자 대기 목록에 보이게 함
         course.setProposalStatus(CourseProposalStatus.PENDING);
         // 기존 반려 사유 제거
         course.setProposalRejectReason(null);
-        
+
         // Dirty Checking에 의해 트랜잭션 종료 시 자동 업데이트 (save 호출 생략 가능)
     }
 }

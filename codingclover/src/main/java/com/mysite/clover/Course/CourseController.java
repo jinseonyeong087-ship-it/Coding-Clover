@@ -218,6 +218,34 @@ public class CourseController {
         return ResponseEntity.ok("강좌 삭제 성공");
     }
 
+    // 강사 : 강좌 재심사 요청 (반려된 강좌 수정 후 재제출)
+    // [역할] 반려(REJECTED)된 강좌를 수정 후 다시 관리자에게 승인 요청
+    // [흐름] 프론트엔드 → CourseCreateRequest로 수정된 강좌 정보 전달 → Service에서 상태를 PENDING으로 변경
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PostMapping("/instructor/course/{id}/resubmit")
+    public ResponseEntity<?> resubmitCourse(
+            @PathVariable("id") Long id,
+            // @Valid: 유효성 검사 (title, description 필수 등)
+            // @RequestBody: JSON 요청 본문을 CourseCreateRequest 객체로 변환
+            @Valid @RequestBody CourseCreateRequest request,
+            BindingResult bindingResult,
+            // Principal: 현재 로그인한 사용자 정보 (Spring Security)
+            Principal principal) {
+
+        // 1. 입력값 유효성 검사
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest()
+                    .body(bindingResult.getAllErrors().get(0).getDefaultMessage());
+        }
+
+        // 2. 재심사 요청 처리
+        // CourseCreateRequest를 그대로 Service에 전달 (AdminCourseDto 변환 불필요)
+        // Service에서 강좌 정보 업데이트 + 상태를 PENDING으로 변경
+        courseService.resubmitCourse(id, request, principal.getName());
+
+        return ResponseEntity.ok("재심사 요청이 완료되었습니다.");
+    }
+
     // 강사 : 본인이 개설한 강좌 목록 조회
     @GetMapping("/instructor/course/my-list")
     @PreAuthorize("hasRole('INSTRUCTOR')")

@@ -41,10 +41,11 @@ function AdminNav() {
 
                 <Menubar className="border-none shadow-none bg-transparent">
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer">관리</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer">강좌·강의·강사</MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem>강좌 관리</MenubarItem>
-                            <MenubarItem>강사 승인</MenubarItem>
+                            <MenubarItem>강좌 승인·반려</MenubarItem>
+                            <MenubarItem>강의 업로드 내역</MenubarItem>
+                            <MenubarItem>강사 관리</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     {/* <MenubarMenu>
@@ -63,8 +64,8 @@ function AdminNav() {
                         <MenubarTrigger className="cursor-pointer">결제 관리</MenubarTrigger>
                         <MenubarContent>
                             <MenubarGroup>
-                                <MenubarItem>강사료</MenubarItem>
-                                <MenubarItem>환불 처리</MenubarItem>
+                                <MenubarItem>강사료 지불</MenubarItem>
+                                <MenubarItem>수강생 환불</MenubarItem>
                             </MenubarGroup>
                         </MenubarContent>
                     </MenubarMenu>
