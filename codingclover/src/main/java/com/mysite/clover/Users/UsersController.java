@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.mysite.clover.Mail.MailService;
+
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class UsersController {
 
     private final UsersService usersService;
+    private final MailService mailService;
 
     @PostMapping("auth/register")
     @ResponseBody // JSON 본문 응답을 위해 필수
@@ -129,7 +133,7 @@ public class UsersController {
 
     @PostMapping("/auth/findRequest")
     @ResponseBody
-    public ResponseEntity<?> handleFindRequest(@RequestBody Map<String, String> params) {
+    public ResponseEntity<?> handleFindRequest(@RequestBody Map<String, String> params, HttpSession session) {
         try {
             String type = params.get("type"); // 프론트에서 'id', 'pw', 'reset' 중 하나를 보냄
 
@@ -145,6 +149,8 @@ public class UsersController {
                         params.get("loginId"),
                         params.get("name"),
                         params.get("email"));
+                int number = mailService.sendMail(params.get("email"));
+                session.setAttribute("emailAuthNumber", number);
                 return ResponseEntity.ok(Map.of("message", "사용자 정보 확인 완료."));
             }
 
