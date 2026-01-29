@@ -115,7 +115,7 @@ function AdminMain() {
                                                 </TableCell>
                                                 <TableCell className="px-4 py-3 text-center">
                                                     {/* <Link to={`/admin/course/${item.courseId}/pending`} className="hover:underline"> */}
-                                                        {item.getInstructorName}
+                                                        {item.instructorName}
                                                     {/* </Link> */}
                                                 </TableCell>
                                                 <TableCell className="px-4 py-3 text-center">
