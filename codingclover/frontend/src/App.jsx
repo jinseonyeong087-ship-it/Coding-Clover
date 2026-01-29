@@ -10,31 +10,29 @@ import AdminMain from './pages/admin/AdminMain'
 import Level from './pages/student/Level'
 import Lecture from './pages/student/Lecture'
 import MyPage from './pages/student/MyPage'
-import CodingTest from './pages/CodingTest'
-import EmailTest from './pages/EmailTest'
+import CodingTest from './test/CodingTest'
+import EmailTest from './test/EmailTest'
+import CourseCreateRequest from '@/pages/instructor/CourseCreateRequest'
 import FindAccount from '@/pages/FindAccount'
-import QnaTest from './pages/QnaTest'
-import SubmissionTest from './pages/SubmissionTest'
+import QnaTest from './test/QnaTest'
+import SubmissionTest from './test/SubmissionTest'
 import ProtectedRoute from '@/components/ProtectdRoute'
 import Noroll from '@/pages/Noroll'
 import CommunityPostTest from './pages/CommunityPostTest'
 import ProposalDetail from '@/pages/admin/ProposalDetail'
-import CourseCreateRequest from '@/pages/instructor/CourseCreateRequest'
+import InstructorCourseCreate from '@/pages/instructor/InstructorCourseDetail'
 import AdminApproch from '@/pages/admin/AdminApproch'
 import InstructorMypage from '@/pages/instructor/InstructorMypage'
-import InstructorCourseDetail from '@/pages/instructor/InstructorCourseDetail'
-import TestPayment from '@/pages/payment/TestPayment'
-import TestPaymentSuccess from '@/pages/payment/TestPaymentSuccess'
-import TestPaymentFail from '@/pages/payment/TestPaymentFail'
-import LectureBatchTest from './pages/LectureBatchTest';
-import LectureCreateTest from './pages/LectureCreateTest';
-import TestInstructorCourseManage from './pages/instructor/TestInstructorCourseManage';
-import TestInstructorCourseEdit from './pages/instructor/TestInstructorCourseEdit';
-import TestInstructorLectureEdit from './pages/instructor/TestInstructorLectureEdit';
+import TestPayment from './test/TestPayment'
+import TestPaymentSuccess from './test/TestPaymentSuccess'
+import TestPaymentFail from './test/TestPaymentFail'
+import LectureBatchTest from './test/LectureBatchTest';
+import LectureCreateTest from './test/LectureCreateTest';
 
 
 // 서버와의 통신에서 쿠키(세션)를 포함하도록 설정
 axios.defaults.withCredentials = true;
+
 
 function App() {
   return (
@@ -54,16 +52,6 @@ function App() {
         {/* 강의 일괄 승인 테스트 경로 추가 */}
         <Route path="/test/lecture/batch" element={<LectureBatchTest />} />
         <Route path="/test/lecture/create" element={<LectureCreateTest />} />
-
-        {/* 강사 통합 관리 테스트 영역 */}
-        <Route path="/instructor/*" element={<ProtectedRoute allowedRoles={['INSTRUCTOR']} />}>
-          {/* 1. 강좌/강의 통합 리스트 및 상태 확인 */}
-          <Route path="manage" element={<TestInstructorCourseManage />} />
-          {/* 2. 반려된 강좌 수정 (기존 ID 유지) */}
-          <Route path="course/edit/:courseId" element={<TestInstructorCourseEdit />} />
-          {/* 3. 반려된 강의 수정 (기존 ID 유지) */}
-          <Route path="lecture/edit/:lectureId" element={<TestInstructorLectureEdit />} />
-        </Route>
 
         {/* 결제 테스트 (프론트/백엔드 연동) */}
         <Route path="/test/payment/checkout" element={<TestPayment />} />
@@ -93,13 +81,13 @@ function App() {
         }>
           <Route path="dashboard" element={<InstructorMain />} />
           <Route path="course/new" element={<CourseCreateRequest />} />
-          <Route path="course/:courseId" element={<InstructorCourseDetail />} />
+          <Route path="course/:courseId" element={<InstructorCourseCreate />} />
           <Route path="mypage" element={<InstructorMypage />} />
         </Route>
         {/* 관리자 */}
         <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="dashboard" element={<AdminMain />} />
-          <Route path="course/:courseId" element={<ProposalDetail />} />
+          <Route path="course/:courseId/pending" element={<ProposalDetail />} />
           <Route path="users/instructors/:userId" element={<AdminApproch />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}

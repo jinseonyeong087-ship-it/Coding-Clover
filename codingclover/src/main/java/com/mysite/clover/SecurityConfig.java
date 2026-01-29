@@ -60,6 +60,9 @@ public class SecurityConfig {
             // 3. 나머지 모든 경로는 허용하되, 위 조건들을 먼저 체크함
             .requestMatchers(new AntPathRequestMatcher("/**")).permitAll()
             .anyRequest().authenticated()
+
+            // 아이디/비밀번호 찾기
+            .requestMatchers("/auth/register", "/auth/status", "/auth/findId", "/auth/findPassword").permitAll()
         )
         .formLogin(form -> form.disable())
         .addFilterBefore(apiLoginFilter(), UsernamePasswordAuthenticationFilter.class)
