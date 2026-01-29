@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.mysite.clover.Course.Course;
 import com.mysite.clover.Users.Users;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -76,6 +77,17 @@ public class LectureService {
         lectureRepository.save(lecture);
     }
 
+    // 일괄 승인
+    @Transactional
+    public void approveMultiple(List<Long> ids, Users admin) {
+        for (Long id : ids) {
+            // 강의 ID로 강의 조회
+            Lecture lecture = getLecture(id);
+            // 강의 승인 처리
+            approve(lecture, admin);
+        }
+    }
+
     // 관리자 기능: 강의 반려 처리
     public void reject(Lecture lecture, String reason) {
         // 1. 상태를 반려됨(REJECTED)으로 변경
@@ -85,6 +97,17 @@ public class LectureService {
 
         // 3. 변경사항 저장
         lectureRepository.save(lecture);
+    }
+
+    // 일괄 반려
+    @Transactional
+    public void rejectMultiple(List<Long> ids, String reason) {
+        for (Long id : ids) {
+            // 강의 ID로 강의 조회
+            Lecture lecture = getLecture(id);
+            // 강의 반려 처리
+            reject(lecture, reason);
+        }
     }
 
     // 강의 비활성화 (삭제 대신 상태 변경으로 데이터 보존)

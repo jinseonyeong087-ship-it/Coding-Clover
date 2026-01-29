@@ -149,6 +149,20 @@ public class LectureController {
         return ResponseEntity.ok("승인 완료");
     }
 
+    // 관리자: 일괄 승인 처리
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/lectures/batch-approve")
+    // @RequestBody BatchApprovalRequest request: 요청 본문에서 BatchApprovalRequest 객체를 받음
+    // Principal principal: 로그인한 사용자의 정보를 받음
+    public ResponseEntity<String> batchApprove(@RequestBody BatchApprovalRequest request, Principal principal) {
+        // 1. 로그인한 관리자 정보 조회
+        Users admin = usersRepository.findByLoginId(principal.getName()).orElseThrow();
+        // 2. 일괄 승인 처리 서비스 호출
+        lectureService.approveMultiple(request.getLectureIds(), admin);
+        // 3. 성공 메시지 반환
+        return ResponseEntity.ok("선택한 강의들이 승인되었습니다.");
+    }
+
     // 관리자: 강의 반려 처리
     @PreAuthorize("hasRole('ADMIN')") // 관리자 권한 필요
     @PostMapping("/admin/lectures/{lectureId}/reject")
@@ -163,6 +177,17 @@ public class LectureController {
 
         // 3. 성공 메시지
         return ResponseEntity.ok("반려 완료");
+    }
+
+    // 관리자: 일괄 반려 처리
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/lectures/batch-reject")
+    // @RequestBody BatchApprovalRequest request: 요청 본문에서 BatchApprovalRequest 객체를 받음
+    public ResponseEntity<String> batchReject(@RequestBody BatchApprovalRequest request) {
+        // 1. 일괄 반려 처리 서비스 호출
+        lectureService.rejectMultiple(request.getLectureIds(), request.getRejectReason());
+        // 2. 성공 메시지 반환
+        return ResponseEntity.ok("선택한 강의들이 반려되었습니다.");
     }
 
     // 관리자: 강의 강제 비활성화
