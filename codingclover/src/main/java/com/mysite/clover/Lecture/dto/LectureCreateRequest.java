@@ -1,5 +1,9 @@
 package com.mysite.clover.Lecture.dto;
 
+import java.time.LocalDateTime;
+
+import com.mysite.clover.Lecture.LectureUploadType;
+
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -28,4 +32,11 @@ public class LectureCreateRequest {
     // 영상 재생 시간 (초 단위 - 필수)
     @NotNull(message = "영상 길이는 필수입니다.")
     private Integer duration;
+
+    // 실제 데이터를 담을 필드로 변경
+    @NotNull(message = "업로드 방식은 필수입니다.")
+    private LectureUploadType uploadType; // IMMEDIATE 또는 RESERVED
+
+    // 예약 업로드 시간 (예약 모드일 때만 사용)
+    private LocalDateTime scheduledAt;
 }

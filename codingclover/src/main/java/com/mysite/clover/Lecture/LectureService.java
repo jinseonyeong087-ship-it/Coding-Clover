@@ -33,7 +33,9 @@ public class LectureService {
             int orderNo,
             String videoUrl,
             int duration,
-            Users instructor) {
+            Users instructor,
+            LectureUploadType uploadType,
+            LocalDateTime scheduledAt) {
         // 1. 강의 엔티티 생성
         Lecture lecture = new Lecture();
 
@@ -46,6 +48,11 @@ public class LectureService {
         lecture.setCreatedBy(instructor);
         lecture.setApprovalStatus(LectureApprovalStatus.PENDING); // 기본 상태는 승인 대기중
         lecture.setCreatedAt(LocalDateTime.now()); // 생성 시간
+        lecture.setUploadType(uploadType);
+        lecture.setScheduledAt(scheduledAt);
+
+        lecture.setApprovalStatus(LectureApprovalStatus.PENDING);
+        lecture.setCreatedAt(LocalDateTime.now());
 
         // 3. DB 저장
         lectureRepository.save(lecture);
@@ -102,5 +109,11 @@ public class LectureService {
     public Lecture findById(Long id) {
         return lectureRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다."));
+    }
+
+    // 학생용: 특정 강좌의 '공개 가능한' 강의만 순서대로 조회
+    public List<Lecture> getLecturesForStudent(Course course) {
+        // 학생에게는 '공개 가능한' 강의만 필터링해서 반환
+        return lectureRepository.findVisibleLecturesByCourseId(course);
     }
 }

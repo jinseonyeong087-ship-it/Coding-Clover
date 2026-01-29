@@ -12,6 +12,7 @@ import com.mysite.clover.Course.CourseService;
 import com.mysite.clover.Lecture.dto.AdminLectureDto;
 import com.mysite.clover.Lecture.dto.InstructorLectureDto;
 import com.mysite.clover.Lecture.dto.LectureCreateRequest;
+import com.mysite.clover.Lecture.dto.RejectRequest;
 import com.mysite.clover.Lecture.dto.StudentLectureDto;
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.Users.UsersRepository;
@@ -41,7 +42,7 @@ public class LectureController {
 
         // 2. 해당 강좌의 승인된(APPROVED) 강의 목록만 조회하여 DTO로 변환
         // (수강 신청 여부 확인 로직은 서비스나 필터에서 처리된다고 가정, 또는 수강생만 접근 가능하도록 추가 조치 필요)
-        return ResponseEntity.ok(lectureService.getPublicListByCourse(course).stream()
+        return ResponseEntity.ok(lectureService.getLecturesForStudent(course).stream()
                 .map(StudentLectureDto::fromEntity)
                 .toList());
     }
@@ -61,12 +62,18 @@ public class LectureController {
     // 강사용: 본인이 개설한 강좌의 강의 목록 조회 (승인 대기중 등 모든 상태 포함)
     @PreAuthorize("hasRole('INSTRUCTOR')") // 강사 권한 필요
     @GetMapping("/instructor/lecture/{courseId}")
-    public ResponseEntity<List<InstructorLectureDto>> instructorListByCourse(@PathVariable Long courseId) {
+    public ResponseEntity<List<InstructorLectureDto>> instructorListByCourse(@PathVariable Long courseId, Principal principal) {
         // 1. 강좌 존재 여부 확인
         Course course = courseService.getCourse(courseId);
-        // TODO: 본인이 개설한 강좌인지 확인하는 로직 추가 권장 (시큐리티 컨텍스트와 비교)
+        
+        // 2. 본인이 개설한 강좌인지 확인
+        String loginId = principal.getName();
+        // 강좌 엔티티의 작성자(createdBy)의 loginId와 비교
+        if (!course.getCreatedBy().getLoginId().equals(loginId)) {
+            throw new RuntimeException("해당 강좌에 대한 접근 권한이 없습니다.");
+        }
 
-        // 2. 해당 강좌의 모든 강의(승인 여부 무관)를 조회하여 반환
+        // 3. 해당 강좌의 모든 강의(승인 여부 무관)를 조회하여 반환
         return ResponseEntity.ok(lectureService.getListByCourse(course).stream()
                 .map(InstructorLectureDto::fromEntity)
                 .toList());
@@ -92,7 +99,9 @@ public class LectureController {
                 form.getOrderNo(),
                 form.getVideoUrl(),
                 form.getDuration(),
-                instructor);
+                instructor,
+                form.getUploadType(),
+                form.getScheduledAt());
 
         // 4. 성공 메시지 반환
         return ResponseEntity.ok("강의 업로드 성공");

@@ -3,6 +3,8 @@ package com.mysite.clover.Lecture;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.mysite.clover.Course.Course;
 import com.mysite.clover.Users.Users;
@@ -24,4 +26,12 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
 
     // 특정 강좌의 특정 승인 상태인 강의 개수를 반환 (예: 승인된 강의가 몇 개인지 확인)
     long countByCourseAndApprovalStatus(Course course, LectureApprovalStatus approvalStatus);
+
+    // 승인(APPROVED) 상태이며, 예약 시간이 현재 시간보다 이전(또는 즉시 공개)인 강의만 조회
+    @Query("SELECT l FROM Lecture l " +
+           "WHERE l.course.courseId = :courseId " +
+           "AND l.approvalStatus = 'APPROVED' " +
+           "AND (l.uploadType = 'IMMEDIATE' OR l.scheduledAt <= CURRENT_TIMESTAMP) " +
+           "ORDER BY l.orderNo ASC")
+    List<Lecture> findVisibleLecturesByCourseId(@Param("courseId") Course course);
 }

@@ -73,4 +73,12 @@ public class Lecture {
 
   // 강의 승인 일시 (승인 시점에 기록)
   private LocalDateTime approvedAt;
+
+  // 강의 업로드 타입 (즉시 공개 또는 예약 공개)
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private LectureUploadType uploadType = LectureUploadType.IMMEDIATE;
+
+  // 예약 공개 시, 실제 공개될 일시
+  private LocalDateTime scheduledAt;
 }
