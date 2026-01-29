@@ -52,18 +52,15 @@ public class SecurityConfig {
             // 1. 강사 및 관리자 전용 경로를 가장 먼저 설정 (우선순위)
             .requestMatchers(new AntPathRequestMatcher("/instructor/**")).hasRole("INSTRUCTOR")
             .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
-            
+
             // 2. 누구나 접근 가능한 경로
             .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/student/**")).permitAll()
-            
+            .requestMatchers("/auth/register", "/auth/status", "/auth/findId", "/auth/findPassword").permitAll()
+
             // 3. 나머지 모든 경로는 허용하되, 위 조건들을 먼저 체크함
             .requestMatchers(new AntPathRequestMatcher("/**")).permitAll()
-            .anyRequest().authenticated()
-
-            // 아이디/비밀번호 찾기
-            .requestMatchers("/auth/register", "/auth/status", "/auth/findId", "/auth/findPassword").permitAll()
-        )
+            .anyRequest().authenticated())
         .formLogin(form -> form.disable())
         .addFilterBefore(apiLoginFilter(), UsernamePasswordAuthenticationFilter.class)
         .logout(logout -> logout
