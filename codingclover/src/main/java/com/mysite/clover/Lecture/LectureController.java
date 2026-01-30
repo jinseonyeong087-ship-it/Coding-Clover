@@ -199,12 +199,15 @@ public class LectureController {
                 .toList());
     }
 
-    // 관리자용: 강의 상세 정보 조회 (작성자 체크 없음)
+    // 관리자: 강의 상세 조회 (승인/반려 여부 상관없이 조회 가능)
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/lecture/{lectureId}")
-    public ResponseEntity<InstructorLectureDto> adminGetLecture(@PathVariable("lectureId") Long lectureId) {
-        // 1. 강의 ID로 상세 정보를 조회하여 DTO로 반환
-        return ResponseEntity.ok(InstructorLectureDto.fromEntity(lectureService.getLecture(lectureId)));
+    @GetMapping("/admin/lectures/{lectureId}")
+    public ResponseEntity<InstructorLectureDto> adminGetLectureDetail(@PathVariable("lectureId") Long lectureId) {
+        // 1. 강의 ID로 상세 정보를 조회 (작성자 체크 없음)
+        Lecture lecture = lectureService.getLecture(lectureId);
+
+        // 2. DTO로 변환하여 반환
+        return ResponseEntity.ok(InstructorLectureDto.fromEntity(lecture));
     }
 
     // 관리자: 강의 승인 처리
