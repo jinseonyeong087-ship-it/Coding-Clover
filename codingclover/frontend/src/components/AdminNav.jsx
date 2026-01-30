@@ -49,10 +49,10 @@ function AdminNav() {
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={()=>{navigate('/admin/notice')}}>공지 업로드</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/admin/notice') }}>공지 업로드</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={()=>{navigate('/test/coding')}}>코딩테스트</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/test/coding') }}>코딩테스트</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">결제 관리</MenubarTrigger>
@@ -64,7 +64,11 @@ function AdminNav() {
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger onClick={() => navigate('/admin/mypage')} className="cursor-pointer">마이 페이지</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
+                        <MenubarContent>
+                            <MenubarItem onClick={() => { navigate('/test/qna') }}>Q&A</MenubarItem>
+                            <MenubarItem onClick={() => { navigate('/student/community') }}>자유게시판</MenubarItem>
+                        </MenubarContent>
                     </MenubarMenu>
                 </Menubar>
             </div>
