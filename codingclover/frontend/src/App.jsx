@@ -92,6 +92,7 @@ function App() {
           <Route path="mypage" element={<MyPage />} />
           <Route path="course/:courseId/lectures" element={<Lecture />} />
           <Route path="community" element={<CommunityPost />} />
+          <Route path="community/posts/:postId" element={<CommunityPost />} />
         </Route>
         {/* 강사페이지 */}
         <Route path="/instructor/*" element={
