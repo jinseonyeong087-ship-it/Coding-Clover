@@ -57,7 +57,7 @@ function InstructorNav() {
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer">Q&A 답변관리</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer" onClick={()=>{navigate('/test/qna')}}>Q&A 답변관리</MenubarTrigger>
                         <MenubarContent>
                             <MenubarItem>수강생 질문</MenubarItem>
                         </MenubarContent>

@@ -52,7 +52,7 @@ function AdminNav() {
                         <MenubarTrigger className="cursor-pointer">공지 업로드</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={()=>{Navigate('/test/coding')}}>코딩테스트</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer" onClick={()=>{navigate('/test/coding')}}>코딩테스트</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">결제 관리</MenubarTrigger>
