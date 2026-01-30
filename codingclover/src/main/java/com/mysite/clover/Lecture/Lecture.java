@@ -43,12 +43,12 @@ public class Lecture {
   private int orderNo;
 
   // 강의 영상 URL (예: S3 링크, 유튜브 링크 등, 필수값)
-  @Column(nullable = false)
+  @Column(nullable = true)
   private String videoUrl;
 
   // 영상의 재생 시간 (초 단위, 필수값)
-  @Column(nullable = false)
-  private int duration;
+  @Column(nullable = true)
+  private Integer duration;
 
   // 강의를 등록한 강사 정보 (필수값)
   @ManyToOne

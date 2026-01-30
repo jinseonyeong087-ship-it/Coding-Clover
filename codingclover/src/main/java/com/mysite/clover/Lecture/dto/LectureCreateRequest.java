@@ -27,12 +27,10 @@ public class LectureCreateRequest {
     @NotNull(message = "순서는 필수입니다.")
     private Integer orderNo;
 
-    // 강의 영상 URL (필수)
-    @NotEmpty(message = "영상 URL은 필수입니다.")
+    // 강의 영상 URL (임시저장 시 null 가능)
     private String videoUrl;
 
-    // 영상 재생 시간 (초 단위 - 필수)
-    @NotNull(message = "영상 길이는 필수입니다.")
+    // 영상 재생 시간 (초 단위 - 임시저장 시 null 가능)
     private Integer duration;
 
     // 실제 데이터를 담을 필드로 변경

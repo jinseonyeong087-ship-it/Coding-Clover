@@ -140,6 +140,50 @@ public class LectureController {
     }
 
     // ==========================================
+    // 🟦 임시 저장 (Draft) 관련 API
+    // ==========================================
+
+    // 강사용: 강의 임시 저장 (필수값 없어도 됨)
+    // URL: /instructor/lecture/draft
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PostMapping("/instructor/lecture/draft")
+    public ResponseEntity<String> saveDraft(
+            @RequestBody LectureCreateRequest form, // @Valid 제외 (Null 허용)
+            Principal principal) {
+
+        Course course = courseService.getCourse(form.getCourseId());
+        Users instructor = usersRepository.findByLoginId(principal.getName())
+                .orElseThrow(() -> new RuntimeException("유저 없음"));
+
+        lectureService.saveDraft(
+                course,
+                form.getTitle(),
+                form.getOrderNo(),
+                form.getVideoUrl(),
+                form.getDuration(),
+                instructor,
+                form.getUploadType(),
+                form.getScheduledAt());
+
+        return ResponseEntity.ok("강의가 임시 저장되었습니다.");
+    }
+
+    // 강사용: 임시 저장된 강의를 최종 제출 (승인 요청)
+    // URL: /instructor/lecture/{lectureId}/submit
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PutMapping("/instructor/lecture/{lectureId}/submit")
+    public ResponseEntity<String> submitDraft(
+            @PathVariable("lectureId") Long lectureId,
+            @RequestBody LectureCreateRequest form,
+            Principal principal) {
+
+        // 서비스에서 필수값 검증 후 상태 변경 (DRAFT -> PENDING)
+        lectureService.submitDraft(lectureId, form, principal.getName());
+
+        return ResponseEntity.ok("강의가 최종 제출(승인 요청) 되었습니다.");
+    }
+
+    // ==========================================
     // 🟥 관리자 영역
     // ==========================================
 

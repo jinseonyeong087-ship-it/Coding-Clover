@@ -46,6 +46,14 @@ public class LectureService {
             throw new IllegalArgumentException("이미 존재하는 순서입니다.");
         }
 
+        // [필수값 검사] DTO validation이 제거되었으므로 서비스에서 직접 검증 (즉시 제출용)
+        if (videoUrl == null || videoUrl.trim().isEmpty()) {
+            throw new IllegalArgumentException("강의 영상 URL은 필수입니다.");
+        }
+        if (duration <= 0) {
+            throw new IllegalArgumentException("영상 재생 시간은 필수입니다.");
+        }
+
         // 1. 강의 엔티티 생성
         Lecture lecture = new Lecture();
 
@@ -65,6 +73,61 @@ public class LectureService {
         lecture.setScheduledAt(scheduledAt);
 
         // 3. DB 저장
+        lectureRepository.save(lecture);
+    }
+
+    // [New] 임시 저장 (DRAFT) - 필수값 검증 없이 저장
+    public void saveDraft(
+            Course course,
+            String title,
+            int orderNo,
+            String videoUrl,
+            Integer duration,
+            Users instructor,
+            LectureUploadType uploadType,
+            LocalDateTime scheduledAt) {
+
+        Lecture lecture = new Lecture();
+        lecture.setCourse(course);
+        lecture.setTitle(title);
+        lecture.setOrderNo(orderNo);
+        lecture.setVideoUrl(videoUrl);
+        lecture.setDuration(duration);
+        lecture.setCreatedBy(instructor);
+        lecture.setApprovalStatus(LectureApprovalStatus.DRAFT); // DRAFT 상태로 설정
+        lecture.setCreatedAt(LocalDateTime.now());
+        lecture.setUploadType(uploadType);
+        lecture.setScheduledAt(scheduledAt);
+
+        lectureRepository.save(lecture);
+    }
+
+    // [New] 임시 저장된 강의를 정식 제출 (DRAFT -> PENDING) -> 검증 수행
+    public void submitDraft(Long lectureId, LectureCreateRequest form, String loginId) {
+        Lecture lecture = lectureRepository.findById(lectureId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다."));
+
+        if (!lecture.getCourse().getCreatedBy().getLoginId().equals(loginId)) {
+            throw new SecurityException("권한이 없습니다.");
+        }
+
+        // 필수값 검증 (제출 시점에는 반드시 있어야 함)
+        if (form.getVideoUrl() == null || form.getVideoUrl().trim().isEmpty()) {
+            throw new IllegalArgumentException("강의 영상 URL은 필수입니다.");
+        }
+        if (form.getDuration() == null || form.getDuration() <= 0) {
+            throw new IllegalArgumentException("재생 시간은 필수입니다.");
+        }
+
+        lecture.setTitle(form.getTitle());
+        lecture.setOrderNo(form.getOrderNo());
+        lecture.setVideoUrl(form.getVideoUrl());
+        lecture.setDuration(form.getDuration());
+        lecture.setUploadType(form.getUploadType());
+        lecture.setScheduledAt(form.getScheduledAt());
+
+        lecture.setApprovalStatus(LectureApprovalStatus.PENDING); // 상태 변경: DRAFT -> PENDING
+
         lectureRepository.save(lecture);
     }
 
