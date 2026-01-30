@@ -104,7 +104,7 @@ function StudentNav() {
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer">공지사항</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer" onClick={()=>{navigate('/notice')}}>공지사항</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer" onClick={()=>{navigate('/test/coding')}}>코딩테스트</MenubarTrigger>
