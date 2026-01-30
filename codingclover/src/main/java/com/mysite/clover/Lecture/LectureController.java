@@ -38,7 +38,7 @@ public class LectureController {
     // 수강생용: 내 강좌 내의 강의 목록 조회 (승인된 강의만)
     @PreAuthorize("hasRole('STUDENT')") // 수강생 권한 필요
     @GetMapping("/student/lecture/{courseId}/lectures")
-    public ResponseEntity<List<StudentLectureDto>> listByCourse(@PathVariable Long courseId) {
+    public ResponseEntity<List<StudentLectureDto>> listByCourse(@PathVariable("courseId") Long courseId) {
         // 1. 강좌 ID로 강좌 정보를 조회
         Course course = courseService.getCourse(courseId);
 
@@ -52,7 +52,7 @@ public class LectureController {
     // 수강생용: 강의 상세 정보 조회
     @PreAuthorize("hasRole('STUDENT')") // 수강생 권한 필요
     @GetMapping("/student/lecture/{lectureId}")
-    public ResponseEntity<StudentLectureDto> getLectureDetail(@PathVariable Long lectureId) {
+    public ResponseEntity<StudentLectureDto> getLectureDetail(@PathVariable("lectureId") Long lectureId) {
         // 1. 강의 ID로 상세 정보를 조회하여 DTO로 변환
         return ResponseEntity.ok(StudentLectureDto.fromEntity(lectureService.getLecture(lectureId)));
     }
@@ -113,14 +113,14 @@ public class LectureController {
     // 강사용: 본인이 업로드한 강의 상세 조회
     @PreAuthorize("hasRole('INSTRUCTOR')") // 강사 권한 필요
     @GetMapping("/instructor/lecture/{lectureId}")
-    public ResponseEntity<InstructorLectureDto> instructorGetLecture(@PathVariable Long lectureId) {
+    public ResponseEntity<InstructorLectureDto> instructorGetLecture(@PathVariable("lectureId") Long lectureId) {
         // 1. 강의 상세 조회 후 강사용 DTO로 반환
         return ResponseEntity.ok(InstructorLectureDto.fromEntity(lectureService.getLecture(lectureId)));
     }
 
     // 사용된 강의 번호 조회 API
     @GetMapping("/orders/{courseId}")
-    public ResponseEntity<List<Integer>> getUsedOrderNos(@PathVariable Long courseId) {
+    public ResponseEntity<List<Integer>> getUsedOrderNos(@PathVariable("courseId") Long courseId) {
         List<Integer> usedOrders = lectureRepository.findOrderNosByCourseId(courseId);
         return ResponseEntity.ok(usedOrders);
     }
@@ -129,7 +129,7 @@ public class LectureController {
     @PreAuthorize("hasRole('INSTRUCTOR')") // 강사만 가능
     @PutMapping("/instructor/lecture/{lectureId}/resubmit")
     public ResponseEntity<String> resubmitLecture(
-            @PathVariable Long lectureId,
+            @PathVariable("lectureId") Long lectureId,
             @RequestBody @Valid LectureCreateRequest form, // 수정할 데이터
             Principal principal) {
 
@@ -157,7 +157,7 @@ public class LectureController {
     @PreAuthorize("hasRole('ADMIN')") // 관리자 권한 필요
     @PostMapping("/admin/lectures/{lectureId}/approve")
     public ResponseEntity<String> approveLecture(
-            @PathVariable Long lectureId,
+            @PathVariable("lectureId") Long lectureId,
             Principal principal) {
         // 1. 강의 조회
         Lecture lecture = lectureService.getLecture(lectureId);
@@ -201,7 +201,7 @@ public class LectureController {
     @PreAuthorize("hasRole('ADMIN')") // 관리자 권한 필요
     @PostMapping("/admin/lectures/{lectureId}/reject")
     public ResponseEntity<String> rejectLecture(
-            @PathVariable Long lectureId,
+            @PathVariable("lectureId") Long lectureId,
             @RequestBody RejectRequest dto) { // 반려 사유가 담긴 DTO
         // 1. 강의 조회
         Lecture lecture = lectureService.getLecture(lectureId);
@@ -230,7 +230,7 @@ public class LectureController {
     // 관리자: 강의 강제 비활성화
     @PreAuthorize("hasRole('ADMIN')") // 관리자 권한 필요
     @PostMapping("/admin/lectures/{lectureId}/inactive")
-    public ResponseEntity<String> inactiveLecture(@PathVariable Long lectureId) {
+    public ResponseEntity<String> inactiveLecture(@PathVariable("lectureId") Long lectureId) {
         // 1. 강의 조회
         Lecture lecture = lectureService.getLecture(lectureId);
 
