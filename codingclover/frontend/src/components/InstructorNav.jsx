@@ -63,6 +63,9 @@ function InstructorNav() {
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer">공지 업로드</MenubarTrigger>
+                    </MenubarMenu>
+                    <MenubarMenu>
                         <MenubarTrigger onClick={() => navigate('/instructor/mypage')} className="cursor-pointer">마이 페이지</MenubarTrigger>
                     </MenubarMenu>
                 </Menubar>

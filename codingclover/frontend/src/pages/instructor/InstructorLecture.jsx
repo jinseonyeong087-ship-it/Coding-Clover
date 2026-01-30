@@ -15,13 +15,13 @@ function InstructorLecture() {
     const [isEditing, setIsEditing] = useState([]);
     const [isAdding, setIsAdding] = useState(false);
     const [lectures, setLectures] = useState({
-        lectureId: '',
+        course: '',
         title: '',
         orderNo: '',
         videoUrl: '',
         duration: '',
         uploadType: 'IMMEDIATE', // 기본값: 즉시 공개
-        scheduledAt: ''
+        scheduledAt: '',
     });
 
     // 해당 강좌 가져오기 /instructor/course/{id}
@@ -45,27 +45,36 @@ function InstructorLecture() {
             .catch((error) => console.error(error.message));
     }, [courseId]);
 
-    // 강의 목록 가져오기 /instructor/lecture/{lectureId}
-    useEffect(() => {
-        fetch(`/instructor/course/${lectureId}/lecture`, {
-            method: 'GET',
-            credentials: 'include'
-        })
-            .then(res => res.json())
-            .then((data) => { setLectures(data) })
-            .catch(err => console.error('강의 목록 조회 실패:', err));
-    }, [lectureId]);
+    // 강의 목록 가져오기/instructor/course/{courseId}/lectures
+    // useEffect(() => {
+    //     fetch(`/instructor/course/${courseId}/lecture`, {
+    //         method: 'GET',
+    //         credentials: 'include'
+    //     })
+    //         .then((res) => {
+    //             if (!res.ok) { return (<p>업로드 한 강좌가 없습니다,</p>) }
+    //             else if (res.ok) { res.json() }
+    //         })
+    //         .then((data) => { setLectures(data) })
+    //         .catch(err => console.error('강의 목록 조회 실패:', err));
+    // }, [courseId]);
 
     // 새로운 강의 추가 = 첫번쨰 심사
     const handleAddLecture = async () => {
+        const addData = {
+            course: Number(lectures.course),
+            title: formData.title,
+            orderNo: Number(lectures.orderNo),
+            videoUrl: lectures.videoUrl,
+            duration: Number(lectures.duration),
+            uploadType: lectures.uploadType, // "IMMEDIATE" 또는 "RESERVED"
+            scheduledAt: lectures.uploadType === 'RESERVED' ? lectures.scheduledAt : null
+        }
         await fetch(`/instructor/lecture/upload`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({
-                ...lectures,
-                lectureId: lectures.lectureId
-            })
+            body: JSON.stringify(addData)
         })
             .then(res => {
                 if (!res.ok) throw new Error('강의 추가 실패');
@@ -73,7 +82,15 @@ function InstructorLecture() {
             })
             .then(data => {
                 // setLectures([...lectures, data]);
-                setLectures({ course: '', title: '', orderNo: '', videoUrl: '', duration: 0, instructor: '', uploadType: 'IMMEDIATE', scheduledAt: '' });
+                setLectures(prev => ({
+                    ...prev,
+                    title: '',
+                    orderNo: '',
+                    videoUrl: '',
+                    duration: '',
+                    uploadType: 'IMMEDIATE', // 기본값: 즉시 공개
+                    scheduledAt: '',
+                }));
                 setIsAdding(false);
             })
             .catch(err => console.error(err));
@@ -101,23 +118,90 @@ function InstructorLecture() {
     // input 수정 활성화 handleChange
     const handleChange = (event) => {
         const { name, value } = event.target;
-        setLectures(prev => ({...prev, [name]:value}))
+        setLectures(prev => ({ ...prev, [name]: value }))
     }
 
-    // 업로드 한 강의 수정
-    const handleEdit = () => {
-        setIsEditing(false)
-    }
+    // 제출 전 수정하기 로직
+    // const hadleEdit = async () => {
+    //     const resubmitData = {
+    //         course: Number(lectures.course),
+    //         title: formData.title,
+    //         orderNo: Number(lectures.orderNo),
+    //         videoUrl: lectures.videoUrl,
+    //         duration: Number(lectures.duration),
+    //         uploadType: lectures.uploadType, // "IMMEDIATE" 또는 "RESERVED"
+    //         scheduledAt: lectures.uploadType === 'RESERVED' ? lectures.scheduledAt : null
+    //     }
 
-    // 첫번째 심사 요청 시
+    //     await fetch(`/instructor/lecture/{lectureId}/resubmit`, {
+    //         method: 'POST',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         credentials: 'include',
+    //         body: JSON.stringify(resubmitData)
+    //     }).then((res) => {
+    //         if (!res.ok) {
+    //             throw new Error(`HTTP error! status: ${res.status}`);
+    //         }
+    //         alert("재심사 요청이 완료되었습니다.");
+    //         // 상태 업데이트 (PENDING으로 변경)
+    //         setLectures(prev => ({
+    //             ...prev,
+    //             course: '',
+    //             title: '',
+    //             orderNo: '',
+    //             videoUrl: '',
+    //             duration: '',
+    //             uploadType: 'IMMEDIATE', // 기본값: 즉시 공개
+    //             scheduledAt: '',
+    //         }));
+    //     })
+    //         .catch((error) => {
+    //             console.error('수정 실패', error);
+    //             alert("수정 실패");
+    //         });
+    // }
 
     // 반려 후 재심사 요청 REJECTED
-    const handleResubmit = () => {
-        setResubmit(false)
+    
+    const handleResubmit = async () => {
 
+        const resubmitData = {
+            course: Number(lectures.course),
+            title: formData.title,
+            orderNo: Number(lectures.orderNo),
+            videoUrl: lectures.videoUrl,
+            duration: Number(lectures.duration),
+            uploadType: lectures.uploadType, // "IMMEDIATE" 또는 "RESERVED"
+            scheduledAt: lectures.uploadType === 'RESERVED' ? lectures.scheduledAt : null
+        }
+
+        await fetch(`/instructor/lecture/{lectureId}/resubmit`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(resubmitData)
+        }).then((res) => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            alert("재심사 요청이 완료되었습니다.");
+            // 상태 업데이트 (PENDING으로 변경)
+            setLectures(prev => ({
+                ...prev,
+                course: '',
+                title: '',
+                orderNo: '',
+                videoUrl: '',
+                duration: '',
+                uploadType: 'IMMEDIATE', // 기본값: 즉시 공개
+                scheduledAt: '',
+            }));
+        })
+            .catch((error) => {
+                console.error('재심사 요청 실패', error);
+                alert("재심사 요청에 실패했습니다.");
+            });
     }
-
-
 
     return (
         <div className="mt-8">
@@ -140,50 +224,94 @@ function InstructorLecture() {
                             readOnly
                         />
                         <div className="flex ">
-                            {isEditing === true ? (<Button onClick={()=>{setIsEditing(true)}}>저장</Button>):(<Button onClick={handleEdit}>수정</Button>)}
-                            {approvalStatus === 'REJECTED' ? (<Button onCLick={()=>{setResubmit(true)}}>재심사 요청</Button>):(<Button>재심사 요청</Button>)}
+                            {isEditing === true ? (<Button onClick={() => { setIsEditing(true) }}>저장</Button>) : (<Button onClick={handleChange}>수정</Button>)}
+                            {lectures.approvalStatus === 'REJECTED' ? (<Button onCLick={() => { setResubmit(true) }}>재심사 요청</Button>) : (<Button>재심사 요청</Button>)}
                             <Button>삭제</Button>
                         </div>
-                        
+
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">강의 제목</label>
-                        <Input
-                            method='POST'
-                            value={lectures.title}
-                            onChange={(e) => lectures({ ...lectures, title: e.target.value })}
-                            placeholder="강의 제목을 입력하세요"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">강의 순서</label>
-                        <Input
-                            method='POST'
-                            type="number"
-                            value={lectures.orderNo}
-                            onChange={(e) => setLectures({ ...lectures, orderNo: parseInt(e.target.value) })}
-                            min={1}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">영상 URL</label>
-                        <Input
-                            method='POST'
-                            value={lectures.videoUrl}
-                            onChange={(e) => setLectures({ ...lectures, videoUrl: e.target.value })}
-                            placeholder="영상 URL을 입력하세요"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">재생 시간 (초)</label>
-                        <Input
-                            method='POST'
-                            type="number"
-                            value={lectures.duration}
-                            onChange={(e) => setLectures({ ...lectures, duration: parseInt(e.target.value) })}
-                            min={0}
-                        />
-                    </div>
+                    {isEditing === true ? (
+                        <>{/* 수정 중 */}
+                            <div>
+                                <label className="block text-sm font-medium mb-1">강의 제목</label>
+                                <Input
+                                    method='POST'
+                                    value={lectures.title}
+                                    onChange={(e) => lectures({ ...lectures, title: e.target.value })}
+                                    placeholder="강의 제목을 입력하세요"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">강의 순서</label>
+                                <Input
+                                    method='POST'
+                                    type="number"
+                                    value={lectures.orderNo}
+                                    onChange={(e) => setLectures({ ...lectures, orderNo: parseInt(e.target.value) })}
+                                    min={1}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">영상 URL</label>
+                                <Input
+                                    method='POST'
+                                    value={lectures.videoUrl}
+                                    onChange={(e) => setLectures({ ...lectures, videoUrl: e.target.value })}
+                                    placeholder="영상 URL을 입력하세요"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">재생 시간 (초)</label>
+                                <Input
+                                    method='POST'
+                                    type="number"
+                                    value={lectures.duration}
+                                    onChange={(e) => setLectures({ ...lectures, duration: parseInt(e.target.value) })}
+                                    min={0}
+                                />
+                            </div>
+
+                        </>
+                    ) : (
+                        <>{/* 평상 시 */}
+                            <div>
+                                <label className="block text-sm font-medium mb-1">강의 제목</label>
+                                <Input
+                                    method='POST'
+                                    value={lectures.title}
+                                    placeholder={lectures.title}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">강의 순서</label>
+                                <Input
+                                    method='POST'
+                                    type="number"
+                                    value={lectures.orderNo}
+                                    placeholder={lectures.orderNo}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">영상 URL</label>
+                                <Input
+                                    method='POST'
+                                    value={lectures.videoUrl}
+                                    placeholder={lectures.videoUrl}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">재생 시간 (초)</label>
+                                <Input
+                                    method='POST'
+                                    type="number"
+                                    value={lectures.duration}
+                                    placeholder={lectures.duration}
+                                />
+                            </div>
+
+                        </>
+                    )}
+
                     <Button onClick={handleAddLecture}>추가하기</Button>
                 </div>
             )}

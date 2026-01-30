@@ -98,9 +98,15 @@ function StudentNav() {
                     <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem>Q&A</MenubarItem>
-                            <Link to="/student/community"><MenubarItem>자유게시판</MenubarItem></Link>
+                            <MenubarItem onClick={()=>{Navigate('/test/qna')}}>Q&A</MenubarItem>
+                            <MenubarItem>자유게시판</MenubarItem>
                         </MenubarContent>
+                    </MenubarMenu>
+                    <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer">공지사항</MenubarTrigger>
+                    </MenubarMenu>
+                    <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer" onClick={()=>{Navigate('/test/coding')}}>코딩테스트</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
                         <Link

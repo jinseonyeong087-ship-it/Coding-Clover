@@ -53,7 +53,7 @@ function InstructorCourseDetail() {
         })
             .then((res) => { 
                 if (!res.ok) { throw new Error(`HTTP error! status: ${res.status}`); } 
-                else { alert("삭제 성공");navigate('/instructor/dashboard') } })
+                else { alert("삭제 성공");navigate(()=>{'/instructor/dashboard' })}})
             .catch((error) => { console.error('강사 상세 데이터 로딩 실패', error); })
     };
          

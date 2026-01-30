@@ -48,17 +48,11 @@ function AdminNav() {
                             <MenubarItem>강사 관리</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
-                    {/* <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer">문제 제출</MenubarTrigger>
-                        <MenubarContent>
-                            <MenubarGroup>
-                                <MenubarItem>문제 제출 및 수정</MenubarItem>
-                                <MenubarItem>문제 관리</MenubarItem>
-                            </MenubarGroup>
-                        </MenubarContent>
-                    </MenubarMenu> */}
                     <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">공지 업로드</MenubarTrigger>
+                    </MenubarMenu>
+                    <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer" onClick={()=>{Navigate('/test/coding')}}>코딩테스트</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">결제 관리</MenubarTrigger>
