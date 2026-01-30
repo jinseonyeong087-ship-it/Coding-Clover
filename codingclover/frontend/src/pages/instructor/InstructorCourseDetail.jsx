@@ -51,10 +51,12 @@ function InstructorCourseDetail() {
             credentials: 'include',
             body: JSON.stringify(deleteData)
         })
-            .then((res) => { if (!res.ok) { throw new Error(`HTTP error! status: ${res.status}`); } else { alert("삭제 성공") } })
+            .then((res) => { 
+                if (!res.ok) { throw new Error(`HTTP error! status: ${res.status}`); } 
+                else { alert("삭제 성공");navigate('/instructor/dashboard') } })
             .catch((error) => { console.error('강사 상세 데이터 로딩 실패', error); })
-        setDelete(false);  // 삭제 알림창 뜨기
     };
+         
 
     const handleEdit = async () => {
         const editData = {

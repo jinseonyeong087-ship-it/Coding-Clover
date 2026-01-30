@@ -8,12 +8,14 @@ import InstructorMain from './InstructorMain'
 import axios from 'axios';
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import { useNavigate } from "react-router-dom";
 
 function CourseCreateRequest() {
   const [course, setCourse] = useState({ title: '', createdBy: '', level: 1, description: '', price: 0 });
   const [errors, setErrors] = useState({});
   const [selectLevel, setSelectLevel] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const levelMapping = [
     { id: 1, level: 1, name: "초급" },
@@ -92,7 +94,8 @@ function CourseCreateRequest() {
     }, { withCredentials: true })
       .then((response) => {
         console.log('결과 : ', response.data);
-        alert("개설 신청이 완료되었습니다.")
+        alert("개설 신청이 완료되었습니다.");
+        navigate('/instructor/dashboard')
       })
       .catch((err) => {
         if (err.response && err.response.status === 400) {
