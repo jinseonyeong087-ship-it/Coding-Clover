@@ -33,6 +33,7 @@ import TestInstructorCourseManage from './test/TestInstructorCourseManage';
 import TestInstructorCourseEdit from './test/TestInstructorCourseEdit';
 import TestInstructorLectureEdit from './test/TestInstructorLectureEdit';
 import FindAccountTest from './test/FindAccountTest';
+import TestSearch from './test/TestSearch';
 
 
 
@@ -130,7 +131,7 @@ function App() {
           <Route path="course/:courseId" element={<ProposalDetail />} />
           <Route path="users/instructors/:userId" element={<AdminApproch />} />
           {/*검색*/}
-          <Route path="search" element={<AdminSearch />} />
+          <Route path="/test/search" element={<TestSearch />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
         {/*강사 프로필 <Route path="/api/instructor/profile" element={<InstructorProfile />} /> */}
