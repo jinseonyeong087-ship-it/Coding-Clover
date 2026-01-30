@@ -12,5 +12,8 @@ public enum LectureApprovalStatus {
     REJECTED,
 
     // 비활성화됨 (관리자 또는 강사에 의해 삭제되거나 숨겨진 상태)
-    INACTIVE
+    INACTIVE,
+
+    // 임시저장
+    DRAFT
 }

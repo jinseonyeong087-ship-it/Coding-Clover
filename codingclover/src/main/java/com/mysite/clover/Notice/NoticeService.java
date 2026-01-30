@@ -19,7 +19,18 @@ public class NoticeService {
     // 공지사항 목록 (사용자용 - VISIBLE만)
     @Transactional(readOnly = true)
     public List<Notice> getVisibleNotices() {
-        return noticeRepository.findByStatusOrderByCreatedAtDesc(NoticeStatus.VISIBLE);
+        // JPA 메서드 호환성 문제 방지를 위해 전체 조회 후 필터링
+        List<Notice> all = noticeRepository.findAllByOrderByCreatedAtDesc();
+        System.out.println("DEBUG: NoticeService - Total notices found: " + all.size());
+
+        List<Notice> visible = all.stream()
+                .filter(notice -> {
+                    System.out.println("DEBUG: Notice ID " + notice.getNoticeId() + " Status: " + notice.getStatus());
+                    return notice.getStatus() == NoticeStatus.VISIBLE;
+                })
+                .toList();
+        System.out.println("DEBUG: NoticeService - Visible notices: " + visible.size());
+        return visible;
     }
 
     // 공지사항 상세 (사용자용)

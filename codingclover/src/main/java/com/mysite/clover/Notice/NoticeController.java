@@ -1,7 +1,9 @@
 package com.mysite.clover.Notice;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,18 +35,26 @@ public class NoticeController {
     // 공지사항 목록
     // URL: /notice
     @GetMapping("/notice")
-    public ResponseEntity<List<Notice>> getNoticeList() {
-        // 일반 사용자는 VISIBLE인 것만
-        return ResponseEntity.ok(noticeService.getVisibleNotices());
+    public ResponseEntity<List<NoticeResponse>> getNoticeList() {
+        System.out.println("DEBUG: Requesting User Notice List");
+        List<Notice> notices = noticeService.getVisibleNotices();
+        System.out.println("DEBUG: Found " + notices.size() + " visible notices.");
+        if (!notices.isEmpty()) {
+            System.out.println("DEBUG: First notice status: " + notices.get(0).getStatus());
+        }
+
+        List<NoticeResponse> response = notices.stream()
+                .map(NoticeResponse::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
     // 공지사항 상세
     // URL: /notice/{id}
     @GetMapping("/notice/{id}")
-    public ResponseEntity<Notice> getNoticeDetail(@PathVariable Long id) {
+    public ResponseEntity<NoticeResponse> getNoticeDetail(@PathVariable Long id) {
         Notice notice = noticeService.getNotice(id);
-        // 숨김 글인데 관리자가 아니면 차단하는 로직 등은 필요한 경우 추가
-        return ResponseEntity.ok(notice);
+        return ResponseEntity.ok(new NoticeResponse(notice));
     }
 
     // ==========================================
@@ -55,12 +65,15 @@ public class NoticeController {
     // URL: /admin/notice
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/notice")
-    public ResponseEntity<List<Notice>> getAdminNoticeList() {
-        return ResponseEntity.ok(noticeService.getAllNotices());
+    public ResponseEntity<List<NoticeResponse>> getAdminNoticeList() {
+        List<Notice> notices = noticeService.getAllNotices();
+        List<NoticeResponse> response = notices.stream()
+                .map(NoticeResponse::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
     // 관리자 공지 등록
-    // URL: /admin/notice (POST) - url.md에 명시 안되어있으나 REST 관습 따름
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/notice")
     public ResponseEntity<String> createNotice(@RequestBody NoticeForm form, Principal principal) {
@@ -89,7 +102,35 @@ public class NoticeController {
         return ResponseEntity.ok("공지사항이 삭제되었습니다.");
     }
 
-    // DTO Class
+    // ==========================================
+    // DTO Classes
+    // ==========================================
+
+    @Data
+    public static class NoticeResponse {
+        private Long noticeId;
+        private String title;
+        private String content;
+        private String authorName;
+        private String authorLoginId;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+        private NoticeStatus status;
+
+        public NoticeResponse(Notice notice) {
+            this.noticeId = notice.getNoticeId();
+            this.title = notice.getTitle();
+            this.content = notice.getContent();
+            if (notice.getCreatedBy() != null) {
+                this.authorName = notice.getCreatedBy().getName();
+                this.authorLoginId = notice.getCreatedBy().getLoginId();
+            }
+            this.createdAt = notice.getCreatedAt();
+            this.updatedAt = notice.getUpdatedAt();
+            this.status = notice.getStatus();
+        }
+    }
+
     @Data
     public static class NoticeForm {
         private String title;

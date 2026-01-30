@@ -62,6 +62,16 @@ export default defineConfig({
              return req.url;
           }
         }
+      },
+
+      '/notice': {
+        target: 'http://localhost:3333',
+        changeOrigin: true,
+        bypass: (req) => {
+          if (req.headers.accept?.includes('html')) {
+             return req.url;
+          }
+        }
       }
 
       // vite.config.js 역할

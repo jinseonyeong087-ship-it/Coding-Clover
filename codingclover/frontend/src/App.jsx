@@ -34,6 +34,7 @@ import TestInstructorCourseEdit from './test/TestInstructorCourseEdit';
 import TestInstructorLectureEdit from './test/TestInstructorLectureEdit';
 import FindAccountTest from './test/FindAccountTest';
 import TestSearch from './test/TestSearch';
+import TestNotice from './test/TestNotice';
 
 
 
@@ -79,6 +80,8 @@ function App() {
         <Route path="/test/lecture/create" element={<LectureCreateTest />} />
         {/*검색*/}
         <Route path="/test/search" element={<TestSearch />} />
+        {/*공지사항 테스트*/}
+        <Route path="/test/notice" element={<TestNotice />} />
 
         {/* 아이디/비밀번호 찾기 테스트 */}
         {/* 아이디/비밀번호 찾기 테스트 */}
