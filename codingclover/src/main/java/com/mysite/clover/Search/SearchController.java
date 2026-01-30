@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/admin")
 @RequiredArgsConstructor
 // 관리자 페이지에서 사용자 검색 기능을 제공하는 컨트롤러
-public class AdminController {
+public class SearchController {
 
     // 관리자 서비스
     private final SearchService searchService;
@@ -24,12 +24,13 @@ public class AdminController {
             @RequestParam String category,
             // 검색어
             @RequestParam String keyword,
+            // 프론트에서 현재 로그인한 유저의 ROLE을 보냄
+            @RequestParam String role,
             // 페이징 정보
             Pageable pageable) {
         
         // 관리자 검색 서비스 호출
-        Page<?> result = searchService.searchByAdmin(category, keyword, pageable);
-        // 검색 결과 반환
+        Page<?> result = searchService.totalSearch(role, category, keyword, pageable);
         return ResponseEntity.ok(result);
     }
 }
