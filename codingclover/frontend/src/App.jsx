@@ -104,13 +104,16 @@ function App() {
         {/* 디비 연동하고 /student/course/{courseId}/enroll로 경로수정 */}
         {/* 럭쳐 링크 수정 필요함 */}
         {/* 수강생 페이지 */}
+        {/* 커뮤니티 (전체 공개, 로그인 불필요) */}
+        <Route path="/student/community" element={<CommunityPostList />} />
+        <Route path="/student/community/posts/:postId" element={<CommunityPostDetail />} />
+
+        {/* 수강생 페이지 (로그인 필요) */}
         <Route path="/student/*" element={
           <ProtectedRoute allowedRoles={['STUDENT']} />
         }>
           <Route path="mypage" element={<MyPage />} />
           <Route path="course/:courseId/lectures" element={<Lecture />} />
-          <Route path="community" element={<CommunityPostList />} />
-          <Route path="community/posts/:postId" element={<CommunityPostDetail />} />
         </Route>
         {/* 강사페이지 */}
         <Route path="/instructor/*" element={
