@@ -1,4 +1,4 @@
-package com.mysite.clover.Users;
+package com.mysite.clover.Search;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

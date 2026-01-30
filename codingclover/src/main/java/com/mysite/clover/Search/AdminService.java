@@ -1,7 +1,9 @@
-package com.mysite.clover.Users;
+package com.mysite.clover.Search;
 
 import com.mysite.clover.Course.CourseRepository;
 import com.mysite.clover.Lecture.LectureRepository;
+import com.mysite.clover.Users.UsersRepository;
+import com.mysite.clover.Users.UsersRole;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
