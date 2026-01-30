@@ -26,6 +26,9 @@ const CommunityPostDetail = () => {
     // 댓글 페이징 상태
     const [currentCommentPage, setCurrentCommentPage] = useState(1);
     const [commentsPerPage] = useState(5);
+    
+    // 내가 쓴 댓글 필터 상태
+    const [myCommentsOnly, setMyCommentsOnly] = useState(false);
 
     // 현재 로그인한 사용자의 정보를 저장
     const [currentUser, setCurrentUser] = useState(null);
@@ -313,25 +316,48 @@ const CommunityPostDetail = () => {
                             {/* 댓글 섹션 */}
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <MessageCircle className="h-5 w-5" />
-                                        댓글 ({selectedPost.comments?.length || 0})
-                                    </CardTitle>
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="flex items-center gap-2">
+                                            <MessageCircle className="h-5 w-5" />
+                                            댓글 ({selectedPost.comments?.length || 0})
+                                        </CardTitle>
+                                        {currentUser && selectedPost.comments && selectedPost.comments.length > 0 && (
+                                            <Button
+                                                variant={myCommentsOnly ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => {
+                                                    setMyCommentsOnly(!myCommentsOnly);
+                                                    setCurrentCommentPage(1); // 필터 변경 시 첫 페이지로 이동
+                                                }}
+                                                className="flex items-center gap-1"
+                                            >
+                                                <User className="h-3 w-3" />
+                                                {myCommentsOnly ? '전체 댓글 보기' : '내가 쓴 댓글 보기'}
+                                            </Button>
+                                        )}
+                                    </div>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     {/* 댓글 목록 */}
                                     {selectedPost.comments && selectedPost.comments.length > 0 ? (
                                         <div className="space-y-4">
                                             {(() => {
-                                                // 댓글 페이징 로직
-                                                const sortedComments = selectedPost.comments
+                                                // 댓글 필터링 및 페이징 로직
+                                                let comments = selectedPost.comments
                                                     .slice() // 원본 state 보호 (중요)
                                                     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // 최신순
                                                 
+                                                // 내가 쓴 댓글 필터링
+                                                if (myCommentsOnly && currentUser) {
+                                                    comments = comments.filter(comment => 
+                                                        comment.authorName === currentUser.name
+                                                    );
+                                                }
+                                                
                                                 const indexOfLastComment = currentCommentPage * commentsPerPage;
                                                 const indexOfFirstComment = indexOfLastComment - commentsPerPage;
-                                                const currentComments = sortedComments.slice(indexOfFirstComment, indexOfLastComment);
-                                                const totalCommentPages = Math.ceil(sortedComments.length / commentsPerPage);
+                                                const currentComments = comments.slice(indexOfFirstComment, indexOfLastComment);
+                                                const totalCommentPages = Math.ceil(comments.length / commentsPerPage);
                                                 
                                                 return (
                                                     <>

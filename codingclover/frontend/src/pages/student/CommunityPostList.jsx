@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MessageCircle, Edit, Trash2, Send, User, Calendar, ArrowLeft, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { MessageCircle, Edit, Trash2, Send, User, Calendar, ArrowLeft, Search, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
 
 const CommunityPostList = () => {
     const navigate = useNavigate();
@@ -25,6 +25,12 @@ const CommunityPostList = () => {
     const [filteredPosts, setFilteredPosts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [postsPerPage] = useState(15);
+    
+    // 정렬 상태
+    const [sortOrder, setSortOrder] = useState('newest'); // 'newest' 또는 'oldest'
+    
+    // 내가 쓴 글 필터 상태
+    const [myPostsOnly, setMyPostsOnly] = useState(false);
 
     // 현재 로그인한 사용자의 정보를 저장
     const [currentUser, setCurrentUser] = useState(null);
@@ -61,19 +67,46 @@ const CommunityPostList = () => {
         
         // 검색 필터링
         if (searchTerm) {
-            filtered = filtered.filter(post => 
-                post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                post.authorName.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+            const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+            
+            filtered = filtered.filter(post => {
+                const titleMatch = post.title.toLowerCase().includes(normalizedSearchTerm);
+                const contentMatch = post.content.toLowerCase().includes(normalizedSearchTerm);
+                const authorMatch = post.authorName.toLowerCase().includes(normalizedSearchTerm);
+                
+                // 영어/숫자 검색 향상을 위한 추가 검색
+                const titleMatchNormal = post.title.includes(searchTerm);
+                const contentMatchNormal = post.content.includes(searchTerm);
+                const authorMatchNormal = post.authorName.includes(searchTerm);
+                
+                return titleMatch || contentMatch || authorMatch || 
+                       titleMatchNormal || contentMatchNormal || authorMatchNormal;
+            });
         }
         
-        // 최신 순으로 정렬 (ID 기준 내림차순)
-        filtered.sort((a, b) => b.id - a.id);
+        // 내가 쓴 글 필터링
+        if (myPostsOnly && currentUser) {
+            filtered = filtered.filter(post => {
+                // 내가 작성한 글이거나
+                const isMyPost = post.authorName === currentUser.name;
+                // 내가 댓글을 단 글인지 확인
+                const hasMyComment = post.comments && post.comments.some(
+                    comment => comment.authorName === currentUser.name
+                );
+                return isMyPost || hasMyComment;
+            });
+        }
+        
+        // 정렬 적용
+        if (sortOrder === 'newest') {
+            filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        } else {
+            filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        }
         
         setFilteredPosts(filtered);
         setCurrentPage(1); // 검색 시 첫 페이지로 이동
-    }, [posts, searchTerm]);
+    }, [posts, searchTerm, sortOrder, myPostsOnly, currentUser]);
 
     const fetchPosts = () => {
         axios.get('/api/community/posts', { withCredentials: true })
@@ -101,6 +134,11 @@ const CommunityPostList = () => {
     // 페이지 변경 핸들러
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
+    };
+    
+    // 정렬 핸들러
+    const handleSortToggle = () => {
+        setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest');
     };
     
     const handleCreatePost = () => {
@@ -133,27 +171,40 @@ const CommunityPostList = () => {
         {filteredPosts.length}개
     </span>
                                 </div>
-                                <Button
-                                    onClick={() => {
-                                        if (!currentUser) {
-                                            alert('로그인이 필요합니다.');
-                                            return;
-                                        }
-                                        setPostForm({ title: '', content: '' }); 
-                                        setViewMode('write');
-                                    }}
-                                    className="flex items-center gap-2"
-                                >
-                                    <Edit className="h-4 w-4" />
-                                    글쓰기
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                    {currentUser && (
+                                        <Button
+                                            variant={myPostsOnly ? "default" : "outline"}
+                                            onClick={() => setMyPostsOnly(!myPostsOnly)}
+                                            className="flex items-center gap-2 h-9"
+                                            size="sm"
+                                        >
+                                            <User className="h-4 w-4" />
+                                            {myPostsOnly ? '전체 글 보기' : '내가 쓴 글 보기'}
+                                        </Button>
+                                    )}
+                                    <Button
+                                        onClick={() => {
+                                            if (!currentUser) {
+                                                alert('로그인이 필요합니다.');
+                                                return;
+                                            }
+                                            setPostForm({ title: '', content: '' }); 
+                                            setViewMode('write');
+                                        }}
+                                        className="flex items-center gap-2 h-9"
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                        글쓰기
+                                    </Button>
+                                </div>
                             </div>
                             
                             {/* 검색 */}
                             <div className="flex items-center gap-2 max-w-md">
                                 <Search className="h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    placeholder="제목, 작성자 검색"
+                                    placeholder="제목, 작성자, 내용 검색"
                                     value={searchTerm}
                                     onChange={handleSearch}
                                     className="flex-1"
@@ -167,7 +218,18 @@ const CommunityPostList = () => {
                                             <TableHead className="w-16 text-center">번호</TableHead>
                                             <TableHead>제목</TableHead>
                                             <TableHead className="w-24 text-center">작성자</TableHead>
-                                            <TableHead className="w-32 text-center">작성일</TableHead>
+                                            <TableHead 
+                                                className="w-32 text-center cursor-pointer hover:bg-muted/50 select-none"
+                                                onClick={handleSortToggle}
+                                            >
+                                                <div className="flex items-center justify-center gap-1">
+                                                    작성일
+                                                    {sortOrder === 'newest' ? 
+                                                        <ChevronDown className="h-3 w-3" /> : 
+                                                        <ChevronUp className="h-3 w-3" />
+                                                    }
+                                                </div>
+                                            </TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
