@@ -24,7 +24,7 @@ const CommunityPostList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredPosts, setFilteredPosts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [postsPerPage] = useState(10);
+    const [postsPerPage] = useState(15);
 
     // 현재 로그인한 사용자의 정보를 저장
     const [currentUser, setCurrentUser] = useState(null);
@@ -121,7 +121,7 @@ const CommunityPostList = () => {
             <Nav />
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-6xl mx-auto">
-                    <h1 className="text-3xl font-bold text-center mb-8">커뮤니티 게시판</h1>
+                    <h1 className="text-3xl font-bold text-center mb-8">자유게시판</h1>
 
                     {/* 1. 목록 화면 */}
                     {viewMode === 'list' && (
@@ -129,11 +129,19 @@ const CommunityPostList = () => {
                             <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-2">
                                     <MessageCircle className="h-6 w-6" />
-                                    <span className="text-lg font-semibold">자유게시판</span>
-                                    <Badge variant="outline">{filteredPosts.length}개</Badge>
+                                    <span className="text-sm font-bold">
+        {filteredPosts.length}개
+    </span>
                                 </div>
                                 <Button
-                                    onClick={() => { setPostForm({ title: '', content: '' }); setViewMode('write'); }}
+                                    onClick={() => {
+                                        if (!currentUser) {
+                                            alert('로그인이 필요합니다.');
+                                            return;
+                                        }
+                                        setPostForm({ title: '', content: '' }); 
+                                        setViewMode('write');
+                                    }}
                                     className="flex items-center gap-2"
                                 >
                                     <Edit className="h-4 w-4" />
@@ -145,7 +153,7 @@ const CommunityPostList = () => {
                             <div className="flex items-center gap-2 max-w-md">
                                 <Search className="h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    placeholder="제목, 내용, 작성자 검색..."
+                                    placeholder="제목, 작성자 검색"
                                     value={searchTerm}
                                     onChange={handleSearch}
                                     className="flex-1"
