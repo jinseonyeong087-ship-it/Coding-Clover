@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 // Course 엔티티에 대한 데이터베이스 접근을 담당하는 리포지토리
 public interface CourseRepository extends JpaRepository<Course, Long> {
@@ -34,4 +36,6 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findApprovedCoursesWithLecturesByLevel(@Param("level") int level);
 
     List<Course> findByCreatedBy_LoginId(String loginId);
+
+    Page<Course> findByTitleContaining(String title, Pageable pageable);
 }

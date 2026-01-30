@@ -3,6 +3,8 @@ package com.mysite.clover.Users;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UsersRepository extends JpaRepository<Users, Long> {
@@ -27,4 +29,11 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
 
   // 비밀번호 찾기
   Optional<Users> findByLoginIdAndNameAndEmail(String loginId, String name, String email);
+
+  // 검색 기능
+  // 관리자가 이름으로 사용자를 검색하는 로직
+  Page<Users> findByNameContaining(String name, Pageable pageable);
+
+  // 관리자가 역할(학생/강사) 필터링 후 '이름'으로 검색하는 로직
+  Page<Users> findByRoleAndNameContaining(UsersRole role, String name, Pageable pageable);
 }
