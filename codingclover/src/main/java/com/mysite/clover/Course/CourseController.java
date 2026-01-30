@@ -12,8 +12,7 @@ import com.mysite.clover.Course.dto.AdminCourseDto;
 import com.mysite.clover.Course.dto.CourseCreateRequest;
 import com.mysite.clover.Course.dto.InstructorCourseDto;
 import com.mysite.clover.Course.dto.StudentCourseDto;
-import com.mysite.clover.Lecture.Lecture;
-import com.mysite.clover.Lecture.LectureService;
+
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.Users.UsersRepository;
 
@@ -26,7 +25,6 @@ public class CourseController {
 
     private final CourseService courseService;
     private final UsersRepository usersRepository;
-    private final LectureService lectureService;
 
     // ==========================================
     // 🟦 공통 영역 (비로그인 / 로그인 공통)
@@ -157,13 +155,13 @@ public class CourseController {
     @PreAuthorize("hasRole('INSTRUCTOR')") // 강사 권한 체크
     @PutMapping("/instructor/course/{id}/edit")
     // @Valid : 요청 본문(body) 데이터를 DTO로 매핑하며 유효성 검사 수행
-    public ResponseEntity<?> updateCourse(@PathVariable("id") Long id, @Valid @RequestBody 
-        // 요청 본문(body) 데이터를 DTO로 매핑하며 유효성 검사 수행
-        CourseCreateRequest request,
-        // 유효성 검사 결과를 담는 객체
-        BindingResult bindingResult,
-        // 현재 로그인한 사용자 정보
-        Principal principal) {
+    public ResponseEntity<?> updateCourse(@PathVariable("id") Long id, @Valid @RequestBody
+    // 요청 본문(body) 데이터를 DTO로 매핑하며 유효성 검사 수행
+    CourseCreateRequest request,
+            // 유효성 검사 결과를 담는 객체
+            BindingResult bindingResult,
+            // 현재 로그인한 사용자 정보
+            Principal principal) {
 
         // 입력값 유효성 검사
         if (bindingResult.hasErrors()) {
@@ -251,19 +249,11 @@ public class CourseController {
     @PreAuthorize("hasRole('INSTRUCTOR')")
     public ResponseEntity<List<Course>> getMyCourses(Principal principal) {
         String loginId = principal.getName();
-        
+
         // 서비스에서 실제 List<Course>를 반환하도록 타입을 맞춥니다.
         List<Course> myCourses = (List<Course>) courseService.getCoursesByInstructor(loginId);
-    
-    return ResponseEntity.ok(myCourses);
-}
 
-    // 강좌별 강의 목록 조회 API
-    @GetMapping("/instructor/course/{courseId}/lectures")
-    @ResponseBody // 리액트(JSON)로 데이터를 보낼 때 필수
-    public ResponseEntity<List<Lecture>> getLecturesByCourse(@PathVariable("courseId") Long courseId) {
-        List<Lecture> lectures = lectureService.getLecturesByCourseId(courseId);
-        return ResponseEntity.ok(lectures);
+        return ResponseEntity.ok(myCourses);
     }
 
     // ==========================================
@@ -288,7 +278,7 @@ public class CourseController {
     public ResponseEntity<AdminCourseDto> getCourseDetail(@PathVariable("id") Long id) {
         // 1. 서비스에서 ID로 강좌 엔티티 조회
         Course course = courseService.getCourse(id);
-    
+
         // 2. 관리자용 DTO로 변환하여 반환
         return ResponseEntity.ok(AdminCourseDto.fromEntity(course));
     }

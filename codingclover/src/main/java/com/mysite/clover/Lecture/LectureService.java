@@ -40,7 +40,7 @@ public class LectureService {
             Users instructor,
             LectureUploadType uploadType,
             LocalDateTime scheduledAt) {
-        
+
         // [중복 검사] DB 제약조건 대신 애플리케이션 레벨에서 막기
         if (lectureRepository.existsByCourseCourseIdAndOrderNo(course.getCourseId(), orderNo)) {
             throw new IllegalArgumentException("이미 존재하는 순서입니다.");
@@ -56,11 +56,11 @@ public class LectureService {
         lecture.setVideoUrl(videoUrl);
         lecture.setDuration(duration);
         lecture.setCreatedBy(instructor);
-    
+
         // 승인 대기 상태 및 생성 시간 설정 (중복 코드 제거됨)
-        lecture.setApprovalStatus(LectureApprovalStatus.PENDING); 
+        lecture.setApprovalStatus(LectureApprovalStatus.PENDING);
         lecture.setCreatedAt(LocalDateTime.now());
-    
+
         lecture.setUploadType(uploadType);
         lecture.setScheduledAt(scheduledAt);
 
@@ -92,8 +92,8 @@ public class LectureService {
         for (Long id : ids) {
             // 강의 ID로 강의 조회
             Lecture lecture = lectureRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다. ID: " + id));
-            
+                    .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다. ID: " + id));
+
             // 기존에 만든 단건 승인 로직(approve)을 재사용
             approve(lecture, admin);
         }
@@ -123,9 +123,9 @@ public class LectureService {
         for (Long id : ids) {
             // 강의 ID로 강의 조회
             Lecture lecture = lectureRepository.findById(id)
-            // 없으면 예외 발생
-                .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다. ID: " + id));
-            
+                    // 없으면 예외 발생
+                    .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다. ID: " + id));
+
             // 기존에 만든 단건 반려 로직(reject)을 재사용
             reject(lecture, reason);
         }
@@ -179,14 +179,18 @@ public class LectureService {
         lecture.setDuration(updateDto.getDuration());
         lecture.setUploadType(updateDto.getUploadType());
         // 예약 시간 설정
-        lecture.setScheduledAt(updateDto.getUploadType() == LectureUploadType.RESERVED 
-                               ? updateDto.getScheduledAt() : null);
+        lecture.setScheduledAt(updateDto.getUploadType() == LectureUploadType.RESERVED
+                ? updateDto.getScheduledAt()
+                : null);
 
         // 4. 상태 초기화
         // 강의 상태를 PENDING으로 변경하여 관리자 화면에 다시 노출
         lecture.setApprovalStatus(LectureApprovalStatus.PENDING);
         // 반려 사유 필드 초기화
         lecture.setRejectReason(null);
+
+        // 5. 변경사항 저장
+        lectureRepository.save(lecture);
     }
 
     // 강좌 ID로 강의 목록 조회

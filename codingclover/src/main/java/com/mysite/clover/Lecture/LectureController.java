@@ -63,11 +63,12 @@ public class LectureController {
 
     // 강사용: 본인이 개설한 강좌의 강의 목록 조회 (승인 대기중 등 모든 상태 포함)
     @PreAuthorize("hasRole('INSTRUCTOR')") // 강사 권한 필요
-    @GetMapping("/instructor/lecture/{courseId}")
-    public ResponseEntity<List<InstructorLectureDto>> instructorListByCourse(@PathVariable Long courseId, Principal principal) {
+    @GetMapping("/instructor/course/{courseId}/lectures")
+    public ResponseEntity<List<InstructorLectureDto>> instructorListByCourse(@PathVariable Long courseId,
+            Principal principal) {
         // 1. 강좌 존재 여부 확인
         Course course = courseService.getCourse(courseId);
-        
+
         // 2. 본인이 개설한 강좌인지 확인
         String loginId = principal.getName();
         // 강좌 엔티티의 작성자(createdBy)의 loginId와 비교
@@ -131,10 +132,10 @@ public class LectureController {
             @PathVariable Long lectureId,
             @RequestBody @Valid LectureCreateRequest form, // 수정할 데이터
             Principal principal) {
-        
+
         // 서비스의 재승인 로직 호출 (기존 데이터 업데이트 + 상태 PENDING으로 변경)
         lectureService.resubmitLecture(lectureId, form, principal.getName());
-        
+
         return ResponseEntity.ok("강의 수정 및 재승인 요청 완료");
     }
 
@@ -175,14 +176,15 @@ public class LectureController {
     // 관리자: 일괄 승인 처리
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/lectures/batch-approve")
-    // @RequestBody BatchApprovalRequest request: 요청 본문에서 BatchApprovalRequest 객체를 받음
+    // @RequestBody BatchApprovalRequest request: 요청 본문에서 BatchApprovalRequest 객체를
+    // 받음
     // Principal principal: 로그인한 사용자의 정보를 받음
     public ResponseEntity<String> batchApprove(
             // @RequestBody: 요청 본문에서 BatchApprovalRequest 객체를 받음
-            @RequestBody BatchApprovalRequest request, 
+            @RequestBody BatchApprovalRequest request,
             // Principal: 로그인한 사용자의 정보를 받음
             Principal principal) {
-        
+
         // 1. 로그인한 관리자 정보 조회
         Users admin = usersRepository.findByLoginId(principal.getName())
                 // orElseThrow: Optional에서 값을 가져오고, 값이 없으면 예외를 발생시킴
@@ -190,7 +192,7 @@ public class LectureController {
 
         // 2. 일괄 승인 처리 서비스 호출
         lectureService.approveMultiple(request.getLectureIds(), admin);
-        
+
         // 3. 성공 메시지 반환
         return ResponseEntity.ok("선택한 " + request.getLectureIds().size() + "건의 강의가 승인되었습니다.");
     }
@@ -214,12 +216,13 @@ public class LectureController {
     // 관리자: 일괄 반려 처리
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/lectures/batch-reject")
-    // @RequestBody BatchApprovalRequest request: 요청 본문에서 BatchApprovalRequest 객체를 받음
+    // @RequestBody BatchApprovalRequest request: 요청 본문에서 BatchApprovalRequest 객체를
+    // 받음
     public ResponseEntity<String> batchReject(@RequestBody BatchApprovalRequest request) {
-        
+
         // 1. 일괄 반려 처리 서비스 호출
         lectureService.rejectMultiple(request.getLectureIds(), request.getRejectReason());
-        
+
         // 2. 성공 메시지 반환
         return ResponseEntity.ok("선택한 " + request.getLectureIds().size() + "건의 강의가 반려되었습니다.");
     }
