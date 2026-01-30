@@ -10,23 +10,38 @@ const TestSearch = () => {
     const [data, setData] = useState([]);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        if (keyword) {
-            // 백엔드 API 호출 테스트
-            axios.get('/api/admin/search', {
-                params: { category, keyword }
-            })
-            .then(res => {
-                console.log("받은 데이터:", res.data);
-                // Spring Page 객체는 content 배열 안에 데이터가 들어있음
-                setData(res.data.content || []);
-            })
-            .catch(err => {
-                console.error("에러 발생:", err);
-                setError(err.message);
-            });
-        }
-    }, [category, keyword]);
+    // useEffect(() => {
+    //     if (keyword) {
+    //         // 백엔드 API 호출 테스트
+    //         axios.get('/admin/search', {
+    //             params: { category, keyword }
+    //         })
+    //         .then(res => {
+    //             console.log("받은 데이터:", res.data);
+    //             // Spring Page 객체는 content 배열 안에 데이터가 들어있음
+    //             setData(res.data.content || []);
+    //         })
+    //         .catch(err => {
+    //             console.error("에러 발생:", err);
+    //             setError(err.message);
+    //         });
+    //     }
+    // }, [category, keyword]);
+
+    // TestSearch.jsx 내부
+useEffect(() => {
+    if (keyword) {
+        // 이 주소가 백엔드 AdminController의 @GetMapping("/api/admin/search")와 일치해야 합니다.
+        axios.get('/admin/search', {
+            params: { category, keyword }
+        })
+        .then(res => {
+            console.log("백엔드 응답:", res.data);
+            setData(res.data.content || []); // JPA Page 객체일 경우 .content 사용
+        })
+        .catch(err => console.error("통신 에러:", err));
+    }
+}, [category, keyword]);
 
     return (
         <div style={{ padding: '20px', backgroundColor: '#f0f0f0', minHeight: '100vh' }}>
@@ -53,4 +68,4 @@ const TestSearch = () => {
     );
 };
 
-export default SearchTest;
+export default TestSearch;

@@ -77,6 +77,8 @@ function App() {
         {/* 강의 일괄 승인 테스트 경로 추가 */}
         <Route path="/test/lecture/batch" element={<LectureBatchTest />} />
         <Route path="/test/lecture/create" element={<LectureCreateTest />} />
+        {/*검색*/}
+        <Route path="/test/search" element={<TestSearch />} />
 
         {/* 아이디/비밀번호 찾기 테스트 */}
         {/* 아이디/비밀번호 찾기 테스트 */}
@@ -130,8 +132,6 @@ function App() {
           <Route path="dashboard" element={<AdminMain />} />
           <Route path="course/:courseId" element={<ProposalDetail />} />
           <Route path="users/instructors/:userId" element={<AdminApproch />} />
-          {/*검색*/}
-          <Route path="/test/search" element={<TestSearch />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
         {/*강사 프로필 <Route path="/api/instructor/profile" element={<InstructorProfile />} /> */}
