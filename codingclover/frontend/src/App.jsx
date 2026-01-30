@@ -18,7 +18,7 @@ import QnaTest from './test/QnaTest'
 import SubmissionTest from './test/SubmissionTest'
 import ProtectedRoute from '@/components/ProtectdRoute'
 import Noroll from '@/pages/Noroll'
-import CommunityPostTest from './test/CommunityPostTest'
+import CommunityPost from './pages/student/CommunityPost'
 import ProposalDetail from '@/pages/admin/ProposalDetail'
 import InstructorCourseCreate from '@/pages/instructor/InstructorCourseDetail'
 import AdminApproch from '@/pages/admin/AdminApproch'
@@ -46,7 +46,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         {/* 커뮤니티 테스트 페이지 */}
-        <Route path="/test/community" element={<CommunityPostTest />} />
+        <Route path="/student/community" element={<CommunityPost />} />
         {/* 임시 코딩 테스트 페이지 */}
         <Route path="/test/coding" element={<CodingTest />} />
         {/* 이메일 발송 테스트 페이지 */}
@@ -91,6 +91,7 @@ function App() {
         }>
           <Route path="mypage" element={<MyPage />} />
           <Route path="course/:courseId/lectures" element={<Lecture />} />
+          <Route path="community" element={<CommunityPost />} />
         </Route>
         {/* 강사페이지 */}
         <Route path="/instructor/*" element={

@@ -99,7 +99,7 @@ function StudentNav() {
                         <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
                         <MenubarContent>
                             <MenubarItem>Q&A</MenubarItem>
-                            <MenubarItem>자유게시판</MenubarItem>
+                            <Link to="/student/community"><MenubarItem>자유게시판</MenubarItem></Link>
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
