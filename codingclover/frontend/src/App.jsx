@@ -35,6 +35,7 @@ import TestInstructorLectureEdit from './test/TestInstructorLectureEdit';
 import FindAccountTest from './test/FindAccountTest';
 import TestSearch from './test/TestSearch';
 import TestNotice from './test/TestNotice';
+import AdminLectureDetail from '@/pages/admin/AdminLectureDetail'
 
 
 
@@ -135,6 +136,7 @@ function App() {
           <Route path="dashboard" element={<AdminMain />} />
           <Route path="course/:courseId" element={<ProposalDetail />} />
           <Route path="users/instructors/:userId" element={<AdminApproch />} />
+          <Route path="course/:courseId/lectures" element={<AdminLectureDetail />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
         {/*강사 프로필 <Route path="/api/instructor/profile" element={<InstructorProfile />} /> */}

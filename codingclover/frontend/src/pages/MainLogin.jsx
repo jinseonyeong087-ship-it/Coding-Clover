@@ -31,6 +31,10 @@ const MainLogin = () => {
         }
     }, []); // [] 이거 뭐하는 용도임? []이거 무한루프 방지용임
 
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') handleLogin();
+    };
+
     const handleLogin = async () => {
 
         setError('');
@@ -112,6 +116,7 @@ const MainLogin = () => {
                                     type="text"
                                     value={loginId}
                                     onChange={(e) => setLoginId(e.target.value)}
+                                    onKeyDown={handleKeyDown}
                                     placeholder="아이디를 입력하세요"
                                 />
                             </div>
@@ -122,10 +127,11 @@ const MainLogin = () => {
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
+                                    onKeyDown={handleKeyDown}
                                     placeholder="비밀번호를 입력하세요"
                                 />
                             </div>
-                            <Button className="w-full" onClick={handleLogin}>
+                            <Button className="w-full" onClick={handleLogin} type="submit">
                                 로그인
                             </Button>
                             <Link to="/auth/register"><Button variant="outline" className="w-full">

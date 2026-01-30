@@ -154,6 +154,7 @@
 /admin/enrollment/{id}/cancel → 수강 강제 취소
 
 /admin/lectures              → 강의 관리
+/admin/lectures/{id}          → 강의 상세 조회 백에 필요
 /admin/lectures/{id}/inactive → 문제 있는 강의 차단
 /admin/lectures/{id}/approve  → 강의 승인
 /admin/lectures/{id}/reject   → 강의 반려
