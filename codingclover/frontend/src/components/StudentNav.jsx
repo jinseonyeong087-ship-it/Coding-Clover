@@ -100,7 +100,7 @@ function StudentNav() {
                         <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
                         <MenubarContent>
                             <MenubarItem onClick={()=>{navigate('/test/qna')}}>Q&A</MenubarItem>
-                            <MenubarItem>자유게시판</MenubarItem>
+                            <MenubarItem onClick={()=>{navigate('/student/community')}}>자유게시판</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>

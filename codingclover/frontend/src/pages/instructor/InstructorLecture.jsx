@@ -225,7 +225,7 @@ function InstructorLecture() {
                         />
                         <div className="flex ">
                             {isEditing === true ? (<Button onClick={() => { setIsEditing(true) }}>저장</Button>) : (<Button onClick={handleChange}>수정</Button>)}
-                            {lectures.approvalStatus === 'REJECTED' ? (<Button onCLick={() => { setResubmit(true) }}>재심사 요청</Button>) : (<Button>재심사 요청</Button>)}
+                            {lectures.approvalStatus === 'REJECTED' ? (<Button onCLick={() => { setResubmit(true) }}>재심사 요청</Button>) : lectures.approvalStatus === 'PENDING' ?(<Button>승인대기/수정</Button>):(<Button disable>승인완료</Button>)}
                             <Button>삭제</Button>
                         </div>
 
