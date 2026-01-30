@@ -24,6 +24,27 @@ function InstructorLecture() {
         scheduledAt: ''
     });
 
+    // 해당 강좌 가져오기 /instructor/course/{id}
+    useEffect(() => {
+        fetch(`/instructor/course/${courseId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        })
+            .then((res) => {
+                if (res.status === 401 || res.status === 403) {
+                    throw new Error('인증 필요: 강사로 로그인해주세요.');
+                }
+                if (res.status === 500) {
+                    throw new Error('서버 에러: 해당 강좌가 존재하지 않거나 접근 권한이 없습니다.');
+                }
+                if (!res.ok) throw new Error(`에러 발생: ${res.status}`);
+                return res.json();
+            })
+            .then((data) => setMyCourses(data))
+            .catch((error) => console.error(error.message));
+    }, [courseId]);
+
     // 강의 목록 조회
     useEffect(() => {
         fetch(`/instructor/course/${courseId}/lectures`, {
@@ -31,7 +52,7 @@ function InstructorLecture() {
             credentials: 'include'
         })
             .then(res => res.json())
-            .then((data) => {setLectures(data)} )
+            .then((data) => { setLectures(data) })
             .catch(err => console.error('강의 목록 조회 실패:', err));
     }, [courseId]);
 
@@ -43,7 +64,7 @@ function InstructorLecture() {
             credentials: 'include',
             body: JSON.stringify({
                 ...newLecture,
-                courseId: courseId
+                courseId: newLecture.courseId
             })
         })
             .then(res => {
@@ -91,12 +112,17 @@ function InstructorLecture() {
                 <div className="mb-6 p-4 border rounded-md bg-slate-50 space-y-4">
                     <div>
                         <h2 className="block text-sm font-medium mb-1">강좌명</h2>
-                        <p>{newLecture.courseId}</p>
-                        
+                        <Input
+                            method='POST'
+                            value={myCourses.title}
+                            placeholder={myCourses.title}
+                            readOnly
+                        />
                     </div>
                     <div>
                         <label className="block text-sm font-medium mb-1">강의 제목</label>
                         <Input
+                            method='POST'
                             value={newLecture.title}
                             onChange={(e) => setNewLecture({ ...newLecture, title: e.target.value })}
                             placeholder="강의 제목을 입력하세요"
@@ -105,6 +131,7 @@ function InstructorLecture() {
                     <div>
                         <label className="block text-sm font-medium mb-1">강의 순서</label>
                         <Input
+                            method='POST'
                             type="number"
                             value={newLecture.orderNo}
                             onChange={(e) => setNewLecture({ ...newLecture, orderNo: parseInt(e.target.value) })}
@@ -114,6 +141,7 @@ function InstructorLecture() {
                     <div>
                         <label className="block text-sm font-medium mb-1">영상 URL</label>
                         <Input
+                            method='POST'
                             value={newLecture.videoUrl}
                             onChange={(e) => setNewLecture({ ...newLecture, videoUrl: e.target.value })}
                             placeholder="영상 URL을 입력하세요"
@@ -122,6 +150,7 @@ function InstructorLecture() {
                     <div>
                         <label className="block text-sm font-medium mb-1">재생 시간 (초)</label>
                         <Input
+                            method='POST'
                             type="number"
                             value={newLecture.duration}
                             onChange={(e) => setNewLecture({ ...newLecture, duration: parseInt(e.target.value) })}
@@ -133,7 +162,7 @@ function InstructorLecture() {
             )}
 
 
-{/* // 강의 고유 식별자 (DB Primary Key, 자동 증가)
+            {/* // 강의 고유 식별자 (DB Primary Key, 자동 증가)
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long lectureId;
