@@ -187,14 +187,24 @@ public class LectureController {
     // 🟥 관리자 영역
     // ==========================================
 
-    // 관리자: 전체 강의 목록 조회 (모든 강의)
-    @PreAuthorize("hasRole('ADMIN')") // 관리자 권한 필요
-    @GetMapping("/admin/lectures")
-    public ResponseEntity<List<AdminLectureDto>> adminList() {
-        // 1. 시스템의 모든 강의 목록을 조회하여 관리자용 DTO로 반환
-        return ResponseEntity.ok(lectureService.getAllList().stream()
-                .map(AdminLectureDto::fromEntity)
+    // 관리자용: 특정 강좌의 모든 강의 목록 조회 (작성자 체크 없음)
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/course/{courseId}/lectures")
+    public ResponseEntity<List<InstructorLectureDto>> adminListByCourse(@PathVariable("courseId") Long courseId) {
+        // 1. 강좌 존재 여부 확인
+        Course course = courseService.getCourse(courseId);
+        // 2. 작성자(Principal) 확인 없이 해당 강좌의 모든 강의 조회
+        return ResponseEntity.ok(lectureService.getListByCourse(course).stream()
+                .map(InstructorLectureDto::fromEntity)
                 .toList());
+    }
+
+    // 관리자용: 강의 상세 정보 조회 (작성자 체크 없음)
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/lecture/{lectureId}")
+    public ResponseEntity<InstructorLectureDto> adminGetLecture(@PathVariable("lectureId") Long lectureId) {
+        // 1. 강의 ID로 상세 정보를 조회하여 DTO로 반환
+        return ResponseEntity.ok(InstructorLectureDto.fromEntity(lectureService.getLecture(lectureId)));
     }
 
     // 관리자: 강의 승인 처리
