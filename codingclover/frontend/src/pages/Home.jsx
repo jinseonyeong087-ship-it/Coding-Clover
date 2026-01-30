@@ -22,14 +22,14 @@ function Home() {
 
   const setNum = (level) => {
     switch (level) {
-      case 1: return '초급';
-      case 2: return '중급';
-      case 3: return '고급';
+      case 1: return <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">초급</span>;
+      case 2: return <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">중급</span>;;
+      case 3: return <span className="px-2 py-1 text-xs bg-orange-100 text-red-800 rounded">고급</span>;
     }
   }
 
   useEffect(() => {
-    fetch('/course', {method:'GET', Headers:{ 'Content-Type': 'application/json' }})
+    fetch('/course', {method:'GET', headers:{ 'Content-Type': 'application/json' }})
       .then((res) => res.json())
       .then((json) => {
         setCourse(json);
@@ -63,7 +63,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-16 py-16">
         <Tabs defaultValue={1}>
           <div className='flex items-center gap-10'>
             <h2 className="text-2xl font-bold mb-6">강좌 목록</h2>
@@ -85,10 +85,10 @@ function Home() {
                     <Card key={item.courseId} className="hover:shadow-lg transition-shadow">
                       <CardHeader>
                         <CardTitle className="text-lg">{item.title}</CardTitle>
-                        <CardDescription>{item.description}</CardDescription>
+                        <CardDescription>{item.instructorName}</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm text-muted-foreground">{item.createdAt}</p>
+                        <p className="text-sm text-muted-foreground">{item.description}</p>
                       </CardContent>
                       <CardFooter>
                         <Button variant="outline" size="sm" className="w-full">
@@ -105,15 +105,15 @@ function Home() {
           ))}
         </Tabs>
       </section>
-
-      <section className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-16 py-16">
         <h2 className="text-2xl font-bold mb-6">수강 신청하기</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {course.map((item) => (
             <Card key={item.courseId} className="hover:shadow-lg transition-shadow">
               <CardHeader>
+                <CardDescription>{setNum(item.level)}</CardDescription>
                 <CardTitle className="text-lg">{item.title}</CardTitle>
-                <CardDescription>{setNum(item.level)} 레벨 강좌</CardDescription>
+                <CardDescription>{item.instructorName}님의 강좌</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
@@ -127,8 +127,7 @@ function Home() {
                   </Link>
                 </Button>
               </CardFooter>
-            </Card>
-          ))}
+            </Card>))}
         </div>
       </section>
 

@@ -199,6 +199,19 @@ public class LectureController {
                 .toList());
     }
 
+    // 강의 리스트 조회
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/lectures")
+    public ResponseEntity<List<InstructorLectureDto>> adminGetAllLectures() {
+        // 1. 서비스의 getAllList() 메서드 호출
+        List<Lecture> allLectures = lectureService.getAllList();
+
+        // 2. 엔티티 리스트를 DTO 리스트로 변환하여 반환
+        return ResponseEntity.ok(allLectures.stream()
+                .map(InstructorLectureDto::fromEntity)
+                .toList());
+    }
+
     // 관리자: 강의 상세 조회 (승인/반려 여부 상관없이 조회 가능)
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/lectures/{lectureId}")

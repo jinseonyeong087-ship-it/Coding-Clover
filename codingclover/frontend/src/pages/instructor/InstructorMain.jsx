@@ -70,7 +70,7 @@ function InstructorMain() {
         <>
             <Nav />
             {instructorStatus == 'ACTIVE' ? (
-                <section className="container mx-auto px-4 py-16">
+                <section className="container mx-auto px-16 py-24">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-bold">내 강좌 목록</h1>
                         <Link to="/instructor/course/new">

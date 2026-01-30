@@ -69,9 +69,10 @@ function StudentNav() {
 
     // 저장할 때: JSON.stringify()로 객체 → 문자열 변환
     // 불러올 때: JSON.parse()로 문자열 → 객체 변환
+    // container mx-auto px-4 py-16
 
     return (
-        <nav className="container mx-auto flex items-center justify-between py-3 border-b bg-background">
+        <nav className="flex mx-auto w-full justify-between py-3 px-16 border-b fixed bg-white z-50">
             {/* 로고 + 메뉴바 */}
             <div className="flex items-center gap-6">
                 <Link to="/" className="text-xl font-bold text-primary no-underline">

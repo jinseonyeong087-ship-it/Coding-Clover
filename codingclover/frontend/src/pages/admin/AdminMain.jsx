@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Nav from '@/components/Nav';
 import Tail from "@/components/Tail";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
     Table,
     TableBody,
@@ -77,18 +77,17 @@ function AdminMain() {
             .catch((error) => {
                 console.error('강사 데이터 로딩 실패', error);
             });
-
-        // 강의 업로드
-        fetch('/admin/lectures', {
+        // 강의 불러오기
+        fetch(`/admin/lectures`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
         })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
                 }
-                return response.json();
+                return res.json();
             })
             .then((data) => {
                 console.log("강의 데이터 로드 성공", data);
@@ -99,13 +98,10 @@ function AdminMain() {
             });
     }, []);
 
-    //강의 불러오기
-
-
     return (
         <>
             <Nav />
-            <section className="container mx-auto px-4 py-16">
+            <section className="container mx-auto px-16 py-24">
                 <div className="flex justify-between col-2 gap-8">
 
                     {/* ================= 강좌 승인 ================= */}
@@ -244,17 +240,16 @@ function AdminMain() {
                 </div>
             </section>
             {/* 강의 승인란 */}
-            <section className="container mx-auto px-4 py-16">
+            <section className="container mx-auto px-16">
                 <Card>
                     <Table>
                         <TableCaption className="text-left text-foreground font-semibold text-lg caption-top px-4">강의 업로드 사항</TableCaption>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="px-4 py-3 text-center">순서</TableHead>
-                                <TableHead className="px-4 py-3 text-center">강좌명</TableHead>
+                                <TableHead className="px-4 py-3 text-center">순번</TableHead>
+                                <TableHead className="px-4 py-3 text-center">강의 순서</TableHead>
                                 <TableHead className="px-4 py-3 text-center">강의 제목</TableHead>
-                                <TableHead className="px-4 py-3 text-center">난이도</TableHead>
-                                <TableHead className="px-4 py-3 text-center">강사명</TableHead>
+                                <TableHead className="px-4 py-3 text-center">업로드 예약 유무</TableHead>
                                 <TableHead className="px-4 py-3 text-center">승인 상태</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -264,11 +259,10 @@ function AdminMain() {
                                     const uniqueKey = item.lectureId || `lecture-idx-${index}`;
                                     return (
                                         <TableRow key={uniqueKey}>
-                                            <TableCell className="px-4 py-3 text-center">{item.orderNo}</TableCell>
-                                            <TableCell className="px-4 py-3 text-center"><Link to={`/admin/course/${item.courseId}`}>{item.courseTitle}</Link></TableCell>
+                                            <TableCell className="px-4 py-3 text-center">{item.lectureId}</TableCell>
+                                            <TableCell className="px-4 py-3 text-center">{item.orderNo}강</TableCell>
                                             <TableCell className="px-4 py-3 text-center"><Link to={`/admin/course/${item.courseId}/lectures`}>{item.title}</Link></TableCell>
-                                            <TableCell className="px-4 py-3 text-center">{item.duration}</TableCell>
-                                            <TableCell className="px-4 py-3 text-center">{item.createdByName}</TableCell>
+                                            <TableCell className="px-4 py-3 text-center">{item.scheduledAt}</TableCell>
                                             <TableCell className="px-4 py-3 text-center">
                                                 {item.approvalStatus === 'PENDING' ? (
                                                     <Badge variant="destructive">승인 필요</Badge>

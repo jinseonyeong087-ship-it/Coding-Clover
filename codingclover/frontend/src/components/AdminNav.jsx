@@ -13,7 +13,11 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Search } from "lucide-react"
 import Logout from "@/components/Logout"
-import axios from 'axios';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
 
 function AdminNav() {
     const [loginId, setLoginId] = useState(false);
@@ -33,7 +37,7 @@ function AdminNav() {
         }
     }, []);
     return (
-        <nav className="flex items-center justify-between px-24 py-3 border-b bg-background">
+        <nav className="flex mx-auto w-full justify-between py-3 px-16 border-b fixed bg-white z-50">
             {/* 로고 + 메뉴바 */}
             <div className="flex items-center gap-6">
                 <Link to="/admin/dashboard" className="text-xl font-bold text-primary no-underline">
@@ -44,8 +48,7 @@ function AdminNav() {
                     <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">강좌·강의·강사</MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem>강좌 승인·반려</MenubarItem>
-                            <MenubarItem>강의 업로드 내역</MenubarItem>
+                            <MenubarItem>강좌·강의</MenubarItem>
                             <MenubarItem>강사 관리</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
@@ -84,13 +87,19 @@ function AdminNav() {
                         className="pl-9 w-48"
                         value={keyword}
                         onChange={(e) => setKeyword(e.target.value)}
-                        onKeyDown={(e)=>{
-                            if(e.key==='Enter'&&keyword.trim()) {
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && keyword.trim()) {
                                 navigate(`/test/search?category=COURSE&keyword=${encodeURIComponent(keyword)}`);
-                            }}}/>
+                            }
+                        }} />
                 </div>
 
-                <Button variant="ghost" className="text-sm">{users.name}님</Button>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="ghost" className="text-sm">{users.name}님</Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80">알람띠링띠링</PopoverContent>
+                </Popover>
                 <Logout />
             </div>
         </nav>

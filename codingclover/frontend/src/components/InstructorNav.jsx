@@ -33,7 +33,7 @@ function InstructorNav() {
         }
     }, []);
     return (
-        <nav className="container mx-auto flex items-center justify-between py-3 border-b bg-background">
+        <nav className="flex mx-auto w-full justify-between py-3 px-16 border-b fixed bg-white z-50">
             <div className="flex items-center gap-6">
                 <Link to="/instructor/dashboard" className="text-xl font-bold text-primary no-underline">
                     Coding-Clover
