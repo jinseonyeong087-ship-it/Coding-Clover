@@ -129,6 +129,8 @@ function App() {
           <Route path="dashboard" element={<AdminMain />} />
           <Route path="course/:courseId" element={<ProposalDetail />} />
           <Route path="users/instructors/:userId" element={<AdminApproch />} />
+          {/*검색*/}
+          <Route path="search" element={<AdminSearch />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
         {/*강사 프로필 <Route path="/api/instructor/profile" element={<InstructorProfile />} /> */}
