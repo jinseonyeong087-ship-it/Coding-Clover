@@ -19,7 +19,7 @@ function AdminMain() {
     /** id, 난이도, 강좌명, 강사명, 승인상태 */
     const [course, setCourse] = useState([]);
     const [status, setStatus] = useState([]);
-    const [users, setUsers] = useState([]);
+    const [lecture, setLecture] = useState([]);
 
     // 생성 후 24시간 이내면 NEW 배지 표시
     const isNewCourse = (createdAt) => {
@@ -77,10 +77,30 @@ function AdminMain() {
             .catch((error) => {
                 console.error('강사 데이터 로딩 실패', error);
             });
+
+        // 강의 업로드
+        fetch('/admin/lectures', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log("강의 데이터 로드 성공", data);
+                setLecture(data);
+            })
+            .catch((error) => {
+                console.error('강의 데이터 로딩 실패', error);
+            });
     }, []);
 
-    // 'PENDING' = 보류, 'APPROVED' = 승인, 'REJECTED' = 반려
-    // 강좌 승인 백엔파일을 찾아라
+    //강의 불러오기
+
 
     return (
         <>
@@ -223,28 +243,54 @@ function AdminMain() {
                     </div>
                 </div>
             </section>
+            {/* 강의 승인란 */}
             <section className="container mx-auto px-4 py-16">
-                        <Card>
-                            <Table>
-                                <TableCaption className="text-left text-foreground font-semibold text-lg caption-top px-4">강의 업로드 사항</TableCaption>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="px-4 py-3 text-center">순서</TableHead>
-                                        <TableHead className="px-4 py-3 text-center">강좌명</TableHead>
-                                        <TableHead className="px-4 py-3 text-center">강의 제목</TableHead>
-                                        <TableHead className="px-4 py-3 text-center">난이도</TableHead>
-                                        <TableHead className="px-4 py-3 text-center">강사명</TableHead>
-                                        <TableHead className="px-4 py-3 text-center">승인 상태</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    <TableRow>
-                                         <TableCell className="px-4 py-3 text-center"></TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
-                        </Card>
-                    </section>
+                <Card>
+                    <Table>
+                        <TableCaption className="text-left text-foreground font-semibold text-lg caption-top px-4">강의 업로드 사항</TableCaption>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="px-4 py-3 text-center">순서</TableHead>
+                                <TableHead className="px-4 py-3 text-center">강좌명</TableHead>
+                                <TableHead className="px-4 py-3 text-center">강의 제목</TableHead>
+                                <TableHead className="px-4 py-3 text-center">난이도</TableHead>
+                                <TableHead className="px-4 py-3 text-center">강사명</TableHead>
+                                <TableHead className="px-4 py-3 text-center">승인 상태</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {lecture && lecture.length > 0 ? (
+                                lecture.map((item, index) => {
+                                    const uniqueKey = item.lectureId || `lecture-idx-${index}`;
+                                    return (
+                                        <TableRow key={uniqueKey}>
+                                            <TableCell className="px-4 py-3 text-center">{item.orderNo}</TableCell>
+                                            <TableCell className="px-4 py-3 text-center">{item.courseTitle}</TableCell>
+                                            <TableCell className="px-4 py-3 text-center">{item.title}</TableCell>
+                                            <TableCell className="px-4 py-3 text-center">{item.duration}</TableCell>
+                                            <TableCell className="px-4 py-3 text-center">{item.createdByName}</TableCell>
+                                            <TableCell className="px-4 py-3 text-center">
+                                                {item.approvalStatus === 'PENDING' ? (
+                                                    <Badge variant="destructive">승인 필요</Badge>
+                                                ) : item.approvalStatus === 'APPROVED' ? (
+                                                    <Badge variant="secondary">승인 완료</Badge>
+                                                ) : (
+                                                    <Badge variant="outline">반려됨</Badge>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="text-center py-10">
+                                        업로드된 강의가 없습니다.
+                                    </TableCell>
+                                </TableRow>)}
+                        </TableBody>
+                    </Table>
+                </Card>
+            </section>
             <Tail />
         </>
     );

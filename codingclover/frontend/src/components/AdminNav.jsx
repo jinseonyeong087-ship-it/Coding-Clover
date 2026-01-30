@@ -18,6 +18,7 @@ import axios from 'axios';
 function AdminNav() {
     const [loginId, setLoginId] = useState(false);
     const [users, setUsers] = useState({ name: '' });
+    const [keyword, setKeyword] = useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -81,7 +82,12 @@ function AdminNav() {
                         type="search"
                         placeholder="메뉴 검색..."
                         className="pl-9 w-48"
-                    />
+                        value={keyword}
+                        onChange={(e) => setKeyword(e.target.value)}
+                        onKeyDown={(e)=>{
+                            if(e.key==='Enter'&&keyword.trim()) {
+                                navigate(`/test/search?category=COURSE&keyword=${encodeURIComponent(keyword)}`);
+                            }}}/>
                 </div>
 
                 <Button variant="ghost" className="text-sm">{users.name}님</Button>
