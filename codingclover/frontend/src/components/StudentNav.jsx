@@ -18,6 +18,7 @@ import axios from 'axios';
 function StudentNav() {
     const [loginId, setLoginId] = useState(false);
     const [users, setUsers] = useState({ name: '' });
+    const [keyword, setKeyword] = useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -99,15 +100,15 @@ function StudentNav() {
                     <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem onClick={()=>{navigate('/test/qna')}}>Q&A</MenubarItem>
-                            <MenubarItem onClick={()=>{navigate('/student/community')}}>자유게시판</MenubarItem>
+                            <MenubarItem onClick={() => { navigate('/test/qna') }}>Q&A</MenubarItem>
+                            <MenubarItem onClick={() => { navigate('/student/community') }}>자유게시판</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={()=>{navigate('/notice')}}>공지사항</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/notice') }}>공지사항</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={()=>{navigate('/test/coding')}}>코딩테스트</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/test/coding') }}>코딩테스트</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
                         <Link
@@ -128,7 +129,13 @@ function StudentNav() {
                         type="search"
                         placeholder="강좌 검색..."
                         className="pl-9 w-48"
-                    />
+                        value={keyword}
+                        onChange={(e) => setKeyword(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && keyword.trim()) {
+                                navigate(`/test/search?category=COURSE&keyword=${encodeURIComponent(keyword)}`);
+                            }
+                        }} />
                 </div>
                 {!loginId ? (
                     <Button size="sm"><Link to="/auth/login">로그인</Link></Button>)

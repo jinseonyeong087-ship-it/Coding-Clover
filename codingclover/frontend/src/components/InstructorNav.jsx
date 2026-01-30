@@ -18,7 +18,7 @@ import axios from 'axios';
 function InstructorNav() {
     const [loginId, setLoginId] = useState(false);
     const [users, setUsers] = useState({ name: '' });
-
+    const [keyword, setKeyword] = useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -57,13 +57,13 @@ function InstructorNav() {
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={()=>{navigate('/test/qna')}}>Q&A 답변관리</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/test/qna') }}>Q&A 답변관리</MenubarTrigger>
                         <MenubarContent>
                             <MenubarItem>수강생 질문</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={()=>{navigate('/notice')}}>공지사항</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/notice') }}>공지사항</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
                         <MenubarTrigger onClick={() => navigate('/instructor/mypage')} className="cursor-pointer">마이 페이지</MenubarTrigger>
@@ -78,7 +78,13 @@ function InstructorNav() {
                         type="search"
                         placeholder="메뉴 검색..."
                         className="pl-9 w-48"
-                    />
+                        value={keyword}
+                        onChange={(e) => setKeyword(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && keyword.trim()) {
+                                navigate(`/test/search?category=COURSE&keyword=${encodeURIComponent(keyword)}`);
+                            }
+                        }} />
                 </div>
 
                 <Button variant="ghost" className="text-sm">{users.name}님</Button>
