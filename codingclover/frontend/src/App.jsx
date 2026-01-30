@@ -28,9 +28,9 @@ import TestPaymentSuccess from './test/TestPaymentSuccess'
 import TestPaymentFail from './test/TestPaymentFail'
 import LectureBatchTest from './test/LectureBatchTest';
 import LectureCreateTest from './test/LectureCreateTest';
-import TestInstructorCourseManage from './pages/TestInstructorCourseManage';
-import TestInstructorCourseEdit from './pages/TestInstructorCourseEdit';
-import TestInstructorLectureEdit from './pages/TestInstructorLectureEdit';
+import TestInstructorCourseManage from './test/TestInstructorCourseManage';
+import TestInstructorCourseEdit from './test/TestInstructorCourseEdit';
+import TestInstructorLectureEdit from './test/TestInstructorLectureEdit';
 import FindAccountTest from './test/FindAccountTest';
 
 
