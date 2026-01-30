@@ -64,7 +64,7 @@ public class LectureController {
     // 강사용: 본인이 개설한 강좌의 강의 목록 조회 (승인 대기중 등 모든 상태 포함)
     @PreAuthorize("hasRole('INSTRUCTOR')") // 강사 권한 필요
     @GetMapping("/instructor/course/{courseId}/lectures")
-    public ResponseEntity<List<InstructorLectureDto>> instructorListByCourse(@PathVariable Long courseId,
+    public ResponseEntity<List<InstructorLectureDto>> instructorListByCourse(@PathVariable("courseId") Long courseId,
             Principal principal) {
         // 1. 강좌 존재 여부 확인
         Course course = courseService.getCourse(courseId);
