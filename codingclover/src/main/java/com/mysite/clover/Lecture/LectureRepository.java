@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.mysite.clover.Course.Course;
 import com.mysite.clover.Users.Users;
@@ -44,4 +46,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
 
     // 특정 강좌(CourseId)에 속한 강의들을 순서(OrderNo)대로 조회
     List<Lecture> findByCourse_CourseIdOrderByOrderNoAsc(Long courseId);
+
+    // 강의 제목(title)으로 검색하는 기능 추가
+    Page<Lecture> findByTitleContaining(String title, Pageable pageable);
 }

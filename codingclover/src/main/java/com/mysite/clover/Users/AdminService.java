@@ -1,6 +1,8 @@
 package com.mysite.clover.Users;
 
 import com.mysite.clover.Course.CourseRepository;
+import com.mysite.clover.Lecture.LectureRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +16,7 @@ public class AdminService {
 
     private final UsersRepository userRepository;
     private final CourseRepository courseRepository;
+    private final LectureRepository lectureRepository;
 
     // 관리자 통합 검색
     public Page<?> searchByAdmin(String category, String keyword, Pageable pageable) {
@@ -28,6 +31,9 @@ public class AdminService {
             // 강좌 검색
             case "COURSE":
                 return courseRepository.findByTitleContaining(keyword, pageable);
+            // 강의 검색
+            case "LECTURE":
+                return lectureRepository.findByTitleContaining(keyword, pageable);
             // 기타 검색
             default:
                 // 카테고리 없이 이름으로 전체 검색
