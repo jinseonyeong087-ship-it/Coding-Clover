@@ -187,14 +187,15 @@ public class CourseService {
     }
 
     public List<Course> getCoursesByInstructor(String loginId) {
-    List<Course> list = courseRepository.findByCreatedBy_LoginId(loginId);
-    return list != null ? list : new ArrayList<>(); // null 대신 빈 리스트 반환
-}
+        List<Course> list = courseRepository.findByCreatedBy_LoginId(loginId);
+        return list != null ? list : new ArrayList<>(); // null 대신 빈 리스트 반환
+    }
 
     // 강좌 재제출 (반려된 강좌 수정 후 재요청)
     // [파라미터 설명]
     // - courseId: 재심사 요청할 강좌의 ID
-    // - request: 프론트엔드에서 전달받은 수정된 강좌 정보 (CourseCreateRequest는 @Getter/@Setter가 있어서 값 설정/조회 가능)
+    // - request: 프론트엔드에서 전달받은 수정된 강좌 정보 (CourseCreateRequest는 @Getter/@Setter가 있어서
+    // 값 설정/조회 가능)
     // - loginId: 현재 로그인한 강사의 ID (본인 확인용)
     @Transactional
     public void resubmitCourse(Long courseId, CourseCreateRequest request, String loginId) {
@@ -221,5 +222,61 @@ public class CourseService {
         course.setProposalRejectReason(null);
 
         // Dirty Checking에 의해 트랜잭션 종료 시 자동 업데이트 (save 호출 생략 가능)
+    }
+
+    // [New] 강좌 임시 저장 (DRAFT)
+    @Transactional
+    public Long saveDraft(CourseCreateRequest request, Users instructor) {
+        Course course = new Course();
+        course.setTitle(request.getTitle());
+        course.setDescription(request.getDescription());
+        course.setLevel(request.getLevel());
+        course.setPrice(request.getPrice());
+        course.setThumbnailUrl(request.getThumbnailUrl());
+
+        course.setCreatedBy(instructor);
+        course.setProposalStatus(CourseProposalStatus.DRAFT); // DRAFT 상태
+        course.setCreatedAt(LocalDateTime.now());
+        course.setUpdatedAt(LocalDateTime.now());
+
+        // 필수값 검증 없이 저장
+        return courseRepository.save(course).getCourseId();
+    }
+
+    // [New] 임시 저장 강좌 최종 제출 (승인 요청)
+    @Transactional
+    public void submitDraft(Long courseId, CourseCreateRequest request, String loginId) {
+        Course course = getCourse(courseId);
+
+        // 권한 체크
+        if (!course.getCreatedBy().getLoginId().equals(loginId)) {
+            throw new SecurityException("권한이 없습니다.");
+        }
+
+        // 제출 시 필수값 검증
+        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
+            throw new IllegalArgumentException("강좌 제목은 필수입니다.");
+        }
+        if (request.getDescription() == null || request.getDescription().trim().isEmpty()) {
+            throw new IllegalArgumentException("강좌 설명은 필수입니다.");
+        }
+        if (request.getLevel() <= 0) {
+            throw new IllegalArgumentException("난이도 설정은 필수입니다.");
+        }
+        // ThumbnailUrl 필수는 기획에 따라 결정 (여기선 필수로 가정)
+        if (request.getThumbnailUrl() == null || request.getThumbnailUrl().trim().isEmpty()) {
+            throw new IllegalArgumentException("썸네일 이미지는 필수입니다.");
+        }
+
+        // 데이터 업데이트
+        course.setTitle(request.getTitle());
+        course.setDescription(request.getDescription());
+        course.setLevel(request.getLevel());
+        course.setPrice(request.getPrice());
+        course.setThumbnailUrl(request.getThumbnailUrl());
+
+        // 상태 변경: DRAFT -> PENDING
+        course.setProposalStatus(CourseProposalStatus.PENDING);
+        course.setUpdatedAt(LocalDateTime.now());
     }
 }

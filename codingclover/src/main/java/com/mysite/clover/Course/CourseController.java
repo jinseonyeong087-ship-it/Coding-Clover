@@ -143,6 +143,38 @@ public class CourseController {
         return ResponseEntity.ok("강좌 개설 신청이 완료되었습니다.");
     }
 
+    // [New] 강좌 임시 저장 API
+    // URL: /instructor/course/draft
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PostMapping("/instructor/course/draft")
+    public ResponseEntity<String> saveCourseDraft(
+            @RequestBody CourseCreateRequest request,
+            Principal principal) {
+
+        Users instructor = usersRepository.findByLoginId(principal.getName())
+                .orElseThrow(() -> new RuntimeException("유저 정보가 없습니다."));
+
+        // DRAFT 상태로 저장 (필수값 검증 Skip)
+        Long courseId = courseService.saveDraft(request, instructor);
+
+        return ResponseEntity.ok("강좌가 임시 저장되었습니다. (ID: " + courseId + ")");
+    }
+
+    // [New] 임시 저장된 강좌 최종 제출 (승인 요청)
+    // URL: /instructor/course/{id}/submit
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PutMapping("/instructor/course/{id}/submit")
+    public ResponseEntity<String> submitCourseDraft(
+            @PathVariable("id") Long id,
+            @RequestBody CourseCreateRequest request,
+            Principal principal) {
+
+        // 서비스에서 검증 후 상태 변경 (DRAFT -> PENDING)
+        courseService.submitDraft(id, request, principal.getName());
+
+        return ResponseEntity.ok("강좌 개설 신청(최종 제출)이 완료되었습니다.");
+    }
+
     // 강사 : 개별 강좌 상세 조회
     @PreAuthorize("hasRole('INSTRUCTOR')") // 강사 권한 체크
     @GetMapping("/instructor/course/{id}")

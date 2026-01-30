@@ -9,5 +9,8 @@ public enum CourseProposalStatus {
     APPROVED,
 
     // 반려됨 (관리자가 승인을 거부한 상태, 반려 사유와 함께 관리됨)
-    REJECTED
+    REJECTED,
+
+    // 임시 저장 (작성 중인 상태)
+    DRAFT
 }
