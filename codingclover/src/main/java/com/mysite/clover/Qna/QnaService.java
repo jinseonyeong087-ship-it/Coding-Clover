@@ -13,6 +13,7 @@ import com.mysite.clover.Course.Course;
 @Service
 public class QnaService {
   private final QnaRepository qnaRepository;
+  private final com.mysite.clover.Notification.NotificationService notificationService;
 
   // 학생
   // ------------------------------------------------------------------------------------------
@@ -39,6 +40,7 @@ public class QnaService {
   }
 
   // 질문 등록할때
+  @org.springframework.transaction.annotation.Transactional
   public void create(String title, String question, Users users, Course course) {
     Qna q = new Qna();
     q.setTitle(title);
@@ -48,6 +50,14 @@ public class QnaService {
     q.setStatus(QnaStatus.WAIT); // 질문 상태 default WAIT
     q.setCreatedAt(LocalDateTime.now());
     qnaRepository.save(q);
+
+    // 강사에게 알림 전송 (새로운 질문)
+    notificationService.createNotification(
+        course.getCreatedBy(),
+        "NEW_QNA_QUESTION",
+        "'" + course.getTitle() + "' 강좌에 새로운 질문이 등록되었습니다: " + title,
+        // 강사 QnA 관리 페이지 (가정)
+        "/instructor/course/" + course.getCourseId() + "/qna/" + q.getQnaId());
   }
   // 학생
   // ------------------------------------------------------------------------------------------

@@ -24,6 +24,7 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final UsersRepository usersRepository;
+    private final com.mysite.clover.Notification.NotificationService notificationService;
 
     // [조회 로직]
 
@@ -80,6 +81,18 @@ public class CourseService {
 
         // 3. DB에 저장
         courseRepository.save(course);
+
+        // 4. 관리자에게 알림 전송 (신규 승인 요청인 경우)
+        if (status == CourseProposalStatus.PENDING) {
+            List<Users> admins = usersRepository.findByRole(com.mysite.clover.Users.UsersRole.ADMIN);
+            for (Users admin : admins) {
+                notificationService.createNotification(
+                        admin,
+                        "NEW_COURSE_REQUEST",
+                        "강사 " + user.getName() + "님의 신규 강좌 승인 요청: '" + title + "'",
+                        "/admin/courses");
+            }
+        }
     }
 
     // 강좌 정보 수정 (강사 본인 강좌 수정)
@@ -142,6 +155,14 @@ public class CourseService {
 
         // 5. DB에 저장
         enrollmentRepository.save(enrollment);
+
+        // 6. 강사에게 알림 전송 (수강생 등록)
+        notificationService.createNotification(
+                course.getCreatedBy(),
+                "NEW_ENROLLMENT",
+                "'" + course.getTitle() + "' 강좌에 " + user.getName() + "님이 수강 신청했습니다.",
+                // 강사용 강좌 관리 페이지 (가정)
+                "/instructor/course/" + courseId);
     }
 
     // 특정 강좌를 수강 중인 학생(User) 목록 조회
@@ -172,6 +193,13 @@ public class CourseService {
 
         // 4. 변경사항 저장
         courseRepository.save(course);
+
+        // 5. 알림 전송
+        notificationService.createNotification(
+                course.getCreatedBy(),
+                "COURSE_APPROVED",
+                "강좌 '" + course.getTitle() + "' 승인됨",
+                "/instructor/course/" + course.getCourseId());
     }
 
     // 관리자 기능: 강좌 반려 처리
@@ -184,6 +212,13 @@ public class CourseService {
 
         // 3. 변경사항 저장
         courseRepository.save(course);
+
+        // 4. 알림 전송
+        notificationService.createNotification(
+                course.getCreatedBy(),
+                "COURSE_REJECTED",
+                "강좌 '" + course.getTitle() + "' 반려됨: " + reason,
+                "/instructor/course/" + course.getCourseId());
     }
 
     public List<Course> getCoursesByInstructor(String loginId) {
@@ -222,6 +257,16 @@ public class CourseService {
         course.setProposalRejectReason(null);
 
         // Dirty Checking에 의해 트랜잭션 종료 시 자동 업데이트 (save 호출 생략 가능)
+
+        // 5. 관리자에게 알림 전송 (재승인 요청)
+        List<Users> admins = usersRepository.findByRole(com.mysite.clover.Users.UsersRole.ADMIN);
+        for (Users admin : admins) {
+            notificationService.createNotification(
+                    admin,
+                    "COURSE_RESUBMITTED",
+                    "강사 " + course.getCreatedBy().getName() + "님의 강좌 재승인 요청: '" + course.getTitle() + "'",
+                    "/admin/courses");
+        }
     }
 
     // [New] 강좌 임시 저장 (DRAFT)
@@ -278,5 +323,15 @@ public class CourseService {
         // 상태 변경: DRAFT -> PENDING
         course.setProposalStatus(CourseProposalStatus.PENDING);
         course.setUpdatedAt(LocalDateTime.now());
+
+        // 관리자에게 알림 전송 (승인 요청)
+        List<Users> admins = usersRepository.findByRole(com.mysite.clover.Users.UsersRole.ADMIN);
+        for (Users admin : admins) {
+            notificationService.createNotification(
+                    admin,
+                    "NEW_COURSE_REQUEST",
+                    "강사 " + course.getCreatedBy().getName() + "님의 신규 강좌 승인 요청: '" + course.getTitle() + "'",
+                    "/admin/courses");
+        }
     }
 }

@@ -17,6 +17,7 @@ public class QnaAnswerService {
 
   private final QnaAnswerRepository qnaAnswerRepository;
   private final QnaRepository qnaRepository;
+  private final com.mysite.clover.Notification.NotificationService notificationService;
 
   public QnaAnswer getAnswer(Long answerId) {
     return qnaAnswerRepository.findById(answerId)
@@ -35,6 +36,13 @@ public class QnaAnswerService {
     // 질문 상태를 답변 완료(ANSWERED)로 변경
     qna.setStatus(QnaStatus.ANSWERED);
     qnaRepository.save(qna);
+
+    // 질문 작성자(학생)에게 알림 전송
+    notificationService.createNotification(
+        qna.getUsers(),
+        "QNA_ANSWERED",
+        "작성하신 질문 '" + qna.getTitle() + "'에 답변이 달렸습니다.",
+        "/course/" + qna.getCourse().getCourseId() + "/qna/" + qna.getQnaId());
   }
 
   public void update(QnaAnswer answer, String content) {

@@ -19,6 +19,8 @@ public class LectureService {
 
     private final LectureRepository lectureRepository;
     private final UsersRepository usersRepository;
+    private final com.mysite.clover.Notification.NotificationService notificationService;
+    private final com.mysite.clover.Enrollment.EnrollmentRepository enrollmentRepository;
 
     // 해당 강좌에 속한 모든 강의를 순서대로 조회 (강사용/관리자용, 상태 불문)
     public List<Lecture> getListByCourse(Course course) {
@@ -74,6 +76,17 @@ public class LectureService {
 
         // 3. DB 저장
         lectureRepository.save(lecture);
+
+        // 4. 관리자 알림 전송 (승인 요청)
+        List<Users> admins = usersRepository.findByRole(com.mysite.clover.Users.UsersRole.ADMIN);
+        for (Users admin : admins) {
+            notificationService.createNotification(
+                    admin,
+                    "NEW_LECTURE_REQUEST",
+                    "강사 " + instructor.getName() + "님의 신규 강의 승인 요청: '" + title + "'",
+                    "/admin/lectures" // 수정됨: 관리자 강의 관리 페이지
+            );
+        }
     }
 
     // [New] 임시 저장 (DRAFT) - 필수값 검증 없이 저장
@@ -129,6 +142,16 @@ public class LectureService {
         lecture.setApprovalStatus(LectureApprovalStatus.PENDING); // 상태 변경: DRAFT -> PENDING
 
         lectureRepository.save(lecture);
+
+        // 관리자 알림 전송 (승인 요청)
+        List<Users> admins = usersRepository.findByRole(com.mysite.clover.Users.UsersRole.ADMIN);
+        for (Users admin : admins) {
+            notificationService.createNotification(
+                    admin,
+                    "NEW_LECTURE_REQUEST",
+                    "강사 " + lecture.getCreatedBy().getName() + "님의 신규 강의 승인 요청: '" + lecture.getTitle() + "'",
+                    "/admin/lectures");
+        }
     }
 
     // 강의 ID로 단건 조회 (존재하지 않으면 예외 발생)
@@ -147,6 +170,24 @@ public class LectureService {
 
         // 3. 변경사항 저장
         lectureRepository.save(lecture);
+
+        // 4. 강사 알림 전송
+        notificationService.createNotification(
+                lecture.getCreatedBy(),
+                "LECTURE_APPROVED",
+                "강의 '" + lecture.getTitle() + "' 승인됨",
+                "/instructor/lecture/" + lecture.getLectureId());
+
+        // 5. 수강생 알림 전송 (신규 강의 업로드)
+        List<com.mysite.clover.Enrollment.Enrollment> enrollments = enrollmentRepository
+                .findAdminByCourse(lecture.getCourse());
+        for (com.mysite.clover.Enrollment.Enrollment enrollment : enrollments) {
+            notificationService.createNotification(
+                    enrollment.getUser(),
+                    "NEW_LECTURE_UPLOADED",
+                    "'" + lecture.getCourse().getTitle() + "' 강좌에 새 강의가 업로드되었습니다: " + lecture.getTitle(),
+                    "/lecture/" + lecture.getLectureId());
+        }
     }
 
     // 일괄 승인
@@ -171,6 +212,13 @@ public class LectureService {
 
         // 3. 변경사항 저장
         lectureRepository.save(lecture);
+
+        // 4. 알림 전송
+        notificationService.createNotification(
+                lecture.getCreatedBy(),
+                "LECTURE_REJECTED",
+                "강의 '" + lecture.getTitle() + "' 반려됨: " + reason,
+                "/instructor/lecture/" + lecture.getLectureId());
     }
 
     // 일괄 반려
@@ -254,6 +302,16 @@ public class LectureService {
 
         // 5. 변경사항 저장
         lectureRepository.save(lecture);
+
+        // 6. 관리자 알림 전송 (재승인 요청)
+        List<Users> admins = usersRepository.findByRole(com.mysite.clover.Users.UsersRole.ADMIN);
+        for (Users admin : admins) {
+            notificationService.createNotification(
+                    admin,
+                    "LECTURE_RESUBMITTED",
+                    "강사 " + lecture.getCreatedBy().getName() + "님의 강의 재승인 요청: '" + lecture.getTitle() + "'",
+                    "/admin/lectures");
+        }
     }
 
     // 강좌 ID로 강의 목록 조회

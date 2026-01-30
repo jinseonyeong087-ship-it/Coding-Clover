@@ -14,6 +14,7 @@ import com.mysite.clover.CommunityPost.dto.PostResponse;
 public class CommunityPostService {
     private final CommunityPostRepository communityPostRepository;
     private final CommunityCommentRepository communityCommentRepository;
+    private final com.mysite.clover.Notification.NotificationService notificationService;
 
     // 수강생 전용: 신규 게시글 등록
     @Transactional
@@ -119,6 +120,15 @@ public class CommunityPostService {
 
         // 3. DB 저장
         communityCommentRepository.save(comment);
+
+        // 4. 게시글 작성자에게 알림 전송 (본인이 쓴 댓글이 아닌 경우에만)
+        if (!post.getUser().getLoginId().equals(user.getLoginId())) {
+            notificationService.createNotification(
+                    post.getUser(),
+                    "NEW_COMMENT",
+                    "작성하신 게시글 '" + post.getTitle() + "'에 새로운 댓글이 달렸습니다.",
+                    "/community/" + postId);
+        }
     }
 
     // 댓글 수정
