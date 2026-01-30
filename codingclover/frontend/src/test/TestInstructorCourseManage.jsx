@@ -186,7 +186,7 @@ const TestInstructorCourseManage = () => {
                                                         </td>
                                                         <td style={{ padding: '10px', textAlign: 'center' }}>
                                                             {/* 강의가 반려된 경우에만 수정 버튼 활성화 */}
-                                                            {lecture.approvalStatus === 'REJECTED' ? (
+                                                            {lecture.approvalStatus === 'REJECTED' || lecture.approvalStatus === 'PENDING' ? (
                                                                 <button
                                                                     onClick={() => navigate(`/test/lecture/edit/${lecture.lectureId}`)}
                                                                     style={{
