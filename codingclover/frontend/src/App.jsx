@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import axios from 'axios';
 import { Routes, Route, BrowserRouter } from 'react-router-dom'
 import Home from './pages/Home'
@@ -42,6 +42,25 @@ axios.defaults.withCredentials = true;
 
 
 function App() {
+
+  useEffect(() => {
+    // 앱 초기 로드 시 서버 세션 상태 확인
+    axios.get('/auth/status')
+      .then(response => {
+        const { loggedIn } = response.data;
+        // 서버는 로그아웃 상태인데, 클라이언트는 로그인 상태라고 믿고 있다면 (예: 서버 재시작)
+        if (loggedIn === false && localStorage.getItem('loginId') === 'true') {
+          console.log("세션 만료 감지: 자동 로그아웃 처리");
+          localStorage.removeItem('loginId');
+          localStorage.removeItem('users');
+          // 상태 초기화를 위해 로그인 페이지로 이동 (알림 없음)
+          window.location.href = '/';
+        }
+      })
+      .catch(error => {
+        console.error("세션 상태 확인 실패:", error);
+      });
+  }, []);
   return (
     <BrowserRouter>
       <Routes>
