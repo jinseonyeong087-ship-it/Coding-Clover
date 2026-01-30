@@ -46,8 +46,6 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        {/* 커뮤니티 테스트 페이지 */}
-        <Route path="/student/community" element={<CommunityPost />} />
         {/* 임시 코딩 테스트 페이지 */}
         <Route path="/test/coding" element={<CodingTest />} />
         {/* 이메일 발송 테스트 페이지 */}
