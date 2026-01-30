@@ -265,8 +265,8 @@ function AdminMain() {
                                     return (
                                         <TableRow key={uniqueKey}>
                                             <TableCell className="px-4 py-3 text-center">{item.orderNo}</TableCell>
-                                            <TableCell className="px-4 py-3 text-center">{item.courseTitle}</TableCell>
-                                            <TableCell className="px-4 py-3 text-center">{item.title}</TableCell>
+                                            <TableCell className="px-4 py-3 text-center"><Link to={`/admin/course/${item.courseId}`}>{item.courseTitle}</Link></TableCell>
+                                            <TableCell className="px-4 py-3 text-center"><Link to={`/admin/course/${item.courseId}/lectures`}>{item.title}</Link></TableCell>
                                             <TableCell className="px-4 py-3 text-center">{item.duration}</TableCell>
                                             <TableCell className="px-4 py-3 text-center">{item.createdByName}</TableCell>
                                             <TableCell className="px-4 py-3 text-center">

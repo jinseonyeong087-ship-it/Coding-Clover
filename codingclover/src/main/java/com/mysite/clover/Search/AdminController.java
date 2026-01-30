@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
 
     // 관리자 서비스
-    private final AdminService adminService;
+    private final SearchService searchService;
 
     // 관리자 검색 API
     @GetMapping("/search")
@@ -28,7 +28,7 @@ public class AdminController {
             Pageable pageable) {
         
         // 관리자 검색 서비스 호출
-        Page<?> result = adminService.searchByAdmin(category, keyword, pageable);
+        Page<?> result = searchService.searchByAdmin(category, keyword, pageable);
         // 검색 결과 반환
         return ResponseEntity.ok(result);
     }

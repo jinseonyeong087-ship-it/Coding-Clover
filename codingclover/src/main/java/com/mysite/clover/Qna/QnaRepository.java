@@ -1,5 +1,7 @@
 package com.mysite.clover.Qna;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
@@ -16,4 +18,7 @@ public interface QnaRepository extends JpaRepository<Qna, Long> {
 
   // 강좌별 질문 조회 (강사)
   List<Qna> findAllByCourseOrderByCreatedAtDesc(Course course);
+
+  // QnA 제목 검색
+  Page<?> findByTitleContaining(String keyword, Pageable pageable);
 }
