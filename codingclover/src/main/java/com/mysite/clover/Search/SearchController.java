@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/api/search")
 @RequiredArgsConstructor
 // 관리자 페이지에서 사용자 검색 기능을 제공하는 컨트롤러
 public class SearchController {
@@ -16,7 +16,7 @@ public class SearchController {
     private final SearchService searchService;
 
     // 관리자 검색 API
-    @GetMapping("/search")
+    @GetMapping
 
     // 관리자 검색 결과를 반환
     public ResponseEntity<Page<?>> adminSearch(
