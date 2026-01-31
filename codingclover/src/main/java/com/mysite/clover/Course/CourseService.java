@@ -26,6 +26,12 @@ public class CourseService {
     private final UsersRepository usersRepository;
     private final com.mysite.clover.Notification.NotificationService notificationService;
 
+    // [수강 신청 로직]
+    public void enroll(Long courseId, long userId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'enroll'");
+    }
+
     // [조회 로직]
 
     // 전체 강좌 목록 조회 (관리자용 - 승인/미승인 모두 포함)

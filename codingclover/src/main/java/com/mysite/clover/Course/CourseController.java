@@ -59,6 +59,25 @@ public class CourseController {
         return ResponseEntity.ok(StudentCourseDto.fromEntity(courseService.getCourse(id)));
     }
 
+
+    @PostMapping("/enroll")
+public ResponseEntity<?> enroll(@RequestParam("courseId") Long courseId, 
+                                @SessionAttribute(name = "user", required = false) Users user) {
+    
+    // 1. 비로그인 체크 -> 401 에러와 메시지 반환
+    if (user == null) {
+        return ResponseEntity.status(401).body("로그인이 필요합니다.");
+    }
+
+    try {
+        // 2. 로그인된 경우 서비스 호출 (강좌ID, 로그인ID 전달)
+        courseService.enroll(courseId, user.getLoginId());
+        return ResponseEntity.ok("수강신청 완료");
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+}
+
     // ==========================================
     // 🟩 수강생 영역
     // ==========================================
