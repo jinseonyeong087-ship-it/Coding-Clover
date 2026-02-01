@@ -173,7 +173,7 @@ const CommunityPostList = () => {
     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    {currentUser && (
+                                    {currentUser && currentUser.role !== 'ADMIN' && (
                                         <Button
                                             variant={myPostsOnly ? "default" : "outline"}
                                             onClick={() => setMyPostsOnly(!myPostsOnly)}
@@ -184,20 +184,22 @@ const CommunityPostList = () => {
                                             {myPostsOnly ? '전체 글 보기' : '내가 쓴 글 보기'}
                                         </Button>
                                     )}
-                                    <Button
-                                        onClick={() => {
-                                            if (!currentUser) {
-                                                alert('로그인이 필요합니다.');
-                                                return;
-                                            }
-                                            setPostForm({ title: '', content: '' }); 
-                                            setViewMode('write');
-                                        }}
-                                        className="flex items-center gap-2 h-9"
-                                    >
-                                        <Edit className="h-4 w-4" />
-                                        글쓰기
-                                    </Button>
+                                    {currentUser && currentUser.role !== 'ADMIN' && (
+                                        <Button
+                                            onClick={() => {
+                                                if (!currentUser) {
+                                                    alert('로그인이 필요합니다.');
+                                                    return;
+                                                }
+                                                setPostForm({ title: '', content: '' }); 
+                                                setViewMode('write');
+                                            }}
+                                            className="flex items-center gap-2 h-9"
+                                        >
+                                            <Edit className="h-4 w-4" />
+                                            글쓰기
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
                             

@@ -323,7 +323,7 @@ const CommunityPostDetail = () => {
                                             <MessageCircle className="h-5 w-5" />
                                             댓글 ({selectedPost.comments?.length || 0})
                                         </CardTitle>
-                                        {currentUser && selectedPost.comments && selectedPost.comments.length > 0 && (
+                                        {currentUser && currentUser.role !== 'ADMIN' && selectedPost.comments && selectedPost.comments.length > 0 && (
                                             <Button
                                                 variant={myCommentsOnly ? "default" : "outline"}
                                                 size="sm"
