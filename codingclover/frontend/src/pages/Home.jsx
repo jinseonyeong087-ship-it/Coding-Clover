@@ -40,6 +40,7 @@ function Home() {
   return (
     <>
       <Nav />
+      <div className='py-8'/>
 
       {/* 히어로 섹션 */}
       <section className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white py-24 text-center">

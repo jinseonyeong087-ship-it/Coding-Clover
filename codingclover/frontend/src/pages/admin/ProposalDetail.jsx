@@ -113,7 +113,7 @@ function ProposalDetail() {
         <>
             <Nav />
 
-            <div className="container mx-auto px-4 py-16">
+            <section className="container mx-auto px-16 py-24">
                 <div className="flex max-w-2xl flex-col gap-4 text-sm">
                     <div className="flex flex-col gap-1.5">
                         <div className="leading-none font-bold text-lg">강좌명</div>
@@ -212,7 +212,7 @@ function ProposalDetail() {
                         <Button variant="ghost" onClick={() => navigate(-1)}>뒤로 가기</Button>
                     </div>
                 </div>
-            </div>
+            </section>
             <Tail />
         </>
 

@@ -222,8 +222,9 @@ function MyPage() {
   return (
     <>
       <Nav />
+      <div className='py-8'/>
 
-      <section className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-4 py-20">
 
         {loading && <p className="text-center">사용자 정보를 불러오는 중...</p>}
 

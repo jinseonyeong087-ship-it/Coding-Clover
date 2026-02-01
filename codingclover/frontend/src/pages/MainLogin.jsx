@@ -94,8 +94,10 @@ const MainLogin = () => {
     };
 
     return (
+        
         <div className="min-h-screen flex flex-col bg-background">
             <Nav />
+            <div className='py-8'/>
             <main className="flex-1 flex items-center justify-center py-12 px-4">
                 <Card className="w-full max-w-sm">
                     <CardHeader className="space-y-1 text-center">

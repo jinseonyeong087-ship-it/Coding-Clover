@@ -48,8 +48,8 @@ function AdminNav() {
                     <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">강좌·강의·강사</MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem>강좌·강의</MenubarItem>
-                            <MenubarItem>강사 관리</MenubarItem>
+                            <MenubarItem className="cursor-pointer" onClick={() => { navigate('/admin/course') }}>강좌·강의</MenubarItem>
+                            <MenubarItem className="cursor-pointer" onClick={() => { navigate('/admin/users/instructors') }}>강사 관리</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>

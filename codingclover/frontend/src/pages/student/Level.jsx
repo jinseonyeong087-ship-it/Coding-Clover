@@ -43,6 +43,7 @@ function Level() {
   return (
     <>
       <Nav />
+      <div className='py-8'/>
       <section className="container mx-auto px-4 py-16">
         <Tabs value={level} onValueChange={handleTabChange}>{/*Number 함수 사용해서 여기에 뿌리는 거구먼*/}
           <div className='flex items-center gap-10'>

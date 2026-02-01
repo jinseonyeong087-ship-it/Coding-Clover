@@ -34,7 +34,7 @@ function AdminMain() {
 
     useEffect(() => {
         // 강좌 목록 조회
-        fetch('/admin/course', {
+        fetch('/admin/course/{id}/pending', {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
@@ -78,7 +78,7 @@ function AdminMain() {
                 console.error('강사 데이터 로딩 실패', error);
             });
         // 강의 불러오기
-        fetch(`/admin/lectures`, {
+        fetch(`/admin/lectures/pending`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
@@ -101,7 +101,17 @@ function AdminMain() {
     return (
         <>
             <Nav />
-            <section className="container mx-auto px-16 py-24">
+            <section className="container mx-auto px-16 py-24"></section>
+            <section className="container mx-auto px-16 py-8">
+                <div className="flex justify-between col-4 gap-4">
+                    <Card>개설된 강좌 수</Card>
+                    <Card>총 수강생</Card>
+                    <Card>강사 n명</Card>
+                    <Card>뭐넣지</Card>
+                </div>
+
+            </section>
+            <section className="container mx-auto px-16 py-8">
                 <div className="flex justify-between col-2 gap-8">
 
                     {/* ================= 강좌 승인 ================= */}
@@ -207,7 +217,7 @@ function AdminMain() {
                                 {/* id, 강사명, 승인상태  */}
                                 <TableBody>
                                     {status && status.length > 0 ? (
-                                        status.map((users, index) => {
+                                        status.filter(users => users.status === 'SUSPENDED').map((users, index) => {
                                             const uniqueKey = users.userId || `user-idx-${index}`;
                                             return (
                                                 <TableRow key={uniqueKey}>

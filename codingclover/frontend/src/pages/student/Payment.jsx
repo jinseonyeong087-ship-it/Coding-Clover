@@ -6,6 +6,7 @@ function Payment() {
     return(
         <>
         <Nav/>
+        <div className='py-8'/>
         <Tail/>
         
         </>

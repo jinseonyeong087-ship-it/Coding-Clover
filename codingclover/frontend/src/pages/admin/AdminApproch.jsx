@@ -188,13 +188,12 @@ function AdminApproch() {
 
                             {/* 버튼 영역 */}
                             <div className="flex gap-4 justify-end pt-4">
-                                <Button variant="outline" onClick={() => navigate('/admin/dashboard')}>
-                                    목록으로
+                                <Button variant="outline" onClick={() => navigate(-1)}>
+                                    뒤로가기
                                 </Button>
                                 {instructor.status == 'ACTIVE' ? (
                                     <Button variant="ghost" disable>승인완료</Button>) : (
                                     <Button onClick={approveInstructor}>강사 승인</Button>)}
-
                             </div>
                         </CardContent>
                     </Card>

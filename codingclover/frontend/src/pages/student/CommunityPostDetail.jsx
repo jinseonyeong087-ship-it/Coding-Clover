@@ -166,6 +166,7 @@ const CommunityPostDetail = () => {
         return (
             <>
                 <Nav />
+                <div className='py-8'/>
                 <div className="container mx-auto px-4 py-8">
                     <div className="max-w-6xl mx-auto">
                         <div className="text-center py-8">
@@ -181,6 +182,7 @@ const CommunityPostDetail = () => {
     return (
         <>
             <Nav />
+            <div className='py-8'/>
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-6xl mx-auto">
                     <h1 className="text-3xl font-bold text-center mb-8">커뮤니티 게시판</h1>

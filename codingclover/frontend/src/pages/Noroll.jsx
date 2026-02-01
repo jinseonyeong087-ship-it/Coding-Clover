@@ -6,6 +6,7 @@ function Noroll() {
     return (
         <>
             <Nav />
+            <div className='py-24'/>
             <p className='text-center item-center'>권한 없음</p>
             <Tail />
         </>

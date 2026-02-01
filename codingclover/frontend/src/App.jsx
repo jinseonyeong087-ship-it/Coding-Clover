@@ -36,6 +36,8 @@ import FindAccountTest from './test/FindAccountTest';
 import TestSearch from './test/TestSearch';
 import TestNotice from './test/TestNotice';
 import AdminLectureDetail from '@/pages/admin/AdminLectureDetail'
+import AdminCourse from '@/pages/admin/AdminCourse'
+import AdminInstructorList from '@/pages/admin/AdminInstructorList'
 
 
 
@@ -134,9 +136,11 @@ function App() {
         {/* 관리자 */}
         <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="dashboard" element={<AdminMain />} />
+          <Route path="course" element={<AdminCourse />} />
           <Route path="course/:courseId" element={<ProposalDetail />} />
           <Route path="users/instructors/:userId" element={<AdminApproch />} />
           <Route path="course/:courseId/lectures" element={<AdminLectureDetail />} />
+          <Route path="users/instructors" element={<AdminInstructorList />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
         {/*강사 프로필 <Route path="/api/instructor/profile" element={<InstructorProfile />} /> */}
