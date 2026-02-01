@@ -19,6 +19,21 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import axios from "axios";
 import { Badge } from "@/components/ui/badge"
+import {
+    SidebarProvider,
+    Sidebar,
+    SidebarContent,
+    SidebarGroup,
+    SidebarHeader,
+    SidebarInset,
+    SidebarFooter,
+    SidebarTrigger,
+    SidebarMenu,
+    SidebarMenuItem,
+    SidebarMenuBadge,
+    SidebarMenuButton
+} from "@/components/ui/sidebar"
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 function ProposalDetail() {
 
@@ -112,108 +127,151 @@ function ProposalDetail() {
     return (
         <>
             <Nav />
-
-            <section className="container mx-auto px-16 py-24">
-                <div className="flex max-w-2xl flex-col gap-4 text-sm">
-                    <div className="flex flex-col gap-1.5">
-                        <div className="leading-none font-bold text-lg">강좌명</div>
-                        <div className="text-xl">{course.title}</div>
+            <div className="py-8" />
+            <SidebarProvider className="bg-white z-0">
+                <Sidebar dir="rtl" side="left">
+                    <div className="py-8" />
+                    <SidebarHeader>메뉴바 헤더</SidebarHeader>
+                    <SidebarContent>
+                        <ScrollArea>
+                            <SidebarGroup>
+                                <SidebarMenu>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton>1강. 이게 메뉴인가</SidebarMenuButton>
+                                        <SidebarMenuBadge>
+                                            {/* onClick={()=>{navicate("/admin/course/:courseId")}} - 반려 승인*/}
+                                            {/* onClick={()=>{navicate("/instructor/course/:courseId")}} - 수정 재심사 제출 임시저장(강좌, 강의)*/}
+                                            {/* onClick={()=>{navicate("/student/course/:courseId")}} - 수강신청 버튼 남기기&접근권한*/}
+                                            <span style={{ backgroundColor: "#4a6fa5", width: "18px", height: "18px", display: "inline-block", borderRadius: "50%" }} />
+                                        </SidebarMenuBadge>
+                                    </SidebarMenuItem>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton>2강. 이 구조로 강사, 관리자, 학생</SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton>3강. 강좌 강의 페이지 통일시키기</SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton>4강. 대신 버튼은 다르게</SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                </SidebarMenu>
+                            </SidebarGroup>
+                        </ScrollArea>
+                    </SidebarContent>
+                    <SidebarFooter>이 사이트의 사이드바에는 풋터가 필요할까</SidebarFooter>
+                </Sidebar>
+                <SidebarInset>
+                    <div className="flex items-center gap-2 px-4 py-2">
+                        <SidebarTrigger />
                     </div>
+                    {/* <AdminPropsalDetail /> */}
+                    {/* <IstructorPropsalDetail /> */}
+                    {/* <StudentCourseDetail /> */}
+                    <section className="container mx-auto px-16 py-16">
+                        <div className="flex max-w-2xl flex-col gap-4 text-sm">
+                            <div className="flex flex-col gap-1.5">
+                                <div className="leading-none font-bold text-lg">강좌명</div>
+                                <div className="text-xl">{course.title}</div>
+                            </div>
 
-                    <Separator />
+                            <Separator />
 
-                    <div className="grid grid-cols-3 gap-4">
-                        <div>
-                            <span className="font-semibold">난이도:</span> {getLevelText(course.level)}
-                        </div>
-                        <div>
-                            <span className="font-semibold">가격:</span> {course.price?.toLocaleString()}원
-                        </div>
-                        <div>
-                            <span className="font-semibold">강사명:</span> {course.instructorName}
-                        </div>
-                    </div>
+                            <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                    <span className="font-semibold">난이도:</span> {getLevelText(course.level)}
+                                </div>
+                                <div>
+                                    <span className="font-semibold">가격:</span> {course.price?.toLocaleString()}원
+                                </div>
+                                <div>
+                                    <span className="font-semibold">강사명:</span> {course.instructorName}
+                                </div>
+                            </div>
 
-                    <div className="mt-2">
-                        <div className="font-semibold mb-1">강좌 설명</div>
-                        <div className="bg-slate-50 p-4 rounded-md border">
-                            {course.description}
-                        </div>
-                    </div>
+                            <div className="mt-2">
+                                <div className="font-semibold mb-1">강좌 설명</div>
+                                <div className="bg-slate-50 p-4 rounded-md border">
+                                    {course.description}
+                                </div>
+                            </div>
 
-                    <div className="flex items-center gap-2 mt-4">
-                        <span className="font-semibold">현재 상태:</span>
-                        {course.proposalStatus === 'PENDING' ? (
-                            <Badge variant="destructive">승인 대기</Badge>
-                        ) : course.proposalStatus === 'APPROVED' ? (
-                            <Badge variant="secondary">승인 완료</Badge>
-                        ) : (
-                            <Badge variant="outline">반려됨</Badge>
-                        )}
-                    </div>
+                            <div className="flex items-center gap-2 mt-4">
+                                <span className="font-semibold">현재 상태:</span>
+                                {course.proposalStatus === 'PENDING' ? (
+                                    <Badge variant="destructive">승인 대기</Badge>
+                                ) : course.proposalStatus === 'APPROVED' ? (
+                                    <Badge variant="secondary">승인 완료</Badge>
+                                ) : (
+                                    <Badge variant="outline">반려됨</Badge>
+                                )}
+                            </div>
 
-                    {/* 반려 사유 표시 (반려된 경우에만) */}
-                    {course.proposalStatus === 'REJECTED' && course.proposalRejectReason && (
-                        <div className="mt-4">
-                            <div className="font-semibold mb-1 text-red-600">반려 사유</div>
-                            <div className="bg-red-50 p-4 rounded-md border border-red-200 text-red-800">
-                                {course.proposalRejectReason}
+                            {/* 반려 사유 표시 (반려된 경우에만) */}
+                            {course.proposalStatus === 'REJECTED' && course.proposalRejectReason && (
+                                <div className="mt-4">
+                                    <div className="font-semibold mb-1 text-red-600">반려 사유</div>
+                                    <div className="bg-red-50 p-4 rounded-md border border-red-200 text-red-800">
+                                        {course.proposalRejectReason}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex gap-3 mt-6">
+                                {/* 승인 다이얼로그 */}
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button disabled={course.proposalStatus !== 'PENDING'}>
+                                            {course.proposalStatus === 'APPROVED' ? "승인 완료됨" :
+                                                course.proposalStatus === 'REJECTED' ? "반려됨" : "강좌 승인"}
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>강좌 개설을 승인하시겠습니까?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                승인 후, 강사님들이 강의를 업로드할 수 있습니다.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>아니오</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleApprove}>네, 승인합니다</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+
+                                {/* 반려 다이얼로그 */}
+                                <AlertDialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" disabled={course.proposalStatus !== 'PENDING'}>
+                                            강좌 반려
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>강좌 개설을 반려하시겠습니까?</AlertDialogTitle>
+                                        </AlertDialogHeader>
+                                        <Textarea
+                                            placeholder="반려 사유를 입력하세요."
+                                            value={rejectReason}
+                                            onChange={(e) => setRejectReason(e.target.value)}
+                                            className="min-h-[100px]"
+                                        />
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel onClick={() => setRejectReason("")}>취소</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleReject}>반려하기</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+
+                                <Button variant="ghost" onClick={() => navigate(-1)}>뒤로 가기</Button>
                             </div>
                         </div>
-                    )}
+                    </section>
+                    <Tail />
+                </SidebarInset>
+            </SidebarProvider>
 
-                    <div className="flex gap-3 mt-6">
-                        {/* 승인 다이얼로그 */}
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button disabled={course.proposalStatus !== 'PENDING'}>
-                                    {course.proposalStatus === 'APPROVED' ? "승인 완료됨" :
-                                        course.proposalStatus === 'REJECTED' ? "반려됨" : "강좌 승인"}
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>강좌 개설을 승인하시겠습니까?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        승인 후, 강사님들이 강의를 업로드할 수 있습니다.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>아니오</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleApprove}>네, 승인합니다</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
 
-                        {/* 반려 다이얼로그 */}
-                        <AlertDialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive" disabled={course.proposalStatus !== 'PENDING'}>
-                                    강좌 반려
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>강좌 개설을 반려하시겠습니까?</AlertDialogTitle>
-                                </AlertDialogHeader>
-                                <Textarea
-                                    placeholder="반려 사유를 입력하세요."
-                                    value={rejectReason}
-                                    onChange={(e) => setRejectReason(e.target.value)}
-                                    className="min-h-[100px]"
-                                />
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel onClick={() => setRejectReason("")}>취소</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleReject}>반려하기</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-
-                        <Button variant="ghost" onClick={() => navigate(-1)}>뒤로 가기</Button>
-                    </div>
-                </div>
-            </section>
-            <Tail />
         </>
 
     );
