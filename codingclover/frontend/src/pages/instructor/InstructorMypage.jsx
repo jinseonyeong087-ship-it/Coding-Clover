@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Tail from '../../components/Tail';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
@@ -6,7 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, Clock, CheckCircle, XCircle, Upload, Edit, User } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { FileText, Clock, CheckCircle, XCircle, Upload, Edit, User, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 // 유틸리티 함수
 const getLoginId = () => {
@@ -26,16 +28,21 @@ const getStatusInfo = (status) => {
     case 'APPLIED':
       return { text: '심사 중', icon: Clock, color: 'text-yellow-600', bg: 'bg-yellow-50' };
     case 'APPROVED':
-      return { text: '승인됨', icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' };
+      return { text: '승인', icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' };
     case 'REJECTED':
-      return { text: '거절됨', icon: XCircle, color: 'text-red-600', bg: 'bg-red-50' };
+      return { text: '반려', icon: XCircle, color: 'text-red-600', bg: 'bg-red-50' };
     default:
       return { text: '미신청', icon: FileText, color: 'text-gray-600', bg: 'bg-gray-50' };
   }
 };
 
 function InstructorMypage() {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [courseFilter, setCourseFilter] = useState('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [coursesPerPage] = useState(5);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -85,6 +92,65 @@ function InstructorMypage() {
 
     loadProfile();
   }, []);
+
+  // 강좌 목록 로드 함수
+  const loadCourses = async () => {
+    const loginId = getLoginId();
+    if (!loginId) return;
+
+    try {
+      const response = await fetch('/instructor/course', {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCourses(data);
+      } else {
+        console.error('강좌 목록을 불러올 수 없습니다.');
+      }
+    } catch (err) {
+      console.error('강좌 목록 로드 실패:', err);
+    }
+  };
+
+  // 승인된 강사인 경우 강좌 목록도 로드
+  useEffect(() => {
+    if (profile?.status === 'APPROVED') {
+      loadCourses();
+    }
+  }, [profile]);
+
+  // 필터링된 강좌 목록 계산
+  const filteredCourses = courses.filter(course => {
+    if (courseFilter === 'ALL') return true;
+    return course.proposalStatus === courseFilter;
+  });
+
+  // 필터 변경 시 페이지를 1로 리셋
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [courseFilter]);
+
+  // 페이징 계산
+  const indexOfLastCourse = currentPage * coursesPerPage;
+  const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
+  const currentCourses = filteredCourses.slice(indexOfFirstCourse, indexOfLastCourse);
+  const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
+
+  // 필터 라벨 가져오기
+  const getFilterLabel = (filter) => {
+    switch (filter) {
+      case 'ALL': return '전체';
+      case 'APPROVED': return '승인';
+      case 'PENDING': return '승인 대기';
+      case 'REJECTED': return '반려';
+      default: return '전체';
+    }
+  };
 
   // 폼 제출 처리
   const handleSubmit = async (e) => {
@@ -450,13 +516,118 @@ function InstructorMypage() {
 
             {/* 개설 강좌 목록 */}
             <div className="max-w-4xl mx-auto mt-12">
-              <h2 className="text-2xl font-bold mb-6">개설 강좌</h2>
-              <Card>
-                <CardContent className="p-6 text-center text-gray-500">
-                  <p>아직 개설된 강좌가 없습니다.</p>
-                  <p className="text-sm mt-2">새로운 강좌를 개설해보세요!</p>
-                </CardContent>
-              </Card>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold">개설 강좌</h2>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="flex items-center gap-2">
+                      {getFilterLabel(courseFilter)}
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => setCourseFilter('ALL')}>
+                      전체
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCourseFilter('APPROVED')}>
+                      승인
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCourseFilter('PENDING')}>
+                      승인 대기
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCourseFilter('REJECTED')}>
+                      반려
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              {currentCourses.length === 0 ? (
+                <Card>
+                  <CardContent className="p-6 text-center text-gray-500">
+                    <p>{courseFilter === 'ALL' ? '아직 개설된 강좌가 없습니다.' : `${getFilterLabel(courseFilter)} 상태의 강좌가 없습니다.`}</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <>
+                  <div className="space-y-4">
+                    {currentCourses.map((course) => (
+                    <Card 
+                      key={course.courseId}
+                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => navigate(`/instructor/course/${course.courseId}`)}
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="text-lg font-semibold mb-2">{course.title}</h3>
+                            <p className="text-gray-600 mb-3 line-clamp-2">{course.description}</p>
+                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                              <span>레벨: {course.level}</span>
+                              <span>가격: {course.price.toLocaleString()}원</span>
+                              <span>생성일: {new Date(course.createdAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          <div className="ml-6">
+                            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              course.proposalStatus === 'APPROVED' 
+                                ? 'bg-green-100 text-green-800'
+                                : course.proposalStatus === 'PENDING'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {course.proposalStatus === 'APPROVED' && '승인'}
+                              {course.proposalStatus === 'PENDING' && '승인 대기'}
+                              {course.proposalStatus === 'REJECTED' && '반려'}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  </div>
+                  
+                  {/* 페이징 */}
+                  {totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-2 mt-6">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="flex items-center gap-1"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        이전
+                      </Button>
+                      
+                      <div className="flex gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className="w-8"
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="flex items-center gap-1"
+                      >
+                        다음
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </>
         )}
