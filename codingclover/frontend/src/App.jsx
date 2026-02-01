@@ -34,7 +34,8 @@ import TestInstructorCourseEdit from './test/TestInstructorCourseEdit';
 import TestInstructorLectureEdit from './test/TestInstructorLectureEdit';
 import FindAccountTest from './test/FindAccountTest';
 import TestSearch from './test/TestSearch';
-import TestNotice from './pages/admin/Notice';
+import Notice from './pages/admin/Notice';
+import NoticeDetail from './pages/admin/NoticeDetail';
 import AdminLectureDetail from '@/pages/admin/AdminLectureDetail'
 import AdminCourse from '@/pages/admin/AdminCourse'
 import AdminInstructorList from '@/pages/admin/AdminInstructorList'
@@ -84,7 +85,10 @@ function App() {
         {/*검색*/}
         <Route path="/test/search" element={<TestSearch />} />
         {/*공지사항 테스트*/}
-        <Route path="/test/notice" element={<TestNotice />} />
+        <Route path="/test/notice" element={<Notice />} />
+        {/* 공지사항 */}
+        <Route path="/notice" element={<Notice />} />
+        <Route path="/notice/detail/:noticeId" element={<NoticeDetail />} />
 
         {/* 아이디/비밀번호 찾기 테스트 */}
         {/* 아이디/비밀번호 찾기 테스트 */}
