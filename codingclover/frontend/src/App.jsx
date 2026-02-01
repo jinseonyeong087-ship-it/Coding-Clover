@@ -34,7 +34,7 @@ import TestInstructorCourseEdit from './test/TestInstructorCourseEdit';
 import TestInstructorLectureEdit from './test/TestInstructorLectureEdit';
 import FindAccountTest from './test/FindAccountTest';
 import TestSearch from './test/TestSearch';
-import TestNotice from './test/TestNotice';
+import TestNotice from './pages/admin/Notice';
 import AdminLectureDetail from '@/pages/admin/AdminLectureDetail'
 
 
