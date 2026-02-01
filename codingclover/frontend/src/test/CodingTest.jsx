@@ -1,385 +1,368 @@
-
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
+import {
+  Play, Send, Code2, Terminal,
+  ChevronLeft, ChevronRight, Check, X,
+  RotateCcw, GripVertical, BookOpen, LayoutDashboard, ListTodo, AlertCircle, Sparkles
+} from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
-import { Play, Send, RotateCcw, CheckCircle2, XCircle, Code2, List as ListIcon, Loader2 } from 'lucide-react';
+import { Toaster, toast } from 'sonner';
+
+// --- Mock Data: Curriculum Context ---
+const COURSE_INFO = {
+  title: "자바 알고리즘 마스터 클래스",
+  chapter: "실전 문제 풀이",
+  progress: 0
+};
+
+// --- Components ---
+
+const StatusIcon = ({ status }) => {
+  if (status === 'PASS') return <div className="w-5 h-5 rounded-full bg-violet-100 flex items-center justify-center"><Check className="w-3 h-3 text-violet-600" /></div>;
+  if (status === 'FAIL') return <div className="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center"><X className="w-3 h-3 text-rose-600" /></div>;
+  return <div className="w-3.5 h-3.5 rounded-full border-2 border-zinc-300" />;
+};
+
+const Navbar = () => (
+  <header className="h-16 bg-white/80 backdrop-blur-md border-b border-zinc-200/60 flex items-center justify-between px-6 shrink-0 relative z-20 sticky top-0">
+    <div className="flex items-center gap-6">
+      <div className="flex items-center gap-2 text-zinc-900 font-bold text-xl tracking-tight cursor-pointer group">
+        <div className="w-9 h-9 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-violet-500/20 group-hover:scale-105 transition-transform duration-300">
+          <Code2 className="w-5 h-5" />
+        </div>
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-purple-800">Coding Clover</span>
+      </div>
+
+      <div className="h-6 w-[1px] bg-zinc-200" />
+
+      <div className="hidden md:flex flex-col">
+        <div className="flex items-center text-xs text-zinc-500 gap-1 font-medium">
+          <LayoutDashboard className="w-3 h-3 text-violet-400" />
+          <span>내 강의실</span>
+          <ChevronRight className="w-3 h-3" />
+          <span>{COURSE_INFO.title}</span>
+        </div>
+        <h2 className="text-sm font-bold text-zinc-800 mt-0.5">{COURSE_INFO.chapter}</h2>
+      </div>
+    </div>
+
+    <div className="flex items-center gap-4">
+      <Button variant="ghost" className="text-zinc-500 hover:text-violet-600 hover:bg-violet-50 font-medium">
+        강의 목록으로
+      </Button>
+    </div>
+  </header>
+);
 
 export default function CodingTest() {
-  const [problems, setProblems] = useState([]);
-  const [selectedProblem, setSelectedProblem] = useState(null);
-  const [code, setCode] = useState('');
-  const [inputData, setInputData] = useState('');
-  const [output, setOutput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [gradingResult, setGradingResult] = useState(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState('input'); // input, output, result
+  const [tasks, setTasks] = useState([]);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [code, setCode] = useState("");
+  const [output, setOutput] = useState("");
+  const [result, setResult] = useState(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // 초기 로딩: 문제 목록 가져오기
+  // 1. Fetch Problem List from Backend
   useEffect(() => {
-    fetch('/api/problems')
-      .then(res => res.json())
-      .then(data => {
-        setProblems(data);
-        if (data.length > 0) {
-          // 첫 번째 문제 기본 선택
-          handleSelectProblem(data[0]);
-        }
-      })
-      .catch(err => console.error("문제 목록 로딩 실패:", err));
+    const fetchProblems = async () => {
+      try {
+        const res = await fetch('/api/problems');
+        if (!res.ok) throw new Error('Failed to fetch problems');
+        const data = await res.json();
+        setTasks(data);
+        if (data.length > 0) handleTaskSelect(data[0]);
+      } catch (err) {
+        console.error(err);
+        toast.error("문제 목록을 불러오지 못했습니다.", { description: "서버 연결을 확인해주세요." });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProblems();
   }, []);
 
-  // 문제 선택 핸들러
-  const handleSelectProblem = (problem) => {
-    setSelectedProblem(problem);
-
-    // 문제별 정답 코드 (Scanner 대신 변수 할당 방식)
-    if (problem.problemId === 1) { // 두 수의 합
-      setCode(`public class Main {
-    public static void main(String[] args) {
-        // 문제 (10 + 50) 정답 코드
-        int a = 10;
-        int b = 50;
-        System.out.println(a + b);
-    }
-}`);
-    } else if (problem.problemId === 2) { // 짝수 홀수 판별
-      setCode(`public class Main {
-    public static void main(String[] args) {
-        // 테스트 케이스 1번: 2 -> even
-        int n = 2;
-        if (n % 2 == 0) {
-            System.out.println("even");
-        } else {
-            System.out.println("odd");
-        }
-    }
-}`);
-    } else if (problem.problemId === 3) { // 1부터 N까지 합
-      setCode(`public class Main {
-    public static void main(String[] args) {
-        // 테스트 케이스: 10 -> 55 
-        int n = 10;
-        int sum = 0;
-        for (int i = 1; i <= n; i++) {
-            sum += i;
-        }
-        System.out.println(sum);
-    }
-}`);
-    } else {
-      // 기본 템플릿
-      setCode(`public class Main {
-    public static void main(String[] args) {
-        // 여기에 변수를 선언하고 로직을 작성하세요
-        // 예: int a = 10;
-        
-    }
-}`);
-    }
-
-    // 예제 입력값 세팅 - Scanner 미사용으로 불필요하지만 State 호환성 유지
-    setInputData('');
-
-    // 결과 초기화
-    setOutput('');
-    setError(null);
-    setGradingResult(null);
-    setActiveTab('output');
+  const handleTaskSelect = (task) => {
+    setSelectedTask(task);
+    setResult(null);
+    setOutput("");
+    setCode(`// [${task.title}] 풀이\n// 문제 설명: ${task.description}\n\npublic class Main {\n    public static void main(String[] args) {\n        // TODO: 이곳에 코드를 작성하세요.\n        System.out.println("Hello World!");\n    }\n}`);
   };
 
-  // 실행 핸들러
   const handleRun = async () => {
-    if (!selectedProblem) return;
-    setLoading(true);
-    setOutput('');
-    setError(null);
-    setGradingResult(null);
-    setActiveTab('output'); // 실행 시 '실행 결과' 탭으로 이동
+    if (!selectedTask) return;
+    setIsRunning(true);
+    setOutput("실행 중...");
+    setResult(null);
 
     try {
-      const response = await fetch(`/api/problems/${selectedProblem.problemId}/run`, {
+      const res = await fetch(`/api/problems/${selectedTask.problemId}/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, input: inputData }),
+        body: JSON.stringify({ code })
       });
-      const data = await response.json();
-      if (data.error) setError(data.error);
-      else setOutput(data.output);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  // 제출 핸들러
-  const handleSubmit = async () => {
-    if (!selectedProblem) return;
-    setLoading(true);
-    setOutput('');
-    setError(null);
-    setGradingResult(null);
-    setActiveTab('result'); // 제출 시 '채점 결과' 탭으로 이동
+      const data = await res.json();
 
-    try {
-      const storedUser = localStorage.getItem('users');
-      let userId = null;
-      if (storedUser) {
-        try {
-          const u = JSON.parse(storedUser);
-          userId = u.userId || u.id; // 기존 코드 호환
-        } catch (e) {
-          console.error("User parsing error", e);
-        }
+      if (res.ok) {
+        setOutput(data.output || "출력값이 없습니다.");
+        if (data.error) setOutput(`[Error]\n${data.error}`);
+      } else {
+        setOutput(`[Server Error] ${res.statusText}`);
       }
+    } catch (e) {
+      setOutput(`[Connection Error] ${e.message}`);
+    } finally {
+      setIsRunning(false);
+    }
+  };
 
-      const response = await fetch(`/api/problems/${selectedProblem.problemId}/submit`, {
+  const handleSubmit = async () => {
+    if (!selectedTask) return;
+    setIsRunning(true);
+    setResult(null);
+    const userId = 1;
+
+    try {
+      const res = await fetch(`/api/problems/${selectedTask.problemId}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, userId }),
+        body: JSON.stringify({ code, userId })
       });
-      const data = await response.json();
-      setGradingResult(data);
-    } catch (err) {
-      setError(err.message);
+
+      const data = await res.json();
+      if (res.ok) {
+        setResult(data);
+        if (data.passed) {
+          toast.success("정답입니다!", { icon: "🎉", description: `소요 시간: ${data.executionTime}ms` });
+          setTasks(prev => prev.map(t => t.problemId === selectedTask.problemId ? { ...t, status: 'PASS' } : t));
+        } else {
+          toast.error("오답입니다.", { description: data.message });
+          setTasks(prev => prev.map(t => t.problemId === selectedTask.problemId ? { ...t, status: 'FAIL' } : t));
+        }
+      } else {
+        toast.error("제출 실패", { description: "서버 오류가 발생했습니다." });
+      }
+    } catch (e) {
+      toast.error("연결 실패", { description: "서버에 연결할 수 없습니다." });
     } finally {
-      setLoading(false);
+      setIsRunning(false);
     }
   };
 
-  // 난이도 뱃지 색상
-  const getDifficultyColor = (diff) => {
-    switch (diff?.toUpperCase()) {
-      case 'EASY': return 'bg-green-500 hover:bg-green-600'; // Tailwind/Shadcn 색상 매핑 필요, 일단 클래스로
-      case 'MEDIUM': return 'bg-yellow-500 hover:bg-yellow-600';
-      case 'HARD': return 'bg-red-500 hover:bg-red-600';
-      default: return 'bg-gray-500';
-    }
-  };
+  if (loading) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-zinc-50 gap-4">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600"></div>
+        <div className="text-zinc-400 text-sm font-medium">강의실 입장 중...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden">
+    <div className="h-screen w-full flex flex-col bg-zinc-50 font-sans text-zinc-900">
+      <Toaster position="top-right" richColors />
+      <Navbar />
 
-      {/* 1. 사이드바 (문제 목록) */}
-      <div className={`border-r bg-card transition-all duration-300 flex flex-col ${isSidebarOpen ? 'w-80' : 'w-0 opacity-0 overflow-hidden'}`}>
-        <div className="p-4 border-b flex items-center justify-between">
-          <h2 className="font-bold text-lg flex items-center gap-2">
-            <ListIcon className="w-5 h-5" /> 문제 목록
-          </h2>
-        </div>
-        <ScrollArea className="flex-1">
-          <div className="p-2 space-y-2">
-            {problems.map(problem => (
-              <button
-                key={problem.problemId}
-                onClick={() => handleSelectProblem(problem)}
-                className={`w-full text-left px-3 py-3 rounded-md text-sm transition-colors flex items-center justify-between
-                  ${selectedProblem?.problemId === problem.problemId
-                    ? 'bg-primary text-primary-foreground font-medium'
-                    : 'hover:bg-muted text-muted-foreground'}`}
-              >
-                <div className="truncate flex-1 mr-2">{problem.title}</div>
-                <Badge variant={selectedProblem?.problemId === problem.problemId ? "secondary" : "outline"} className="text-xs shrink-0">
-                  {problem.difficulty}
-                </Badge>
-              </button>
-            ))}
+      <main className="flex-1 flex overflow-hidden p-4 md:p-6 gap-6">
+        {/* Left Sidebar: Assignment List */}
+        <aside className="w-72 bg-white rounded-3xl border border-zinc-200/60 shadow-xl shadow-zinc-200/50 flex flex-col overflow-hidden shrink-0">
+          <div className="p-5 border-b border-zinc-100 bg-gradient-to-b from-white to-zinc-50">
+            <h3 className="font-bold text-sm text-zinc-900 flex items-center gap-2">
+              <div className="p-1.5 bg-violet-100 rounded-md text-violet-600">
+                <ListTodo className="w-4 h-4" />
+              </div>
+              실습 과제 목록
+            </h3>
           </div>
-        </ScrollArea>
-      </div>
-
-      {/* 2. 메인 영역 */}
-      <div className="flex-1 flex flex-col min-w-0">
-
-        {/* 헤더 */}
-        <header className="h-14 border-b flex items-center justify-between px-4 bg-card shrink-0">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)} title="문제 목록 토글">
-              <ListIcon className="w-5 h-5" />
-            </Button>
-            <div className="flex items-center gap-2 font-semibold">
-              <Code2 className="w-5 h-5 text-primary" />
-              <span>Coding Clover Test</span>
-              {selectedProblem && (
-                <>
-                  <Separator orientation="vertical" className="h-4 mx-2" />
-                  <span className="text-sm text-foreground/80">{selectedProblem.title}</span>
-                  <Badge className={`${getDifficultyColor(selectedProblem.difficulty)} text-white`}>
-                    {selectedProblem.difficulty}
-                  </Badge>
-                </>
+          <ScrollArea className="flex-1">
+            <div className="p-3 space-y-1">
+              {tasks.map((task, idx) => (
+                <button
+                  key={task.problemId}
+                  onClick={() => handleTaskSelect(task)}
+                  className={`w-full text-left px-4 py-3.5 rounded-2xl text-sm transition-all duration-200 flex items-start gap-3 group border border-transparent
+                                ${selectedTask?.problemId === task.problemId
+                      ? 'bg-violet-50 border-violet-100/50 text-violet-900 shadow-sm'
+                      : 'text-zinc-600 hover:bg-zinc-50 hover:border-zinc-100'}
+                            `}
+                >
+                  <div className={`mt-0.5 ${selectedTask?.problemId === task.problemId ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>
+                    <StatusIcon status={task.status} />
+                  </div>
+                  <div className="flex-1">
+                    <div className={`font-medium line-clamp-1 ${selectedTask?.problemId === task.problemId ? 'font-bold' : ''}`}>
+                      {idx + 1}. {task.title}
+                    </div>
+                    {task.difficulty && <span className="inline-block mt-1.5 px-2 py-0.5 rounded text-[10px] font-medium bg-white border border-zinc-200 text-zinc-500">
+                      {task.difficulty}
+                    </span>}
+                  </div>
+                </button>
+              ))}
+              {tasks.length === 0 && (
+                <div className="p-8 text-center flex flex-col items-center gap-3">
+                  <div className="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center">
+                    <ListTodo className="w-6 h-6 text-zinc-300" />
+                  </div>
+                  <span className="text-zinc-400 text-xs">등록된 과제가 없습니다.</span>
+                </div>
               )}
             </div>
-          </div>
+          </ScrollArea>
+        </aside>
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRun}
-              disabled={loading || !selectedProblem}
-              className="gap-2"
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-              실행
-            </Button>
-            <Button
-              size="sm"
-              onClick={handleSubmit}
-              disabled={loading || !selectedProblem}
-              className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              제출
-            </Button>
-          </div>
-        </header>
-
-        {/* 컨텐츠 영역 (스플릿) */}
-        <div className="flex-1 flex overflow-hidden">
-
-          {/* 왼쪽: 문제 설명 (40%) */}
-          <div className="w-[40%] border-r flex flex-col bg-card min-w-[300px]">
-            <div className="p-4 border-b bg-muted/30">
-              <h3 className="font-semibold flex items-center gap-2">
-                📝 문제 설명
-              </h3>
-            </div>
-            <ScrollArea className="flex-1 p-6">
-              <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed whitespace-pre-wrap">
-                {selectedProblem ? selectedProblem.description : "문제를 선택해주세요."}
-              </div>
-            </ScrollArea>
-          </div>
-
-          {/* 오른쪽: 코드 에디터 및 콘솔 (60%) */}
-          <div className="flex-1 flex flex-col min-w-0 bg-[#1e1e1e]">
-            {/* 에디터 */}
-            <div className="flex-1 relative">
-              <Editor
-                height="100%"
-                defaultLanguage="java"
-                theme="vs-dark"
-                value={code}
-                onChange={(value) => setCode(value || "")}
-                options={{
-                  fontSize: 14,
-                  minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                  padding: { top: 16, bottom: 16 }
-                }}
-              />
-            </div>
-
-            {/* 콘솔창 (하단 고정 높이) */}
-            <div className="h-64 border-t bg-card flex flex-col shrink-0">
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-                <div className="flex items-center justify-between px-2 border-b bg-muted/40">
-                  <TabsList className="bg-transparent h-10 p-0">
-                    <TabsTrigger value="output" className="data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-full px-4">
-                      실행 결과
-                    </TabsTrigger>
-                    <TabsTrigger value="result" className="data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-full px-4">
-                      채점 결과
-                    </TabsTrigger>
-                  </TabsList>
-
-                  {/* 초기화 버튼 등 도구 모음 */}
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => { setOutput(''); setError(null); setGradingResult(null); }}>
-                    <RotateCcw className="w-4 h-4" />
+        {/* Center: Coding Workspace */}
+        <section className="flex-1 bg-white rounded-3xl border border-zinc-200/60 shadow-xl shadow-zinc-200/40 overflow-hidden flex flex-col ring-1 ring-black/5">
+          {selectedTask ? (
+            <>
+              {/* Toolbar */}
+              <div className="h-16 border-b border-zinc-100/80 flex items-center justify-between px-6 bg-white shrink-0">
+                <div className="flex items-center gap-4">
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <h2 className="font-bold text-lg text-zinc-900 tracking-tight">{selectedTask.title}</h2>
+                      {selectedTask.difficulty && (
+                        <Badge variant="secondary" className="bg-zinc-100 text-zinc-500 font-medium border-0 px-2 h-5 text-[10px]">
+                          {selectedTask.difficulty}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleRun}
+                    disabled={isRunning}
+                    className="bg-zinc-100/80 hover:bg-zinc-200 text-zinc-600 h-9 px-4 font-semibold rounded-xl border border-zinc-200/50"
+                  >
+                    <Play className="w-4 h-4 mr-2 fill-zinc-600" /> 실행 테스트
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSubmit}
+                    disabled={isRunning}
+                    className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white h-9 px-6 font-bold rounded-xl shadow-lg shadow-violet-500/20 transition-all active:scale-95"
+                  >
+                    {isRunning ? <RotateCcw className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                    코드 제출
                   </Button>
                 </div>
+              </div>
 
-                {/* 탭 내용 영역 */}
-                <div className="flex-1 overflow-hidden relative bg-muted/10">
-                  <ScrollArea className="h-full w-full">
-                    {/* 입력값 탭 제거됨 */}
+              {/* Content Split */}
+              <div className="flex-1 overflow-hidden">
+                <PanelGroup direction="horizontal">
+                  {/* Problem Description */}
+                  <Panel defaultSize={40} minSize={30}>
+                    <div className="h-full bg-white flex flex-col">
+                      <div className="px-6 py-3 bg-zinc-50/50 flex items-center border-b border-zinc-100">
+                        <span className="text-xs font-bold text-violet-600 uppercase tracking-wider flex items-center gap-2">
+                          <BookOpen className="w-4 h-4" /> 문제 지침
+                        </span>
+                      </div>
+                      <ScrollArea className="flex-1 px-8 py-8">
+                        <div className="prose prose-zinc prose-sm max-w-none text-zinc-600 leading-7">
+                          <p className="whitespace-pre-wrap font-medium text-[15px] text-zinc-800">{selectedTask.content || selectedTask.description}</p>
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  </Panel>
 
+                  <PanelResizeHandle className="w-[1px] bg-zinc-200 hover:bg-violet-400 transition-colors flex items-center justify-center z-10">
+                    <div className="w-1.5 h-16 bg-zinc-200 rounded-full hover:bg-violet-400 transition-colors"></div>
+                  </PanelResizeHandle>
 
-                    <TabsContent value="output" className="p-4 m-0 h-full border-none outline-none">
-                      {!output && !error && (
-                        <div className="text-muted-foreground text-sm flex h-full items-center justify-center">
-                          '실행' 버튼을 눌러 코드를 테스트해보세요.
+                  {/* Editor & Console */}
+                  <Panel defaultSize={60} minSize={30}>
+                    <PanelGroup direction="vertical">
+                      <Panel defaultSize={65} minSize={20} className="flex flex-col">
+                        <div className="h-10 flex items-center justify-between px-4 bg-zinc-50/50 border-b border-zinc-100">
+                          <div className="flex items-center gap-2 bg-white border border-zinc-200/60 px-2.5 py-1 rounded-lg">
+                            <Code2 className="w-3.5 h-3.5 text-violet-500" />
+                            <span className="text-xs font-semibold text-zinc-600">Main.java</span>
+                          </div>
                         </div>
-                      )}
-                      {output && (
-                        <div className="space-y-2">
-                          <div className="text-xs font-bold text-green-600 dark:text-green-400">Standard Output:</div>
-                          <pre className="font-mono text-sm bg-black/5 dark:bg-black/30 p-3 rounded border text-foreground whitespace-pre-wrap">{output}</pre>
+                        <div className="flex-1">
+                          <Editor
+                            defaultLanguage="java"
+                            value={code}
+                            onChange={setCode}
+                            theme="vs-light"
+                            options={{
+                              minimap: { enabled: false },
+                              fontSize: 14,
+                              fontFamily: "'JetBrains Mono', 'D2Coding', monospace",
+                              lineNumbers: 'on',
+                              automaticLayout: true,
+                              padding: { top: 24, bottom: 24 },
+                              renderLineHighlight: 'all', // 현재 라인 강조
+                              smoothScrolling: true
+                            }}
+                          />
                         </div>
-                      )}
-                      {error && (
-                        <div className="space-y-2 mt-4">
-                          <div className="text-xs font-bold text-red-600 dark:text-red-400">Error:</div>
-                          <pre className="font-mono text-sm bg-red-50 dark:bg-red-950/30 p-3 rounded border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 whitespace-pre-wrap">{error}</pre>
-                        </div>
-                      )}
-                    </TabsContent>
+                      </Panel>
 
-                    <TabsContent value="result" className="p-4 m-0 h-full border-none outline-none">
-                      {!gradingResult && !error && (
-                        <div className="text-muted-foreground text-sm flex h-full items-center justify-center">
-                          '제출' 버튼을 눌러 정답을 확인하세요.
+                      <PanelResizeHandle className="h-[1px] bg-zinc-200" />
+
+                      <Panel defaultSize={35} minSize={10} className="flex flex-col bg-slate-50">
+                        <div className="h-10 border-b border-zinc-200 bg-white flex items-center px-4">
+                          <span className="text-xs font-bold text-zinc-500 flex items-center gap-2">
+                            <Terminal className="w-3.5 h-3.5" /> 실행 콘솔
+                          </span>
                         </div>
-                      )}
-                      {error && (
-                        <div className="text-red-500 font-medium flex items-center gap-2">
-                          <XCircle className="w-5 h-5" /> 제출 처리 중 오류가 발생했습니다: {error}
-                        </div>
-                      )}
-                      {gradingResult && (
-                        <div className="space-y-4">
-                          <div className={`p-4 rounded-lg border ${gradingResult.passed ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900' : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900'}`}>
-                            <div className="flex items-center gap-3">
-                              {gradingResult.passed ? (
-                                <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
-                              ) : (
-                                <XCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
-                              )}
-                              <div>
-                                <h3 className={`text-lg font-bold ${gradingResult.passed ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
-                                  {gradingResult.passed ? '정답입니다! 🎉' : '오답입니다 😢'}
-                                </h3>
-                                <p className="text-sm text-muted-foreground mt-1">{gradingResult.message}</p>
+                        <ScrollArea className="flex-1 p-5">
+                          {result ? (
+                            <div className={`flex flex-col gap-3 p-5 rounded-2xl border ${result.passed ? 'bg-emerald-50/50 border-emerald-100' : 'bg-rose-50/50 border-rose-100'}`}>
+                              <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-sm ${result.passed ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                                  {result.passed ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
+                                </div>
+                                <div>
+                                  <div className={`font-bold text-lg ${result.passed ? 'text-emerald-700' : 'text-rose-700'}`}>{result.passed ? "테스트 통과!" : "오답입니다"}</div>
+                                </div>
+                              </div>
+                              <div className="pl-[52px]">
+                                <p className="text-sm text-zinc-600 mb-2">{result.message}</p>
+                                {result.executionTime > 0 &&
+                                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-lg border border-zinc-200 text-xs font-medium text-zinc-500">
+                                    <Sparkles className="w-3 h-3 text-violet-500" />
+                                    실행 시간: <span className="text-zinc-700">{result.executionTime}ms</span>
+                                  </div>
+                                }
                               </div>
                             </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4">
-                            <Card>
-                              <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                                <span className="text-xs text-muted-foreground uppercase tracking-wider">테스트 케이스</span>
-                                <span className="text-2xl font-mono mt-1">
-                                  {gradingResult.passedCases} <span className="text-muted-foreground text-sm">/ {gradingResult.totalCases}</span>
-                                </span>
-                              </CardContent>
-                            </Card>
-                            <Card>
-                              <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                                <span className="text-xs text-muted-foreground uppercase tracking-wider">실행 속도</span>
-                                <span className="text-2xl font-mono mt-1">{gradingResult.executionTime} <span className="text-base text-muted-foreground">ms</span></span>
-                              </CardContent>
-                            </Card>
-                          </div>
-                        </div>
-                      )}
-                    </TabsContent>
-                  </ScrollArea>
-                </div>
-              </Tabs>
+                          ) : output ? (
+                            <pre className="font-mono text-sm text-zinc-700 whitespace-pre-wrap leading-relaxed bg-white p-4 rounded-xl border border-zinc-200/60 shadow-sm">{output}</pre>
+                          ) : (
+                            <div className="h-full flex flex-col items-center justify-center text-zinc-400 gap-3 opacity-60">
+                              <Terminal className="w-8 h-8" />
+                              <span className="text-xs font-medium">실행 버튼을 눌러 결과를 확인하세요.</span>
+                            </div>
+                          )}
+                        </ScrollArea>
+                      </Panel>
+                    </PanelGroup>
+                  </Panel>
+                </PanelGroup>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-zinc-400 flex-col gap-4">
+              <div className="w-16 h-16 bg-zinc-50 rounded-2xl flex items-center justify-center shadow-sm ring-1 ring-zinc-100">
+                <AlertCircle className="w-8 h-8 opacity-20 text-violet-500" />
+              </div>
+              <span className="font-medium text-zinc-500">왼쪽 목록에서 과제를 선택해주세요.</span>
             </div>
-          </div>
-        </div>
-      </div>
+          )}
+        </section>
+      </main>
     </div>
   );
 }
