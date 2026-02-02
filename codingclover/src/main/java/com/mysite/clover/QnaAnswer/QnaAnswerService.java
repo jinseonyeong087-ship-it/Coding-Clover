@@ -12,6 +12,8 @@ import com.mysite.clover.Users.Users;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
+
+// 서버 킬때 스프링이 비즈니스 로직인지 파악먼저 해줌
 @Service
 public class QnaAnswerService {
 
@@ -19,11 +21,13 @@ public class QnaAnswerService {
   private final QnaRepository qnaRepository;
   private final com.mysite.clover.Notification.NotificationService notificationService;
 
+
   public QnaAnswer getAnswer(Long answerId) {
     return qnaAnswerRepository.findById(answerId)
         .orElseThrow(() -> new RuntimeException("답변을 찾을 수 없습니다."));
   }
 
+  // 답변 만드는 곳
   public void create(Qna qna, Users instructor, String answerContent) {
     QnaAnswer qnaAnswer = new QnaAnswer();
     qnaAnswer.setQna(qna);
