@@ -34,94 +34,45 @@ import {
     SidebarMenuButton
 } from "@/components/ui/sidebar"
 import { ScrollArea } from "@/components/ui/scroll-area";
+import AdminPropsalDetail from "@/pages/admin/AdminPropsalDetail"
 
 function ProposalDetail() {
 
-    const { courseId } = useParams(); // URL에서 courseId 추출
-    const navigate = useNavigate();
-    const [course, setCourse] = useState(null);
-    const [rejectReason, setRejectReason] = useState(""); // 반려 사유
-    const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false); // 반려 다이얼로그 상태
+    const [role, setRole] = useState(null);
+    const [loginId, setLoginId] = useState(false);
 
     useEffect(() => {
-        fetch(`/admin/course/${courseId}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include'
-        })
-            .then((res) => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error!: ${res.status}`);
-                }
-                return res.json();
-            })
-            .then((data) => {
-                console.log("응답 데이터:", data);
-                setCourse(data);
-            })
-            .catch((error) => {
-                console.error(error.message);
-            });
-    }, [courseId]);
+        const storedLoginId = localStorage.getItem("loginId");
+        const storedUsers = localStorage.getItem("users");
 
-    // 강사 승인하기
-    const handleApprove = () => {
-        // 백엔드 CourseController의 @PostMapping("/admin/course/{id}/approve") 호출
-        axios.post(`/admin/course/${courseId}/approve`, { withCredentials: true })
-            .then((response) => {
-                alert("강좌 승인이 완료되었습니다.");
-                navigate("/admin/dashboard"); // 승인 후 목록으로 이동
-            })
-            .catch((err) => {
-                console.error('승인 실패', err);
-                if (err.response?.status === 403) {
-                    alert("관리자 권한이 없습니다.");
-                } else {
-                    alert("승인 처리 중 오류가 발생했습니다.");
-                }
-            });
-    };
-
-    // 강사 반려하기
-    const handleReject = async () => {
-        if (!rejectReason.trim()) {
-            alert("반려 사유를 입력해주세요.");
-            return;
+        if (storedLoginId === "true") {
+            setLoginId(true);
         }
-        try {
-            const response = await fetch(`/admin/course/${courseId}/reject`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ reason: rejectReason })
-            });
-            if (response.ok) {
-                alert("강좌가 반려되었습니다.");
-                setIsRejectDialogOpen(false);
-                setRejectReason("");
-                navigate("/admin/dashboard");
-            } else if (response.status === 403) {
-                alert("관리자 권한이 없습니다.");
-            } else {
-                alert("반려 처리 중 오류가 발생했습니다.");
-            }
-        } catch (err) {
-            console.error('반려 실패', err);
-            alert("반려 처리 중 오류가 발생했습니다.");
-        }
-    };
 
-    const getLevelText = (level) => {
-        switch (level) {
-            case 1: return '초급';
-            case 2: return '중급';
-            case 3: return '고급';
-            default: return level;
+        if (storedUsers) {
+            const userData = JSON.parse(storedUsers);
+            // ApiLoginSuccess.java에서 "role"이라는 키로 응답을 보내므로 이를 참조합니다.
+            setRole(userData.role);
         }
-    };
+    }, []);
 
-    if (!course) {
-        return <div className="p-6">로딩 중...</div>;
+    // 1. 로그인하지 않은 상태일 때 (디폴트)
+    if (!loginId) {
+        return <StudentNav />;
+    }
+
+    // 2. 로그인 상태일 때 UsersRole에 따른 분기
+    // Users.java의 UsersRole 열거형 값(ADMIN, INSTRUCTOR, STUDENT)을 기준으로 합니다.
+    switch (role) {
+        case 'ADMIN':
+            return <AdminPropsalDetail />;
+        case 'INSTRUCTOR':
+            return <IstructorPropsalDetail />;
+        case 'STUDENT':
+            return <StudentCourseDetail />;
+        default:
+            // 역할 정보가 없거나 일치하지 않을 경우 기본 학생용 Nav 표시
+            return <StudentCourseDetail />;
     }
 
     return (
@@ -131,7 +82,7 @@ function ProposalDetail() {
             <SidebarProvider className="bg-white z-0">
                 <Sidebar dir="rtl" side="left">
                     <div className="py-8" />
-                    <SidebarHeader>메뉴바 헤더</SidebarHeader>
+                    <SidebarHeader>메뉴바 헤더=강좌이름</SidebarHeader>
                     <SidebarContent>
                         <ScrollArea>
                             <SidebarGroup>
@@ -158,16 +109,18 @@ function ProposalDetail() {
                             </SidebarGroup>
                         </ScrollArea>
                     </SidebarContent>
-                    <SidebarFooter>이 사이트의 사이드바에는 풋터가 필요할까</SidebarFooter>
+                    <SidebarFooter>여기에 코딩테스트 넣는 거 어떨까요</SidebarFooter>
                 </Sidebar>
                 <SidebarInset>
                     <div className="flex items-center gap-2 px-4 py-2">
                         <SidebarTrigger />
                     </div>
-                    {/* <AdminPropsalDetail /> */}
+                    <AdminPropsalDetail />
                     {/* <IstructorPropsalDetail /> */}
                     {/* <StudentCourseDetail /> */}
-                    <section className="container mx-auto px-16 py-16">
+
+                    {/* 관리자 용 */}
+                    {/* <section className="container mx-auto px-16 py-16">
                         <div className="flex max-w-2xl flex-col gap-4 text-sm">
                             <div className="flex flex-col gap-1.5">
                                 <div className="leading-none font-bold text-lg">강좌명</div>
@@ -206,7 +159,6 @@ function ProposalDetail() {
                                 )}
                             </div>
 
-                            {/* 반려 사유 표시 (반려된 경우에만) */}
                             {course.proposalStatus === 'REJECTED' && course.proposalRejectReason && (
                                 <div className="mt-4">
                                     <div className="font-semibold mb-1 text-red-600">반려 사유</div>
@@ -217,7 +169,6 @@ function ProposalDetail() {
                             )}
 
                             <div className="flex gap-3 mt-6">
-                                {/* 승인 다이얼로그 */}
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                         <Button disabled={course.proposalStatus !== 'PENDING'}>
@@ -239,7 +190,6 @@ function ProposalDetail() {
                                     </AlertDialogContent>
                                 </AlertDialog>
 
-                                {/* 반려 다이얼로그 */}
                                 <AlertDialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
                                     <AlertDialogTrigger asChild>
                                         <Button variant="destructive" disabled={course.proposalStatus !== 'PENDING'}>
@@ -266,7 +216,20 @@ function ProposalDetail() {
                                 <Button variant="ghost" onClick={() => navigate(-1)}>뒤로 가기</Button>
                             </div>
                         </div>
+                    </section> */}
+                    {/* 학생용 */}
+                    <section className="container mx-auto px-16 py-16">
+
+
+
+                        
                     </section>
+                    {/* 강사용 */}
+                    <section className="container mx-auto px-16 py-16">
+
+
+                    </section>
+
                     <Tail />
                 </SidebarInset>
             </SidebarProvider>

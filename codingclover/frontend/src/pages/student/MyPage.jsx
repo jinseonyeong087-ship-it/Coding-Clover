@@ -258,7 +258,7 @@ function MyPage() {
 
         {!loading && !error && user && (
           <>
-            <div className="flex justify-between mb-8">
+            <div className="max-w-4xl mx-auto flex justify-between mb-8">
               <h1 className="text-3xl font-bold">마이페이지</h1>
               {!isEditing && (
                 <Button variant="outline" onClick={handleEditToggle}>

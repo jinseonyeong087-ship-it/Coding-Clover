@@ -20,7 +20,7 @@ import ProtectedRoute from '@/components/ProtectdRoute'
 import Noroll from '@/pages/Noroll'
 import CommunityPostList from './pages/student/CommunityPostList'
 import CommunityPostDetail from './pages/student/CommunityPostDetail'
-import ProposalDetail from '@/pages/admin/ProposalDetail'
+import ProposalDetail from '@/pages/public/ProposalDetail'
 import InstructorCourseCreate from '@/pages/instructor/InstructorCourseDetail'
 import AdminApproch from '@/pages/admin/AdminApproch'
 import InstructorMypage from '@/pages/instructor/InstructorMypage'
@@ -37,7 +37,7 @@ import TestSearch from './test/TestSearch';
 import Notice from './pages/admin/Notice';
 import NoticeDetail from './pages/admin/NoticeDetail';
 import AdminLectureDetail from '@/pages/admin/AdminLectureDetail'
-import AdminCourse from '@/pages/admin/AdminCourse'
+import AdminCourseList from '@/pages/admin/AdminCourseList'
 import AdminInstructorList from '@/pages/admin/AdminInstructorList'
 
 
@@ -126,6 +126,7 @@ function App() {
           <ProtectedRoute allowedRoles={['STUDENT']} />
         }>
           <Route path="mypage" element={<MyPage />} />
+          <Route path="course/:courseId" element={<ProposalDetail />} />
           <Route path="course/:courseId/lectures" element={<Lecture />} />
         </Route>
         {/* 강사페이지 */}
@@ -134,13 +135,13 @@ function App() {
         }>
           <Route path="dashboard" element={<InstructorMain />} />
           <Route path="course/new" element={<CourseCreateRequest />} />
-          <Route path="course/:courseId" element={<InstructorCourseCreate />} />
+          <Route path="course/:courseId" element={<ProposalDetail />} />
           <Route path="mypage" element={<InstructorMypage />} />
         </Route>
         {/* 관리자 */}
         <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="dashboard" element={<AdminMain />} />
-          <Route path="course" element={<AdminCourse />} />
+          <Route path="course" element={<AdminCourseList />} />
           <Route path="course/:courseId" element={<ProposalDetail />} />
           <Route path="users/instructors/:userId" element={<AdminApproch />} />
           <Route path="course/:courseId/lectures" element={<AdminLectureDetail />} />

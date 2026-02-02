@@ -90,14 +90,14 @@ function StudentNav() {
                             </MenubarGroup>
                         </MenubarContent>
                     </MenubarMenu>
-                    <MenubarMenu>
+                    {/* <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">내 강의실</MenubarTrigger>
                         <MenubarContent>
                             <MenubarItem>수강 중인 강좌</MenubarItem>
                             <MenubarItem>완료한 강좌</MenubarItem>
                             <MenubarItem>학습 기록</MenubarItem>
                         </MenubarContent>
-                    </MenubarMenu>
+                    </MenubarMenu> */}
                     <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
                         <MenubarContent>

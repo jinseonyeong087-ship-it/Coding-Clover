@@ -14,7 +14,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-function AdminCourse() {
+function AdminCourseList() {
 
     const [course, setCourse] = useState([]);
 
@@ -152,4 +152,4 @@ function AdminCourse() {
 
 }
 
-export default AdminCourse;
+export default AdminCourseList;
