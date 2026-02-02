@@ -21,7 +21,7 @@ import Noroll from '@/pages/Noroll'
 import CommunityPostList from './pages/student/CommunityPostList'
 import CommunityPostDetail from './pages/student/CommunityPostDetail'
 import ProposalDetail from '@/pages/public/ProposalDetail'
-import InstructorCourseCreate from '@/pages/instructor/InstructorCourseDetail'
+import InstructorCourseDetail from '@/pages/instructor/InstructorCourseDetail'
 import AdminApproch from '@/pages/admin/AdminApproch'
 import InstructorMypage from '@/pages/instructor/InstructorMypage'
 import TestPayment from './test/TestPayment'
@@ -39,6 +39,7 @@ import NoticeDetail from './pages/admin/NoticeDetail';
 import AdminLectureDetail from '@/pages/admin/AdminLectureDetail'
 import AdminCourseList from '@/pages/admin/AdminCourseList'
 import AdminInstructorList from '@/pages/admin/AdminInstructorList'
+import StudentCourseDetail from '@/pages/student/StudentCourseDetail'
 
 
 
@@ -113,13 +114,14 @@ function App() {
         {/* 권한 없음 페이지 */}
         <Route path="/noroll" element={<Noroll />} />
         <Route path="/course/level/:level" element={<Level />} />
-        <Route path="/course/:id" element={<Enroll />} />
+        <Route path="/course/:id" element={<ProposalDetail />} />
         {/* 디비 연동하고 /student/course/{courseId}/enroll로 경로수정 */}
         {/* 럭쳐 링크 수정 필요함 */}
         {/* 수강생 페이지 */}
         {/* 커뮤니티 (전체 공개, 로그인 불필요) */}
         <Route path="/student/community" element={<CommunityPostList />} />
         <Route path="/student/community/posts/:postId" element={<CommunityPostDetail />} />
+        <Route path="" element={<StudentCourseDetail />} />
 
         {/* 수강생 페이지 (로그인 필요) */}
         <Route path="/student/*" element={
@@ -127,7 +129,7 @@ function App() {
         }>
           <Route path="mypage" element={<MyPage />} />
           <Route path="course/:courseId" element={<ProposalDetail />} />
-          <Route path="course/:courseId/lectures" element={<Lecture />} />
+          {/* <Route path="course/:courseId/lectures" element={<Lecture />} /> */}
         </Route>
         {/* 강사페이지 */}
         <Route path="/instructor/*" element={
@@ -135,7 +137,7 @@ function App() {
         }>
           <Route path="dashboard" element={<InstructorMain />} />
           <Route path="course/new" element={<CourseCreateRequest />} />
-          <Route path="course/:courseId" element={<ProposalDetail />} />
+          <Route path="course/:courseId" element={<InstructorCourseDetail />} />
           <Route path="mypage" element={<InstructorMypage />} />
         </Route>
         {/* 관리자 */}

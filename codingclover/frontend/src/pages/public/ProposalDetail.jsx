@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/sidebar"
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminPropsalDetail from "@/pages/admin/AdminPropsalDetail"
+import StudentCourseDetail from "@/pages/student/StudentCourseDetail"
 
 function ProposalDetail() {
 
@@ -57,21 +58,18 @@ function ProposalDetail() {
     }, []);
 
     // 1. 로그인하지 않은 상태일 때 (디폴트)
-    if (!loginId) {
-        return <StudentNav />;
-    }
+    // if (!loginId) {
+    //     return <StudentNav />;
+    // }
 
     // 2. 로그인 상태일 때 UsersRole에 따른 분기
     // Users.java의 UsersRole 열거형 값(ADMIN, INSTRUCTOR, STUDENT)을 기준으로 합니다.
     switch (role) {
         case 'ADMIN':
             return <AdminPropsalDetail />;
-        case 'INSTRUCTOR':
-            return <IstructorPropsalDetail />;
         case 'STUDENT':
             return <StudentCourseDetail />;
         default:
-            // 역할 정보가 없거나 일치하지 않을 경우 기본 학생용 Nav 표시
             return <StudentCourseDetail />;
     }
 
@@ -115,131 +113,17 @@ function ProposalDetail() {
                     <div className="flex items-center gap-2 px-4 py-2">
                         <SidebarTrigger />
                     </div>
+                    {/* 관리자용 */}
                     <AdminPropsalDetail />
-                    {/* <IstructorPropsalDetail /> */}
-                    {/* <StudentCourseDetail /> */}
 
-                    {/* 관리자 용 */}
-                    {/* <section className="container mx-auto px-16 py-16">
-                        <div className="flex max-w-2xl flex-col gap-4 text-sm">
-                            <div className="flex flex-col gap-1.5">
-                                <div className="leading-none font-bold text-lg">강좌명</div>
-                                <div className="text-xl">{course.title}</div>
-                            </div>
-
-                            <Separator />
-
-                            <div className="grid grid-cols-3 gap-4">
-                                <div>
-                                    <span className="font-semibold">난이도:</span> {getLevelText(course.level)}
-                                </div>
-                                <div>
-                                    <span className="font-semibold">가격:</span> {course.price?.toLocaleString()}원
-                                </div>
-                                <div>
-                                    <span className="font-semibold">강사명:</span> {course.instructorName}
-                                </div>
-                            </div>
-
-                            <div className="mt-2">
-                                <div className="font-semibold mb-1">강좌 설명</div>
-                                <div className="bg-slate-50 p-4 rounded-md border">
-                                    {course.description}
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 mt-4">
-                                <span className="font-semibold">현재 상태:</span>
-                                {course.proposalStatus === 'PENDING' ? (
-                                    <Badge variant="destructive">승인 대기</Badge>
-                                ) : course.proposalStatus === 'APPROVED' ? (
-                                    <Badge variant="secondary">승인 완료</Badge>
-                                ) : (
-                                    <Badge variant="outline">반려됨</Badge>
-                                )}
-                            </div>
-
-                            {course.proposalStatus === 'REJECTED' && course.proposalRejectReason && (
-                                <div className="mt-4">
-                                    <div className="font-semibold mb-1 text-red-600">반려 사유</div>
-                                    <div className="bg-red-50 p-4 rounded-md border border-red-200 text-red-800">
-                                        {course.proposalRejectReason}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="flex gap-3 mt-6">
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button disabled={course.proposalStatus !== 'PENDING'}>
-                                            {course.proposalStatus === 'APPROVED' ? "승인 완료됨" :
-                                                course.proposalStatus === 'REJECTED' ? "반려됨" : "강좌 승인"}
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>강좌 개설을 승인하시겠습니까?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                승인 후, 강사님들이 강의를 업로드할 수 있습니다.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>아니오</AlertDialogCancel>
-                                            <AlertDialogAction onClick={handleApprove}>네, 승인합니다</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-
-                                <AlertDialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="destructive" disabled={course.proposalStatus !== 'PENDING'}>
-                                            강좌 반려
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>강좌 개설을 반려하시겠습니까?</AlertDialogTitle>
-                                        </AlertDialogHeader>
-                                        <Textarea
-                                            placeholder="반려 사유를 입력하세요."
-                                            value={rejectReason}
-                                            onChange={(e) => setRejectReason(e.target.value)}
-                                            className="min-h-[100px]"
-                                        />
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel onClick={() => setRejectReason("")}>취소</AlertDialogCancel>
-                                            <AlertDialogAction onClick={handleReject}>반려하기</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-
-                                <Button variant="ghost" onClick={() => navigate(-1)}>뒤로 가기</Button>
-                            </div>
-                        </div>
-                    </section> */}
                     {/* 학생용 */}
-                    <section className="container mx-auto px-16 py-16">
-
-
-
-                        
-                    </section>
-                    {/* 강사용 */}
-                    <section className="container mx-auto px-16 py-16">
-
-
-                    </section>
+                    <StudentCourseDetail />
 
                     <Tail />
                 </SidebarInset>
             </SidebarProvider>
-
-
         </>
-
     );
-
-
 }
 
 export default ProposalDetail;
