@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Nav from '@/components/Nav';
 import Tail from "@/components/Tail";
-import { Button } from "@/components/ui/Button";
-
-import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/Input"
-import { Label } from "@/components/ui/label"
 import {
     Sidebar,
     SidebarContent,
@@ -83,9 +78,8 @@ function InstructorCourseDetail() {
         <>
             <Nav />
             <div className="py-8" />
-            <SidebarProvider className="bg-white z-0">
-                <Sidebar dir="rtl" side="left">
-                    <div className="py-8" />
+            <SidebarProvider className="bg-white">
+                <Sidebar dir="rtl" side="left" className="!top-16 !h-[calc(100svh-4rem)]">
                     <SidebarHeader>{courseInfo ? courseInfo.title : '강좌명'}</SidebarHeader>
                     <SidebarContent>
                         <ScrollArea>

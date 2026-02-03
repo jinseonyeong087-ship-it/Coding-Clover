@@ -9,12 +9,24 @@ import axios from 'axios';
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 function CourseCreateRequest() {
+  const DRAFT_KEY = 'courseDraft';
   const [course, setCourse] = useState({ title: '', createdBy: '', level: 1, description: '', price: 0 });
   const [errors, setErrors] = useState({});
   const [selectLevel, setSelectLevel] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showDraftDialog, setShowDraftDialog] = useState(false);
   const navigate = useNavigate();
 
   const levelMapping = [
@@ -66,6 +78,49 @@ function CourseCreateRequest() {
 
   
 
+  // 페이지 진입 시 임시저장 데이터 존재 여부 확인
+  useEffect(() => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      setShowDraftDialog(true);
+    }
+  }, []);
+
+  // 임시저장 데이터 불러오기
+  const handleLoadDraft = () => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      const parsed = JSON.parse(draft);
+      setCourse(prev => ({
+        ...prev,
+        title: parsed.title || '',
+        description: parsed.description || '',
+        price: parsed.price || 0,
+      }));
+      setSelectLevel(parsed.selectLevel ?? null);
+    }
+    setShowDraftDialog(false);
+  };
+
+  // 임시저장 데이터 삭제 (새로 작성)
+  const handleDiscardDraft = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    setShowDraftDialog(false);
+  };
+
+  // 임시저장
+  const handleTempSave = () => {
+    const draft = {
+      title: course.title,
+      description: course.description,
+      price: course.price,
+      selectLevel,
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    alert('임시 저장되었습니다.');
+  };
+
   // 요고는 유저가 입력한 걸 State에 저장해주는 고얌
   // 입력하면 에러메세지 없애줌
   const handleChange = (event) => {
@@ -94,6 +149,7 @@ function CourseCreateRequest() {
     }, { withCredentials: true })
       .then((response) => {
         console.log('결과 : ', response.data);
+        localStorage.removeItem(DRAFT_KEY);
         alert("개설 신청이 완료되었습니다.");
         navigate('/instructor/dashboard')
       })
@@ -116,6 +172,22 @@ function CourseCreateRequest() {
 
   return (
     <>
+      {/* 임시저장 데이터 불러오기 확인 다이얼로그 */}
+      <AlertDialog open={showDraftDialog} onOpenChange={setShowDraftDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>임시 저장된 데이터가 있습니다</AlertDialogTitle>
+            <AlertDialogDescription>
+              이전에 작성하던 강좌 정보가 있습니다. 불러오시겠습니까?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDiscardDraft}>새로 작성</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLoadDraft}>불러오기</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Nav />
 
       <section className="container mx-auto px-4 py-16">
@@ -177,7 +249,7 @@ function CourseCreateRequest() {
             </div>
 
             <CardFooter className="flex justify-end gap-3">
-              <Button variant="outline">임시 저장</Button>
+              <Button variant="outline" onClick={handleTempSave}>임시 저장</Button>
               <Button onClick={handleClick} method="post">개설 신청</Button>
             </CardFooter>
           </CardContent>

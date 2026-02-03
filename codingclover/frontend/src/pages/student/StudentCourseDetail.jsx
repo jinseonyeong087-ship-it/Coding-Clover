@@ -1,6 +1,6 @@
 // 수강생 수강신청 & 강좌 & 강의 페이지
-import React, { useState } from "react";
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -20,9 +20,25 @@ import { Button } from "@/components/ui/button";
 
 function StudentCourseDetail() {
 
+    const { courseId } = useParams();
     const [course, setCourse] = useState([]);
     const [enrollment, setEnrollment] = useState([]);
     const navigate = useNavigate();
+
+    // 강좌 정보 가져오기
+    useEffect(() => {
+        fetch(`/course/${courseId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        })
+            .then((res) => {
+                if (!res.ok) throw new Error(`에러 발생: ${res.status}`);
+                return res.json();
+            })
+            .then((data) => setCourse(data))
+            .catch((error) => console.error(error.message));
+    }, [courseId]);
 
 
     const handleSubmit = async () => {
