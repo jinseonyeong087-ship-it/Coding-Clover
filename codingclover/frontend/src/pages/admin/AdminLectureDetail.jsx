@@ -166,7 +166,7 @@ function AdminLectureDetail() {
         <>
             <Nav />
             <div className="py-8" />
-            <SidebarProvider className="bg-white">
+            <SidebarProvider className="!bg-white">
                 <Sidebar side="left" className="!top-16 !h-[calc(100svh-4rem)]">
                     <SidebarHeader className="px-4 py-3 font-semibold">강의 목록</SidebarHeader>
                     <SidebarContent>
@@ -180,7 +180,12 @@ function AdminLectureDetail() {
                                                     onClick={() => handleSelectLecture(lecture)}
                                                     className={selectedLecture?.lectureId === lecture.lectureId ? "bg-accent" : ""}
                                                 >
-                                                    <span>{lecture.orderNo}강. {lecture.title}</span>
+                                                    <span title={`${lecture.orderNo}강. ${lecture.title}`}>
+                                                        {(() => {
+                                                            const text = `${lecture.orderNo}강. ${lecture.title}`;
+                                                            return text.length > 13 ? text.slice(0, 13) + "..." : text;
+                                                        })()}
+                                                    </span>
                                                     {getStatusBadge(lecture.approvalStatus)}
                                                 </SidebarMenuButton>
                                             </SidebarMenuItem>
