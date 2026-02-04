@@ -41,6 +41,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	// 챗봇
 	implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter:1.0.0-M5'
+	// .env 불러오게 해주는거
+	implementation 'me.paulschwarz:spring-dotenv:4.0.0'	
 }
 
 tasks.named('test') {
