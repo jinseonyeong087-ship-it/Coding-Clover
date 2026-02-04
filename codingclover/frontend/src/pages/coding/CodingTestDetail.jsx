@@ -24,12 +24,10 @@ const CodingTestDetail = () => {
   ]);
 
   useEffect(() => {
-    if (userRole === "INSTRUCTOR") {
-      alert("접근 권한이 없습니다.");
-      navigate("/");
-      return;
-    }
-  }, [userRole, navigate]);
+  axios.get(`/api/problems/${id}`)
+    .then(res => setProblem(res.data))
+    .catch(err => console.error(err));
+}, [id]);
 
   const handleUpdate = () => {
     setIsEditing(false);
