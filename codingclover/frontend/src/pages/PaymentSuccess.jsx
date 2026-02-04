@@ -34,22 +34,28 @@ export default function PaymentSuccess() {
     // 서버로 결제 승인 및 포인트 충전 요청
     const processPayment = async () => {
       try {
-        // 1. 토스페이먼츠 결제 승인
+        console.log('결제 승인 시작:', { orderId, paymentKey, amount });
+        
+        // 1. 토스페이먼츠 결제 승인 API 호출
         const confirmResponse = await axios.post('/api/payment/confirm', {
           orderId,
           paymentKey,
           amount: parseInt(amount)
+        }, {
+          withCredentials: true
         });
+
+        console.log('결제 승인 완료:', confirmResponse.data);
 
         // 2. 포인트 충전 API 호출
         const chargeResponse = await axios.post('/api/wallet/charge', {
           amount: parseInt(amount),
           paymentId: confirmResponse.data.paymentId
         }, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          }
+          withCredentials: true
         });
+
+        console.log('포인트 충전 완료:', chargeResponse.data);
 
         // 3. 성공 데이터 설정
         setSuccessData({
@@ -60,7 +66,10 @@ export default function PaymentSuccess() {
           currentBalance: chargeResponse.data.currentBalance
         });
 
-        // 4. 네비게이션에 포인트 업데이트 알림
+        // 4. localStorage도 업데이트 (네비바 동기화용)
+        localStorage.setItem('userPoints', chargeResponse.data.currentBalance.toString());
+        
+        // 5. 네비게이션에 포인트 업데이트 알림
         window.dispatchEvent(new Event('pointsUpdated'));
 
         setIsProcessing(false);
@@ -70,9 +79,11 @@ export default function PaymentSuccess() {
         
         if (error.response?.status === 401) {
           setError("로그인이 필요합니다. 로그인 페이지로 이동합니다.");
-          setTimeout(() => navigate('/login'), 2000);
+          setTimeout(() => navigate('/auth/login'), 2000);
+        } else if (error.response?.status === 400) {
+          setError(`요청 오류: ${error.response?.data?.error || '잘못된 요청입니다.'}`);
         } else {
-          setError(error.response?.data?.message || "결제 처리 중 오류가 발생했습니다.");
+          setError(error.response?.data?.message || error.response?.data?.error || "결제 처리 중 오류가 발생했습니다.");
         }
         
         setIsProcessing(false);

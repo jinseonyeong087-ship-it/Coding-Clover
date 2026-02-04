@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { RadioGroup, RadioGroupItem } from '../components/ui/RadioGroup';
 import { Label } from '../components/ui/Label';
 import StudentNav from '../components/StudentNav';
+import coinImg from '../img/coin.png';
 
 const clientKey = "test_ck_EP59LybZ8B6bWgaqMRRY86GYo7pR";
 
@@ -86,7 +87,7 @@ export default function Payment() {
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <img src="/img/coin.png" alt="코인" className="w-6 h-6" />
+                <img src={coinImg} alt="코인" className="w-6 h-6" />
                 포인트 충전 금액 선택
               </CardTitle>
               <CardDescription>
@@ -155,9 +156,8 @@ export default function Payment() {
             <h3 className="font-semibold text-blue-900 mb-2">안내사항</h3>
             <ul className="text-sm text-blue-800 space-y-1">
               <li>• 충전된 포인트는 수강신청 시 사용할 수 있습니다</li>
-              <li>• 포인트 유효기간은 충전일로부터 1년입니다</li>
               <li>• 환불은 미사용 포인트에 한해 가능합니다</li>
-              <li>• 결제 관련 문의사항은 고객센터로 연락해주세요</li>
+              <li>• 환불 관련 문의사항은 관리자에게 요청해주세요</li>
             </ul>
           </div>
         </div>

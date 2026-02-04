@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,16 +15,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.Users.UsersRepository;
+import com.mysite.clover.UserWallet.WalletIntegrationService;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/payment")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 public class PaymentController {
 
     private final PaymentService paymentService;
     private final UsersRepository usersRepository;
+    private final WalletIntegrationService walletIntegrationService;
 
     /**
      * 토스페이먼츠 결제 확인 (결제 승인)
@@ -34,7 +38,17 @@ public class PaymentController {
             Long userId = getUserIdFromPrincipal(principal);
             String orderId = (String) request.get("orderId");
             String paymentKey = (String) request.get("paymentKey");
-            Integer amount = (Integer) request.get("amount");
+            
+            // amount 타입 안전 변환
+            Integer amount;
+            Object amountObj = request.get("amount");
+            if (amountObj instanceof Integer) {
+                amount = (Integer) amountObj;
+            } else if (amountObj instanceof String) {
+                amount = Integer.parseInt((String) amountObj);
+            } else {
+                amount = Integer.parseInt(amountObj.toString());
+            }
 
             // 토스페이먼츠에 결제 승인 요청 및 DB 저장
             Payment payment = paymentService.confirmPayment(orderId, paymentKey, amount, userId);
@@ -70,7 +84,7 @@ public class PaymentController {
                 "message", "포인트 충전 성공",
                 "paymentId", payment.getPaymentId(),
                 "amount", payment.getAmount(),
-                "currentPoints", paymentService.getUserPoints(userId)
+                "currentPoints", walletIntegrationService.getCurrentBalance(userId)
             ));
         } catch (Exception e) {
             e.printStackTrace();
@@ -96,7 +110,7 @@ public class PaymentController {
                 "message", "포인트 사용 성공",
                 "paymentId", payment.getPaymentId(),
                 "amount", payment.getAmount(),
-                "currentPoints", paymentService.getUserPoints(userId)
+                "currentPoints", walletIntegrationService.getCurrentBalance(userId)
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -112,7 +126,8 @@ public class PaymentController {
     public ResponseEntity<?> getCurrentPoints(Principal principal) {
         try {
             Long userId = getUserIdFromPrincipal(principal);
-            Integer points = paymentService.getUserPoints(userId);
+            // TODO: UserWallet 시스템으로 변경 필요
+            Integer points = 0; // paymentService.getUserPoints(userId);
 
             return ResponseEntity.ok().body(Map.of(
                 "points", points

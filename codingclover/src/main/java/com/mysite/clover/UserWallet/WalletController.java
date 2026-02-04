@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/wallet")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class WalletController {
 
     private final WalletIntegrationService walletIntegrationService;
@@ -111,12 +111,20 @@ public class WalletController {
      */
     private Long getUserIdFromPrincipal(Principal principal) {
         if (principal == null) {
+            System.err.println("Principal이 null입니다 - 세션이 만료되었거나 로그인되지 않았습니다.");
             throw new RuntimeException("로그인이 필요합니다.");
         }
         
-        Users user = usersRepository.findByLoginId(principal.getName())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        String loginId = principal.getName();
+        System.out.println("Principal에서 추출한 loginId: " + loginId);
         
+        Users user = usersRepository.findByLoginId(loginId)
+                .orElseThrow(() -> {
+                    System.err.println("사용자를 찾을 수 없습니다: " + loginId);
+                    return new RuntimeException("사용자를 찾을 수 없습니다: " + loginId);
+                });
+        
+        System.out.println("찾은 사용자 ID: " + user.getUserId());
         return user.getUserId();
     }
 }
