@@ -40,7 +40,7 @@ import AdminLectureDetail from '@/pages/admin/AdminLectureDetail'
 import AdminCourseList from '@/pages/admin/AdminCourseList'
 import AdminInstructorList from '@/pages/admin/AdminInstructorList'
 import StudentCourseDetail from '@/pages/student/StudentCourseDetail'
-
+import CodingTestDetail from './pages/coding/CodingTestDetail';
 
 
 
@@ -90,6 +90,7 @@ function App() {
         {/* 공지사항 */}
         <Route path="/notice" element={<Notice />} />
         <Route path="/notice/detail/:noticeId" element={<NoticeDetail />} />
+        <Route path="/coding-test/:id" element={<CodingTestDetail />} />
 
         {/* 아이디/비밀번호 찾기 테스트 */}
         {/* 아이디/비밀번호 찾기 테스트 */}
