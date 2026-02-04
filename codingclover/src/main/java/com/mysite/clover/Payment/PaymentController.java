@@ -26,6 +26,31 @@ public class PaymentController {
     private final UsersRepository usersRepository;
 
     /**
+     * 토스페이먼츠 결제 확인 (결제 승인)
+     */
+    @PostMapping("/confirm")
+    public ResponseEntity<?> confirmPayment(@RequestBody Map<String, Object> request, Principal principal) {
+        try {
+            Long userId = getUserIdFromPrincipal(principal);
+            String orderId = (String) request.get("orderId");
+            String paymentKey = (String) request.get("paymentKey");
+            Integer amount = (Integer) request.get("amount");
+
+            // 토스페이먼츠에 결제 승인 요청 및 DB 저장
+            Payment payment = paymentService.confirmPayment(orderId, paymentKey, amount, userId);
+
+            return ResponseEntity.ok().body(Map.of(
+                "message", "결제가 성공적으로 확인되었습니다.",
+                "paymentId", payment.getPaymentId(),
+                "amount", payment.getAmount(),
+                "orderId", payment.getOrderId()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
      * 포인트 충전 - 토스페이먼츠 결제 성공 후 호출
      */
     @PostMapping("/success")

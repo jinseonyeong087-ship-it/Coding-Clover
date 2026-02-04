@@ -35,6 +35,33 @@ public class PaymentService {
     private String tossConfirmUrl;
 
     /**
+     * 토스페이먼츠 결제 승인 및 Payment 엔티티 생성
+     */
+    @Transactional
+    public Payment confirmPayment(String orderId, String paymentKey, Integer amount, Long userId) {
+        
+        // 1. 토스페이먼츠 API 호출해서 결제 승인 요청
+        confirmTossPayment(paymentKey, orderId, amount);
+
+        // 2. 유저 존재 여부 확인
+        if (!usersRepository.existsById(userId)) {
+            throw new RuntimeException("User not found: " + userId);
+        }
+
+        // 3. Payment 엔티티 생성 및 저장
+        Payment payment = new Payment();
+        payment.setUserId(userId);
+        payment.setType(PaymentType.CHARGE);
+        payment.setAmount(amount);
+        payment.setPaymentMethod("TOSS_CARD");
+        payment.setStatus(PaymentStatus.PAID);
+        payment.setOrderId(orderId);
+        payment.setPaymentKey(paymentKey);
+
+        return paymentRepository.save(payment);
+    }
+
+    /**
      * 포인트 충전 (토스페이먼츠)
      */
     @Transactional

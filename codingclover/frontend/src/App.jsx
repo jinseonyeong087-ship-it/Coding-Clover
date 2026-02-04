@@ -102,8 +102,11 @@ function App() {
           <Route path="lecture/edit/:lectureId" element={<TestInstructorLectureEdit />} />
         </Route>
 
-        {/* 결제 테스트 (프론트/백엔드 연동) */}
+        {/* 결제 관련 */}
         <Route path="/payment" element={<Payment />} />
+        <Route path="/payment/success" element={<PaymentSuccess />} />
+        <Route path="/payment/fail" element={<PaymentFail />} />
+        {/* 결제 테스트 (프론트/백엔드 연동) - 기존 경로 유지 */}
         <Route path="/test/payment/checkout" element={<Payment />} />
         <Route path="/test/payment/success" element={<PaymentSuccess />} />
         <Route path="/test/payment/fail" element={<PaymentFail />} />

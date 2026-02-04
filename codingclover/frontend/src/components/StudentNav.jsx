@@ -21,20 +21,42 @@ function StudentNav() {
     const [users, setUsers] = useState({ name: '' });
     const [keyword, setKeyword] = useState("");
     const [points, setPoints] = useState(0);
+    const [isLoadingPoints, setIsLoadingPoints] = useState(false);
     const navigate = useNavigate();
+
+    // 백엔드에서 실제 포인트 잔액 가져오기
+    const fetchUserPoints = async () => {
+        try {
+            setIsLoadingPoints(true);
+            const response = await axios.get('/api/wallet/balance', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                }
+            });
+            setPoints(response.data.balance || 0);
+        } catch (error) {
+            console.error('포인트 조회 실패:', error);
+            // 백엔드 연결 실패 시 localStorage 값 사용
+            const storedPoints = localStorage.getItem("userPoints") || "0";
+            setPoints(parseInt(storedPoints));
+        } finally {
+            setIsLoadingPoints(false);
+        }
+    };
 
     useEffect(() => {
         const checkLoginStatus = async () => {
             const storedLoginId = localStorage.getItem("loginId");
             const storedUsers = localStorage.getItem("users");
-            const storedPoints = localStorage.getItem("userPoints") || "0";
 
             if (storedLoginId === "true" && storedUsers) {
                 setLoginId(true);
                 const parsedUsers = JSON.parse(storedUsers);
                 setUsers(parsedUsers);
-                setPoints(parseInt(storedPoints));
                 console.log("현재 로그인한 사용자:", parsedUsers);
+                
+                // 로그인 상태면 실제 포인트 조회
+                await fetchUserPoints();
             }
 
             // 소셜 로그인 리다이렉트 처리 (세션 확인)
@@ -75,9 +97,9 @@ function StudentNav() {
         checkLoginStatus();
 
         // 결제 완료 후 포인트 업데이트를 위한 이벤트 리스너
-        const handlePointsUpdate = () => {
-            const updatedPoints = localStorage.getItem("userPoints") || "0";
-            setPoints(parseInt(updatedPoints));
+        const handlePointsUpdate = async () => {
+            // 백엔드에서 최신 포인트 조회
+            await fetchUserPoints();
         };
 
         window.addEventListener('pointsUpdated', handlePointsUpdate);
@@ -164,13 +186,20 @@ function StudentNav() {
                 {!loginId ? (
                     <Button size="sm"><Link to="/auth/login">로그인</Link></Button>)
                     : (<>
-                        <div className="flex items-center gap-2">
-                            <img 
-                                src={coinImg}
-                                alt="코인" 
-                                className="w-5 h-5"
-                            />
-                            <span className="text-sm font-medium">{points}P</span>
+                        <div className="flex items-center gap-3">
+                            {/* 포인트 표시 */}
+                            <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 rounded-full border">
+                                <img 
+                                    src={coinImg}
+                                    alt="코인" 
+                                    className="w-5 h-5"
+                                />
+                                <span className="text-sm font-semibold text-blue-700">
+                                    {isLoadingPoints ? '...' : `${points.toLocaleString()}P`}
+                                </span>
+                            </div>
+                            
+                            {/* 사용자 이름 */}
                             <Button variant="ghost" className="text-sm">{users.name}님</Button>
                         </div>
                         <Logout />
