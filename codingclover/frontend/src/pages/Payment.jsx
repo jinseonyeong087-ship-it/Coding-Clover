@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 
 const clientKey = "test_ck_EP59LybZ8B6bWgaqMRRY86GYo7pR";
 
-export default function TestPayment() {
+export default function Payment() {
   const [tossPayments, setTossPayments] = useState(null);
   const [price, setPrice] = useState(1);
 

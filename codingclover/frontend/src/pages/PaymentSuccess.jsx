@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-export default function TestPaymentSuccess() {
+export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(true);
@@ -35,7 +35,15 @@ export default function TestPaymentSuccess() {
       paymentMethod: "간편결제"
     })
       .then(response => {
-        alert("결제 성공! DB 저장이 완료되었습니다.");
+        // 결제 성공 시 포인트 업데이트
+        const currentPoints = parseInt(localStorage.getItem('userPoints') || '0');
+        const newPoints = currentPoints + parseInt(amount);
+        localStorage.setItem('userPoints', newPoints.toString());
+        
+        // 네비게이션 컴포넌트에 포인트 업데이트 알림
+        window.dispatchEvent(new Event('pointsUpdated'));
+        
+        alert(`결제 성공! ${parseInt(amount)}P가 충전되었습니다.`);
         setIsProcessing(false);
         navigate('/');
       })
@@ -43,7 +51,12 @@ export default function TestPaymentSuccess() {
         console.error(error);
         if (error.response?.status === 500 && error.response?.data?.message?.includes("S008")) {
           // 이미 처리 중인 요청은 성공으로 간주하거나 무시할 수 있음.
-          alert("결제 성공! (중복 처리 방지됨)");
+          const currentPoints = parseInt(localStorage.getItem('userPoints') || '0');
+          const newPoints = currentPoints + parseInt(amount);
+          localStorage.setItem('userPoints', newPoints.toString());
+          window.dispatchEvent(new Event('pointsUpdated'));
+          
+          alert(`결제 성공! ${parseInt(amount)}P가 충전되었습니다. (중복 처리 방지됨)`);
           setIsProcessing(false);
           navigate('/');
           return;

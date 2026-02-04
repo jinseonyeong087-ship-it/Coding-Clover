@@ -14,22 +14,26 @@ import { Input } from "@/components/ui/Input"
 import { Search } from "lucide-react"
 import Logout from "@/components/Logout"
 import axios from 'axios';
+import coinImg from '../img/coin.png';
 
 function StudentNav() {
     const [loginId, setLoginId] = useState(false);
     const [users, setUsers] = useState({ name: '' });
     const [keyword, setKeyword] = useState("");
+    const [points, setPoints] = useState(0);
     const navigate = useNavigate();
 
     useEffect(() => {
         const checkLoginStatus = async () => {
             const storedLoginId = localStorage.getItem("loginId");
             const storedUsers = localStorage.getItem("users");
+            const storedPoints = localStorage.getItem("userPoints") || "0";
 
             if (storedLoginId === "true" && storedUsers) {
                 setLoginId(true);
                 const parsedUsers = JSON.parse(storedUsers);
                 setUsers(parsedUsers);
+                setPoints(parseInt(storedPoints));
                 console.log("현재 로그인한 사용자:", parsedUsers);
             }
 
@@ -49,9 +53,13 @@ function StudentNav() {
                         if (data.loggedIn) {
                             localStorage.setItem("loginId", "true");
                             localStorage.setItem("users", JSON.stringify(data.user));
+                            if (!localStorage.getItem("userPoints")) {
+                                localStorage.setItem("userPoints", "0");
+                            }
 
                             setLoginId(true);
                             setUsers(data.user);
+                            setPoints(parseInt(localStorage.getItem("userPoints") || "0"));
                             console.log("소셜 로그인 감지 및 정보 갱신:", data.user);
 
                             // 상태 갱신을 위해 새로고침 (선택 사항, 필요시 주석 해제)
@@ -65,6 +73,18 @@ function StudentNav() {
         };
 
         checkLoginStatus();
+
+        // 결제 완료 후 포인트 업데이트를 위한 이벤트 리스너
+        const handlePointsUpdate = () => {
+            const updatedPoints = localStorage.getItem("userPoints") || "0";
+            setPoints(parseInt(updatedPoints));
+        };
+
+        window.addEventListener('pointsUpdated', handlePointsUpdate);
+        
+        return () => {
+            window.removeEventListener('pointsUpdated', handlePointsUpdate);
+        };
     }, []);
 
     // 저장할 때: JSON.stringify()로 객체 → 문자열 변환
@@ -111,6 +131,9 @@ function StudentNav() {
                     <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/test/coding') }}>코딩테스트</MenubarTrigger>
                     </MenubarMenu>
+                        <MenubarMenu>
+                            <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/payment') }}>충전하기</MenubarTrigger>
+                        </MenubarMenu>
                     <MenubarMenu>
                         <Link
                             to="/student/mypage"
@@ -141,7 +164,15 @@ function StudentNav() {
                 {!loginId ? (
                     <Button size="sm"><Link to="/auth/login">로그인</Link></Button>)
                     : (<>
-                        <Button variant="ghost" className="text-sm">{users.name}님</Button>
+                        <div className="flex items-center gap-2">
+                            <img 
+                                src={coinImg}
+                                alt="코인" 
+                                className="w-5 h-5"
+                            />
+                            <span className="text-sm font-medium">{points}P</span>
+                            <Button variant="ghost" className="text-sm">{users.name}님</Button>
+                        </div>
                         <Logout />
                     </>)}
 

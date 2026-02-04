@@ -24,9 +24,9 @@ import ProposalDetail from '@/pages/public/ProposalDetail'
 import InstructorCourseDetail from '@/pages/instructor/InstructorCourseDetail'
 import AdminApproch from '@/pages/admin/AdminApproch'
 import InstructorMypage from '@/pages/instructor/InstructorMypage'
-import TestPayment from './test/TestPayment'
-import TestPaymentSuccess from './test/TestPaymentSuccess'
-import TestPaymentFail from './test/TestPaymentFail'
+import Payment from './pages/Payment'
+import PaymentSuccess from './pages/PaymentSuccess'
+import PaymentFail from './pages/PaymentFail'
 import LectureBatchTest from './test/LectureBatchTest';
 import LectureCreateTest from './test/LectureCreateTest';
 import TestInstructorCourseManage from './test/TestInstructorCourseManage';
@@ -103,9 +103,10 @@ function App() {
         </Route>
 
         {/* 결제 테스트 (프론트/백엔드 연동) */}
-        <Route path="/test/payment/checkout" element={<TestPayment />} />
-        <Route path="/test/payment/success" element={<TestPaymentSuccess />} />
-        <Route path="/test/payment/fail" element={<TestPaymentFail />} />
+        <Route path="/payment" element={<Payment />} />
+        <Route path="/test/payment/checkout" element={<Payment />} />
+        <Route path="/test/payment/success" element={<PaymentSuccess />} />
+        <Route path="/test/payment/fail" element={<PaymentFail />} />
         {/* 로그인 관련 */}
         <Route path="/auth/login" element={<MainLogin />} />
         <Route path="/auth/register" element={<Register />} />

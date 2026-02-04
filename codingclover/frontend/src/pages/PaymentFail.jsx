@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 
-export default function TestPaymentFail() {
+export default function PaymentFail() {
   const [searchParams] = useSearchParams();
   const message = searchParams.get('message');
   const code = searchParams.get('code');
