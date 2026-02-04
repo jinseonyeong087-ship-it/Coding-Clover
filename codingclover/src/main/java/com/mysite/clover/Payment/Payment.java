@@ -20,35 +20,38 @@ import org.hibernate.annotations.CreationTimestamp;
 @Table(name = "payment")
 public class Payment {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "payment_id")
-  private Long paymentId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "payment_id")
+    private Long paymentId;
 
-  // 다른 패키지의 엔티티를 직접 참조하지 않고 ID만 저장합니다.
-  @Column(name = "user_id", nullable = false)
-  private Long userId;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
-  @Column(name = "product_id", nullable = false)
-  private Long productId;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    private PaymentType type;
 
-  @Column(nullable = false)
-  private Integer amount;
+    @Column(name = "amount", nullable = false)
+    private Integer amount;
 
-  @Column(name = "payment_method", length = 50, nullable = false)
-  private String paymentMethod;
+    @Column(name = "payment_method", length = 50, nullable = false)
+    private String paymentMethod; // TOSS_MOCK, POINT, ADMIN
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private PaymentStatus status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private PaymentStatus status;
 
-  @CreationTimestamp
-  @Column(name = "paid_at", nullable = false, updatable = false)
-  private LocalDateTime paidAt;
+    @Column(name = "related_payment_id")
+    private Long relatedPaymentId;
 
-  @Column(name = "payment_key")
-  private String paymentKey;
+    @CreationTimestamp
+    @Column(name = "paid_at", nullable = false, updatable = false)
+    private LocalDateTime paidAt;
 
-  @Column(name = "order_id")
-  private String orderId;
+    @Column(name = "order_id", length = 255)
+    private String orderId;
+
+    @Column(name = "payment_key", length = 255)
+    private String paymentKey;
 }

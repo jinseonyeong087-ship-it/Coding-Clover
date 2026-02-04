@@ -4,9 +4,8 @@ import lombok.Data;
 
 @Data
 public class PaymentSuccessDto {
-  private String paymentKey;
-  private String orderId;
-  private Integer amount;
-  private Long productId;
-  private String paymentMethod;
+    private String paymentKey;
+    private String orderId;
+    private Integer amount;
+    private String paymentMethod;
 }
