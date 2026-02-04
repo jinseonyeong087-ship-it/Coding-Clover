@@ -132,13 +132,7 @@ function StudentCourseDetail() {
         }
     };
 
-    // 재생 시간 포맷
-    const formatDuration = (seconds) => {
-        if (!seconds) return "";
-        const min = Math.floor(seconds / 60);
-        const sec = seconds % 60;
-        return `${min}분 ${sec}초`;
-    };
+    
 
     return (
         <>
@@ -237,35 +231,7 @@ function StudentCourseDetail() {
                             </div>
                         </div>
 
-                        {/* 영상 재생 영역 */}
-                        <div className="flex-1">
-                            {selectedLecture ? (
-                                <div className="flex flex-col gap-3">
-                                    <h3 className="font-semibold text-lg">
-                                        {selectedLecture.orderNo}강. {selectedLecture.title}
-                                    </h3>
-                                    {selectedLecture.videoUrl ? (
-                                        <iframe
-                                            width="100%"
-                                            height="500"
-                                            src={toEmbedUrl(selectedLecture.videoUrl)}
-                                            title="강의 영상"
-                                            frameBorder="0"
-                                            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                                            allowFullScreen
-                                        />
-                                    ) : (
-                                        <div className="bg-slate-100 rounded-md flex items-center justify-center h-64 text-muted-foreground">
-                                            영상이 준비 중입니다
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="text-center py-20 text-muted-foreground">
-                                    좌측 목록에서 강의를 선택해주세요
-                                </div>
-                            )}
-                        </div>
+                 
                     </div>
                 </section>
             )}

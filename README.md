@@ -37,3 +37,14 @@ git checkout main: main 브랜치로 이동
 git pull origin main: main 브랜치 최신화 (혹시 모를 충돌 방지)
 git merge sub: sub 브랜치의 내용을 main에 합치기
 git push origin main: 합친 내용을 깃허브(서버)에 올리기
+
+
+챗봇 테스트방법
+1. 백엔드 서버 켜기
+2. http://localhost:3333/ask?message=(할말)
+3. 답변보기
+
+질문당 0.1~0.5원? 라고는 하지만 선영님 자산이니 다들 테스트는 한두번만~
+
+
+수강생 페이지에서 - 결제는 카카오페이만

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
 function InstructorLecture() {
     const { courseId } = useParams();
+    const navigate = useNavigate();
     const [courseInfo, setCourseInfo] = useState(null);
     const [isAdding, setIsAdding] = useState(false);
 
@@ -58,8 +59,12 @@ function InstructorLecture() {
                 credentials: 'include',
                 body: JSON.stringify(addData)
             });
-            if (!res.ok) throw new Error('강의 추가 실패');
-            alert('강의가 추가되었습니다.');
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || '강의 추가 실패');
+            }
+            alert('강의 정보를 제출하였습니다. 승인 요청을 기다려주세요.');
+            navigate(`/instructor/course/${courseId}`);
             setFormData({
                 title: '',
                 orderNo: '',
@@ -70,17 +75,26 @@ function InstructorLecture() {
             });
             setIsAdding(false);
         } catch (err) {
-            console.error(err);
-            alert('강의 추가에 실패했습니다.');
+            alert(err.message || '강의 추가에 실패했습니다.');
         }
     };
+
+
+    // 강의 등록 예약 토글
+    const handleBookLecture = () => {
+        if (formData.uploadType === 'RESERVED') {
+            setFormData({ ...formData, uploadType: 'IMMEDIATE', scheduledAt: '' });
+        } else {
+            setFormData({ ...formData, uploadType: 'RESERVED' });
+        }
+    }
 
     return (
         <div className="container mx-auto">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">
+                {/* <h2 className="text-xl font-bold">
                     {courseInfo ? `${courseInfo.title} - 강의 추가` : '강의 추가'}
-                </h2>
+                </h2> */}
                 <Button onClick={() => setIsAdding(!isAdding)}>
                     {isAdding ? '취소' : '강의 추가'}
                 </Button>
@@ -133,8 +147,25 @@ function InstructorLecture() {
                             placeholder="재생 시간을 입력하세요"
                         />
                     </div>
-                    <Button onClick={handleAddLecture}>추가하기</Button>
-                    <Button onClick={handleAddLecture}>등록 예약</Button>
+                    {formData.uploadType === 'RESERVED' && (
+                        <div>
+                            <label className="block text-sm font-medium mb-1">공개 예정일</label>
+                            <Input
+                                type="datetime-local"
+                                value={formData.scheduledAt}
+                                onChange={(e) => setFormData({ ...formData, scheduledAt: e.target.value })}
+                            />
+                        </div>
+                    )}
+                    <div className="flex gap-2">
+                        <Button onClick={handleAddLecture}>승인 요청</Button>
+                        <Button
+                            variant={formData.uploadType === 'RESERVED' ? 'destructive' : 'outline'}
+                            onClick={handleBookLecture}
+                        >
+                            {formData.uploadType === 'RESERVED' ? '예약 취소' : '예약 업로드'}
+                        </Button>
+                    </div>
                 </div>
             )}
 

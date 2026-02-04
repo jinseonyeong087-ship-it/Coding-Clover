@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Nav from '@/components/Nav';
 import Tail from "@/components/Tail";
 import {
@@ -18,11 +18,14 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import LectureCreate from "./LectureCreate";
 import InstructorLecture from "./InstructorLecture";
-
+import LectureDetail from "@/pages/public/LectureDetail";
+ 
 function InstructorCourseDetail() {
     const { courseId } = useParams();
     const [courseInfo, setCourseInfo] = useState(null);
     const [lectureList, setLectureList] = useState([]);
+    const [selectedLecture, setSelectedLecture] = useState(null);
+    const navigate = useNavigate();
 
     // 강좌 정보 가져오기
     useEffect(() => {
@@ -80,7 +83,12 @@ function InstructorCourseDetail() {
             <div className="py-8" />
             <SidebarProvider className="bg-white">
                 <Sidebar dir="rtl" side="left" className="!top-16 !h-[calc(100svh-4rem)]">
-                    <SidebarHeader>{courseInfo ? courseInfo.title : '강좌명'}</SidebarHeader>
+                    <SidebarHeader
+                        onClick={() => setSelectedLecture(null)}
+                        className="cursor-pointer hover:bg-accent"
+                    >
+                        {courseInfo ? courseInfo.title : '강좌명'}
+                    </SidebarHeader>
                     <SidebarContent>
                         <ScrollArea>
                             <SidebarGroup>
@@ -88,7 +96,7 @@ function InstructorCourseDetail() {
                                     {lectureList.length > 0 ? (
                                         lectureList.map((lecture) => (
                                             <SidebarMenuItem key={lecture.lectureId}>
-                                                <SidebarMenuButton>
+                                                <SidebarMenuButton onClick={() => setSelectedLecture(lecture)}>
                                                     <span>{lecture.orderNo}강. {lecture.title}</span>
                                                     {getStatusBadge(lecture.approvalStatus)}
                                                 </SidebarMenuButton>
@@ -111,10 +119,19 @@ function InstructorCourseDetail() {
                     <div className="flex items-center gap-2 px-4 py-2">
                         <SidebarTrigger />
                     </div>
-                    {/* 강좌 소개 */}
-                    <InstructorLecture />
-                    {/* 강의 업로드 */}
-                    <LectureCreate />
+                    <section className="container mx-auto px-16 py-24">
+                    {selectedLecture ? (
+                        /* 강의 상세 */
+                        <LectureDetail selectedLecture={selectedLecture} />
+                    ) : (
+                        <>
+                            {/* 강좌 소개 */}
+                            <LectureCreate />
+                            {/* 강의 업로드 */}
+                            <InstructorLecture />
+                        </>
+                    )}
+                    </section>
                     <Tail />
                 </SidebarInset>
             </SidebarProvider>
