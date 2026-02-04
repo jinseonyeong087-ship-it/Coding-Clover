@@ -162,23 +162,23 @@ const CodingTestDetail = () => {
               <table className="w-full text-left table-fixed">
                 <thead>
                   <tr className="text-gray-400 border-b bg-gray-50/20 text-[10px] font-black uppercase tracking-tighter">
-                    <th className="px-6 py-4 w-[20%]">아이디</th>
+                    <th className="px-20 py-4 w-[20%] text-center">아이디</th>
                     <th className="px-6 py-4 w-[40%] text-center">제출 시간</th>
                     <th className="px-6 py-4 w-[20%] text-center">상태</th>
-                    <th className="px-6 py-4 w-[20%] text-right">상세보기</th>
+                    <th className="px-20 py-4 w-[20%] text-center">상세보기</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {submissions.map((sub, idx) => (
                     <tr key={idx} className="hover:bg-indigo-50/30 transition-colors group">
-                      <td className="px-6 py-5 font-bold text-gray-800 text-sm">{sub.studentId}</td>
-                      <td className="px-6 py-5 text-gray-400 text-xs text-center font-mono tracking-tighter">{sub.submittedAt}</td>
+                      <td className="px-6 py-5 text-center font-bold text-gray-800 text-sm">{sub.studentId}</td>
+                      <td className="px-6 py-5 text-center text-gray-400 text-xs font-mono tracking-tighter">{sub.submittedAt}</td>
                       <td className="px-6 py-5 text-center">
                         <span className={`inline-block w-20 py-1 rounded-full text-[9px] font-black tracking-wide ${sub.passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                           {sub.passed ? "SUCCESS" : "FAILED"}
                         </span>
                       </td>
-                      <td className="px-6 py-5 text-right text-indigo-600 font-bold text-xs">
+                      <td className="px-6 py-5 text-center text-indigo-600 font-bold text-xs">
                         <button className="hover:underline opacity-70 group-hover:opacity-100 transition-opacity">코드 리뷰</button>
                       </td>
                     </tr>
