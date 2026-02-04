@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { nanoid } from 'nanoid';
+import axios from 'axios';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { RadioGroup, RadioGroupItem } from '../components/ui/RadioGroup';
 import { Label } from '../components/ui/Label';
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../components/ui/alert-dialog';
+import { CheckCircle, XCircle } from 'lucide-react';
 import StudentNav from '../components/StudentNav';
 import coinImg from '../img/coin.png';
 
@@ -13,6 +17,9 @@ export default function Payment() {
   const [tossPayments, setTossPayments] = useState(null);
   const [selectedAmount, setSelectedAmount] = useState('10000');
   const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalData, setModalData] = useState({ type: '', message: '', points: 0 });
+  const navigate = useNavigate();
 
   useEffect(() => {
     const initToss = () => {
@@ -32,6 +39,96 @@ export default function Payment() {
     }
   }, []);
 
+  // URL 파라미터로 결제 결과 처리 (토스페이먼츠에서 돌아올 때)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentKey = urlParams.get('paymentKey');
+    const orderId = urlParams.get('orderId');
+    const amount = urlParams.get('amount');
+    
+    // 결제 실패 파라미터
+    const errorCode = urlParams.get('code');
+    const errorMessage = urlParams.get('message');
+
+    if (paymentKey && orderId && amount) {
+      // 결제 성공 시 처리
+      const points = parseInt(amount);
+      handlePaymentSuccess(orderId, paymentKey, parseInt(amount), points);
+      // URL 파라미터 정리
+      window.history.replaceState({}, document.title, '/payment');
+    } else if (errorCode || errorMessage) {
+      // 결제 실패 시 처리
+      const failMessage = errorMessage || '결제에 실패하였습니다.';
+      handlePaymentError(failMessage);
+      // URL 파라미터 정리
+      window.history.replaceState({}, document.title, '/payment');
+    }
+  }, []);
+
+  // 결제 성공 처리
+  const handlePaymentSuccess = async (orderId, paymentKey, amount, points) => {
+    try {
+      setIsLoading(true);
+      
+      // 1. 토스페이먼츠 결제 승인 API 호출
+      const confirmResponse = await axios.post('/api/payment/confirm', {
+        orderId,
+        paymentKey,
+        amount: amount
+      }, {
+        withCredentials: true
+      });
+
+      // 2. 포인트 충전 API 호출
+      const chargeResponse = await axios.post('/api/wallet/charge', {
+        amount: amount,
+        paymentId: confirmResponse.data.paymentId
+      }, {
+        withCredentials: true
+      });
+
+      // 3. 성공 모달 표시
+      setModalData({
+        type: 'success',
+        message: `${points.toLocaleString()}P 충전 완료!\n결제가 완료되었습니다.`,
+        points: points
+      });
+      setIsModalOpen(true);
+
+      // 4. 네비게이션에 포인트 업데이트 알림
+      window.dispatchEvent(new Event('pointsUpdated'));
+
+    } catch (error) {
+      console.error('결제 처리 중 오류:', error);
+      setModalData({
+        type: 'error',
+        message: '결제에 실패하였습니다.\n잠시 후 다시 시도해주세요.',
+        points: 0
+      });
+      setIsModalOpen(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 결제 실패 처리
+  const handlePaymentError = (message) => {
+    setModalData({
+      type: 'error',
+      message: message || '결제에 실패하였습니다.',
+      points: 0
+    });
+    setIsModalOpen(true);
+  };
+
+  // 모달 닫기
+  const closeModal = () => {
+    setIsModalOpen(false);
+    if (modalData.type === 'success') {
+      navigate('/'); // 성공 시 홈으로 이동
+    }
+  };
+
   const amountOptions = [
     { value: '10000', label: '10,000원', points: '10,000P' },
     { value: '30000', label: '30,000원', points: '30,000P' },
@@ -41,33 +138,33 @@ export default function Payment() {
 
   const handlePayment = async () => {
     if (!tossPayments) {
-      alert("토스페이먼츠 SDK가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.");
+      handlePaymentError("토스페이먼츠 SDK가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.");
       return;
     }
 
     setIsLoading(true);
     const amount = parseInt(selectedAmount);
     const points = amount; // 1원 = 1포인트
+    const orderId = nanoid();
 
     try {
       await tossPayments.requestPayment('카드', {
         amount: amount,
-        orderId: nanoid(),
+        orderId: orderId,
         orderName: `포인트 충전 ${points.toLocaleString()}P`,
         customerName: "수강생",
         customerEmail: "student@test.com",
-        successUrl: `${window.location.origin}/payment/success?amount=${amount}&points=${points}`,
-        failUrl: `${window.location.origin}/payment/fail`,
+        successUrl: `${window.location.origin}/payment`,
+        failUrl: `${window.location.origin}/payment`,
       });
     } catch (error) {
+      setIsLoading(false);
       if (error.code === 'USER_CANCEL') {
         console.log('사용자가 결제를 취소했습니다.');
       } else {
-        alert("결제 실패: " + error.message);
+        handlePaymentError("결제 중 오류가 발생했습니다: " + error.message);
         console.error('결제 오류:', error);
       }
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -162,6 +259,32 @@ export default function Payment() {
           </div>
         </div>
       </div>
+
+      {/* 결제 결과 모달 */}
+      <AlertDialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader className="flex flex-col items-center text-center">
+            <div className="mb-4">
+              {modalData.type === 'success' ? (
+                <CheckCircle className="h-16 w-16 text-green-600" />
+              ) : (
+                <XCircle className="h-16 w-16 text-red-600" />
+              )}
+            </div>
+            <AlertDialogTitle className={`text-xl ${modalData.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+              {modalData.type === 'success' ? '결제 완료!' : '결제 실패'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center whitespace-pre-line">
+              {modalData.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={closeModal} className="w-full">
+              {modalData.type === 'success' ? '확인' : '다시 시도'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
