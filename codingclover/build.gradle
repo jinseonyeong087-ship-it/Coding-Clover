@@ -16,6 +16,8 @@ java {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
+	maven { url 'https://repo.spring.io/snapshot' }
 }
 
 dependencies {
@@ -37,6 +39,8 @@ dependencies {
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	// 챗봇
+	implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter:1.0.0-M5'
 }
 
 tasks.named('test') {
