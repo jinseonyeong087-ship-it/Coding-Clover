@@ -42,6 +42,7 @@ import AdminInstructorList from '@/pages/admin/AdminInstructorList'
 import StudentCourseDetail from '@/pages/student/StudentCourseDetail'
 import CodingTestDetail from './pages/coding/CodingTestDetail';
 import CodingTestList from './pages/coding/CodingTestList';
+import CodingTestCreate from './pages/coding/CodingTestCreate';
 
 
 
@@ -96,6 +97,7 @@ function App() {
         {/* 코딩 테스트 */}
         <Route path="/coding-test/:id" element={<CodingTestDetail />} />
         <Route path="/coding-test" element={<CodingTestList />} />
+        <Route path="/coding-test/new" element={<CodingTestCreate />} />
 
         {/* 아이디/비밀번호 찾기 테스트 */}
         {/* 아이디/비밀번호 찾기 테스트 */}

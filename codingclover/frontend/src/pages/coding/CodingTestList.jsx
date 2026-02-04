@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/Input";
 
 const CodingTestList = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('users'));
-  const [userRole] = useState(user?.role || "STUDENT");
+  const [userRole] = useState("ADMIN"); // 어드민 고정
   const [searchTerm, setSearchTerm] = useState("");
   
   const [problems, setProblems] = useState([
@@ -20,10 +19,11 @@ const CodingTestList = () => {
   ]);
 
   useEffect(() => {
-  axios.get('/api/problems') // 백엔드의 ProblemController 주소
-    .then(res => setProblems(res.data))
-    .catch(err => console.error(err));
-}, []);
+    if (userRole === "INSTRUCTOR") {
+      alert("관리자 전용 페이지입니다.");
+      navigate("/");
+    }
+  }, [userRole, navigate]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8f9fa]">
