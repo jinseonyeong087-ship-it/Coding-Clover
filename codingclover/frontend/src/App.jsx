@@ -120,21 +120,21 @@ function App() {
         {/* 권한 없음 페이지 */}
         <Route path="/noroll" element={<Noroll />} />
         <Route path="/course/level/:level" element={<Level />} />
-        <Route path="/course/:id" element={<ProposalDetail />} />
+        <Route path="/course/:courseId" element={<ProposalDetail />} />
         {/* 디비 연동하고 /student/course/{courseId}/enroll로 경로수정 */}
         {/* 럭쳐 링크 수정 필요함 */}
         {/* 수강생 페이지 */}
         {/* 커뮤니티 (전체 공개, 로그인 불필요) */}
         <Route path="/student/community" element={<CommunityPostList />} />
         <Route path="/student/community/posts/:postId" element={<CommunityPostDetail />} />
-        <Route path="" element={<StudentCourseDetail />} />
+        {/* <Route path="/student/lecture/:lectureId" element={<StudentCourseDetail />} /> */}
 
         {/* 수강생 페이지 (로그인 필요) */}
         <Route path="/student/*" element={
           <ProtectedRoute allowedRoles={['STUDENT']} />
         }>
           <Route path="mypage" element={<MyPage />} />
-          <Route path="course/:courseId" element={<ProposalDetail />} />
+          <Route path="course/:courseId" element={<StudentCourseDetail />} />
           {/* <Route path="course/:courseId/lectures" element={<Lecture />} /> */}
         </Route>
         {/* 강사페이지 */}
