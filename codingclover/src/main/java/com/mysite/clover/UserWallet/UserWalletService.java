@@ -28,12 +28,11 @@ public class UserWalletService {
     }
 
     /**
-     * 포인트 잔액 조회
+     * 포인트 잔액 조회 (없으면 자동 생성)
      */
+    @Transactional
     public Integer getBalance(Long userId) {
-        return userWalletRepository.findByUserId(userId)
-            .map(UserWallet::getBalance)
-            .orElse(0);
+        return getOrCreateWallet(userId).getBalance();
     }
 
     /**

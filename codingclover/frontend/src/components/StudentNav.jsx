@@ -29,16 +29,20 @@ function StudentNav() {
         try {
             setIsLoadingPoints(true);
             const response = await axios.get('/api/wallet/balance', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                }
+                withCredentials: true
             });
+            console.log('DB에서 가져온 포인트:', response.data.balance);
             setPoints(response.data.balance || 0);
+            
+            // DB에서 성공적으로 가져왔으면 localStorage도 동기화
+            localStorage.setItem('userPoints', (response.data.balance || 0).toString());
+            
         } catch (error) {
             console.error('포인트 조회 실패:', error);
-            // 백엔드 연결 실패 시 localStorage 값 사용
-            const storedPoints = localStorage.getItem("userPoints") || "0";
-            setPoints(parseInt(storedPoints));
+            console.log('백엔드 연결 실패로 0P 표시');
+            // 백엔드 연결 실패 시 0P 표시
+            setPoints(0);
+            localStorage.removeItem('userPoints');  // 부정확한 데이터 제거
         } finally {
             setIsLoadingPoints(false);
         }
@@ -55,7 +59,8 @@ function StudentNav() {
                 setUsers(parsedUsers);
                 console.log("현재 로그인한 사용자:", parsedUsers);
                 
-                // 로그인 상태면 실제 포인트 조회
+                // 로그인 상태면 실제 포인트 조회 (초기값 0P에서 시작)
+                setPoints(0);
                 await fetchUserPoints();
             }
 
@@ -98,7 +103,7 @@ function StudentNav() {
 
         // 결제 완료 후 포인트 업데이트를 위한 이벤트 리스너
         const handlePointsUpdate = async () => {
-            // 백엔드에서 최신 포인트 조회
+            // DB에서 최신 포인트 다시 조회
             await fetchUserPoints();
         };
 
@@ -188,13 +193,13 @@ function StudentNav() {
                     : (<>
                         <div className="flex items-center gap-3">
                             {/* 포인트 표시 */}
-                            <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 rounded-full border">
+                            <div className="flex items-center">
                                 <img 
                                     src={coinImg}
                                     alt="코인" 
                                     className="w-5 h-5"
                                 />
-                                <span className="text-sm font-semibold text-blue-700">
+                                <span className="text-sm">
                                     {isLoadingPoints ? '...' : `${points.toLocaleString()}P`}
                                 </span>
                             </div>
