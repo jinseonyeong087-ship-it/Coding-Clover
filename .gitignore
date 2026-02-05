@@ -27,3 +27,5 @@ build/
 
 gradle.properties
 run_server.ps1
+
+.env
