@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
 import { ArrowRight, BookOpen, PlayCircle } from "lucide-react";
+import ChatBot from './student/ChatBot';
 
 function Home() {
 
@@ -41,6 +42,7 @@ function Home() {
     <>
       <Nav />
       <div className='py-8'/>
+
 
       {/* 히어로 섹션 */}
       <section className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white py-24 text-center">
@@ -132,6 +134,7 @@ function Home() {
         </div>
       </section>
 
+      <ChatBot className="fixed bottom-4 right-4"/>
       <Tail />
     </>
   );

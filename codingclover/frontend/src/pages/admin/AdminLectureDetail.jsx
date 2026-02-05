@@ -32,13 +32,9 @@ import {
 // YouTube URL -> embed URL 변환
 const toEmbedUrl = (url) => {
     if (!url) return "";
-    if (url.includes("embed")) return url;
-    // youtu.be 형식 처리
-    if (url.includes("youtu.be/")) {
-        const videoId = url.split("youtu.be/")[1]?.split(/[?&]/)[0];
-        return `https://www.youtube.com/embed/${videoId}`;
-    }
-    return url.replace("watch?v=", "embed/");
+    if (url.includes("/embed/")) return url;
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?.*v=|v\/))([a-zA-Z0-9_-]{11})/);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : url;
 };
 
 function AdminLectureDetail() {
@@ -233,12 +229,14 @@ function AdminLectureDetail() {
                                     <h3 className="font-semibold mb-3">영상 미리보기</h3>
                                     {selectedLecture.videoUrl ? (
                                         <iframe
+                                            key={selectedLecture.lectureId}
                                             width="100%"
                                             height="500"
                                             src={toEmbedUrl(selectedLecture.videoUrl)}
                                             title="강의 영상"
                                             frameBorder="0"
-                                            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                            referrerPolicy="strict-origin-when-cross-origin"
                                             allowFullScreen
                                         />
                                     ) : (
