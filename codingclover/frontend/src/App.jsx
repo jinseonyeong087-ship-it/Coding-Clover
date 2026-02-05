@@ -10,6 +10,7 @@ import AdminMain from './pages/admin/AdminMain'
 import Level from './pages/student/Level'
 import Lecture from './pages/student/Lecture'
 import MyPage from './pages/student/MyPage'
+import PointsHistory from './pages/student/PointsHistory'
 import CodingTest from './test/CodingTest'
 import EmailTest from './test/EmailTest'
 import CourseCreateRequest from '@/pages/instructor/CourseCreateRequest'
@@ -134,6 +135,7 @@ function App() {
           <ProtectedRoute allowedRoles={['STUDENT']} />
         }>
           <Route path="mypage" element={<MyPage />} />
+          <Route path="points" element={<PointsHistory />} />
           <Route path="course/:courseId" element={<StudentCourseDetail />} />
           {/* <Route path="course/:courseId/lectures" element={<Lecture />} /> */}
         </Route>

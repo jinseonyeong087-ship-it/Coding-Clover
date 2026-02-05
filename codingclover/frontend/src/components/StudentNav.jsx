@@ -193,7 +193,10 @@ function StudentNav() {
                     : (<>
                         <div className="flex items-center gap-3">
                             {/* 포인트 표시 */}
-                            <div className="flex items-center">
+                            <div 
+                                className="flex items-center cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
+                                onClick={() => navigate('/student/points')}
+                            >
                                 <img 
                                     src={coinImg}
                                     alt="코인" 

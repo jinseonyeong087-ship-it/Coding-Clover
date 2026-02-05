@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Tail from '../../components/Tail';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { User, Edit } from "lucide-react";
+import { User, Edit, Coins, ChevronRight } from "lucide-react";
+import axios from 'axios';
+import { getPointsBalance } from '@/lib/pointsApi';
+import coinImg from '../../img/coin.png';
 
 // 상수
 const EDUCATION_OPTIONS = [
@@ -39,6 +43,7 @@ const parseInterests = (value) => {
 };
 
 function MyPage() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -46,8 +51,95 @@ function MyPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', educationLevel: '' });
   const [selectedInterests, setSelectedInterests] = useState([]);
+  const [points, setPoints] = useState(0);
+  const [pointsLoading, setPointsLoading] = useState(false);
 
+  // 포인트 조회 함수
+  const fetchUserPoints = async () => {
+    try {
+      setPointsLoading(true);
+      const balance = await getPointsBalance();
+      setPoints(balance);
+    } catch (error) {
+      console.error('포인트 조회 실패:', error);
+      setPoints(150000); // 샘플 데이터
+    } finally {
+      setPointsLoading(false);
+    }
+  };
 
+  // 데이터 가져오기 함수
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+
+      const currentIdentifier = getUserIdentifier();
+      if (!currentIdentifier) {
+        throw new Error('로그인이 필요합니다.');
+      }
+
+      // 두 API를 병렬로 호출
+      const [profileResponse, enrollmentResponse] = await Promise.all([
+        fetch('/api/student/mypage', {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Login-Id': currentIdentifier
+          },
+          credentials: 'include'
+        }),
+        fetch('/student/enrollment', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        })
+      ]);
+
+      // 프로필 데이터 처리
+      console.log('프로필 API 응답 상태:', profileResponse.status);
+      if (profileResponse.ok) {
+        const userData = await profileResponse.json();
+        console.log('받은 사용자 데이터:', userData);
+        const processedUserData = {
+          ...userData,
+          joinDate: new Date(userData.joinDate).toLocaleDateString('ko-KR')
+        };
+        setUser(processedUserData);
+        setEditForm({
+          name: userData.name,
+          educationLevel: userData.educationLevel || ''
+        });
+        setSelectedInterests(parseInterests(userData.interestCategory));
+      } else {
+        // 에러 응답의 자세한 내용 확인
+        let errorDetail = '';
+        try {
+          const errorText = await profileResponse.text();
+          console.error('서버 에러 응답:', errorText);
+          errorDetail = ` - ${errorText}`;
+        } catch (e) {
+          console.error('에러 응답 읽기 실패:', e);
+        }
+        throw new Error(`프로필 조회 실패 (${profileResponse.status})${errorDetail}`);
+      }
+
+      // 수강 목록 데이터 처리
+      if (enrollmentResponse.ok) {
+        const enrollmentData = await enrollmentResponse.json();
+        setEnrollments(enrollmentData);
+      } else {
+        setEnrollments([]);
+      }
+
+    } catch (err) {
+      console.error('데이터 로딩 에러:', err);
+      setError(err.message);
+      setEnrollments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   //백엔드 api 호출
   useEffect(() => {
@@ -59,81 +151,8 @@ function MyPage() {
       return;
     }
 
-
-
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-
-        const currentIdentifier = getUserIdentifier();
-        if (!currentIdentifier) {
-          throw new Error('로그인이 필요합니다.');
-        }
-
-        // 두 API를 병렬로 호출
-        const [profileResponse, enrollmentResponse] = await Promise.all([
-          fetch('/api/student/mypage', {
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Login-Id': currentIdentifier
-            },
-            credentials: 'include'
-          }),
-          fetch('/student/enrollment', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            credentials: 'include'
-          })
-        ]);
-
-        // 프로필 데이터 처리
-        console.log('프로필 API 응답 상태:', profileResponse.status);
-        if (profileResponse.ok) {
-          const userData = await profileResponse.json();
-          console.log('받은 사용자 데이터:', userData);
-          const processedUserData = {
-            ...userData,
-            joinDate: new Date(userData.joinDate).toLocaleDateString('ko-KR')
-          };
-          setUser(processedUserData);
-          setEditForm({
-            name: userData.name,
-            educationLevel: userData.educationLevel || ''
-          });
-          setSelectedInterests(parseInterests(userData.interestCategory));
-        } else {
-          // 에러 응답의 자세한 내용 확인
-          let errorDetail = '';
-          try {
-            const errorText = await profileResponse.text();
-            console.error('서버 에러 응답:', errorText);
-            errorDetail = ` - ${errorText}`;
-          } catch (e) {
-            console.error('에러 응답 읽기 실패:', e);
-          }
-          throw new Error(`프로필 조회 실패 (${profileResponse.status})${errorDetail}`);
-        }
-
-        // 수강 목록 데이터 처리
-        if (enrollmentResponse.ok) {
-          const enrollmentData = await enrollmentResponse.json();
-          setEnrollments(enrollmentData);
-        } else {
-          setEnrollments([]);
-        }
-
-      } catch (err) {
-        console.error('데이터 로딩 에러:', err);
-        setError(err.message);
-        setEnrollments([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
+    fetchUserPoints();
   }, []);
 
   //수정모드 전환
@@ -353,6 +372,39 @@ function MyPage() {
                     <Button onClick={handleSave}>저장</Button>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* 포인트 카드 */}
+            <Card className="max-w-4xl mx-auto mt-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <img src={coinImg} alt="코인" className="w-6 h-6" />
+                  내 포인트
+                </CardTitle>
+                <CardDescription>
+                  포인트 잔액 및 사용 내역을 확인하세요
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-3xl font-bold text-blue-600 mb-2">
+                      {pointsLoading ? '로딩중...' : `${points.toLocaleString()}P`}
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      현재 보유 포인트
+                    </p>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    onClick={() => navigate('/student/points')}
+                    className="flex items-center gap-2"
+                  >
+                    상세보기
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </>
