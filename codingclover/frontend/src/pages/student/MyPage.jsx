@@ -57,7 +57,7 @@ function MyPage() {
   const fetchUserPoints = async () => {
     try {
       setPointsLoading(true);
-      
+
       const getUserIdentifier = () => {
         const storedUsers = localStorage.getItem("users");
         if (!storedUsers) return null;
@@ -253,7 +253,7 @@ function MyPage() {
       };
 
       setUser(updatedUser);
-      
+
       // localStorage의 users 정보도 업데이트
       const storedUsers = localStorage.getItem("users");
       console.log("현재 저장된 사용자 정보:", storedUsers);
@@ -270,7 +270,7 @@ function MyPage() {
           console.log("업데이트될 사용자 데이터:", updatedUserData);
           localStorage.setItem("users", JSON.stringify(updatedUserData));
           console.log("로컬스토리지 사용자 정보 업데이트 완료");
-          
+
           // 다른 컴포넌트(네비바 등)에 사용자 정보 업데이트 알림
           const event = new Event('userInfoUpdated');
           window.dispatchEvent(event);
@@ -281,7 +281,7 @@ function MyPage() {
       } else {
         console.warn("저장된 사용자 정보가 없습니다.");
       }
-      
+
       setIsEditing(false);
       alert("저장 완료!");
     } catch (err) {
@@ -305,7 +305,7 @@ function MyPage() {
   return (
     <>
       <Nav />
-      <div className='py-8'/>
+      <div className='py-8' />
 
       <section className="container mx-auto px-4 py-20">
 
@@ -345,7 +345,7 @@ function MyPage() {
               <h1 className="text-3xl font-bold">마이페이지</h1>
             </div>
 
-                        {/* 포인트 카드 */}
+            {/* 포인트 카드 */}
             <Card className="max-w-4xl mx-auto mt-8">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -365,7 +365,7 @@ function MyPage() {
                     <p className="text-sm text-gray-600">
                       현재 보유 포인트
                     </p>
-                    <Button 
+                    <Button
                       variant="ghost"
                       onClick={() => navigate('/student/points')}
                       className="text-sm text-gray-600 hover:text-gray-600 hover:bg-transparent p-0 h-auto cursor-pointer flex items-center gap-1"
@@ -388,8 +388,8 @@ function MyPage() {
                     <CardDescription>회원 기본 정보</CardDescription>
                   </div>
                   {!isEditing && (
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       onClick={handleEditToggle}
                       className="text-gray-600 hover:text-gray-600 hover:bg-transparent p-2 h-auto cursor-pointer flex items-center gap-2"
                     >
@@ -520,6 +520,7 @@ function MyPage() {
                       className="w-full"
                       disabled={enrollment.status === 'CANCELLED'}
                       variant={enrollment.status === 'COMPLETED' ? 'outline' : 'default'}
+                      onClick={() => navigate(`/course/${enrollment.courseId}`)}
                     >
                       {enrollment.status === 'ENROLLED' ? '강의 보기' :
                         enrollment.status === 'COMPLETED' ? '다시 보기' : '취소된 강좌'}
