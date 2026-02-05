@@ -57,6 +57,7 @@ public class SecurityConfig {
             .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/student/**")).permitAll()
             .requestMatchers("/auth/register", "/auth/status", "/auth/findRequest", "/auth/resetPassword").permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/ask")).permitAll()
 
             // 3. 나머지 모든 경로는 허용하되, 위 조건들을 먼저 체크함
             .requestMatchers(new AntPathRequestMatcher("/**")).permitAll()

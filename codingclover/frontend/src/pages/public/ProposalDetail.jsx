@@ -18,6 +18,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminPropsalDetail from "@/pages/admin/AdminPropsalDetail"
 import StudentCourseDetail from "@/pages/student/StudentCourseDetail"
+import LectureDetail from "@/pages/public/LectureDetail"
 
 function ProposalDetail() {
     const { courseId } = useParams();
@@ -47,7 +48,7 @@ function ProposalDetail() {
     const getLectureListUrl = () => {
         switch (role) {
             case 'ADMIN': return `/admin/course/${courseId}/lectures`;
-            default: return `/student/lecture/${courseId}/lecture`;
+            default: return `/student/lecture/${courseId}/lectures`;
         }
     };
 
@@ -99,9 +100,17 @@ function ProposalDetail() {
     const rejectedCount = lectureList.filter(l => l.approvalStatus === 'REJECTED').length;
     const pendingCount = lectureList.filter(l => l.approvalStatus !== 'APPROVED' && l.approvalStatus !== 'REJECTED').length;
 
+    // 강의 클릭 핸들러 (비로그인 시 접근 차단)
+    const handleLectureClick = (lecture) => {
+        if (!role) {
+            alert('로그인이 필요합니다.');
+            return;
+        }
+        setSelectedLecture(lecture);
+    };
+
     // 역할별 메인 콘텐츠 렌더링
     const renderContent = () => {
-        // 1. 영상이 선택되었다면 역할과 상관없이 영상 플레이어를 먼저 보여줌
         if (selectedLecture) {
             return (
                 <div className="p-6">
@@ -109,22 +118,21 @@ function ProposalDetail() {
                 </div>
             );
         }
-
-        // 2. 영상이 선택되지 않았을 때 기존 상세 페이지 노출
         if (role === 'ADMIN') {
             return <AdminPropsalDetail courseId={courseId} />;
-        } else {
-            return <StudentCourseDetail courseId={courseId} />;
         }
+        return <StudentCourseDetail courseId={courseId} />;
     };
+
 
     return (
         <>
             <Nav />
-            <div className="py-8" />
+            
             <SidebarProvider className="bg-white">
                 <Sidebar dir="rtl" side="left" className="!top-16 !h-[calc(100svh-4rem)]">
-                    <SidebarHeader>{courseInfo ? courseInfo.title : '강좌명'}</SidebarHeader>
+                    <div className="py-4" />
+                    <SidebarHeader onClick={() => setSelectedLecture(null)}>{courseInfo ? courseInfo.title : '강좌명'}</SidebarHeader>
                     <SidebarContent>
                         <ScrollArea>
                             <SidebarGroup>
@@ -132,10 +140,10 @@ function ProposalDetail() {
                                     {lectureList.length > 0 ? (
                                         lectureList.map((lecture) => (
                                             <SidebarMenuItem key={lecture.lectureId}>
-                                                <SidebarMenuButton onClick={() => setSelectedLecture(lecture)} // 클릭 시 강의 선택
+                                                <SidebarMenuButton onClick={() => handleLectureClick(lecture)}
                                                     isActive={selectedLecture?.lectureId === lecture.lectureId}>
                                                     <span>{lecture.orderNo}강. {lecture.title}</span>
-                                                    {getStatusBadge(lecture.approvalStatus)}
+                                                    {role === 'ADMIN' && getStatusBadge(lecture.approvalStatus)}
                                                 </SidebarMenuButton>
                                             </SidebarMenuItem>
                                         ))
@@ -147,13 +155,15 @@ function ProposalDetail() {
                                 </SidebarMenu>
                             </SidebarGroup>
                         </ScrollArea>
-                        <SidebarFooter>
-                            승인 {approvedCount}개 / 반려 {rejectedCount}개 / 대기 {pendingCount}개
-                        </SidebarFooter>
+                        {role === 'ADMIN' && (
+                            <SidebarFooter>
+                                승인 {approvedCount}개 / 반려 {rejectedCount}개 / 대기 {pendingCount}개
+                            </SidebarFooter>
+                        )}
                     </SidebarContent>
                 </Sidebar>
                 <SidebarInset>
-                    <div className="flex items-center gap-2 px-4 py-2">
+                    <div className="flex items-center gap-2 px-4 py-16">
                         <SidebarTrigger />
                     </div>
                     {renderContent()}

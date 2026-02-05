@@ -71,15 +71,15 @@ function ChatBot({ className }) {
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <HoverCard>
           <HoverCardTrigger asChild><PopoverTrigger className="bg-blue-500 text-white rounded-full w-18 h-18 text-3xl flex items-center justify-center">💭</PopoverTrigger></HoverCardTrigger>
-          <HoverCardContent className="flex w-64 flex-col gap-0.5" side="left">
-            <h4>코딩하다가 막히면<br></br>여기에 물어보세요!</h4>
+          <HoverCardContent className="flex w-64 flex-col gap-0.5 text-base" side="left">
+            코딩하다가 막히면<br></br>여기에 물어보세요!
           </HoverCardContent>
         </HoverCard>
 
         <PopoverContent className={isMaximized ? "w-[90vw] h-[80vh] max-w-none" : "w-[480px] h-[600px]"} side="top" align="end">
           <PopoverHeader className="flex flex-col items-center justify-between">
             <>
-              <PopoverTitle><h2>코딩 어시스턴트</h2></PopoverTitle>
+              <PopoverTitle className="text-xl font-bold">코딩 어시스턴트</PopoverTitle>
             </>
             <div className="flex h-2 w-20 items-center justify-center gap-2">
               <button onClick={handleMax} className="hover:bg-slate-100 p-1 rounded">➕</button>
