@@ -35,7 +35,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
            "AND l.approvalStatus = 'APPROVED' " +
            "AND (l.uploadType = 'IMMEDIATE' OR l.scheduledAt <= CURRENT_TIMESTAMP) " +
            "ORDER BY l.orderNo ASC")
-    List<Lecture> findVisibleLecturesByCourseId(@Param("courseId") Course course);
+    List<Lecture> findVisibleLecturesByCourseId(@Param("courseId") Long courseId);
     
     // 해당 강좌에 이미 존재하는 순서(orderNo)들만 조회 (프론트 드롭다운 처리용)
     @Query("SELECT l.orderNo FROM Lecture l WHERE l.course.id = :courseId")

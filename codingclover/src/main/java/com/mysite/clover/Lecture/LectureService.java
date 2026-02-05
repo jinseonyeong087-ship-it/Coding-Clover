@@ -269,7 +269,7 @@ public class LectureService {
     // 학생용: 특정 강좌의 '공개 가능한' 강의만 순서대로 조회
     public List<Lecture> getLecturesForStudent(Course course) {
         // 학생에게는 '공개 가능한' 강의만 필터링해서 반환
-        return lectureRepository.findVisibleLecturesByCourseId(course);
+        return lectureRepository.findVisibleLecturesByCourseId(course.getCourseId());
     }
 
     // 강의 재제출 (반려된 강의 수정 후 재요청)
