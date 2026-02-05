@@ -36,6 +36,9 @@ public class Problem {
   @Column(columnDefinition = "ENUM('EASY', 'MEDIUM', 'HARD') DEFAULT 'EASY'", nullable = false)
   private ProblemDifficulty difficulty;
 
+  @Column(columnDefinition = "TEXT")
+  private String expectedOutput;
+
   @Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
   private java.time.LocalDateTime createdAt;
 }

@@ -2,175 +2,507 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Editor from "@monaco-editor/react";
-import Nav from '@/components/Nav';
-import Tail from '@/components/Tail';
+import Nav from "@/components/Nav";
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
+import {
+  Play, Send, Code2, Terminal,
+  ChevronRight, Check, X,
+  RotateCcw, BookOpen, LayoutDashboard, ListTodo, AlertCircle, Sparkles,
+  Save, Trash2, Edit, History // Admin Icons
+} from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Toaster, toast } from 'sonner';
+
+// --- Components ---
+
+const StatusIcon = ({ status }) => {
+  if (status === 'PASS') return <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center"><Check className="w-3 h-3 text-emerald-600" /></div>;
+  if (status === 'FAIL') return <div className="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center"><X className="w-3 h-3 text-rose-600" /></div>;
+  return <div className="w-3.5 h-3.5 rounded-full border-2 border-gray-300" />;
+};
 
 const CodingTestDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // URL의 id (초기 로드용)
   const navigate = useNavigate();
 
-  const [userRole] = useState(() => {
-    const user = JSON.parse(localStorage.getItem('users'));
-    return user?.role || "STUDENT";
-  });
+  // 사용자 권한 및 ID
+  const [user] = useState(() => JSON.parse(localStorage.getItem('users')) || { role: "STUDENT" });
+  const userRole = user.role;
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [problem, setProblem] = useState(null);
+  // 전체 문제 목록 (사이드바용)
+  const [tasks, setTasks] = useState([]);
+
+  // 현재 선택된 문제 & 에디터 상태
+  const [selectedTask, setSelectedTask] = useState(null);
   const [code, setCode] = useState("");
+
+  // 실행 결과
+  const [output, setOutput] = useState("");
+  const [result, setResult] = useState(null); // 채점 결과 객체
+
+  // UI 상태
+  const [isRunning, setIsRunning] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // 관리자 모드 상태
+  const [isEditing, setIsEditing] = useState(false);
+  // 관리자 수정 입력값
+  const [editForm, setEditForm] = useState({ title: "", description: "", difficulty: "EASY", baseCode: "", expectedOutput: "" });
+  // 관리자용 제출 기록
   const [submissions, setSubmissions] = useState([]);
+  const [showSubmissions, setShowSubmissions] = useState(false);
 
+  // 1. 초기 로드: 문제 목록 불러오기
   useEffect(() => {
-    const fetchDetailData = async () => {
-      if (!id || id === "undefined") {
-        navigate("/coding-test");
-        return;
-      }
-
+    const fetchProblems = async () => {
       try {
         setLoading(true);
-        // 1. 문제 정보 조회
-        const response = await axios.get(`/api/problems/${id}`);
-        if (response.data) {
-          setProblem(response.data);
-          setCode(response.data.baseCode || "// 코드를 작성하세요");
-        }
+        const res = await axios.get('/api/problems');
+        const data = Array.isArray(res.data) ? res.data : [];
+        setTasks(data);
 
-        // 2. 제출 기록 조회 (관리자 전용)
-        if (userRole === "ADMIN") {
-          try {
-            const subRes = await axios.get(`/api/problems/${id}/submissions`);
-            setSubmissions(Array.isArray(subRes.data) ? subRes.data : []);
-          } catch (subError) {
-            // 백엔드 구현이 덜 되었을 때 500 에러 방어
-            console.error("제출 기록 로드 실패:", subError.response?.data || subError.message);
-            setSubmissions([]);
-          }
+        // URL의 ID와 일치하는 문제 찾아서 선택
+        if (id && id !== "undefined") {
+          const target = data.find(t => t.problemId === Number(id));
+          if (target) handleTaskSelect(target);
+        } else if (data.length > 0) {
+          // ID가 없으면 첫번째 문제 자동 선택 (옵션)
+          handleTaskSelect(data[0]);
         }
-      } catch (error) {
-        console.error("데이터 로드 실패:", error);
-        alert("정보를 불러오지 못했습니다.");
-        navigate("/coding-test");
+      } catch (err) {
+        console.error(err);
+        toast.error("문제 목록 로드 실패");
       } finally {
         setLoading(false);
       }
     };
-    fetchDetailData();
-  }, [id, userRole, navigate]);
+    fetchProblems();
+  }, [id]);
 
-  const handleUpdate = async () => {
+  // 문제 선택 핸들러
+  const handleTaskSelect = async (task) => {
+    // 이미 선택된 경우 중복 호출 방지 (편집 중이 아닐 때만)
+    if (selectedTask?.problemId === task.problemId && !isEditing) return;
+
+    setSelectedTask(task);
+    setResult(null);
+    setOutput("");
+    setIsEditing(false); // 문제 변경 시 편집 모드 해제
+    setShowSubmissions(false);
+
+    // 상세 정보(BaseCode 포함) 다시 조회 (목록에는 baseCode가 없을 수 있음)
     try {
-      const updateData = {
-        title: problem.title,
-        description: problem.description,
-        difficulty: problem.difficulty, // 백엔드 필드명에 맞춤
-        baseCode: code // 에더터의 내용을 baseCode로 저장
-      };
-      await axios.put(`/api/problems/${id}`, updateData);
-      setIsEditing(false);
-      alert("성공적으로 수정되었습니다.");
-    } catch (error) {
-      console.error("수정 실패:", error.response?.data || error.message);
-      alert("수정 실패: " + (error.response?.data?.message || "서버 오류"));
+      const res = await axios.get(`/api/problems/${task.problemId}`);
+      const detail = res.data;
+      setSelectedTask(detail);
+
+      // 코드 초기화 (기본값 변경: public class main)
+      setCode(detail.baseCode || `public class main {\n    // 여기에 코드를 입력해주세요.\n}`);
+
+      // 수정 폼 초기화
+      setEditForm({
+        title: detail.title,
+        description: detail.description,
+        difficulty: detail.difficulty || "EASY",
+        baseCode: detail.baseCode || "",
+        expectedOutput: detail.expectedOutput || "" // 예상 결과 추가
+      });
+
+      // 관리자라면 제출 기록 로드
+      if (userRole === "ADMIN") {
+        fetchSubmissions(task.problemId);
+      }
+
+      // URL 업데이트 (페이지 이동 없이)
+      navigate(`/coding-test/${task.problemId}`, { replace: true });
+
+    } catch (e) {
+      console.error("상세 정보 로드 실패", e);
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm("정말로 삭제하시겠습니까?")) return;
+  const fetchSubmissions = async (problemId) => {
     try {
-      await axios.delete(`/api/problems/${id}`);
-      navigate("/coding-test");
-    } catch (error) { alert("삭제 실패"); }
+      const subRes = await axios.get(`/api/problems/${problemId}/submissions`);
+      setSubmissions(Array.isArray(subRes.data) ? subRes.data : []);
+    } catch (e) {
+      console.error("제출 기록 로드 실패");
+    }
   };
 
+  // 코드 실행 (단순 Run)
+  const handleRun = async () => {
+    if (!selectedTask) return;
+    setIsRunning(true);
+    setOutput("실행 중...");
+    setResult(null);
+
+    try {
+      const res = await axios.post(`/api/problems/${selectedTask.problemId}/run`, { code });
+      const data = res.data;
+      setOutput(data.output || "출력값이 없습니다.");
+      if (data.error) setOutput(`[Error]\n${data.error}`);
+    } catch (e) {
+      setOutput(`[Error] ${e.message}`);
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  // 코드 제출 (Submit)
   const handleSubmitCode = async () => {
+    if (!selectedTask) return;
+    setIsRunning(true);
+    setResult(null);
+
     try {
-      const user = JSON.parse(localStorage.getItem('users'));
-      const response = await axios.post(`/api/problems/${id}/submit`, {
+      const res = await axios.post(`/api/problems/${selectedTask.problemId}/submit`, {
         userId: user.userId,
-        code: code
+        code
       });
-      alert(response.data.passed ? "정답입니다! 🎉" : `오답입니다: ${response.data.message || ""}`);
-    } catch (error) { alert("제출 처리 중 오류 발생"); }
+      const data = res.data;
+
+      setResult(data);
+      if (data.passed) {
+        toast.success("정답입니다!", { description: `Time: ${data.executionTime}ms` });
+        // 목록 상태 업데이트 (성공 표시 등)
+        setTasks(prev => prev.map(t => t.problemId === selectedTask.problemId ? { ...t, status: 'PASS' } : t));
+      } else {
+        // toast.error 제거 및 목록 상태 업데이트
+        setTasks(prev => prev.map(t => t.problemId === selectedTask.problemId ? { ...t, status: 'FAIL' } : t));
+      }
+    } catch (e) {
+      toast.error("제출 처리 오류");
+    } finally {
+      setIsRunning(false);
+    }
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center font-black text-indigo-600 italic uppercase">Loading Problem Data...</div>;
-  if (!problem) return null;
+  // [ADMIN] 문제 수정 저장
+  const handleUpdate = async () => {
+    try {
+      await axios.put(`/api/problems/${selectedTask.problemId}`, {
+        ...editForm,
+        baseCode: code // 에디터 내용을 baseCode로 저장
+      });
+      toast.success("문제가 수정되었습니다.");
+      setIsEditing(false);
+      handleTaskSelect({ ...selectedTask, ...editForm, baseCode: code }); // UI 갱신을 위해 재선택 효과
+
+      // 목록 갱신
+      setTasks(prev => prev.map(t => t.problemId === selectedTask.problemId ? { ...t, title: editForm.title, difficulty: editForm.difficulty } : t));
+    } catch (e) {
+      toast.error("수정 실패: " + e.message);
+    }
+  };
+
+  // [ADMIN] 문제 삭제
+  const handleDelete = async () => {
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    try {
+      await axios.delete(`/api/problems/${selectedTask.problemId}`);
+      toast.success("삭제되었습니다.");
+      setTasks(prev => prev.filter(t => t.problemId !== selectedTask.problemId));
+      if (tasks.length > 1) handleTaskSelect(tasks[0]);
+      else setSelectedTask(null);
+    } catch (e) {
+      toast.error("삭제 실패");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-white gap-4">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-black"></div>
+        <div className="text-gray-500 text-sm font-medium">로딩 중...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#ffffff]">
+    <div className="h-screen w-full flex flex-col bg-white font-sans text-gray-900">
+      <Toaster position="top-right" richColors />
       <Nav />
-      <main className="flex-grow container mx-auto px-6 pt-32 pb-12 max-w-[1400px]">
-        {/* 상단 섹션 */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-8 flex justify-between items-center">
-          <div className="space-y-4">
-            {isEditing ? (
-              <input className="text-3xl font-black border-b-4 border-indigo-500 outline-none w-[600px] pb-2" value={problem.title} onChange={(e) => setProblem({ ...problem, title: e.target.value })} />
-            ) : (
-              <h1 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">{problem.title}</h1>
-            )}
-            <div className="flex items-center gap-6 font-black text-[10px] uppercase tracking-widest text-indigo-500">
-              <span className="bg-indigo-50 px-3 py-1 rounded-lg">Level: {problem.difficulty || "EASY"}</span>
-              <span className="text-gray-400">Pass Rate: {problem.passRate || 0}%</span>
-            </div>
+      {/* Nav fixed height compensation */}
+      <div className="h-[70px] shrink-0"></div>
+
+      <main className="flex-1 flex overflow-hidden p-4 md:p-6 gap-6">
+        {/* Left Sidebar: Problem List */}
+        <aside className="w-72 bg-white rounded-2xl border border-gray-200 flex flex-col overflow-hidden shrink-0">
+          <div className="p-5 border-b border-gray-100">
+            <h3 className="font-bold text-sm text-gray-900 flex items-center gap-2">
+              <div className="p-1.5 bg-gray-100 rounded-md text-gray-900">
+                <ListTodo className="w-4 h-4" />
+              </div>
+              문제 목록
+            </h3>
           </div>
-          {userRole === "ADMIN" && (
-            <div className="flex gap-3">
-              <button onClick={() => isEditing ? handleUpdate() : setIsEditing(true)} className="px-8 py-3 bg-gray-900 text-white rounded-2xl text-sm font-black shadow-xl hover:bg-black transition-all">{isEditing ? "수정완료" : "수정하기"}</button>
-              <button onClick={handleDelete} className="px-8 py-3 border-2 border-red-50 text-red-500 rounded-2xl text-sm font-black hover:bg-red-50 transition-all">삭제하기</button>
+          <ScrollArea className="flex-1">
+            <div className="p-3 space-y-1">
+              {tasks.map((task, idx) => (
+                <button
+                  key={task.problemId}
+                  onClick={() => handleTaskSelect(task)}
+                  className={`w-full text-left px-4 py-3.5 rounded-xl text-sm transition-all duration-200 flex items-start gap-3 group border border-transparent
+                                ${selectedTask?.problemId === task.problemId
+                      ? 'bg-gray-100 font-bold text-black border-gray-200'
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}
+                            `}
+                >
+                  <div className={`mt-0.5 ${selectedTask?.problemId === task.problemId ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>
+                    <StatusIcon status={task.status || (task.passRate > 0 ? 'PASS' : null)} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="line-clamp-1">
+                      {idx + 1}. {task.title}
+                    </div>
+                    {task.difficulty && <span className={`inline-block mt-1.5 px-2 py-0.5 rounded text-[10px] font-medium border ${task.difficulty === 'EASY' ? 'bg-gray-50 text-gray-600 border-gray-200' :
+                      task.difficulty === 'NORMAL' ? 'bg-gray-50 text-gray-800 border-gray-300' : 'bg-black text-white border-black'
+                      }`}>
+                      {task.difficulty}
+                    </span>}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
+        </aside>
+
+        {/* Center: Coding Workspace */}
+        <section className="flex-1 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col">
+          {selectedTask ? (
+            <>
+              {/* Toolbar */}
+              <div className="h-16 border-b border-gray-100 flex items-center justify-between px-6 bg-white shrink-0">
+                <div className="flex items-center gap-4">
+                  {isEditing ? (
+                    <input
+                      className="text-lg font-bold border-b-2 border-black focus:outline-none"
+                      value={editForm.title}
+                      onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <h2 className="font-bold text-lg text-gray-900 tracking-tight">{selectedTask.title}</h2>
+                      <Badge variant="secondary" className="bg-gray-100 text-gray-600 font-medium border-0 px-2 h-5 text-[10px]">
+                        {selectedTask.difficulty}
+                      </Badge>
+                    </div>
+                  )}
+
+                  {/* Admin Difficulty Select */}
+                  {isEditing && (
+                    <select
+                      value={editForm.difficulty}
+                      onChange={(e) => setEditForm({ ...editForm, difficulty: e.target.value })}
+                      className="text-xs border rounded p-1"
+                    >
+                      <option value="EASY">EASY</option>
+                      <option value="NORMAL">NORMAL</option>
+                      <option value="HARD">HARD</option>
+                    </select>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {userRole === "ADMIN" && !isEditing && (
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => setShowSubmissions(!showSubmissions)} className="h-9 gap-2 border-gray-300 text-gray-700 hover:bg-gray-50">
+                        <History className="w-4 h-4" /> 제출기록
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => { setIsEditing(true); }} className="h-9 text-gray-500 hover:text-black hover:bg-gray-50">
+                        <Edit className="w-4 h-4" /> 수정
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={handleDelete} className="h-9 text-gray-500 hover:text-red-600 hover:bg-red-50">
+                        <Trash2 className="w-4 h-4" /> 삭제
+                      </Button>
+                    </>
+                  )}
+
+                  {isEditing ? (
+                    <>
+                      <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)}>취소</Button>
+                      {/* 관리자: 실행 버튼 (검증용) */}
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleRun}
+                        disabled={isRunning}
+                        className="bg-white hover:bg-gray-50 text-gray-700 h-9 px-4 font-medium rounded-lg border border-gray-300 shadow-sm"
+                      >
+                        <Play className="w-4 h-4 mr-2 fill-gray-700" /> 실행
+                      </Button>
+                      <Button size="sm" onClick={handleUpdate} className="bg-black hover:bg-gray-800 text-white gap-2">
+                        <Save className="w-4 h-4" /> 저장
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      {/* 학생: 실행 및 제출 버튼 */}
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleRun}
+                        disabled={isRunning}
+                        className="bg-white hover:bg-gray-50 text-gray-700 h-9 px-4 font-medium rounded-lg border border-gray-300 shadow-sm"
+                      >
+                        <Play className="w-4 h-4 mr-2 fill-gray-700" /> 실행
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleSubmitCode}
+                        disabled={isRunning}
+                        className="bg-black hover:bg-gray-800 text-white h-9 px-6 font-bold rounded-lg shadow-md transition-all active:scale-95"
+                      >
+                        {isRunning ? <RotateCcw className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                        제출
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Content Split */}
+              <div className="flex-1 overflow-hidden">
+                <PanelGroup direction="horizontal">
+                  {/* Left: Description or Submission List */}
+                  <Panel defaultSize={40} minSize={30}>
+                    <div className="h-full bg-white flex flex-col">
+                      <div className="px-6 py-3 bg-gray-50 flex items-center border-b border-gray-100 justify-between">
+                        <span className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                          <BookOpen className="w-4 h-4" /> {showSubmissions ? "학생 제출 기록" : "문제 설명"}
+                        </span>
+                      </div>
+                      <ScrollArea className="flex-1 px-8 py-8">
+                        {showSubmissions ? (
+                          <div className="space-y-4">
+                            {submissions.map((sub, idx) => (
+                              <div key={idx} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                                <div className="text-sm">
+                                  <div className="font-bold text-gray-900">{sub.loginId || "User"}</div>
+                                  <div className="text-xs text-gray-500">{sub.submittedAt}</div>
+                                </div>
+                                <Badge variant={sub.status === "PASS" ? "default" : "destructive"} className={sub.status === 'PASS' ? 'bg-black hover:bg-gray-800' : ''}>{sub.status}</Badge>
+                              </div>
+                            ))}
+                            {submissions.length === 0 && <div className="text-center text-gray-400 text-sm">기록이 없습니다.</div>}
+                          </div>
+                        ) : isEditing ? (
+                          <div className="flex flex-col gap-4 h-full">
+                            <textarea
+                              className="w-full h-1/2 border p-2 focus:outline-none focus:ring-2 ring-black rounded-md resize-none"
+                              value={editForm.description}
+                              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                              placeholder="문제 설명을 입력하세요..."
+                            />
+                            <div className="flex-1 flex flex-col gap-2">
+                              <label className="text-sm font-bold text-gray-700">예상 실행 결과 (Expected Output)</label>
+                              <textarea
+                                className="w-full flex-1 border p-2 focus:outline-none focus:ring-2 ring-black rounded-md resize-none font-mono text-sm"
+                                value={editForm.expectedOutput || ""}
+                                onChange={(e) => setEditForm({ ...editForm, expectedOutput: e.target.value })}
+                                placeholder="정답 처리를 위한 예상 실행 결과를 입력하세요. (단순 실행 검증용)"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="prose prose-gray prose-sm max-w-none text-gray-700 leading-7">
+                            <p className="whitespace-pre-wrap font-medium text-[15px]">{selectedTask.description}</p>
+                          </div>
+                        )}
+                      </ScrollArea>
+                    </div>
+                  </Panel>
+
+                  <PanelResizeHandle className="w-[1px] bg-gray-200 hover:bg-black transition-colors flex items-center justify-center z-10">
+                    <div className="w-1.5 h-16 bg-gray-200 rounded-full hover:bg-black transition-colors"></div>
+                  </PanelResizeHandle>
+
+                  {/* Right: Editor & Console */}
+                  <Panel defaultSize={60} minSize={30}>
+                    <PanelGroup direction="vertical">
+                      <Panel defaultSize={65} minSize={20} className="flex flex-col">
+                        <div className="h-10 flex items-center justify-between px-4 bg-gray-50 border-b border-gray-100">
+                          <div className="flex items-center gap-2 bg-white border border-gray-200 px-2.5 py-1 rounded-md">
+                            <Code2 className="w-3.5 h-3.5 text-black" />
+                            <span className="text-xs font-semibold text-gray-700">main.java</span>
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <Editor
+                            defaultLanguage="java"
+                            value={code} // baseCode
+                            onChange={setCode}
+                            theme="vs-light"
+                            options={{
+                              minimap: { enabled: false },
+                              fontSize: 14,
+                              fontFamily: "'JetBrains Mono', 'D2Coding', monospace",
+                              lineNumbers: 'on',
+                              automaticLayout: true,
+                              padding: { top: 24, bottom: 24 },
+                            }}
+                          />
+                        </div>
+                      </Panel>
+
+                      <PanelResizeHandle className="h-[1px] bg-gray-200" />
+
+                      <Panel defaultSize={35} minSize={10} className="flex flex-col bg-gray-50">
+                        <div className="h-10 border-b border-gray-200 bg-white flex items-center px-4">
+                          <span className="text-xs font-bold text-gray-500 flex items-center gap-2">
+                            <Terminal className="w-3.5 h-3.5" /> 실행 결과
+                          </span>
+                        </div>
+                        <ScrollArea className="flex-1 p-5">
+                          {result ? (
+                            <div className={`flex flex-col gap-3 p-5 rounded-xl border ${result.passed ? 'bg-white border-black/10' : 'bg-white border-red-200'}`}>
+                              <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${result.passed ? 'bg-black text-white' : 'bg-red-100 text-red-600'}`}>
+                                  {result.passed ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                                </div>
+                                <div className={`font-bold text-lg ${result.passed ? 'text-black' : 'text-red-600'}`}>
+                                  {result.passed ? "테스트 통과" : "오답입니다"}
+                                </div>
+                              </div>
+                              <div className="pl-[44px]">
+                                {/* 오답일 경우 상세 메시지(영어 에러 등) 숨김. 정답일 때만 시간 표시 */}
+                                {result.passed && result.executionTime > 0 &&
+                                  <div className="inline-flex items-center gap-2 px-2 py-1 bg-gray-100 rounded text-xs font-medium text-gray-600">
+                                    <Sparkles className="w-3 h-3 text-black" />
+                                    {result.executionTime}ms
+                                  </div>
+                                }
+                              </div>
+                            </div>
+                          ) : output ? (
+                            <pre className="font-mono text-sm text-gray-800 whitespace-pre-wrap leading-relaxed bg-white p-4 rounded-xl border border-gray-200 shadow-sm">{output}</pre>
+                          ) : (
+                            <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-3 opacity-60">
+                              <Terminal className="w-8 h-8" />
+                              <span className="text-xs font-medium">실행 버튼을 눌러 결과를 확인하세요.</span>
+                            </div>
+                          )}
+                        </ScrollArea>
+                      </Panel>
+                    </PanelGroup>
+                  </Panel>
+                </PanelGroup>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-gray-400 flex-col gap-4">
+              <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center shadow-sm ring-1 ring-gray-100">
+                <AlertCircle className="w-8 h-8 opacity-20 text-gray-500" />
+              </div>
+              <span className="font-medium text-gray-500">왼쪽 목록에서 문제를 선택해주세요.</span>
             </div>
           )}
-        </div>
-
-        {/* 설명 및 에디터 영역 */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[650px] mb-12">
-          <div className="lg:col-span-5 bg-white border border-gray-100 rounded-3xl p-10 overflow-y-auto shadow-sm">
-            <h3 className="font-black text-gray-900 mb-6 border-b pb-4 uppercase text-[10px] tracking-[0.2em] opacity-30 italic">Problem Statement</h3>
-            {isEditing ? (
-              <textarea className="w-full h-full outline-none resize-none text-base leading-loose font-medium" value={problem.description} onChange={(e) => setProblem({ ...problem, description: e.target.value })} />
-            ) : (
-              <div className="text-gray-700 text-lg whitespace-pre-wrap leading-relaxed font-semibold">{problem.description}</div>
-            )}
-          </div>
-          <div className="lg:col-span-7 flex flex-col border border-gray-800 rounded-3xl overflow-hidden shadow-2xl bg-[#1e1e1e]">
-            <div className="bg-[#2d2d2d] px-6 py-4 flex justify-between items-center text-white border-b border-white/5">
-              <span className="font-mono text-[10px] opacity-50 uppercase tracking-widest italic">Solution.java</span>
-              {userRole !== "ADMIN" && <button onClick={handleSubmitCode} className="bg-indigo-600 px-6 py-2 rounded-xl font-black text-[10px] shadow-lg hover:bg-indigo-500 transition-all uppercase tracking-tighter">Submit Code</button>}
-            </div>
-            <Editor height="100%" defaultLanguage="java" theme="vs-dark" value={code} onChange={(v) => setCode(v)} options={{ minimap: { enabled: false }, fontSize: 16, lineHeight: 28 }} />
-          </div>
-        </div>
-
-        {/* 제출 현황 (ADMIN) */}
-        {userRole === "ADMIN" && (
-          <div className="bg-white border border-gray-100 rounded-3xl shadow-xl overflow-hidden flex flex-col">
-            <div className="bg-gray-50/50 px-8 py-5 border-b border-gray-100 font-black text-[10px] text-gray-400 uppercase tracking-[0.3em] text-center">Recent Submissions</div>
-            <table className="w-full text-left">
-              <thead>
-                <tr className="text-gray-400 border-b bg-gray-50/20 text-[9px] font-black uppercase">
-                  <th className="px-8 py-5 text-center">User</th>
-                  <th className="px-8 py-5 text-center">Date</th>
-                  <th className="px-8 py-5 text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50 font-bold text-xs uppercase tracking-tight">
-                {submissions.length > 0 ? submissions.map((sub, idx) => (
-                  <tr key={idx} className="hover:bg-indigo-50/30 transition-all">
-                    <td className="px-8 py-6 text-center text-gray-800 italic">#{sub.loginId || sub.userId}</td>
-                    <td className="px-8 py-6 text-center text-gray-400 font-mono tracking-tighter">{sub.submittedAt}</td>
-                    <td className="px-8 py-6 text-center">
-                      <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${sub.status === "PASS" ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{sub.status}</span>
-                    </td>
-                  </tr>
-                )) : (
-                  <tr><td colSpan="3" className="py-20 text-center text-gray-300 font-black uppercase italic tracking-widest">No Records Found</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+        </section>
       </main>
-      <Tail />
     </div>
   );
 };

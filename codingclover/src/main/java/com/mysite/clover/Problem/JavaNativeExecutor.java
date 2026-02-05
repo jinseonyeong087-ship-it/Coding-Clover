@@ -24,8 +24,8 @@ public class JavaNativeExecutor implements CodeExecutor {
       // 1. 임시 디렉토리 생성 (각 요청마다 별도 폴더 사용)
       tempDir = Files.createTempDirectory("java-exec-");
 
-      // 2. 소스 파일(Main.java) 생성
-      File sourceFile = new File(tempDir.toFile(), "Main.java");
+      // 2. 소스 파일(main.java) 생성 (public class main 지원)
+      File sourceFile = new File(tempDir.toFile(), "main.java");
       // 여기서 UTF-8로 저장해야 컴파일러가 깨지지 않음
       Files.write(sourceFile.toPath(), request.getCode().getBytes(StandardCharsets.UTF_8));
 
@@ -50,11 +50,11 @@ public class JavaNativeExecutor implements CodeExecutor {
             .build();
       }
 
-      // 4. 실행 (java -cp . Main)
+      // 4. 실행 (java -cp . main)
       // ProcessBuilder runBuilder = new ProcessBuilder("java", "-cp", ".", "Main");
       // 윈도우 환경에서 한글 깨짐 방지를 위해 -Dfile.encoding=UTF-8 옵션 추가 고려 가능하나,
       // 현재 콘솔 출력(MS949)을 읽고 있으므로 주의 필요. 일단 그대로 둠.
-      ProcessBuilder runBuilder = new ProcessBuilder("java", "-cp", ".", "Main");
+      ProcessBuilder runBuilder = new ProcessBuilder("java", "-cp", ".", "main");
       runBuilder.directory(tempDir.toFile());
       Process runProcess = runBuilder.start();
 
