@@ -1,5 +1,7 @@
 package com.mysite.clover.Submission;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,4 +28,9 @@ public class SubmissionService {
 
     return submissionRepository.save(submission);
   }
+
+  public List<Submission> findByProblem(Problem problem) {
+    // 리포지토리를 호출하여 실제 DB 데이터를 가져오도록 구현
+    return submissionRepository.findByProblem(problem);
+}
 }

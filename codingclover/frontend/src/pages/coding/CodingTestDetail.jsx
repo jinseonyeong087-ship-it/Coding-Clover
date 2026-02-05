@@ -1,214 +1,175 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Editor from "@monaco-editor/react";
 import Nav from '@/components/Nav';
 import Tail from '@/components/Tail';
 
-// 코딩테스트 상세 페이지
 const CodingTestDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  // [수정 1] 로그인한 사용자의 역할을 가져옴
+
   const [userRole] = useState(() => {
     const user = JSON.parse(localStorage.getItem('users'));
-    return user?.role || "STUDENT"; // 기본값은 학생으로 설정
+    return user?.role || "STUDENT";
   });
-  
-  // [수정 2] 어드민일 때만 수정 모드를 허용
+
   const [isEditing, setIsEditing] = useState(false);
-  
-  const [problem, setProblem] = useState({
-    title: "자바 정수 더하기",
-    description: "두 정수 a와 b가 주어질 때, a + b의 값을 리턴하는 함수를 완성하세요.",
-    passRate: 75,
-  });
-  
-  const [code, setCode] = useState("// 여기에 코드를 작성하세요\npublic class Solution {\n    public int solution(int a, int b) {\n        return a + b;\n    }\n}");
-  const [submissions, setSubmissions] = useState([
-    { studentId: "student01", submittedAt: "2026-02-04 14:20", passed: true },
-    { studentId: "student02", submittedAt: "2026-02-04 15:10", passed: false },
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [problem, setProblem] = useState(null);
+  const [code, setCode] = useState("");
+  const [submissions, setSubmissions] = useState([]);
 
   useEffect(() => {
-    if (userRole === "INSTRUCTOR") {
-      alert("접근 권한이 없습니다.");
-      navigate("/");
-      return;
-    }
-  }, [userRole, navigate]);
+    const fetchDetailData = async () => {
+      if (!id || id === "undefined") {
+        navigate("/coding-test");
+        return;
+      }
 
-  const handleUpdate = () => {
+      try {
+        setLoading(true);
+        // 1. 문제 정보 조회
+        const response = await axios.get(`/api/problems/${id}`);
+        if (response.data) {
+          setProblem(response.data);
+          setCode(response.data.baseCode || "// 코드를 작성하세요");
+        }
+
+        // 2. 제출 기록 조회 (관리자 전용)
+        if (userRole === "ADMIN") {
+          try {
+            const subRes = await axios.get(`/api/problems/${id}/submissions`);
+            setSubmissions(Array.isArray(subRes.data) ? subRes.data : []);
+          } catch (subError) {
+            // 백엔드 구현이 덜 되었을 때 500 에러 방어
+            console.error("제출 기록 로드 실패:", subError.response?.data || subError.message);
+            setSubmissions([]); 
+          }
+        }
+      } catch (error) {
+        console.error("데이터 로드 실패:", error);
+        alert("정보를 불러오지 못했습니다.");
+        navigate("/coding-test");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDetailData();
+  }, [id, userRole, navigate]);
+
+  const handleUpdate = async () => {
+    try {
+      const updateData = {
+      title: problem.title,
+      description: problem.description,
+      difficulty: problem.difficulty, // 백엔드 필드명에 맞춤
+      baseCode: problem.baseCode
+    };
+    await axios.put(`/api/problems/${id}`, updateData);
     setIsEditing(false);
-    alert("수정되었습니다.");
+    alert("성공적으로 수정되었습니다.");
+  } catch (error) {
+    console.error("수정 실패:", error.response?.data || error.message);
+    alert("수정 실패: " + (error.response?.data?.message || "서버 오류"));
+  }
+};
+
+  const handleDelete = async () => {
+    if (!window.confirm("정말로 삭제하시겠습니까?")) return;
+    try {
+      await axios.delete(`/api/problems/${id}`);
+      navigate("/coding-test");
+    } catch (error) { alert("삭제 실패"); }
   };
 
-  const handleDelete = () => {
-    if (window.confirm("정말로 삭제하시겠습니까?")) {
-      alert("삭제되었습니다.");
-      navigate("/");
-    }
+  const handleSubmitCode = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('users'));
+      const response = await axios.post(`/api/problems/${id}/submit`, {
+        userId: user.userId,
+        code: code
+      });
+      alert(response.data.passed ? "정답입니다! 🎉" : `오답입니다: ${response.data.message || ""}`);
+    } catch (error) { alert("제출 처리 중 오류 발생"); }
   };
 
-  // [수정 3] 학생용 코드 제출 버튼 핸들러
-  const handleSubmitCode = () => {
-    alert("코드가 제출되었습니다.");
-    // 실제 서버 연동 시 학생의 제출 기록을 DB에 저장하는 API 호출
-  };
+  if (loading) return <div className="h-screen flex items-center justify-center font-black text-indigo-600 italic uppercase">Loading Problem Data...</div>;
+  if (!problem) return null;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#ffffff]">
       <Nav />
-      
-      <main className="flex-grow container mx-auto px-6 pt-20 pb-12 max-w-[1400px]">
-        
-        {/* 상단 타이틀 카드 */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8 flex justify-between items-center">
-          <div className="space-y-3">
+      <main className="flex-grow container mx-auto px-6 pt-32 pb-12 max-w-[1400px]">
+        {/* 상단 섹션 */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-8 flex justify-between items-center">
+          <div className="space-y-4">
             {isEditing ? (
-              <input 
-                className="text-2xl font-bold border-b-2 border-indigo-500 outline-none w-[450px] pb-1"
-                value={problem.title} 
-                onChange={(e) => setProblem({...problem, title: e.target.value})}
-              />
+              <input className="text-3xl font-black border-b-4 border-indigo-500 outline-none w-[600px] pb-2" value={problem.title} onChange={(e) => setProblem({ ...problem, title: e.target.value })} />
             ) : (
-              <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">{problem.title}</h1>
+              <h1 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">{problem.title}</h1>
             )}
-            
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-indigo-600">통과율</span>
-                <span className="text-xs font-black text-gray-900">{problem.passRate}%</span>
-              </div>
-              <div className="w-48 bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                <div 
-                  className="bg-indigo-500 h-full rounded-full" 
-                  style={{ width: `${problem.passRate}%` }}
-                ></div>
-              </div>
+            <div className="flex items-center gap-6 font-black text-[10px] uppercase tracking-widest text-indigo-500">
+               <span className="bg-indigo-50 px-3 py-1 rounded-lg">Level: {problem.difficulty || "EASY"}</span>
+               <span className="text-gray-400">Pass Rate: {problem.passRate || 0}%</span>
             </div>
           </div>
-
-          {/* [수정 3] 수정/삭제 버튼은 오직 ADMIN에게만 노출 */}
           {userRole === "ADMIN" && (
             <div className="flex gap-3">
-              <button 
-                onClick={() => isEditing ? handleUpdate() : setIsEditing(true)}
-                className="px-6 py-2 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition text-sm font-bold shadow-sm"
-              >
-                {isEditing ? "저장" : "수정"}
-              </button>
-              <button 
-                onClick={handleDelete}
-                className="px-6 py-2 border border-red-100 text-red-500 rounded-xl hover:bg-red-50 transition text-sm font-bold"
-              >
-                삭제
-              </button>
+              <button onClick={() => isEditing ? handleUpdate() : setIsEditing(true)} className="px-8 py-3 bg-gray-900 text-white rounded-2xl text-sm font-black shadow-xl hover:bg-black transition-all">{isEditing ? "수정완료" : "수정하기"}</button>
+              <button onClick={handleDelete} className="px-8 py-3 border-2 border-red-50 text-red-500 rounded-2xl text-sm font-black hover:bg-red-50 transition-all">삭제하기</button>
             </div>
           )}
         </div>
 
-        {/* 중앙: 문제(4) vs 에디터(6) */}
-        <div className="flex flex-col lg:flex-row gap-6 h-[500px] mb-12">
-          <div className="w-full lg:w-[40%] bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col shadow-sm transition-all hover:shadow-md">
-            <div className="bg-gray-50/50 px-5 py-3 border-b border-gray-100">
-              <span className="font-bold text-gray-800 text-sm italic">Description</span>
-            </div>
-            <div className="p-8 flex-grow overflow-y-auto bg-white">
-              {/* [수정 4] ADMIN 권한이 있어야만 textarea(수정 모드) 활성화 */}
-              {isEditing && userRole === "ADMIN" ? (
-                <textarea 
-                  className="w-full h-full border border-gray-100 p-4 rounded-xl focus:ring-2 focus:ring-indigo-500/10 outline-none resize-none text-sm leading-relaxed"
-                  value={problem.description} 
-                  onChange={(e) => setProblem({...problem, description: e.target.value})}
-                />
-              ) : (
-                <div className="text-gray-700 text-[15px] font-medium leading-8 whitespace-pre-wrap">
-                  {problem.description}
-                </div>
-              )}
-            </div>
+        {/* 설명 및 에디터 영역 */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[650px] mb-12">
+          <div className="lg:col-span-5 bg-white border border-gray-100 rounded-3xl p-10 overflow-y-auto shadow-sm">
+            <h3 className="font-black text-gray-900 mb-6 border-b pb-4 uppercase text-[10px] tracking-[0.2em] opacity-30 italic">Problem Statement</h3>
+            {isEditing ? (
+              <textarea className="w-full h-full outline-none resize-none text-base leading-loose font-medium" value={problem.description} onChange={(e) => setProblem({ ...problem, description: e.target.value })} />
+            ) : (
+              <div className="text-gray-700 text-lg whitespace-pre-wrap leading-relaxed font-semibold">{problem.description}</div>
+            )}
           </div>
-
-          <div className="w-full lg:w-[60%] flex flex-col border border-gray-800 rounded-2xl overflow-hidden shadow-2xl bg-[#1e1e1e]">
-            <div className="bg-[#2d2d2d] px-5 py-3 flex justify-between items-center text-white border-b border-white/5">
-              <div className="flex items-center gap-3 font-mono text-[11px] opacity-70 tracking-widest uppercase">
-                <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></div>
-                </div>
-                <span>Solution.java</span>
-              </div>
-
-              {/* [수정 5] 제출하기 버튼 활성화 (학생이 직접 코드 입력 및 테스트 가능) */}
-              {userRole !== "ADMIN" && (
-                <button 
-                  onClick={handleSubmitCode}
-                  className="bg-indigo-600 px-5 py-1.5 rounded-lg hover:bg-indigo-500 transition font-black text-xs shadow-lg active:scale-95"
-                >
-                  제출하기
-                </button>
-  )}
+          <div className="lg:col-span-7 flex flex-col border border-gray-800 rounded-3xl overflow-hidden shadow-2xl bg-[#1e1e1e]">
+            <div className="bg-[#2d2d2d] px-6 py-4 flex justify-between items-center text-white border-b border-white/5">
+              <span className="font-mono text-[10px] opacity-50 uppercase tracking-widest italic">Solution.java</span>
+              {userRole !== "ADMIN" && <button onClick={handleSubmitCode} className="bg-indigo-600 px-6 py-2 rounded-xl font-black text-[10px] shadow-lg hover:bg-indigo-500 transition-all uppercase tracking-tighter">Submit Code</button>}
             </div>
-            <div className="flex-grow">
-              <Editor
-                height="100%"
-                defaultLanguage="java"
-                theme="vs-dark"
-                value={code}
-                onChange={(value) => setCode(value)}
-                options={{ 
-                  minimap: { enabled: false }, 
-                  fontSize: 15,
-                  lineHeight: 24,
-                  padding: { top: 20 },
-                  scrollBeyondLastLine: false,
-                }}
-              />
-            </div>
+            <Editor height="100%" defaultLanguage="java" theme="vs-dark" value={code} onChange={(v) => setCode(v)} options={{ minimap: { enabled: false }, fontSize: 16, lineHeight: 28 }} />
           </div>
         </div>
 
-        {/* [수정 6] 하단: 학생 제출 현황 (ADMIN 권한일 때만 노출) */}
+        {/* 제출 현황 (ADMIN) */}
         {userRole === "ADMIN" && (
-          <div className="max-w-[1400px] mx-auto w-full bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-            <div className="bg-gray-50/50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-              <h2 className="font-extrabold text-gray-900 text-sm tracking-tight uppercase">Student Submissions</h2>
-              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Admin Access Only</span>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left table-fixed">
-                <thead>
-                  <tr className="text-gray-400 border-b bg-gray-50/20 text-[10px] font-black uppercase tracking-tighter">
-                    <th className="px-20 py-4 w-[20%] text-center">아이디</th>
-                    <th className="px-6 py-4 w-[40%] text-center">제출 시간</th>
-                    <th className="px-6 py-4 w-[20%] text-center">상태</th>
-                    <th className="px-20 py-4 w-[20%] text-center">상세보기</th>
+          <div className="bg-white border border-gray-100 rounded-3xl shadow-xl overflow-hidden flex flex-col">
+            <div className="bg-gray-50/50 px-8 py-5 border-b border-gray-100 font-black text-[10px] text-gray-400 uppercase tracking-[0.3em] text-center">Recent Submissions</div>
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-gray-400 border-b bg-gray-50/20 text-[9px] font-black uppercase">
+                  <th className="px-8 py-5 text-center">User</th>
+                  <th className="px-8 py-5 text-center">Date</th>
+                  <th className="px-8 py-5 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50 font-bold text-xs uppercase tracking-tight">
+                {submissions.length > 0 ? submissions.map((sub, idx) => (
+                  <tr key={idx} className="hover:bg-indigo-50/30 transition-all">
+                    <td className="px-8 py-6 text-center text-gray-800 italic">#{sub.loginId || sub.userId}</td>
+                    <td className="px-8 py-6 text-center text-gray-400 font-mono tracking-tighter">{sub.submittedAt}</td>
+                    <td className="px-8 py-6 text-center">
+                      <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${sub.status === "PASS" ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{sub.status}</span>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {submissions.map((sub, idx) => (
-                    <tr key={idx} className="hover:bg-indigo-50/30 transition-colors group">
-                      <td className="px-6 py-5 text-center font-bold text-gray-800 text-sm">{sub.studentId}</td>
-                      <td className="px-6 py-5 text-center text-gray-400 text-xs font-mono tracking-tighter">{sub.submittedAt}</td>
-                      <td className="px-6 py-5 text-center">
-                        <span className={`inline-block w-20 py-1 rounded-full text-[9px] font-black tracking-wide ${sub.passed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                          {sub.passed ? "SUCCESS" : "FAILED"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-center text-indigo-600 font-bold text-xs">
-                        <button className="hover:underline opacity-70 group-hover:opacity-100 transition-opacity">코드 리뷰</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                )) : (
+                  <tr><td colSpan="3" className="py-20 text-center text-gray-300 font-black uppercase italic tracking-widest">No Records Found</td></tr>
+                )}
+              </tbody>
+            </table>
           </div>
         )}
       </main>
-
       <Tail />
     </div>
   );

@@ -1,19 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Tail from '@/components/Tail';
 import { Save, ArrowLeft, FileCode, LayoutList } from "lucide-react";
 import Editor from "@monaco-editor/react";
+import axios from 'axios';
 
 // 코딩테스트 생성 페이지
 const CodingTestCreate = () => {
   const navigate = useNavigate();
 
-  // 문제 생성을 위한 상태 관리
+  // [권한 확인] 어드민만 접근 가능하도록 설정
+  const [userRole] = useState(() => {
+    const user = JSON.parse(localStorage.getItem('users'));
+    return user?.role || "STUDENT";
+  });
+
+  useEffect(() => {
+    if (userRole !== "ADMIN") {
+      alert("관리자 권한이 필요합니다.");
+      navigate("/coding-test");
+    }
+  }, [userRole, navigate]);
+
   const [problem, setProblem] = useState({
     title: "",
     level: "초급",
     description: "",
+    // 기본 자바 템플릿 제공
     baseCode: "public class Solution {\n    public int solution(int a, int b) {\n        return 0;\n    }\n}"
   });
 
@@ -26,18 +40,32 @@ const CodingTestCreate = () => {
     setProblem(prev => ({ ...prev, baseCode: value }));
   };
 
-  const handleSubmit = (e) => {
+  // [연동] 서버로 새 문제 데이터 전송
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!problem.title || !problem.description) {
       alert("제목과 내용을 모두 입력해주세요.");
       return;
     }
 
-    // 실제 서버 연동 시 axios.post('/api/problems', problem)
-    console.log("전송 데이터:", problem);
-    alert("새로운 문제가 등록되었습니다.");
-    navigate("/coding-test"); // 등록 후 목록으로 이동
+    try {
+      // 백엔드 @RequestMapping("/api/problems")와 매핑되는 POST 요청
+      await axios.post('/api/problems', {
+        title: problem.title,
+        level: problem.level,
+        description: problem.description,
+        baseCode: problem.baseCode
+      });
+
+      alert("새로운 문제가 등록되었습니다.");
+      navigate("/coding-test"); // 등록 후 목록으로 이동
+    } catch (error) {
+      console.error("문제 등록 실패:", error);
+      alert("서버 오류로 문제 등록에 실패했습니다.");
+    }
   };
+
+  if (userRole !== "ADMIN") return null;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#ffffff]">
@@ -121,11 +149,9 @@ const CodingTestCreate = () => {
           {/* 오른쪽 에디터 폼 (7/12) */}
           <div className="lg:col-span-7 flex flex-col gap-4">
             <div className="bg-white p-1 rounded-2xl border border-gray-100 shadow-sm flex-grow flex flex-col overflow-hidden">
-              <div className="px-5 py-3 border-b border-gray-50 flex justify-between items-center">
-                <label className="text-xs font-black uppercase text-gray-400 tracking-widest flex items-center gap-2">
-                  <FileCode className="h-3 w-3" /> Base Solution Template (Java)
-                </label>
-                <span className="text-[10px] text-indigo-400 font-bold bg-indigo-50 px-2 py-0.5 rounded">Editor Mode</span>
+              <div className="px-5 py-3 border-b border-gray-50 flex justify-between items-center text-gray-400 font-black text-[10px] uppercase tracking-widest">
+                <div className="flex items-center gap-2"><FileCode className="h-3 w-3" /> Base Code Template</div>
+                <span className="bg-indigo-50 text-indigo-400 px-2 py-0.5 rounded">Java</span>
               </div>
               <div className="flex-grow bg-[#1e1e1e]">
                 <Editor
