@@ -25,6 +25,7 @@ function ProposalDetail() {
     const [roleLoaded, setRoleLoaded] = useState(false);
     const [courseInfo, setCourseInfo] = useState(null);
     const [lectureList, setLectureList] = useState([]);
+    const [selectedLecture, setSelectedLecture] = useState(null);
 
     useEffect(() => {
         const storedUsers = localStorage.getItem("users");
@@ -46,7 +47,7 @@ function ProposalDetail() {
     const getLectureListUrl = () => {
         switch (role) {
             case 'ADMIN': return `/admin/course/${courseId}/lectures`;
-            default: return `/student/lecture/${courseId}/lectures`;
+            default: return `/student/lecture/${courseId}/lecture`;
         }
     };
 
@@ -100,12 +101,20 @@ function ProposalDetail() {
 
     // 역할별 메인 콘텐츠 렌더링
     const renderContent = () => {
-        switch (role) {
-            case 'ADMIN':
-                return <AdminPropsalDetail />;
-            case 'STUDENT':
-            default:
-                return <StudentCourseDetail />;
+        // 1. 영상이 선택되었다면 역할과 상관없이 영상 플레이어를 먼저 보여줌
+        if (selectedLecture) {
+            return (
+                <div className="p-6">
+                    <LectureDetail selectedLecture={selectedLecture} />
+                </div>
+            );
+        }
+
+        // 2. 영상이 선택되지 않았을 때 기존 상세 페이지 노출
+        if (role === 'ADMIN') {
+            return <AdminPropsalDetail courseId={courseId} />;
+        } else {
+            return <StudentCourseDetail courseId={courseId} />;
         }
     };
 
@@ -123,7 +132,8 @@ function ProposalDetail() {
                                     {lectureList.length > 0 ? (
                                         lectureList.map((lecture) => (
                                             <SidebarMenuItem key={lecture.lectureId}>
-                                                <SidebarMenuButton>
+                                                <SidebarMenuButton onClick={() => setSelectedLecture(lecture)} // 클릭 시 강의 선택
+                                                    isActive={selectedLecture?.lectureId === lecture.lectureId}>
                                                     <span>{lecture.orderNo}강. {lecture.title}</span>
                                                     {getStatusBadge(lecture.approvalStatus)}
                                                 </SidebarMenuButton>
@@ -131,7 +141,7 @@ function ProposalDetail() {
                                         ))
                                     ) : (
                                         <SidebarMenuItem>
-                                            <SidebarMenuButton>등록된 강의가 없습니다</SidebarMenuButton>
+                                            <p>등록된 강의가 없습니다</p>
                                         </SidebarMenuItem>
                                     )}
                                 </SidebarMenu>

@@ -13,6 +13,7 @@ import {
     AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import LectureDetail from "@/pages/public/LectureDetail"
 
 // YouTube URL -> embed URL 변환
 const toEmbedUrl = (url) => {
@@ -136,8 +137,6 @@ function StudentCourseDetail() {
         }
     };
 
-
-
     return (
         <>
             <section className="container mx-auto px-16 py-16">
@@ -199,44 +198,10 @@ function StudentCourseDetail() {
             </section>
 
             {/* 수강 중/완료일 때 강의 목록 및 영상 재생 */}
-            {(enrollmentStatus === 'ENROLLED' || enrollmentStatus === 'COMPLETED') && (
-                <section className="container mx-auto px-16 pb-16">
-                    <Separator className="mb-8" />
-                    <h2 className="text-lg font-bold mb-4">강의 목록</h2>
-
-                    <div className="flex gap-6">
-                        {/* 강의 목록 */}
-                        <div className="w-64 flex-shrink-0">
-                            <div className="flex flex-col gap-1 border rounded-md p-2">
-                                {lectureList.length > 0 ? (
-                                    lectureList.map((lecture) => (
-                                        <button
-                                            key={lecture.lectureId}
-                                            onClick={() => setSelectedLecture(lecture)}
-                                            className={`text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedLecture?.lectureId === lecture.lectureId
-                                                    ? 'bg-slate-200 font-semibold'
-                                                    : 'hover:bg-slate-100'
-                                                }`}
-                                        >
-                                            <div>{lecture.orderNo}강. {lecture.title}</div>
-                                            {lecture.duration && (
-                                                <div className="text-xs text-muted-foreground mt-0.5">
-                                                    {formatDuration(lecture.duration)}
-                                                </div>
-                                            )}
-                                        </button>
-                                    ))
-                                ) : (
-                                    <div className="text-sm text-muted-foreground px-3 py-4 text-center">
-                                        등록된 강의가 없습니다
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-
-                    </div>
-                </section>
+            {(enrollmentStatus === 'ENROLLED' || enrollmentStatus === 'COMPLETED') ? (
+                <LectureDetail selectedLecture={selectedLecture} />
+                ) : (
+                    <div className="p-10">수강 신청 후 시청 가능합니다.</div>
             )}
         </>
     )

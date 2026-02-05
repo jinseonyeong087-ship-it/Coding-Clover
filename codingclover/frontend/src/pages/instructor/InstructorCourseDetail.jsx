@@ -128,7 +128,7 @@ function InstructorCourseDetail() {
                             {/* 강좌 소개 */}
                             <LectureCreate />
                             {/* 강의 업로드 */}
-                            <InstructorLecture />
+                            {/* <InstructorLecture /> */}
                         </>
                     )}
                     </section>

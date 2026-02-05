@@ -70,29 +70,42 @@ function ChatBot({ className }) {
     <div className={className}>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <HoverCard>
-          <HoverCardTrigger asChild><PopoverTrigger className="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center">💭</PopoverTrigger></HoverCardTrigger>
+          <HoverCardTrigger asChild><PopoverTrigger className="bg-blue-500 text-white rounded-full w-18 h-18 text-3xl flex items-center justify-center">💭</PopoverTrigger></HoverCardTrigger>
           <HoverCardContent className="flex w-64 flex-col gap-0.5" side="left">
             <h4>코딩하다가 막히면<br></br>여기에 물어보세요!</h4>
           </HoverCardContent>
         </HoverCard>
 
-        <PopoverContent className="sm:max-w-[425px] " side="top" align="end">
+        <PopoverContent className={isMaximized ? "w-[90vw] h-[80vh] max-w-none" : "w-[480px] h-[600px]"} side="top" align="end">
           <PopoverHeader className="flex flex-col items-center justify-between">
             <>
               <PopoverTitle><h2>코딩 어시스턴트</h2></PopoverTitle>
             </>
             <div className="flex h-2 w-20 items-center justify-center gap-2">
-              <button onClick={handleMax}>➕</button>
-              <button onClick={handleMin} >➖</button>
-              <button onClick={handleClose}>✖</button>
+              <button onClick={handleMax} className="hover:bg-slate-100 p-1 rounded">➕</button>
+              <button onClick={handleMin} className="hover:bg-slate-100 p-1 rounded">➖</button>
+              <button onClick={handleClose} className="hover:bg-red-100 p-1 rounded">✖</button>
             </div>
           </PopoverHeader>
-          <PopoverDescription>
-            <ScrollArea>
-              {chatHistory.map((msg, i) => <div key={i}>{msg.content}</div>)}
+          <PopoverDescription className="flex flex-col gap-4">
+            <ScrollArea className="flex flex-col gap-4 h-[450px]">
+              {chatHistory.map((msg, i) => (
+                <div key={i} className={`mb-2 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+                  <span className={`inline-block p-2 rounded-lg ${msg.role === 'user' ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                    {msg.content}
+                  </span>
+                </div>
+              ))}
             </ScrollArea>
-            <Textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder="어시스턴트에게 물어보세요" />
-            <Button onClick={handleSend}>전송⬆</Button>
+            <div className="flex gap-2">
+              <Textarea 
+                value={input} 
+                onChange={(e) => setInput(e.target.value)} 
+                placeholder="어시스턴트에게 물어보세요" 
+                className="flex-1"
+              />
+              <Button onClick={handleSend}>전송</Button>
+            </div>
           </PopoverDescription>
         </PopoverContent>
       </Popover >

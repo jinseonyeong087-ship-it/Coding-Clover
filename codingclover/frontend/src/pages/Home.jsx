@@ -134,7 +134,7 @@ function Home() {
         </div>
       </section>
 
-      <ChatBot className="fixed bottom-4 right-4"/>
+      <ChatBot className="fixed bottom-8 right-8"/>
       <Tail />
     </>
   );

@@ -143,7 +143,7 @@ function LectureCreate() {
 
     return (
         <>
-            <section className="container mx-auto px-16 py-24">
+            <div>
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold">{formData.title}</h1>
                     <div>
@@ -214,9 +214,9 @@ function LectureCreate() {
                 </div>
 
 
-            </section >
+            </div>
 
-            <section className="container mx-auto px-16 py-24">
+            <div className="mt-8">
                 {formData.proposalStatus === 'APPROVED' ? (
                     <>
                         <p className="text-green-600 font-medium mb-4">
@@ -238,9 +238,7 @@ function LectureCreate() {
                         </p>
                     </div>
                 )}
-            </section>
-
-
+            </div>
         </>
     )
 }
