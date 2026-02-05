@@ -2,12 +2,15 @@ package com.mysite.clover.UserWallet;
 
 import java.security.Principal;
 import java.util.Map;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.Users.UsersRepository;
+import com.mysite.clover.WalletHistory.WalletHistory;
+import com.mysite.clover.WalletHistory.WalletHistoryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +22,7 @@ public class WalletController {
 
     private final WalletIntegrationService walletIntegrationService;
     private final UsersRepository usersRepository;
+    private final WalletHistoryService walletHistoryService;
 
     /**
      * 현재 포인트 잔액 조회
@@ -30,6 +34,21 @@ public class WalletController {
             Integer balance = walletIntegrationService.getCurrentBalance(userId);
             
             return ResponseEntity.ok().body(Map.of("balance", balance));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * 포인트 사용 내역 조회
+     */
+    @GetMapping("/history")
+    public ResponseEntity<?> getHistory(Principal principal) {
+        try {
+            Long userId = getUserIdFromPrincipal(principal);
+            List<WalletHistory> history = walletHistoryService.getUserHistory(userId);
+            
+            return ResponseEntity.ok(history);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

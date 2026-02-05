@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { User, Edit, Coins, ChevronRight } from "lucide-react";
 import axios from 'axios';
-import { getPointsBalance } from '@/lib/pointsApi';
 import coinImg from '../../img/coin.png';
 
 // 상수
@@ -58,8 +57,39 @@ function MyPage() {
   const fetchUserPoints = async () => {
     try {
       setPointsLoading(true);
-      const balance = await getPointsBalance();
-      setPoints(balance);
+      
+      const getUserIdentifier = () => {
+        const storedUsers = localStorage.getItem("users");
+        if (!storedUsers) return null;
+        try {
+          const userData = JSON.parse(storedUsers);
+          return userData.loginId || userData.email || null;
+        } catch {
+          return null;
+        }
+      };
+
+      const currentIdentifier = getUserIdentifier();
+      if (!currentIdentifier) {
+        throw new Error('로그인이 필요합니다.');
+      }
+
+      const response = await fetch('/api/wallet/balance', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const balanceData = await response.json();
+        const balance = balanceData.balance || balanceData.amount || 0;
+        setPoints(balance);
+      } else {
+        console.warn('포인트 조회 실패, 기본값 사용');
+        setPoints(150000); // 샘플 데이터
+      }
     } catch (error) {
       console.error('포인트 조회 실패:', error);
       setPoints(150000); // 샘플 데이터
