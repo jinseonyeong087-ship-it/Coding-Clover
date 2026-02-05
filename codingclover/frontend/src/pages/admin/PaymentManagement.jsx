@@ -281,6 +281,54 @@ function PaymentManagement() {
         }
     };
 
+    // 환불 승인
+    const handleRefundApproval = async (paymentId) => {
+        try {
+            const response = await fetch(`/api/payment/admin/refund/approve/${paymentId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                alert('환불이 승인되었습니다.');
+                await fetchPayments(); // 데이터 새로고침
+            } else {
+                const error = await response.json();
+                alert('환불 승인 실패: ' + (error.message || '알 수 없는 오류'));
+            }
+        } catch (error) {
+            console.error('환불 승인 중 오류 발생:', error);
+            alert('환불 승인 중 오류가 발생했습니다.');
+        }
+    };
+
+    // 환불 거절
+    const handleRefundReject = async (paymentId) => {
+        try {
+            const response = await fetch(`/api/payment/admin/refund/reject/${paymentId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                alert('환불이 거절되었습니다.');
+                await fetchPayments(); // 데이터 새로고침
+            } else {
+                const error = await response.json();
+                alert('환불 거절 실패: ' + (error.message || '알 수 없는 오류'));
+            }
+        } catch (error) {
+            console.error('환불 거절 중 오류 발생:', error);
+            alert('환불 거절 중 오류가 발생했습니다.');
+        }
+    };
+
     // 환불 요청 건수
     const refundRequestCount = payments.filter(p => p.refundStatus === 'REQUESTED').length;
 
@@ -544,8 +592,7 @@ function PaymentManagement() {
                                                 <TableHead className="text-center">결제상태</TableHead>
                                                 <TableHead className="text-center">환불상태</TableHead>
                                                 <TableHead className="text-center">결제일시</TableHead>
-                                                <TableHead className="text-center">환불요청일</TableHead>
-                                            </TableRow>
+                                                <TableHead className="text-center">환불요청일</TableHead>                                            <TableHead className="text-center">액션</TableHead>                                            </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {currentItems.map((payment) => (
@@ -585,6 +632,38 @@ function PaymentManagement() {
                                                             new Date(payment.refundRequestDate).toLocaleString('ko-KR') : 
                                                             '-'
                                                         }
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        {payment.refundStatus === 'REQUESTED' ? (
+                                                            <div className="flex gap-2 justify-center">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    className="text-green-600 border-green-300 hover:bg-green-50"
+                                                                    onClick={() => {
+                                                                        if (confirm('환불을 승인하시겠습니까?')) {
+                                                                            handleRefundApproval(payment.paymentId);
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    승인
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    className="text-red-600 border-red-300 hover:bg-red-50"
+                                                                    onClick={() => {
+                                                                        if (confirm('환불을 거절하시겠습니까?')) {
+                                                                            handleRefundReject(payment.paymentId);
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    거절
+                                                                </Button>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-gray-400 text-sm">-</span>
+                                                        )}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}

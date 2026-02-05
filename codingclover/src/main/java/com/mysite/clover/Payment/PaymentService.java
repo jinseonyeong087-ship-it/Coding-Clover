@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.mysite.clover.Users.UsersRepository;
+import com.mysite.clover.UserWallet.WalletIntegrationService;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.time.LocalDateTime;
@@ -32,6 +33,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final UsersRepository usersRepository;
+    private final WalletIntegrationService walletIntegrationService;
 
     // 간단한 메모리 캐시 (5분)
     private final ConcurrentHashMap<String, CacheEntry> cache = new ConcurrentHashMap<>();
@@ -168,7 +170,36 @@ public class PaymentService {
     }
 
     /**
-     * 환불 승인 (관리자용)
+     * 보유 포인트 환불 요청
+     */
+    @Transactional
+    public Payment requestFullRefund(Long userId, Integer requestedAmount, String reason) {
+        
+        // 현재 보유 포인트 조회
+        Integer currentBalance = walletIntegrationService.getCurrentBalance(userId);
+        
+        if (currentBalance <= 0) {
+            throw new RuntimeException("환불할 포인트가 없습니다. 현재 잔액: " + currentBalance);
+        }
+
+        // 요청된 금액과 보유 금액 중 작은 값으로 환불 (보유 금액을 초과할 수 없음)
+        Integer refundAmount = Math.min(requestedAmount, currentBalance);
+
+        // 보유 포인트 환불 요청 기록 생성
+        Payment fullRefundRequest = new Payment();
+        fullRefundRequest.setUserId(userId);
+        fullRefundRequest.setType(PaymentType.REFUND);
+        fullRefundRequest.setAmount(refundAmount); // 실제 보유 포인트만큼만
+        fullRefundRequest.setPaymentMethod("ADMIN");
+        fullRefundRequest.setStatus(PaymentStatus.REFUND_REQUEST);
+        fullRefundRequest.setOrderId("BALANCE_REFUND_" + userId + "_" + System.currentTimeMillis());
+        // 보유 포인트 환불의 경우 특정 원본 결제 ID가 없으므로 null로 유지
+
+        return paymentRepository.save(fullRefundRequest);
+    }
+
+    /**
+     * 환불 승인 (관리자용) - 보유 포인트에서 차감 후 환급
      */
     @Transactional
     public Payment approveRefund(Long refundPaymentId) {
@@ -180,8 +211,46 @@ public class PaymentService {
             throw new RuntimeException("Payment is not in REFUND_REQUEST status");
         }
 
+        // 현재 보유 포인트 확인
+        Integer currentBalance = walletIntegrationService.getCurrentBalance(refundPayment.getUserId());
+        if (currentBalance < refundPayment.getAmount()) {
+            throw new RuntimeException("보유 포인트가 부족합니다. 보유: " + currentBalance + ", 환불요청: " + refundPayment.getAmount());
+        }
+
+        // 실제 포인트 차감 (환불 처리)
+        try {
+            walletIntegrationService.usePoints(
+                refundPayment.getUserId(), 
+                refundPayment.getAmount(), 
+                refundPayment.getPaymentId()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("포인트 차감 실패: " + e.getMessage());
+        }
+
         refundPayment.setStatus(PaymentStatus.REFUNDED);
-        return paymentRepository.save(refundPayment);
+        Payment savedRefund = paymentRepository.save(refundPayment);
+        invalidateCache(); // 캐시 무효화
+        return savedRefund;
+    }
+
+    /**
+     * 환불 거절 (관리자용)
+     */
+    @Transactional
+    public Payment rejectRefund(Long refundPaymentId) {
+        
+        Payment refundPayment = paymentRepository.findById(refundPaymentId)
+            .orElseThrow(() -> new RuntimeException("Refund payment not found: " + refundPaymentId));
+
+        if (refundPayment.getStatus() != PaymentStatus.REFUND_REQUEST) {
+            throw new RuntimeException("Payment is not in REFUND_REQUEST status");
+        }
+
+        refundPayment.setStatus(PaymentStatus.REJECTED);
+        Payment savedRefund = paymentRepository.save(refundPayment);
+        invalidateCache(); // 캐시 무효화
+        return savedRefund;
     }
 
     /**

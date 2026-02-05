@@ -180,6 +180,39 @@ public class PaymentController {
     }
 
     /**
+     * 전체 포인트 환불 요청
+     */
+    @PostMapping("/refund/full")
+    public ResponseEntity<?> requestFullRefund(@RequestBody Map<String, Object> request, Principal principal) {
+        try {
+            Long userId = getUserIdFromPrincipal(principal);
+            String reason = (String) request.get("reason");
+            
+            // 현재 보유 포인트 조회
+            Integer currentBalance = walletIntegrationService.getCurrentBalance(userId);
+            
+            if (currentBalance <= 0) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "message", "환불할 포인트가 없습니다."
+                ));
+            }
+            
+            // 전체 환불 요청 생성 (가상의 충전 건으로 처리)
+            Payment fullRefundRequest = paymentService.requestFullRefund(userId, currentBalance, reason);
+
+            return ResponseEntity.ok().body(Map.of(
+                "message", "전체 환불 요청이 접수되었습니다",
+                "refundPaymentId", fullRefundRequest.getPaymentId(),
+                "amount", currentBalance
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "message", "전체 환불 요청 실패: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
      * 환불 승인 (관리자용)
      */
     @PostMapping("/admin/refund/approve/{refundPaymentId}")
@@ -196,6 +229,27 @@ public class PaymentController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
                 "message", "환불 승인 실패: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * 환불 거절 (관리자용)
+     */
+    @PostMapping("/admin/refund/reject/{refundPaymentId}")
+    public ResponseEntity<?> rejectRefund(@PathVariable Long refundPaymentId) {
+        try {
+            // TODO: 관리자 권한 체크 로직 추가
+            
+            Payment rejectedRefund = paymentService.rejectRefund(refundPaymentId);
+
+            return ResponseEntity.ok().body(Map.of(
+                "message", "환불이 거절되었습니다",
+                "refundPaymentId", rejectedRefund.getPaymentId()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "message", "환불 거절 실패: " + e.getMessage()
             ));
         }
     }

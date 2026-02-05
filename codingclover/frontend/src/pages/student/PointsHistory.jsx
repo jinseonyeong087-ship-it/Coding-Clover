@@ -57,6 +57,48 @@ function PointsHistory() {
         }
     };
 
+    // 전체 환불 요청 함수
+    const requestFullRefund = async () => {
+        try {
+            if (points <= 0) {
+                alert('환불할 포인트가 없습니다.');
+                return;
+            }
+
+            if (!confirm(`보유 포인트 ${points.toLocaleString()}P  환불을 요청하시겠습니까?`)) {
+                return;
+            }
+
+            const response = await fetch('/api/payment/refund/full', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({ 
+                    reason: "포인트 환불 요청",
+                    amount: points
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log(" 환불 요청 성공:", result);
+                alert('전체 환불 요청이 관리자에게 전달되었습니다. 검토 후 처리됩니다.');
+                
+                // 포인트 데이터 새로고침
+                await fetchPointsData();
+            } else {
+                const error = await response.json();
+                console.error("전체 환불 요청 실패:", error);
+                alert('전체 환불 요청 실패: ' + (error.message || '알 수 없는 오류'));
+            }
+        } catch (error) {
+            console.error("전체 환불 요청 오류:", error);
+            alert('전체 환불 요청 중 오류가 발생했습니다.');
+        }
+    };
+
     const fetchPointsData = async () => {
         try {
             setLoading(true);
@@ -239,11 +281,7 @@ function PointsHistory() {
                 <div className="max-w-6xl mx-auto">
                     {/* 헤더 */}
                     <div className="mb-8">
-                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                            <span>마이페이지</span>
-                            <span>/</span>
-                            <span className="text-blue-600">포인트 내역</span>
-                        </div>
+                        
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div>
@@ -268,12 +306,15 @@ function PointsHistory() {
                                 <p className="text-sm text-gray-600">
                                     환불은 보유 포인트 내에서만 가능합니다
                                 </p>
-                                <button 
-                                    onClick={() => alert('환불요청이 완료되었습니다.')}
-                                    className="text-sm text-gray-600 hover:text-gray-600 cursor-pointer bg-transparent border-none p-0"
+                                <Button 
+                                    onClick={requestFullRefund}
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-red-600 border-red-300 hover:bg-red-50"
+                                    disabled={points <= 0}
                                 >
                                     환불요청
-                                </button>
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>
