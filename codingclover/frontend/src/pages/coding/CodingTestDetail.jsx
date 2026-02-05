@@ -44,7 +44,7 @@ const CodingTestDetail = () => {
           } catch (subError) {
             // 백엔드 구현이 덜 되었을 때 500 에러 방어
             console.error("제출 기록 로드 실패:", subError.response?.data || subError.message);
-            setSubmissions([]); 
+            setSubmissions([]);
           }
         }
       } catch (error) {
@@ -61,19 +61,19 @@ const CodingTestDetail = () => {
   const handleUpdate = async () => {
     try {
       const updateData = {
-      title: problem.title,
-      description: problem.description,
-      difficulty: problem.difficulty, // 백엔드 필드명에 맞춤
-      baseCode: problem.baseCode
-    };
-    await axios.put(`/api/problems/${id}`, updateData);
-    setIsEditing(false);
-    alert("성공적으로 수정되었습니다.");
-  } catch (error) {
-    console.error("수정 실패:", error.response?.data || error.message);
-    alert("수정 실패: " + (error.response?.data?.message || "서버 오류"));
-  }
-};
+        title: problem.title,
+        description: problem.description,
+        difficulty: problem.difficulty, // 백엔드 필드명에 맞춤
+        baseCode: code // 에더터의 내용을 baseCode로 저장
+      };
+      await axios.put(`/api/problems/${id}`, updateData);
+      setIsEditing(false);
+      alert("성공적으로 수정되었습니다.");
+    } catch (error) {
+      console.error("수정 실패:", error.response?.data || error.message);
+      alert("수정 실패: " + (error.response?.data?.message || "서버 오류"));
+    }
+  };
 
   const handleDelete = async () => {
     if (!window.confirm("정말로 삭제하시겠습니까?")) return;
@@ -110,8 +110,8 @@ const CodingTestDetail = () => {
               <h1 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">{problem.title}</h1>
             )}
             <div className="flex items-center gap-6 font-black text-[10px] uppercase tracking-widest text-indigo-500">
-               <span className="bg-indigo-50 px-3 py-1 rounded-lg">Level: {problem.difficulty || "EASY"}</span>
-               <span className="text-gray-400">Pass Rate: {problem.passRate || 0}%</span>
+              <span className="bg-indigo-50 px-3 py-1 rounded-lg">Level: {problem.difficulty || "EASY"}</span>
+              <span className="text-gray-400">Pass Rate: {problem.passRate || 0}%</span>
             </div>
           </div>
           {userRole === "ADMIN" && (

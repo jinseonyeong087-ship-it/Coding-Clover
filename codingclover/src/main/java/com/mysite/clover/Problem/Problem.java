@@ -29,6 +29,9 @@ public class Problem {
   @Column(columnDefinition = "TEXT", nullable = false)
   private String description;
 
+  @Column(columnDefinition = "TEXT")
+  private String baseCode;
+
   @Enumerated(EnumType.STRING)
   @Column(columnDefinition = "ENUM('EASY', 'MEDIUM', 'HARD') DEFAULT 'EASY'", nullable = false)
   private ProblemDifficulty difficulty;

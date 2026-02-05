@@ -49,10 +49,16 @@ const CodingTestCreate = () => {
     }
 
     try {
+      const levelMapping = {
+        "초급": "EASY",
+        "중급": "MEDIUM",
+        "고급": "HARD"
+      };
+
       // 백엔드 @RequestMapping("/api/problems")와 매핑되는 POST 요청
       await axios.post('/api/problems', {
         title: problem.title,
-        level: problem.level,
+        difficulty: levelMapping[problem.level],
         description: problem.description,
         baseCode: problem.baseCode
       });
@@ -70,20 +76,20 @@ const CodingTestCreate = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#ffffff]">
       <Nav />
-      
+
       <main className="flex-grow container mx-auto px-6 pt-20 pb-16 max-w-[1200px]">
         {/* 상단 헤더 섹션 */}
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-4">
-            <button 
-              onClick={() => navigate(-1)} 
+            <button
+              onClick={() => navigate(-1)}
               className="p-2 hover:bg-white rounded-full transition-colors text-gray-400 hover:text-gray-600"
             >
               <ArrowLeft className="h-6 w-6" />
             </button>
             <h1 className="text-3xl font-black text-gray-900 tracking-tight">새 문제 등록</h1>
           </div>
-          <button 
+          <button
             onClick={handleSubmit}
             className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all active:scale-95"
           >
@@ -101,7 +107,7 @@ const CodingTestCreate = () => {
                 <label className="text-xs font-black uppercase text-gray-400 tracking-widest flex items-center gap-2">
                   <LayoutList className="h-3 w-3" /> Problem Title
                 </label>
-                <input 
+                <input
                   type="text"
                   name="title"
                   placeholder="문제 제목을 입력하세요"
@@ -120,11 +126,10 @@ const CodingTestCreate = () => {
                       key={lvl}
                       type="button"
                       onClick={() => setProblem(prev => ({ ...prev, level: lvl }))}
-                      className={`px-4 py-2 rounded-lg text-xs font-bold border transition-all ${
-                        problem.level === lvl 
-                        ? "bg-indigo-50 border-indigo-200 text-indigo-600" 
-                        : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
-                      }`}
+                      className={`px-4 py-2 rounded-lg text-xs font-bold border transition-all ${problem.level === lvl
+                          ? "bg-indigo-50 border-indigo-200 text-indigo-600"
+                          : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
+                        }`}
                     >
                       {lvl}
                     </button>
@@ -135,7 +140,7 @@ const CodingTestCreate = () => {
               {/* 문제 설명 입력 */}
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Description</label>
-                <textarea 
+                <textarea
                   name="description"
                   placeholder="문제를 설명해주세요 (제약 사항, 입출력 예시 등)"
                   className="w-full h-80 border border-gray-100 p-4 rounded-xl focus:ring-2 focus:ring-indigo-500/10 outline-none resize-none text-sm leading-relaxed"
@@ -160,8 +165,8 @@ const CodingTestCreate = () => {
                   theme="vs-dark"
                   value={problem.baseCode}
                   onChange={handleEditorChange}
-                  options={{ 
-                    minimap: { enabled: false }, 
+                  options={{
+                    minimap: { enabled: false },
                     fontSize: 14,
                     lineHeight: 22,
                     padding: { top: 20 },

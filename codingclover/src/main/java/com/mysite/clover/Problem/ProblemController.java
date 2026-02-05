@@ -6,9 +6,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,6 +46,28 @@ public class ProblemController {
   @PostMapping
   public Problem create(@RequestBody Problem problem) {
     return problemRepository.save(problem);
+  }
+
+  // 문제 수정
+  @PutMapping("/{id}")
+  public ResponseEntity<Problem> update(@PathVariable("id") Long id, @RequestBody Problem problemDetails) {
+    return problemRepository.findById(id).map(problem -> {
+      problem.setTitle(problemDetails.getTitle());
+      problem.setDescription(problemDetails.getDescription());
+      problem.setDifficulty(problemDetails.getDifficulty());
+      problem.setBaseCode(problemDetails.getBaseCode());
+      return ResponseEntity.ok(problemRepository.save(problem));
+    }).orElse(ResponseEntity.notFound().build());
+  }
+
+  // 문제 삭제
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
+    if (problemRepository.existsById(id)) {
+      problemRepository.deleteById(id);
+      return ResponseEntity.ok().build();
+    }
+    return ResponseEntity.notFound().build();
   }
 
   // 코드 실행 (단순 실행)
@@ -139,31 +163,31 @@ public class ProblemController {
 
   // 특정 문제의 제출 기록 전체 조회 (관리자용)
   @GetMapping("/{id}/submissions")
-public ResponseEntity<?> getSubmissions(@PathVariable("id") Long id) {
+  public ResponseEntity<?> getSubmissions(@PathVariable("id") Long id) {
     try {
-        Problem problem = problemRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("문제를 찾을 수 없습니다."));
-        
-        List<com.mysite.clover.Submission.Submission> submissions = submissionService.findByProblem(problem);
-        
-        // [중요] 순환 참조 방지 및 500 에러 해결을 위해 필요한 데이터만 Map으로 추출
-        List<Map<String, Object>> result = submissions.stream().map(s -> {
-            Map<String, Object> map = new HashMap<>();
-            // User 엔티티가 null일 경우를 대비해 방어 로직 추가
-            if (s.getUsers() != null) {
-                map.put("userId", s.getUsers().getUserId());
-                map.put("loginId", s.getUsers().getLoginId());
-            }
-            map.put("submittedAt", s.getCreatedAt());
-            map.put("status", s.getStatus()); // "PASS" 또는 "FAIL"
-            return map;
-        }).collect(Collectors.toList());
-        
-        return ResponseEntity.ok(result);
+      Problem problem = problemRepository.findById(id)
+          .orElseThrow(() -> new RuntimeException("문제를 찾을 수 없습니다."));
+
+      List<com.mysite.clover.Submission.Submission> submissions = submissionService.findByProblem(problem);
+
+      // [중요] 순환 참조 방지 및 500 에러 해결을 위해 필요한 데이터만 Map으로 추출
+      List<Map<String, Object>> result = submissions.stream().map(s -> {
+        Map<String, Object> map = new HashMap<>();
+        // User 엔티티가 null일 경우를 대비해 방어 로직 추가
+        if (s.getUsers() != null) {
+          map.put("userId", s.getUsers().getUserId());
+          map.put("loginId", s.getUsers().getLoginId());
+        }
+        map.put("submittedAt", s.getCreatedAt());
+        map.put("status", s.getStatus()); // "PASS" 또는 "FAIL"
+        return map;
+      }).collect(Collectors.toList());
+
+      return ResponseEntity.ok(result);
     } catch (Exception e) {
-        // 서버 콘솔에서 구체적인 에러 원인을 확인하기 위해 출력
-        e.printStackTrace(); 
-        return ResponseEntity.status(500).body("제출 기록 조회 중 서버 오류 발생: " + e.getMessage());
+      // 서버 콘솔에서 구체적인 에러 원인을 확인하기 위해 출력
+      e.printStackTrace();
+      return ResponseEntity.status(500).body("제출 기록 조회 중 서버 오류 발생: " + e.getMessage());
     }
-}
+  }
 }
