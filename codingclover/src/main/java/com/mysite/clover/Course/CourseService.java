@@ -25,6 +25,8 @@ public class CourseService {
     private final EnrollmentRepository enrollmentRepository;
     private final UsersRepository usersRepository;
     private final com.mysite.clover.Notification.NotificationService notificationService;
+    private final com.mysite.clover.UserWallet.UserWalletService userWalletService;
+    private final com.mysite.clover.WalletHistory.WalletHistoryService walletHistoryService;
 
     // [수강 신청 로직]
     public void enroll(Long courseId, long userId) {
@@ -153,16 +155,26 @@ public class CourseService {
             throw new RuntimeException("이미 수강 중인 강좌입니다.");
         }
 
-        // 4. 새로운 Enrollment(수강) 엔티티 생성 및 설정
+        // 4. 수강료 확인 및 포인트 차감
+        int price = course.getPrice();
+        if (price > 0) {
+            // 포인트 차감 (잔액 부족 시 UserWalletService에서 예외 발생)
+            userWalletService.usePoints(user.getUserId(), price);
+
+            // 포인트 사용 이력 기록
+            walletHistoryService.recordUse(user.getUserId(), price, null);
+        }
+
+        // 5. 새로운 Enrollment(수강) 엔티티 생성 및 설정
         Enrollment enrollment = new Enrollment();
         enrollment.setUser(user);
         enrollment.setCourse(course);
         enrollment.setStatus(EnrollmentStatus.ENROLLED); // 상태를 '수강 중'으로 설정
 
         // 5. DB에 저장
-        enrollmentRepository.save(enrollment);
+        enrollmentRepository.save(enrollment); // 6. DB에 저장
 
-        // 6. 강사에게 알림 전송 (수강생 등록)
+        // 7. 강사에게 알림 전송 (수강생 등록)
         notificationService.createNotification(
                 course.getCreatedBy(),
                 "NEW_ENROLLMENT",
