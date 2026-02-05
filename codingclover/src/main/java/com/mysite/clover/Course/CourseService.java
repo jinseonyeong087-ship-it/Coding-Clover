@@ -25,7 +25,7 @@ public class CourseService {
     private final EnrollmentRepository enrollmentRepository;
     private final UsersRepository usersRepository;
     private final com.mysite.clover.Notification.NotificationService notificationService;
-    private final com.mysite.clover.UserWallet.UserWalletService userWalletService;
+    private final com.mysite.clover.Payment.PaymentService paymentService;
     private final com.mysite.clover.WalletHistory.WalletHistoryService walletHistoryService;
 
     // [수강 신청 로직]
@@ -158,10 +158,11 @@ public class CourseService {
         // 4. 수강료 확인 및 포인트 차감
         int price = course.getPrice();
         if (price > 0) {
-            // 포인트 차감 (잔액 부족 시 UserWalletService에서 예외 발생)
-            userWalletService.usePoints(user.getUserId(), price);
+            // 포인트 차감 및 결제 리스트 기록 (PaymentService 사용)
+            // orderId에 COURSE_{courseId} 형식으로 저장하여 환불 시 식별
+            paymentService.usePoints(user.getUserId(), price, "COURSE_" + courseId);
 
-            // 포인트 사용 이력 기록
+            // 포인트 사용 이력 기록 (WalletHistory는 별도 유지 or PaymentService 내부로 이동 고려 가능하나 일단 유지)
             walletHistoryService.recordUse(user.getUserId(), price, null);
         }
 

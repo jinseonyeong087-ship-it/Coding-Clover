@@ -131,15 +131,16 @@ function PaymentManagement() {
     };
 
     const getPaymentStatus = (type, status) => {
-        if (type === 'REFUND') return 'REFUNDED';
         if (status === 'PAID') return 'PAID';
         if (status === 'REFUND_REQUEST') return 'CANCELLED';
+        if (status === 'REFUNDED') return 'REFUNDED';
         return 'PAID';
     };
 
     const getRefundStatus = (type, status) => {
-        if (type === 'REFUND') return 'APPROVED';
         if (status === 'REFUND_REQUEST') return 'REQUESTED';
+        if (status === 'REFUNDED') return 'APPROVED';
+        if (status === 'REJECTED') return 'REJECTED';
         return 'NONE';
     };
 
@@ -274,7 +275,7 @@ function PaymentManagement() {
     const getRefundStatusLabel = (status) => {
         switch (status) {
             case 'REQUESTED': return '환불요청';
-            case 'APPROVED': return '환불승인';
+            case 'APPROVED': return '환불완료';
             case 'REJECTED': return '환불거절';
             case 'NONE': return '없음';
             default: return status;
@@ -591,7 +592,9 @@ function PaymentManagement() {
                                                 <TableHead className="text-center">금액</TableHead>
                                                 <TableHead className="text-center">상태</TableHead>
                                                 <TableHead className="text-center">결제일시</TableHead>
-                                                <TableHead className="text-center">환불요청일</TableHead>                                            <TableHead className="text-center">액션</TableHead>                                            </TableRow>
+                                                <TableHead className="text-center">환불요청일</TableHead>
+                                                <TableHead className="text-center">액션</TableHead>
+                                            </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {currentItems.map((payment) => (
@@ -614,9 +617,6 @@ function PaymentManagement() {
                                                                 <Badge className={getRefundStatusColor(payment.refundStatus)}>
                                                                     {getRefundStatusLabel(payment.refundStatus)}
                                                                 </Badge>
-                                                                {payment.refundStatus === 'REQUESTED' && (
-                                                                    <AlertCircle className="w-4 h-4 text-red-500" />
-                                                                )}
                                                             </div>
                                                         ) : (
                                                             <Badge className={getPaymentStatusColor(payment.paymentStatus)}>
@@ -642,7 +642,7 @@ function PaymentManagement() {
                                                                     className="text-green-600 border-green-300 hover:bg-green-50"
                                                                     onClick={() => {
                                                                         if (confirm('환불을 승인하시겠습니까?')) {
-                                                                            handleRefundApproval(payment.paymentId);
+                                                                            handleRefundApproval(payment.id);
                                                                         }
                                                                     }}
                                                                 >
@@ -654,7 +654,7 @@ function PaymentManagement() {
                                                                     className="text-red-600 border-red-300 hover:bg-red-50"
                                                                     onClick={() => {
                                                                         if (confirm('환불을 거절하시겠습니까?')) {
-                                                                            handleRefundReject(payment.paymentId);
+                                                                            handleRefundReject(payment.id);
                                                                         }
                                                                     }}
                                                                 >
@@ -723,7 +723,7 @@ function PaymentManagement() {
                 </div>
             </div>
             <Tail />
-        </div>
+        </div >
     );
 }
 

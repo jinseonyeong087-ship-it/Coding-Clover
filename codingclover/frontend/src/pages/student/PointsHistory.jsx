@@ -5,13 +5,13 @@ import Tail from '../../components/Tail';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableHead, 
-    TableHeader, 
-    TableRow 
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
 } from "@/components/ui/Table";
 import { ArrowLeft, Coins, RefreshCw, AlertTriangle } from 'lucide-react';
 import coinImg from '../../img/coin.png';
@@ -47,9 +47,9 @@ function PointsHistory() {
             case 'CHARGE':
                 return '포인트 충전';
             case 'USE':
-                return '포인트 사용';
+                return '수강 신청';
             case 'REFUND':
-                return '포인트 환불';
+                return '환불 처리';
             case 'ADMIN':
                 return '관리자 조정';
             default:
@@ -75,7 +75,7 @@ function PointsHistory() {
                     'Content-Type': 'application/json'
                 },
                 credentials: 'include',
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     reason: "포인트 환불 요청",
                     amount: points
                 })
@@ -85,7 +85,7 @@ function PointsHistory() {
                 const result = await response.json();
                 console.log(" 환불 요청 성공:", result);
                 alert('전체 환불 요청이 관리자에게 전달되었습니다. 검토 후 처리됩니다.');
-                
+
                 // 포인트 데이터 새로고침
                 await fetchPointsData();
             } else {
@@ -102,7 +102,7 @@ function PointsHistory() {
     const fetchPointsData = async () => {
         try {
             setLoading(true);
-            
+
             const currentIdentifier = getUserIdentifier();
             if (!currentIdentifier) {
                 throw new Error('로그인이 필요합니다.');
@@ -118,7 +118,7 @@ function PointsHistory() {
                     credentials: 'include'
                 }),
                 fetch('/api/wallet/history', {
-                    method: 'GET', 
+                    method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -141,21 +141,21 @@ function PointsHistory() {
             if (historyResponse.ok) {
                 const historyData = await historyResponse.json();
                 console.log('히스토리 데이터:', historyData);
-                
+
                 // 백엔드에서 배열로 반환
                 const history = Array.isArray(historyData) ? historyData : [];
-                
+
                 // 월렛히스토리 엔티티 필드에 맞게 매핑
                 const mappedHistory = history.map(item => ({
                     id: item.walletHistoryId,
-                    type: item.reason === 'CHARGE' ? 'CHARGE' : 'USE', // WalletChangeReason: CHARGE, USE, REFUND, ADMIN
+                    type: item.reason, // WalletChangeReason: CHARGE, USE, REFUND, ADMIN
                     amount: item.changeAmount, // 변경된 금액 (양수/음수)
                     description: getTransactionDescription(item.reason, item.paymentId),
                     date: item.createdAt,
                     orderId: item.paymentId ? `ORDER-${item.paymentId}` : `TXN-${item.walletHistoryId}`,
                     status: 'COMPLETED'
-                })); 
-                
+                }));
+
                 setHistory(mappedHistory);
             } else {
                 console.warn('히스토리 조회 실패, 샘플 데이터 사용');
@@ -165,7 +165,7 @@ function PointsHistory() {
                         id: 1,
                         type: 'CHARGE',
                         amount: 100000,
-                        description: 'Java 기초 강좌 결제',
+                        description: '포인트 충전',
                         date: '2024-01-15T14:30:00',
                         orderId: 'ORDER-001',
                         status: 'COMPLETED'
@@ -174,7 +174,7 @@ function PointsHistory() {
                         id: 2,
                         type: 'CHARGE',
                         amount: 50000,
-                        description: 'Python 심화 강좌 결제',
+                        description: '포인트 충전',
                         date: '2024-01-20T16:45:00',
                         orderId: 'ORDER-002',
                         status: 'COMPLETED'
@@ -183,7 +183,7 @@ function PointsHistory() {
                         id: 3,
                         type: 'USE',
                         amount: -30000,
-                        description: '개인 과외 1회 이용',
+                        description: '수강 신청',
                         date: '2024-01-25T10:00:00',
                         orderId: 'USE-001',
                         status: 'COMPLETED'
@@ -194,7 +194,7 @@ function PointsHistory() {
         } catch (error) {
             console.error('포인트 데이터 조회 실패:', error);
             setError('백엔드 연결 실패 - 샘플 데이터로 표시됩니다.');
-            
+
             // 오류 시 샘플 데이터
             setPoints(150000);
             setHistory([
@@ -209,18 +209,9 @@ function PointsHistory() {
                 },
                 {
                     id: 2,
-                    type: 'CHARGE',
-                    amount: 50000,
-                    description: '포인트 충전',
-                    date: '2024-01-20T16:45:00',
-                    orderId: 'ORDER-002',
-                    status: 'COMPLETED'
-                },
-                {
-                    id: 3,
                     type: 'USE',
                     amount: -30000,
-                    description: 'Java 기초 강좌 이용',
+                    description: '수강 신청',
                     date: '2024-01-25T10:00:00',
                     orderId: 'USE-001',
                     status: 'COMPLETED'
@@ -231,23 +222,11 @@ function PointsHistory() {
         }
     };
 
-    // 페이징 계산
-    const totalPages = Math.ceil(history.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const currentItems = history.slice(startIndex, endIndex);
-
-    // 페이지 변경 함수
-    const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber);
-    };
-
-    const formatAmount = (amount) => {
-        return amount >= 0 ? `+${amount.toLocaleString()}P` : `${amount.toLocaleString()}P`;
-    };
+    // ... (omit unchanged) ...
 
     const getTypeColor = (type, amount) => {
         if (type === 'CHARGE') return 'bg-green-100 text-green-800';
+        if (type === 'REFUND') return 'bg-blue-100 text-blue-800';
         if (type === 'USE') return 'bg-red-100 text-red-800';
         return 'bg-gray-100 text-gray-800';
     };
@@ -256,6 +235,7 @@ function PointsHistory() {
         switch (type) {
             case 'CHARGE': return '충전';
             case 'USE': return '사용';
+            case 'REFUND': return '환불';
             default: return '기타';
         }
     };
@@ -281,7 +261,7 @@ function PointsHistory() {
                 <div className="max-w-6xl mx-auto">
                     {/* 헤더 */}
                     <div className="mb-8">
-                        
+
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div>
@@ -306,7 +286,7 @@ function PointsHistory() {
                                 <p className="text-sm text-gray-600">
                                     환불은 보유 포인트 내에서만 가능합니다
                                 </p>
-                                <Button 
+                                <Button
                                     onClick={requestFullRefund}
                                     variant="outline"
                                     size="sm"
@@ -329,7 +309,7 @@ function PointsHistory() {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            
+
                             {currentItems.length === 0 ? (
                                 <div className="text-center py-8 text-gray-500">
                                     포인트 사용 내역이 없습니다.
@@ -357,16 +337,15 @@ function PointsHistory() {
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell className="text-center">{item.description}</TableCell>
-                                                    <TableCell className={`text-center font-medium ${
-                                                        item.amount >= 0 ? 'text-green-600' : 'text-red-600'
-                                                    }`}>
+                                                    <TableCell className={`text-center font-medium ${item.amount >= 0 ? 'text-green-600' : 'text-red-600'
+                                                        }`}>
                                                         {formatAmount(item.amount)}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
                                     </Table>
-                                    
+
                                     {/* 페이징 컨트롤 */}
                                     {totalPages > 1 && (
                                         <div className="flex justify-center items-center gap-2 mt-6">
@@ -378,7 +357,7 @@ function PointsHistory() {
                                             >
                                                 이전
                                             </Button>
-                                            
+
                                             {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
                                                 <Button
                                                     key={pageNumber}
@@ -390,7 +369,7 @@ function PointsHistory() {
                                                     {pageNumber}
                                                 </Button>
                                             ))}
-                                            
+
                                             <Button
                                                 variant="outline"
                                                 size="sm"

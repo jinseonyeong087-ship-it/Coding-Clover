@@ -21,4 +21,19 @@ public class CodingcloverApplication {
 		SpringApplication.run(CodingcloverApplication.class, args);
 	}
 
+	@org.springframework.context.annotation.Bean
+	public org.springframework.boot.CommandLineRunner fixPaymentSchema(
+			org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
+		return args -> {
+			try {
+				// MySQL ENUM 타입 등으로 인해 'REJECTED' 추가 시 발생하는 Data truncated 오류 해결
+				// 컬럼을 충분한 길이의 VARCHAR로 변경하여 모든 ENUM 값 수용
+				jdbcTemplate.execute("ALTER TABLE payment MODIFY COLUMN status VARCHAR(50) NOT NULL");
+				System.out.println(">>> SchemaFixer: payment.status 컬럼을 VARCHAR(50)으로 변경했습니다.");
+			} catch (Exception e) {
+				System.out.println(">>> SchemaFixer Warning: " + e.getMessage());
+			}
+		};
+	}
+
 }
