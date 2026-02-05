@@ -24,4 +24,31 @@ const PopoverContent = React.forwardRef(({ className, align = "center", sideOffs
 ))
 PopoverContent.displayName = PopoverPrimitive.Content.displayName
 
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor }
+function PopoverHeader({ className, ...props }) {
+  return (
+    <div
+      className={cn("flex flex-col gap-1.5 text-center sm:text-left", className)}
+      {...props}
+    />
+  )
+}
+
+function PopoverTitle({ className, ...props }) {
+  return (
+    <h4
+      className={cn("font-medium leading-none", className)}
+      {...props}
+    />
+  )
+}
+
+function PopoverDescription({ className, ...props }) {
+  return (
+    <div
+      className={cn("text-sm text-muted-foreground", className)}
+      {...props}
+    />
+  )
+}
+
+export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor, PopoverHeader, PopoverTitle, PopoverDescription }

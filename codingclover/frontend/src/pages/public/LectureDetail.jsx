@@ -5,7 +5,8 @@ function LectureDetail({ selectedLecture }) {
     // YouTube URL → embed URL 변환
     const toEmbedUrl = (url) => {
         if (!url) return "";
-        const match = url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([^&]+)/);
+        if (url.includes("/embed/")) return url;
+        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?.*v=|v\/))([a-zA-Z0-9_-]{11})/);
         return match ? `https://www.youtube.com/embed/${match[1]}` : url;
     };
 
@@ -31,12 +32,14 @@ function LectureDetail({ selectedLecture }) {
                     )}
                     {selectedLecture.videoUrl ? (
                         <iframe
+                            key={selectedLecture.lectureId}
                             width="100%"
                             height="500"
                             src={toEmbedUrl(selectedLecture.videoUrl)}
                             title="강의 영상"
                             frameBorder="0"
-                            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerPolicy="strict-origin-when-cross-origin"
                             allowFullScreen
                         />
                     ) : (

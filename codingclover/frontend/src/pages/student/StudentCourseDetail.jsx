@@ -17,13 +17,9 @@ import { Button } from "@/components/ui/button";
 // YouTube URL -> embed URL 변환
 const toEmbedUrl = (url) => {
     if (!url) return "";
-    if (url.includes("embed")) return url;
-    // youtu.be 형식 처리
-    if (url.includes("youtu.be/")) {
-        const videoId = url.split("youtu.be/")[1]?.split(/[?&]/)[0];
-        return `https://www.youtube.com/embed/${videoId}`;
-    }
-    return url.replace("watch?v=", "embed/");
+    if (url.includes("/embed/")) return url;
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?.*v=|v\/))([a-zA-Z0-9_-]{11})/);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : url;
 };
 
 function StudentCourseDetail() {

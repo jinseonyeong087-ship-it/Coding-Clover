@@ -43,6 +43,7 @@ import CodingTestDetail from './pages/coding/CodingTestDetail';
 import CodingTestList from './pages/coding/CodingTestList';
 import CodingTestCreate from './pages/coding/CodingTestCreate';
 import PaymentManagement from './pages/admin/PaymentManagement';
+import ChatBot from '@/pages/student/ChatBot'
 
 
 
@@ -98,6 +99,9 @@ function App() {
         <Route path="/coding-test/:id" element={<CodingTestDetail />} />
         <Route path="/coding-test" element={<CodingTestList />} />
         <Route path="/coding-test/new" element={<CodingTestCreate />} />
+
+        {/* 챗봇 ui확인용 라우터 */}
+        <Route path="/chatbot" element={<ChatBot />} />
 
         {/* 아이디/비밀번호 찾기 테스트 */}
         {/* 아이디/비밀번호 찾기 테스트 */}
