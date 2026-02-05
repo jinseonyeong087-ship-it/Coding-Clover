@@ -17,4 +17,11 @@ public class SearchResultDto {
     private LocalDateTime regDate;
     private String status;
     private String category; // COURSE, NOTICE 등 구분용
+
+    // 추가 필드 (유저 검색용)
+    private String email;
+    private String loginId;
+
+    // 추가 필드 (강좌 검색용)
+    private String proposalStatus;
 }

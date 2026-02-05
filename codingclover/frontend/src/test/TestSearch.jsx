@@ -16,11 +16,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 function TestSearch() {
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const keyword = searchParams.get('keyword') || '';
-    const currentCategory = searchParams.get('category') || 'COURSE';
 
-    const [data, setData] = useState([]);
+    const [results, setResults] = useState({});
     const [loading, setLoading] = useState(false);
 
     // 탭 메뉴 리스트
@@ -32,7 +31,7 @@ function TestSearch() {
         { id: 'CODING_TEST', name: '코딩테스트' },
         { id: 'COMMUNITY', name: '커뮤니티' },
         { id: 'QNA', name: 'Q&A' },
-        { id: 'NOTICE', name: '공지사항' }, // 공지사항 추가
+        { id: 'NOTICE', name: '공지사항' },
     ];
 
     useEffect(() => {
@@ -41,25 +40,31 @@ function TestSearch() {
             const storedUsers = localStorage.getItem("users");
             const userRole = storedUsers ? JSON.parse(storedUsers).role : 'GUEST';
 
-            axios.get('/api/search', {
-                params: { category: currentCategory, keyword, role: userRole }
-            })
-                .then(res => {
-                    console.log(`${currentCategory} 데이터 로드`, res.data);
-                    setData(res.data.content || []);
+            const fetchPromises = categories.map(cat =>
+                axios.get('/api/search', {
+                    params: { category: cat.id, keyword, role: userRole }
+                }).then(res => ({ id: cat.id, data: res.data.content || [] }))
+                    .catch(err => {
+                        console.error(`${cat.id} 검색 실패`, err);
+                        return { id: cat.id, data: [] };
+                    })
+            );
+
+            Promise.all(fetchPromises)
+                .then(responses => {
+                    const newResults = {};
+                    responses.forEach(r => {
+                        newResults[r.id] = r.data;
+                    });
+                    setResults(newResults);
                 })
-                .catch(err => console.error('검색 데이터 로딩 실패', err))
                 .finally(() => setLoading(false));
         }
-    }, [keyword, currentCategory]);
-
-    const handleTabClick = (categoryId) => {
-        setSearchParams({ category: categoryId, keyword });
-    };
+    }, [keyword]);
 
     // 테이블 헤더 설정
-    const renderHeader = () => {
-        switch (currentCategory) {
+    const renderHeader = (categoryId) => {
+        switch (categoryId) {
             case 'COURSE':
                 return (
                     <TableRow>
@@ -71,7 +76,7 @@ function TestSearch() {
                 );
             case 'COMMUNITY':
             case 'QNA':
-            case 'NOTICE': // 공지사항도 제목/작성자/작성일 구조 사용
+            case 'NOTICE':
                 return (
                     <TableRow>
                         <TableHead className="text-center w-20">번호</TableHead>
@@ -102,10 +107,13 @@ function TestSearch() {
     };
 
     // 테이블 행 데이터 설정
-    const renderRows = (item) => {
+    const renderRows = (item, categoryId) => {
         const dateStr = (item.regDate || item.createdAt)?.split('T')[0] || '-';
+        const linkPath = `/${categoryId.toLowerCase()}/${item.postId || item.qnaId || item.noticeId || item.id}`;
+        const title = item.title || item.subject || "제목 없음";
+        const author = item.authorName || item.writer || item.user?.name || (categoryId === 'NOTICE' ? '관리자' : '익명');
 
-        switch (currentCategory) {
+        switch (categoryId) {
             case 'COURSE':
                 return (
                     <>
@@ -121,17 +129,6 @@ function TestSearch() {
                                 {item.proposalStatus}
                             </Badge>
                         </TableCell>
-                        // renderRows 내부의 제목/작성자 출력 부분 수정
-                        <TableCell className="text-center font-medium">
-                            <Link to={`/${currentCategory.toLowerCase()}/${item.postId || item.qnaId || item.noticeId || item.id}`} className="hover:underline">
-                                {/* title이 없으면 subject를, 둘 다 없으면 '제목 없음' 출력 */}
-                                {item.title || item.subject || "제목 없음"}
-                            </Link>
-                        </TableCell>
-                        <TableCell className="text-center font-semibold text-gray-700">
-                            {/* 작성자 정보가 객체인지 문자열인지 모르므로 안전하게 접근 */}
-                            {item.authorName || item.writer || item.user?.name || (currentCategory === 'NOTICE' ? '관리자' : '익명')}
-                        </TableCell>
                     </>
                 );
             case 'COMMUNITY':
@@ -141,26 +138,14 @@ function TestSearch() {
                     <>
                         <TableCell className="text-center">{item.postId || item.qnaId || item.noticeId || item.id}</TableCell>
                         <TableCell className="text-center font-medium">
-                            <Link to={`/${currentCategory.toLowerCase()}/${item.postId || item.qnaId || item.noticeId}`} className="hover:underline">
-                                {item.title || item.subject}
+                            <Link to={linkPath} className="hover:underline">
+                                {title}
                             </Link>
                         </TableCell>
                         <TableCell className="text-center font-semibold text-gray-700">
-                            {/* 공지사항은 보통 관리자가 작성하므로 분기 처리 */}
-                            {currentCategory === 'NOTICE' ? (item.authorName || "관리자") : (item.authorName || item.writer || item.user?.name || "익명")}
+                            {author}
                         </TableCell>
                         <TableCell className="text-center text-gray-500">{dateStr}</TableCell>
-                        // renderRows 내부의 제목/작성자 출력 부분 수정
-                        <TableCell className="text-center font-medium">
-                            <Link to={`/${currentCategory.toLowerCase()}/${item.postId || item.qnaId || item.noticeId || item.id}`} className="hover:underline">
-                                {/* title이 없으면 subject를, 둘 다 없으면 '제목 없음' 출력 */}
-                                {item.title || item.subject || "제목 없음"}
-                            </Link>
-                        </TableCell>
-                        <TableCell className="text-center font-semibold text-gray-700">
-                            {/* 작성자 정보가 객체인지 문자열인지 모르므로 안전하게 접근 */}
-                            {item.authorName || item.writer || item.user?.name || (currentCategory === 'NOTICE' ? '관리자' : '익명')}
-                        </TableCell>
                     </>
                 );
             case 'STUDENT':
@@ -171,98 +156,103 @@ function TestSearch() {
                         <TableCell className="text-center font-medium">{item.name}</TableCell>
                         <TableCell className="text-center">{item.loginId}</TableCell>
                         <TableCell className="text-center">{item.email}</TableCell>
-                        // renderRows 내부의 제목/작성자 출력 부분 수정
-                        <TableCell className="text-center font-medium">
-                            <Link to={`/${currentCategory.toLowerCase()}/${item.postId || item.qnaId || item.noticeId || item.id}`} className="hover:underline">
-                                {/* title이 없으면 subject를, 둘 다 없으면 '제목 없음' 출력 */}
-                                {item.title || item.subject || "제목 없음"}
-                            </Link>
-                        </TableCell>
-                        <TableCell className="text-center font-semibold text-gray-700">
-                            {/* 작성자 정보가 객체인지 문자열인지 모르므로 안전하게 접근 */}
-                            {item.authorName || item.writer || item.user?.name || (currentCategory === 'NOTICE' ? '관리자' : '익명')}
-                        </TableCell>
                     </>
                 );
-            default:
+            default: // CODING_TEST etc.
                 return (
                     <>
-                        <TableCell className="text-center">{item.id || item.noticeId}</TableCell>
-                        <TableCell className="text-center font-medium">{item.title || item.subject}</TableCell>
-                        <TableCell className="text-center text-gray-500">{dateStr}</TableCell>
-                        // renderRows 내부의 제목/작성자 출력 부분 수정
+                        <TableCell className="text-center">{item.id || item.problemId}</TableCell>
                         <TableCell className="text-center font-medium">
-                            <Link to={`/${currentCategory.toLowerCase()}/${item.postId || item.qnaId || item.noticeId || item.id}`} className="hover:underline">
-                                {/* title이 없으면 subject를, 둘 다 없으면 '제목 없음' 출력 */}
-                                {item.title || item.subject || "제목 없음"}
+                            <Link to={`/coding-test/${item.id || item.problemId}`} className="hover:underline">
+                                {item.title}
                             </Link>
                         </TableCell>
-                        <TableCell className="text-center font-semibold text-gray-700">
-                            {/* 작성자 정보가 객체인지 문자열인지 모르므로 안전하게 접근 */}
-                            {item.authorName || item.writer || item.user?.name || (currentCategory === 'NOTICE' ? '관리자' : '익명')}
-                        </TableCell>
+                        <TableCell className="text-center text-gray-500">{dateStr}</TableCell>
                     </>
                 );
         }
     };
 
+    const [navHeight, setNavHeight] = useState(0);
+
+    // 네비게이션 바 높이 동적 측정
+    useEffect(() => {
+        const updateNavHeight = () => {
+            const navElement = document.querySelector('nav') || document.querySelector('header');
+            if (navElement) {
+                setNavHeight(navElement.offsetHeight);
+            }
+        };
+
+        // 초기 측정 및 리사이즈 이벤트 등록
+        updateNavHeight();
+        // 이미지 로딩 등으로 높이가 변할 수 있으므로 잠시 후 한 번 더 체크
+        setTimeout(updateNavHeight, 100);
+
+        window.addEventListener('resize', updateNavHeight);
+        return () => window.removeEventListener('resize', updateNavHeight);
+    }, []);
+
+    const hasAnyResults = Object.values(results).some(list => list && list.length > 0);
+
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <Nav />
-            <main className="flex-1 container mx-auto px-16 py-12">
-                <div className="mb-8">
-                    <h2 className="text-2xl font-bold tracking-tight">
+            {/* 네비게이션 바 높이만큼 상단 여백을 동적으로 부여 (+ 여유 공간 40px) */}
+            <main
+                className="flex-1 container mx-auto px-16 pb-12"
+                style={{ paddingTop: navHeight ? `${navHeight + 40}px` : '120px' }}
+            >
+                <div className="mb-12 text-center">
+                    <h2 className="text-3xl font-bold tracking-tight text-gray-900">
                         <span className="text-blue-600">"{keyword}"</span> 검색 결과
                     </h2>
+                    {loading && <p className="text-gray-500 mt-2">검색 중입니다...</p>}
                 </div>
 
-                {/* 카테고리 탭 영역 */}
-                <div className="flex flex-wrap gap-1 mb-6 border-b bg-white rounded-t-lg shadow-sm">
-                    {categories.map((cat) => (
-                        <button
-                            key={cat.id}
-                            onClick={() => handleTabClick(cat.id)}
-                            className={`px-6 py-3 text-sm font-bold transition-all relative ${currentCategory === cat.id
-                                    ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50/50"
-                                    : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                                }`}
-                        >
-                            {cat.name}
-                        </button>
-                    ))}
-                </div>
+                {loading ? (
+                    <div className="space-y-6">
+                        {[1, 2, 3].map(i => (
+                            <Card key={i} className="h-40 animate-pulse bg-gray-100 border-none" />
+                        ))}
+                    </div>
+                ) : hasAnyResults ? (
+                    <div className="space-y-12">
+                        {categories.map((cat) => {
+                            const catData = results[cat.id] || [];
+                            if (catData.length === 0) return null;
 
-                <Card className="shadow-lg border-none overflow-hidden">
-                    <Table>
-                        <TableCaption className="caption-top text-left font-bold text-xl mb-4 px-6 pt-4 text-gray-800">
-                            {categories.find(c => c.id === currentCategory)?.name} 검색 리스트
-                        </TableCaption>
-                        <TableHeader className="bg-gray-100">
-                            {renderHeader()}
-                        </TableHeader>
-                        <TableBody className="bg-white">
-                            {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-20 text-blue-600 font-bold">
-                                        데이터를 검색 중입니다...
-                                    </TableCell>
-                                </TableRow>
-                            ) : data.length > 0 ? (
-                                data.map((item, index) => (
-                                    <TableRow key={index} className="hover:bg-blue-50/30 transition-colors">
-                                        {renderRows(item)}
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-20 text-gray-400">
-                                        "{keyword}"에 대한 검색 결과가 없습니다.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </Card>
+                            return (
+                                <div key={cat.id} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <div className="flex items-center mb-4 ml-1">
+                                        <h3 className="text-xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3">
+                                            {cat.name} <span className="text-blue-600 ml-1">({catData.length})</span>
+                                        </h3>
+                                    </div>
+                                    <Card className="shadow-md border-none overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                                        <Table>
+                                            <TableHeader className="bg-gray-100/80">
+                                                {renderHeader(cat.id)}
+                                            </TableHeader>
+                                            <TableBody className="bg-white">
+                                                {catData.map((item, index) => (
+                                                    <TableRow key={index} className="hover:bg-blue-50/30 transition-colors">
+                                                        {renderRows(item, cat.id)}
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </Card>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="text-center py-20 text-gray-500 bg-white rounded-xl shadow-sm">
+                        <p className="text-xl">"{keyword}"에 대한 검색 결과가 없습니다.</p>
+                        <p className="text-sm mt-2 text-gray-400">다른 키워드로 검색해보세요.</p>
+                    </div>
+                )}
             </main>
             <Tail />
         </div>
