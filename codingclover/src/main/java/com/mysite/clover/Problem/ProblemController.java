@@ -56,6 +56,7 @@ public class ProblemController {
       problem.setDescription(problemDetails.getDescription());
       problem.setDifficulty(problemDetails.getDifficulty());
       problem.setBaseCode(problemDetails.getBaseCode());
+      problem.setExpectedOutput(problemDetails.getExpectedOutput()); // 예상 실행 결과 업데이트
       return ResponseEntity.ok(problemRepository.save(problem));
     }).orElse(ResponseEntity.notFound().build());
   }
@@ -78,7 +79,7 @@ public class ProblemController {
     return ResponseEntity.ok(response);
   }
 
-  // 코드 제출 및 채점
+  // 코드 제출 및 채점 (수정: 테스트케이스가 없으면 expectedOutput으로 채점)
   @PostMapping("/{id}/submit")
   public ResponseEntity<GradingResult> submitCode(@PathVariable("id") Long id,
       @RequestBody ExecutionRequest request) {
@@ -86,63 +87,90 @@ public class ProblemController {
     Problem problem = problemRepository.findById(id).orElseThrow();
     List<TestCase> testCases = testCaseRepository.findByProblem(problem);
 
-    if (testCases.isEmpty()) {
-      return ResponseEntity.ok(GradingResult.builder()
-          .passed(false)
-          .message("이 문제에는 등록된 테스트 케이스가 없습니다.")
-          .build());
-    }
-
-    int passedCount = 0;
     long totalTime = 0;
+    boolean passed = false;
+    int passedCount = 0;
+    int totalCases = testCases.size();
 
-    // 2. 각 테스트 케이스에 대해 실행 및 비교
-    for (int i = 0; i < testCases.size(); i++) {
-      TestCase tc = testCases.get(i);
+    // 1-1. 테스트 케이스가 없는 경우: 단순 실행 후 expectedOutput과 비교
+    if (testCases.isEmpty()) {
+      totalCases = 1; // 가상의 케이스 1개로 취급
+      ExecutionResponse res = codeExecutor.run(request); // 입력 없이 실행
+      totalTime = res.getExecutionTime();
 
-      // 실행 요청 생성 (테스트 케이스의 입력을 사용)
-      ExecutionRequest runReq = ExecutionRequest.builder()
-          .code(request.getCode())
-          .input(tc.getInputData())
-          .build();
-
-      ExecutionResponse res = codeExecutor.run(runReq);
-      totalTime += res.getExecutionTime();
-
-      // 에러 발생 시 즉시 오답 처리
       if (res.getError() != null && !res.getError().isEmpty()) {
         return ResponseEntity.ok(GradingResult.builder()
             .passed(false)
-            .totalCases(testCases.size())
-            .passedCases(passedCount)
-            .message((i + 1) + "번 케이스 실행 중 에러: " + res.getError())
+            .totalCases(1)
+            .passedCases(0)
+            .message("실행 중 에러: " + res.getError())
             .executionTime(totalTime)
             .build());
       }
 
-      // 결과 비교 (공백 제거 후 비교)
-      String actual = res.getOutput().trim();
-      String expected = tc.getExpectedOutput().trim();
+      // 비교 로직 (expectedOutput이 null이면 통과 불가)
+      String actual = res.getOutput() != null ? res.getOutput().trim() : "";
+      String expected = problem.getExpectedOutput() != null ? problem.getExpectedOutput().trim() : "";
 
-      if (actual.equals(expected)) {
-        passedCount++;
+      if (!expected.isEmpty() && actual.equals(expected)) {
+        passed = true;
+        passedCount = 1;
+      } else {
+        return ResponseEntity.ok(GradingResult.builder()
+            .passed(false)
+            .totalCases(1)
+            .passedCases(0)
+            .message("실행 결과가 예상 결과와 다릅니다.\n[예상]\n" + expected + "\n[실세]\n" + actual)
+            .executionTime(totalTime)
+            .build());
       }
-      // 틀려도 바로 리턴하지 않고 계속 진행 (OR 조건 지원을 위해)
-    }
 
-    // 3. 채점 결과 판단
-    // 문제의 의도상 Scanner를 안 쓸 경우, 코드 수정(n=10 or n=11)에 따라
-    // Even 또는 Odd 중 하나만 맞출 수 있으므로, '하나라도 맞으면 정답'으로 처리
-    boolean passed = passedCount > 0;
+    } else {
+      // 2. 각 테스트 케이스에 대해 실행 및 비교 (기존 로직)
+      for (int i = 0; i < testCases.size(); i++) {
+        TestCase tc = testCases.get(i);
+
+        // 실행 요청 생성 (테스트 케이스의 입력을 사용)
+        ExecutionRequest runReq = ExecutionRequest.builder()
+            .code(request.getCode())
+            .input(tc.getInputData())
+            .build();
+
+        ExecutionResponse res = codeExecutor.run(runReq);
+        totalTime += res.getExecutionTime();
+
+        // 에러 발생 시 즉시 오답 처리
+        if (res.getError() != null && !res.getError().isEmpty()) {
+          return ResponseEntity.ok(GradingResult.builder()
+              .passed(false)
+              .totalCases(totalCases)
+              .passedCases(passedCount)
+              .message((i + 1) + "번 케이스 실행 중 에러: " + res.getError())
+              .executionTime(totalTime)
+              .build());
+        }
+
+        // 결과 비교 (공백 제거 후 비교)
+        String actual = res.getOutput().trim();
+        String expected = tc.getExpectedOutput().trim();
+
+        if (actual.equals(expected)) {
+          passedCount++;
+        }
+      }
+      // 하나라도 맞으면 통과 (기존 정책 유지)
+      passed = passedCount > 0;
+    }
 
     // 추가: 제출 이력 저장 (회원일 경우에만)
     if (request.getUserId() != null) {
       System.out.println("Saving submission for User ID: " + request.getUserId());
       final long finalTotalTime = totalTime;
+      final boolean finalPassed = passed;
       try {
         usersRepository.findById(request.getUserId()).ifPresent(user -> {
           submissionService.create(user, problem, request.getCode(),
-              passed ? "PASS" : "FAIL", finalTotalTime);
+              finalPassed ? "PASS" : "FAIL", finalTotalTime);
           System.out.println("Submission saved successfully.");
         });
       } catch (Exception e) {
@@ -154,9 +182,9 @@ public class ProblemController {
 
     return ResponseEntity.ok(GradingResult.builder()
         .passed(passed)
-        .totalCases(testCases.size())
+        .totalCases(totalCases)
         .passedCases(passedCount)
-        .message(passed ? "정답입니다! (적어도 하나의 케이스를 통과했습니다)" : "오답입니다. 일치하는 결과가 없습니다.")
+        .message(passed ? "정답입니다!" : "오답입니다.")
         .executionTime(totalTime)
         .build());
   }
