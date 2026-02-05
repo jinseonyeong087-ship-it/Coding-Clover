@@ -12,6 +12,8 @@ import com.mysite.clover.Users.UsersRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import com.mysite.clover.Course.CourseRepository;
+import com.mysite.clover.DataNotFoundException;
 
 @RequiredArgsConstructor
 @Service
@@ -21,6 +23,8 @@ public class LectureService {
     private final UsersRepository usersRepository;
     private final com.mysite.clover.Notification.NotificationService notificationService;
     private final com.mysite.clover.Enrollment.EnrollmentRepository enrollmentRepository;
+    private final YoutubeService youtubeService;
+    private final CourseRepository courseRepository;
 
     // 해당 강좌에 속한 모든 강의를 순서대로 조회 (강사용/관리자용, 상태 불문)
     public List<Lecture> getListByCourse(Course course) {
@@ -38,7 +42,7 @@ public class LectureService {
             String title,
             int orderNo,
             String videoUrl,
-            int duration,
+            Integer duration,
             Users instructor,
             LectureUploadType uploadType,
             LocalDateTime scheduledAt) {
@@ -48,12 +52,22 @@ public class LectureService {
             throw new IllegalArgumentException("이미 존재하는 순서입니다.");
         }
 
-        // [필수값 검사] DTO validation이 제거되었으므로 서비스에서 직접 검증 (즉시 제출용)
+        // [필수값 검사] DTO validation이 제거되었으므로 서비스에서 직접 검증
         if (videoUrl == null || videoUrl.trim().isEmpty()) {
             throw new IllegalArgumentException("강의 영상 URL은 필수입니다.");
         }
-        if (duration <= 0) {
-            throw new IllegalArgumentException("영상 재생 시간은 필수입니다.");
+
+        // [유튜브 시간 자동 계산] 시간이 입력되지 않았거나 0이면 유튜브 API로 조회
+        if (duration == null || duration <= 0) {
+            int fetchedDuration = youtubeService.fetchDuration(videoUrl);
+            // 유튜브 API로 유효한 시간을 가져왔다면 교체
+            if (fetchedDuration > 0) {
+                duration = fetchedDuration;
+            }
+        }
+
+        if (duration == null || duration <= 0) {
+            throw new IllegalArgumentException("영상 재생 시간을 확인할 수 없습니다. (유튜브 URL을 확인하거나 직접 입력해주세요)");
         }
 
         // 1. 강의 엔티티 생성
