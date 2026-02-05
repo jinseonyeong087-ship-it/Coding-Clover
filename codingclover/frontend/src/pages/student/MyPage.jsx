@@ -98,6 +98,11 @@ function MyPage() {
     }
   };
 
+  // 환불 요청 함수
+  const handleRefundRequest = () => {
+    // 모달창에서 확인 버튼 클릭 시 실행될 로직은 AlertDialog 안에서 처리
+  };
+
   // 데이터 가져오기 함수
   const fetchData = async () => {
     try {
@@ -248,6 +253,35 @@ function MyPage() {
       };
 
       setUser(updatedUser);
+      
+      // localStorage의 users 정보도 업데이트
+      const storedUsers = localStorage.getItem("users");
+      console.log("현재 저장된 사용자 정보:", storedUsers);
+      if (storedUsers) {
+        try {
+          const userData = JSON.parse(storedUsers);
+          console.log("기존 사용자 데이터:", userData);
+          const updatedUserData = {
+            ...userData,
+            name: editForm.name,
+            educationLevel: editForm.educationLevel,
+            interestCategory
+          };
+          console.log("업데이트될 사용자 데이터:", updatedUserData);
+          localStorage.setItem("users", JSON.stringify(updatedUserData));
+          console.log("로컬스토리지 사용자 정보 업데이트 완료");
+          
+          // 다른 컴포넌트(네비바 등)에 사용자 정보 업데이트 알림
+          const event = new Event('userInfoUpdated');
+          window.dispatchEvent(event);
+          console.log("userInfoUpdated 이벤트 발생");
+        } catch (error) {
+          console.error("로컬스토리지 업데이트 실패:", error);
+        }
+      } else {
+        console.warn("저장된 사용자 정보가 없습니다.");
+      }
+      
       setIsEditing(false);
       alert("저장 완료!");
     } catch (err) {
@@ -307,22 +341,63 @@ function MyPage() {
 
         {!loading && !error && user && (
           <>
-            <div className="max-w-4xl mx-auto flex justify-between mb-8">
+            <div className="max-w-4xl mx-auto mb-8">
               <h1 className="text-3xl font-bold">마이페이지</h1>
-              {!isEditing && (
-                <Button variant="outline" onClick={handleEditToggle}>
-                  <Edit className="w-4 h-4 mr-2" />
-                  정보 수정
-                </Button>
-              )}
             </div>
 
-            <Card className="max-w-4xl mx-auto">
+                        {/* 포인트 카드 */}
+            <Card className="max-w-4xl mx-auto mt-8">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" /> 프로필 정보
+                  <img src={coinImg} alt="코인" className="w-6 h-6" />
+                  내 포인트
                 </CardTitle>
-                <CardDescription>회원 기본 정보</CardDescription>
+                <CardDescription>
+                  포인트 잔액 및 사용 내역을 확인하세요
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <div className="text-3xl font-bold text-blue-600 mb-2">
+                    {pointsLoading ? '로딩중...' : `${points.toLocaleString()}P`}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-gray-600">
+                      현재 보유 포인트
+                    </p>
+                    <Button 
+                      variant="ghost"
+                      onClick={() => navigate('/student/points')}
+                      className="text-sm text-gray-600 hover:text-gray-600 hover:bg-transparent p-0 h-auto cursor-pointer flex items-center gap-1"
+                    >
+                      상세보기
+                      <ChevronRight className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="max-w-4xl mx-auto mt-8">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <User className="w-5 h-5" /> 프로필 정보
+                    </CardTitle>
+                    <CardDescription>회원 기본 정보</CardDescription>
+                  </div>
+                  {!isEditing && (
+                    <Button 
+                      variant="ghost" 
+                      onClick={handleEditToggle}
+                      className="text-gray-600 hover:text-gray-600 hover:bg-transparent p-2 h-auto cursor-pointer flex items-center gap-2"
+                    >
+                      <Edit className="w-4 h-4" />
+                      정보 수정
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
 
               <CardContent className="space-y-6">
@@ -405,38 +480,7 @@ function MyPage() {
               </CardContent>
             </Card>
 
-            {/* 포인트 카드 */}
-            <Card className="max-w-4xl mx-auto mt-8">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <img src={coinImg} alt="코인" className="w-6 h-6" />
-                  내 포인트
-                </CardTitle>
-                <CardDescription>
-                  포인트 잔액 및 사용 내역을 확인하세요
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-3xl font-bold text-blue-600 mb-2">
-                      {pointsLoading ? '로딩중...' : `${points.toLocaleString()}P`}
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      현재 보유 포인트
-                    </p>
-                  </div>
-                  <Button 
-                    variant="outline"
-                    onClick={() => navigate('/student/points')}
-                    className="flex items-center gap-2"
-                  >
-                    상세보기
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+
           </>
         )}
         {/* 수강 목록 */}

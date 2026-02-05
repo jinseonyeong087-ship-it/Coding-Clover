@@ -22,6 +22,8 @@ function PointsHistory() {
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
 
     useEffect(() => {
         fetchPointsData();
@@ -187,6 +189,17 @@ function PointsHistory() {
         }
     };
 
+    // 페이징 계산
+    const totalPages = Math.ceil(history.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = history.slice(startIndex, endIndex);
+
+    // 페이지 변경 함수
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
     const formatAmount = (amount) => {
         return amount >= 0 ? `+${amount.toLocaleString()}P` : `${amount.toLocaleString()}P`;
     };
@@ -207,9 +220,9 @@ function PointsHistory() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-white">
                 <Nav />
-                <div className="container mx-auto px-4 py-8">
+                <div className="container mx-auto px-4 py-16 pt-32">
                     <div className="flex justify-center items-center h-64">
                         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
                     </div>
@@ -220,9 +233,9 @@ function PointsHistory() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-white">
             <Nav />
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto px-4 py-16 pt-32">
                 <div className="max-w-6xl mx-auto">
                     {/* 헤더 */}
                     <div className="mb-8">
@@ -243,21 +256,24 @@ function PointsHistory() {
                     {/* 현재 포인트 카드 */}
                     <Card className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
                         <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Coins className="w-5 h-5 text-blue-600" />
-                                        <h3 className="text-lg font-semibold text-gray-900">보유 포인트</h3>
-                                    </div>
-                                    <div className="text-4xl font-bold text-blue-600">
-                                        {points.toLocaleString()}
-                                        <span className="text-xl ml-1">P</span>
-                                    </div>
-                                    <p className="text-sm text-gray-600 mt-2">
-                                        환불은 보유 포인트 내에서만 가능합니다
-                                    </p>
-                                </div>
-                                
+                            <div className="flex items-center gap-2 mb-2">
+                                <Coins className="w-5 h-5 text-blue-600" />
+                                <h3 className="text-lg font-semibold text-gray-900">보유 포인트</h3>
+                            </div>
+                            <div className="text-4xl font-bold text-blue-600">
+                                {points.toLocaleString()}
+                                <span className="text-xl ml-1">P</span>
+                            </div>
+                            <div className="flex items-center justify-between mt-2">
+                                <p className="text-sm text-gray-600">
+                                    환불은 보유 포인트 내에서만 가능합니다
+                                </p>
+                                <button 
+                                    onClick={() => alert('환불요청이 완료되었습니다.')}
+                                    className="text-sm text-gray-600 hover:text-gray-600 cursor-pointer bg-transparent border-none p-0"
+                                >
+                                    환불요청
+                                </button>
                             </div>
                         </CardContent>
                     </Card>
@@ -273,40 +289,78 @@ function PointsHistory() {
                         </CardHeader>
                         <CardContent>
                             
-                            {history.length === 0 ? (
+                            {currentItems.length === 0 ? (
                                 <div className="text-center py-8 text-gray-500">
                                     포인트 사용 내역이 없습니다.
                                 </div>
                             ) : (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>일시</TableHead>
-                                            <TableHead>구분</TableHead>
-                                            <TableHead>내용</TableHead>
-                                            <TableHead className="text-right">금액</TableHead>                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {history.map((item) => (
-                                            <TableRow key={item.id}>
-                                                <TableCell className="font-medium">
-                                                    {new Date(item.date).toLocaleString('ko-KR')}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge className={getTypeColor(item.type)}>
-                                                        {getTypeLabel(item.type)}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell>{item.description}</TableCell>
-                                                <TableCell className={`text-right font-medium ${
-                                                    item.amount >= 0 ? 'text-green-600' : 'text-red-600'
-                                                }`}>
-                                                    {formatAmount(item.amount)}
-                                                </TableCell>
+                                <>
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="text-left">일시</TableHead>
+                                                <TableHead className="text-center">구분</TableHead>
+                                                <TableHead className="text-center">내용</TableHead>
+                                                <TableHead className="text-center">금액</TableHead>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {currentItems.map((item) => (
+                                                <TableRow key={item.id}>
+                                                    <TableCell className="font-medium text-left">
+                                                        {new Date(item.date).toLocaleString('ko-KR')}
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <Badge className={getTypeColor(item.type)}>
+                                                            {getTypeLabel(item.type)}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-center">{item.description}</TableCell>
+                                                    <TableCell className={`text-center font-medium ${
+                                                        item.amount >= 0 ? 'text-green-600' : 'text-red-600'
+                                                    }`}>
+                                                        {formatAmount(item.amount)}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                    
+                                    {/* 페이징 컨트롤 */}
+                                    {totalPages > 1 && (
+                                        <div className="flex justify-center items-center gap-2 mt-6">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handlePageChange(currentPage - 1)}
+                                                disabled={currentPage === 1}
+                                            >
+                                                이전
+                                            </Button>
+                                            
+                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                                                <Button
+                                                    key={pageNumber}
+                                                    variant={currentPage === pageNumber ? "default" : "outline"}
+                                                    size="sm"
+                                                    onClick={() => handlePageChange(pageNumber)}
+                                                    className="min-w-[2rem]"
+                                                >
+                                                    {pageNumber}
+                                                </Button>
+                                            ))}
+                                            
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handlePageChange(currentPage + 1)}
+                                                disabled={currentPage === totalPages}
+                                            >
+                                                다음
+                                            </Button>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </CardContent>
                     </Card>
