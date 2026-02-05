@@ -41,7 +41,7 @@ function PaymentManagement() {
     const [filters, setFilters] = useState({
         paymentStatus: 'ALL',
         refundStatus: 'ALL',
-        period: '7',
+        period: '7', // 기본값을 7일로 설정
         startDate: '',
         endDate: '',
         searchKeyword: '',
@@ -56,10 +56,13 @@ function PaymentManagement() {
         fetchPayments();
     }, []);
 
-    // 필터 적용
+    // 필터 적용 (수동 검색)
     useEffect(() => {
-        applyFilters();
-    }, [payments, filters, activeTab]);
+        // 초기 로드시에만 필터 적용
+        if (payments.length > 0) {
+            applyFilters();
+        }
+    }, [payments, activeTab]);
 
     const fetchPayments = async () => {
         try {
@@ -163,8 +166,22 @@ function PaymentManagement() {
         if (filters.period !== 'custom') {
             const days = parseInt(filters.period);
             if (days > 0) {
-                const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-                filtered = filtered.filter(p => new Date(p.paymentDate) >= startDate);
+                if (days === 1) {
+                    // 오늘의 경우 - 정확히 오늘 날짜만
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    
+                    filtered = filtered.filter(p => {
+                        const paymentDate = new Date(p.paymentDate);
+                        return paymentDate >= today && paymentDate < tomorrow;
+                    });
+                } else {
+                    // 다른 기간의 경우
+                    const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+                    filtered = filtered.filter(p => new Date(p.paymentDate) >= startDate);
+                }
             }
         } else if (filters.startDate && filters.endDate) {
             const start = new Date(filters.startDate);
@@ -221,6 +238,8 @@ function PaymentManagement() {
             searchKeyword: '',
             searchType: 'student'
         });
+        // 초기화 후 자동으로 검색 실행
+        setTimeout(() => applyFilters(), 100);
     };
 
     // 상태 배지 색상
@@ -353,16 +372,6 @@ function PaymentManagement() {
                                 <h1 className="text-3xl font-bold text-gray-900">결제 관리</h1>
                                 <p className="text-gray-600 mt-1">결제 내역 및 환불 요청을 관리하세요</p>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <Button variant="outline" onClick={() => window.print()}>
-                                    <Download className="w-4 h-4 mr-2" />
-                                    내보내기
-                                </Button>
-                                <Button onClick={fetchPayments}>
-                                    <RefreshCw className="w-4 h-4 mr-2" />
-                                    새로고침
-                                </Button>
-                            </div>
                         </div>
                     </div>
 
@@ -384,10 +393,15 @@ function PaymentManagement() {
                     {/* 필터 */}
                     <Card className="mb-6">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Filter className="w-5 h-5" />
-                                필터
-                            </CardTitle>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="flex items-center gap-2">
+                                    <Filter className="w-5 h-5" />
+                                    필터
+                                </CardTitle>
+                                <Button variant="outline" onClick={resetFilters} size="sm">
+                                    초기화
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -482,10 +496,11 @@ function PaymentManagement() {
                                         className="pl-9"
                                         value={filters.searchKeyword}
                                         onChange={(e) => handleFilterChange('searchKeyword', e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && applyFilters()}
                                     />
                                 </div>
-                                <Button variant="outline" onClick={resetFilters}>
-                                    초기화
+                                <Button onClick={applyFilters}>
+                                    검색
                                 </Button>
                             </div>
                         </CardContent>
