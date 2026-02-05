@@ -42,6 +42,7 @@ import StudentCourseDetail from '@/pages/student/StudentCourseDetail'
 import CodingTestDetail from './pages/coding/CodingTestDetail';
 import CodingTestList from './pages/coding/CodingTestList';
 import CodingTestCreate from './pages/coding/CodingTestCreate';
+import PaymentManagement from './pages/admin/PaymentManagement';
 
 
 
@@ -156,6 +157,7 @@ function App() {
           <Route path="users/instructors/:userId" element={<AdminApproch />} />
           <Route path="course/:courseId/lectures" element={<AdminLectureDetail />} />
           <Route path="users/instructors" element={<AdminInstructorList />} />
+          <Route path="payments" element={<PaymentManagement />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
         {/*강사 프로필 <Route path="/api/instructor/profile" element={<InstructorProfile />} /> */}

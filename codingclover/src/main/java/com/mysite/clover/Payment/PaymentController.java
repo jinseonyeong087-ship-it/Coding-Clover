@@ -218,6 +218,26 @@ public class PaymentController {
     }
 
     /**
+     * 전체 결제 내역 조회 (관리자용) - 페이징 지원
+     */
+    @GetMapping("/admin/payments")
+    public ResponseEntity<?> getAllPayments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        try {
+            // TODO: 관리자 권한 체크 로직 추가
+            
+            List<PaymentWithUserDto> allPayments = paymentService.getAllPayments(page, size);
+
+            return ResponseEntity.ok().body(allPayments);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "message", "전체 결제 내역 조회 실패: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
      * Principal에서 사용자 ID 추출
      */
     private Long getUserIdFromPrincipal(Principal principal) {

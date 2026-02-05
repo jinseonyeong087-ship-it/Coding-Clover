@@ -22,4 +22,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     
     // 특정 결제와 관련된 환불 내역
     List<Payment> findByRelatedPaymentId(Long relatedPaymentId);
+    
+    // 전체 결제 내역 조회 (최신순) - 관리자용
+    List<Payment> findAllByOrderByPaidAtDesc();
 }
