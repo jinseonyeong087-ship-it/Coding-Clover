@@ -5,6 +5,7 @@ import Tail from '@/components/Tail';
 import { Save, ArrowLeft, FileCode, LayoutList } from "lucide-react";
 import Editor from "@monaco-editor/react";
 
+// 코딩테스트 생성 페이지
 const CodingTestCreate = () => {
   const navigate = useNavigate();
 
@@ -39,10 +40,10 @@ const CodingTestCreate = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f9fafb]">
+    <div className="min-h-screen flex flex-col bg-[#ffffff]">
       <Nav />
       
-      <main className="flex-grow container mx-auto px-6 pt-32 pb-16 max-w-[1200px]">
+      <main className="flex-grow container mx-auto px-6 pt-20 pb-16 max-w-[1200px]">
         {/* 상단 헤더 섹션 */}
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-4">

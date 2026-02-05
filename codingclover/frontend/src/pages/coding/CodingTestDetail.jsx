@@ -4,11 +4,18 @@ import Editor from "@monaco-editor/react";
 import Nav from '@/components/Nav';
 import Tail from '@/components/Tail';
 
+// 코딩테스트 상세 페이지
 const CodingTestDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const [userRole, setUserRole] = useState("ADMIN"); 
+  // [수정 1] 로그인한 사용자의 역할을 가져옴
+  const [userRole] = useState(() => {
+    const user = JSON.parse(localStorage.getItem('users'));
+    return user?.role || "STUDENT"; // 기본값은 학생으로 설정
+  });
+  
+  // [수정 2] 어드민일 때만 수정 모드를 허용
   const [isEditing, setIsEditing] = useState(false);
   
   const [problem, setProblem] = useState({
@@ -43,8 +50,14 @@ const CodingTestDetail = () => {
     }
   };
 
+  // [수정 3] 학생용 코드 제출 버튼 핸들러
+  const handleSubmitCode = () => {
+    alert("코드가 제출되었습니다.");
+    // 실제 서버 연동 시 학생의 제출 기록을 DB에 저장하는 API 호출
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#f9fafb]">
+    <div className="min-h-screen flex flex-col bg-[#ffffff]">
       <Nav />
       
       <main className="flex-grow container mx-auto px-6 pt-20 pb-12 max-w-[1400px]">
@@ -76,6 +89,7 @@ const CodingTestDetail = () => {
             </div>
           </div>
 
+          {/* [수정 3] 수정/삭제 버튼은 오직 ADMIN에게만 노출 */}
           {userRole === "ADMIN" && (
             <div className="flex gap-3">
               <button 
@@ -101,7 +115,8 @@ const CodingTestDetail = () => {
               <span className="font-bold text-gray-800 text-sm italic">Description</span>
             </div>
             <div className="p-8 flex-grow overflow-y-auto bg-white">
-              {isEditing ? (
+              {/* [수정 4] ADMIN 권한이 있어야만 textarea(수정 모드) 활성화 */}
+              {isEditing && userRole === "ADMIN" ? (
                 <textarea 
                   className="w-full h-full border border-gray-100 p-4 rounded-xl focus:ring-2 focus:ring-indigo-500/10 outline-none resize-none text-sm leading-relaxed"
                   value={problem.description} 
@@ -125,12 +140,16 @@ const CodingTestDetail = () => {
                 </div>
                 <span>Solution.java</span>
               </div>
-              <button 
-                onClick={() => alert("제출되었습니다.")}
-                className="bg-indigo-600 px-5 py-1.5 rounded-lg hover:bg-indigo-500 transition font-black text-xs shadow-lg active:scale-95"
-              >
-                제출하기
-              </button>
+
+              {/* [수정 5] 제출하기 버튼 활성화 (학생이 직접 코드 입력 및 테스트 가능) */}
+              {userRole !== "ADMIN" && (
+                <button 
+                  onClick={handleSubmitCode}
+                  className="bg-indigo-600 px-5 py-1.5 rounded-lg hover:bg-indigo-500 transition font-black text-xs shadow-lg active:scale-95"
+                >
+                  제출하기
+                </button>
+  )}
             </div>
             <div className="flex-grow">
               <Editor
@@ -151,7 +170,7 @@ const CodingTestDetail = () => {
           </div>
         </div>
 
-        {/* 하단: 제출 기록 (너비 및 정렬 최적화) */}
+        {/* [수정 6] 하단: 학생 제출 현황 (ADMIN 권한일 때만 노출) */}
         {userRole === "ADMIN" && (
           <div className="max-w-[1400px] mx-auto w-full bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
             <div className="bg-gray-50/50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
