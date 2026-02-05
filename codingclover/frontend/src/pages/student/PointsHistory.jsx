@@ -24,6 +24,7 @@ function PointsHistory() {
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
+    const [refundStatus, setRefundStatus] = useState(null); // null, 'REQUESTED', 'COMPLETED', 'REJECTED'
 
     useEffect(() => {
         fetchPointsData();
@@ -105,29 +106,19 @@ function PointsHistory() {
 
             const currentIdentifier = getUserIdentifier();
             if (!currentIdentifier) {
-                throw new Error('로그인이 필요합니다.');
+                // throw new Error('로그인이 필요합니다.');
             }
 
-            // 백엔드 월렛히스토리 API 호출
-            const [balanceResponse, historyResponse] = await Promise.all([
-                fetch('/api/wallet/balance', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'include'
-                }),
-                fetch('/api/wallet/history', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'include'
-                })
+            // 백엔드 API 호출 (지갑 잔액, 지갑 히스토리, 결제 히스토리)
+            const [balanceResponse, historyResponse, paymentResponse] = await Promise.all([
+                fetch('/api/wallet/balance', { method: 'GET', credentials: 'include' }),
+                fetch('/api/wallet/history', { method: 'GET', credentials: 'include' }),
+                fetch('/api/payment/history', { method: 'GET', credentials: 'include' })
             ]);
 
             console.log('Balance API 응답:', balanceResponse.status);
             console.log('History API 응답:', historyResponse.status);
+            console.log('Payment API 응답:', paymentResponse.status);
 
             if (balanceResponse.ok) {
                 const balanceData = await balanceResponse.json();
@@ -143,10 +134,10 @@ function PointsHistory() {
                 console.log('히스토리 데이터:', historyData);
 
                 // 백엔드에서 배열로 반환
-                const history = Array.isArray(historyData) ? historyData : [];
+                const historyArr = Array.isArray(historyData) ? historyData : [];
 
                 // 월렛히스토리 엔티티 필드에 맞게 매핑
-                const mappedHistory = history.map(item => ({
+                const mappedHistory = historyArr.map(item => ({
                     id: item.walletHistoryId,
                     type: item.reason, // WalletChangeReason: CHARGE, USE, REFUND, ADMIN
                     amount: item.changeAmount, // 변경된 금액 (양수/음수)
@@ -191,9 +182,36 @@ function PointsHistory() {
                 ]);
             }
 
+            // 환불 상태 확인 로직
+            if (paymentResponse.ok) {
+                const paymentData = await paymentResponse.json();
+                const payments = Array.isArray(paymentData) ? paymentData : [];
+
+                // 가장 최근의 환불 관련 결제 내역 찾기
+                const refundPayments = payments.filter(p => p.type === 'REFUND');
+                if (refundPayments.length > 0) {
+                    // 최신순 정렬 (ID 기준)
+                    refundPayments.sort((a, b) => b.paymentId - a.paymentId);
+                    const latestRefund = refundPayments[0];
+
+                    if (latestRefund.status === 'REFUND_REQUEST') {
+                        setRefundStatus('REQUESTED');
+                    } else if (latestRefund.status === 'REFUNDED') {
+                        setRefundStatus('COMPLETED');
+                    } else if (latestRefund.status === 'REJECTED') {
+                        setRefundStatus('REJECTED'); // 거절됨은 다시 요청 가능하게 할 수도 있음
+                    } else {
+                        setRefundStatus(null);
+                    }
+                } else {
+                    setRefundStatus(null);
+                }
+            }
+
+
         } catch (error) {
-            console.error('포인트 데이터 조회 실패:', error);
-            setError('백엔드 연결 실패 - 샘플 데이터로 표시됩니다.');
+            console.error('데이터 조회 실패:', error);
+            setError('데이터를 불러오는 중 오류가 발생했습니다.');
 
             // 오류 시 샘플 데이터
             setPoints(150000);
@@ -222,8 +240,6 @@ function PointsHistory() {
         }
     };
 
-    // ... (omit unchanged) ...
-
     const getTypeColor = (type, amount) => {
         if (type === 'CHARGE') return 'bg-green-100 text-green-800';
         if (type === 'REFUND') return 'bg-blue-100 text-blue-800';
@@ -239,6 +255,60 @@ function PointsHistory() {
             default: return '기타';
         }
     };
+
+    // 금액 포맷
+    const formatAmount = (amount) => {
+        return amount ? amount.toLocaleString() : '0';
+    };
+
+    // 페이지네이션 로직
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = history.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(history.length / itemsPerPage);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    // 버튼 렌더링 헬퍼
+    const renderRefundButton = () => {
+        if (refundStatus === 'REQUESTED') {
+            return (
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-orange-600 border-orange-300 bg-orange-50 cursor-not-allowed"
+                    disabled={true}
+                >
+                    환불 요청 완료
+                </Button>
+            );
+        } else if (refundStatus === 'COMPLETED') {
+            return (
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-green-600 border-green-300 bg-green-50 cursor-not-allowed"
+                    disabled={true}
+                >
+                    환불 완료
+                </Button>
+            );
+        } else {
+            return (
+                <Button
+                    onClick={requestFullRefund}
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 border-red-300 hover:bg-red-50"
+                    disabled={points <= 0}
+                >
+                    환불요청
+                </Button>
+            );
+        }
+    }
 
     if (loading) {
         return (
@@ -286,15 +356,7 @@ function PointsHistory() {
                                 <p className="text-sm text-gray-600">
                                     환불은 보유 포인트 내에서만 가능합니다
                                 </p>
-                                <Button
-                                    onClick={requestFullRefund}
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-red-600 border-red-300 hover:bg-red-50"
-                                    disabled={points <= 0}
-                                >
-                                    환불요청
-                                </Button>
+                                {renderRefundButton()}
                             </div>
                         </CardContent>
                     </Card>
