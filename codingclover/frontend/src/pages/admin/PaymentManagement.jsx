@@ -7,36 +7,36 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Badge } from "@/components/ui/Badge";
-import { 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableHead, 
-    TableHeader, 
-    TableRow 
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
 } from "@/components/ui/Table";
 
-import { 
-    Tabs, 
-    TabsContent, 
-    TabsList, 
-    TabsTrigger 
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger
 } from "@/components/ui/Tabs";
 import { Search, Filter, Download, RefreshCw, AlertCircle } from 'lucide-react';
 
 function PaymentManagement() {
     const navigate = useNavigate();
-    
+
     // 상태 관리
     const [payments, setPayments] = useState([]);
     const [filteredPayments, setFilteredPayments] = useState([]);
     const [loading, setLoading] = useState(true); // 초기에 true로 설정
     const [error, setError] = useState(null);
-    
+
     // 페이징
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(20);
-    
+
     // 필터
     const [filters, setFilters] = useState({
         paymentStatus: 'ALL',
@@ -47,7 +47,7 @@ function PaymentManagement() {
         searchKeyword: '',
         searchType: 'student' // student, course
     });
-    
+
     // 탭
     const [activeTab, setActiveTab] = useState('all');
 
@@ -68,29 +68,29 @@ function PaymentManagement() {
         try {
             setLoading(true);
             setError(null);
-            
+
             // timeout을 추가하여 빠른 에러 처리
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 timeout
-            
+
             const response = await fetch('/api/payment/admin/payments', {
                 signal: controller.signal
             });
             clearTimeout(timeoutId);
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            
+
             console.log('Received payment data:', data);
-            
+
             // 데이터가 비어있으면 빠른 처리
             if (!data || data.length === 0) {
                 setPayments([]);
                 return;
             }
-            
+
             // 백엔드 데이터를 프론트엔드 형식으로 변환
             const formattedPayments = data.map(payment => ({
                 id: payment.paymentId,
@@ -105,7 +105,7 @@ function PaymentManagement() {
                 refundRequestDate: payment.type === 'REFUND' ? payment.paidAt : null,
                 refundAmount: payment.type === 'REFUND' ? payment.amount : 0
             }));
-            
+
             setPayments(formattedPayments);
         } catch (error) {
             if (error.name === 'AbortError') {
@@ -172,7 +172,7 @@ function PaymentManagement() {
                     today.setHours(0, 0, 0, 0);
                     const tomorrow = new Date(today);
                     tomorrow.setDate(tomorrow.getDate() + 1);
-                    
+
                     filtered = filtered.filter(p => {
                         const paymentDate = new Date(p.paymentDate);
                         return paymentDate >= today && paymentDate < tomorrow;
@@ -356,7 +356,7 @@ function PaymentManagement() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* 필터 스켈레톤 */}
                         <Card className="mb-6">
                             <CardHeader>
@@ -377,7 +377,7 @@ function PaymentManagement() {
                                 </div>
                             </CardContent>
                         </Card>
-                        
+
                         {/* 테이블 스켈레톤 */}
                         <Card>
                             <CardContent className="p-0">
@@ -456,9 +456,9 @@ function PaymentManagement() {
                                 {/* 결제 상태 */}
                                 <div>
                                     <Label>결제 상태</Label>
-                                    <select 
+                                    <select
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={filters.paymentStatus} 
+                                        value={filters.paymentStatus}
                                         onChange={(e) => handleFilterChange('paymentStatus', e.target.value)}
                                     >
                                         <option value="ALL">전체</option>
@@ -471,9 +471,9 @@ function PaymentManagement() {
                                 {/* 환불 상태 */}
                                 <div>
                                     <Label>환불 상태</Label>
-                                    <select 
+                                    <select
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={filters.refundStatus} 
+                                        value={filters.refundStatus}
                                         onChange={(e) => handleFilterChange('refundStatus', e.target.value)}
                                     >
                                         <option value="ALL">전체</option>
@@ -487,9 +487,9 @@ function PaymentManagement() {
                                 {/* 기간 */}
                                 <div>
                                     <Label>기간</Label>
-                                    <select 
+                                    <select
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={filters.period} 
+                                        value={filters.period}
                                         onChange={(e) => handleFilterChange('period', e.target.value)}
                                     >
                                         <option value="1">오늘</option>
@@ -502,9 +502,9 @@ function PaymentManagement() {
                                 {/* 검색 타입 */}
                                 <div>
                                     <Label>검색 대상</Label>
-                                    <select 
+                                    <select
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={filters.searchType} 
+                                        value={filters.searchType}
                                         onChange={(e) => handleFilterChange('searchType', e.target.value)}
                                     >
                                         <option value="student">학생명</option>
@@ -518,16 +518,16 @@ function PaymentManagement() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                     <div>
                                         <Label>시작일</Label>
-                                        <Input 
-                                            type="date" 
+                                        <Input
+                                            type="date"
                                             value={filters.startDate}
                                             onChange={(e) => handleFilterChange('startDate', e.target.value)}
                                         />
                                     </div>
                                     <div>
                                         <Label>종료일</Label>
-                                        <Input 
-                                            type="date" 
+                                        <Input
+                                            type="date"
                                             value={filters.endDate}
                                             onChange={(e) => handleFilterChange('endDate', e.target.value)}
                                         />
@@ -587,10 +587,9 @@ function PaymentManagement() {
                                             <TableRow>
                                                 <TableHead className="text-center">결제ID</TableHead>
                                                 <TableHead className="text-center">학생명</TableHead>
-                                                <TableHead className="text-center">강좌명</TableHead>
+                                                <TableHead className="text-center">내용</TableHead>
                                                 <TableHead className="text-center">금액</TableHead>
-                                                <TableHead className="text-center">결제상태</TableHead>
-                                                <TableHead className="text-center">환불상태</TableHead>
+                                                <TableHead className="text-center">상태</TableHead>
                                                 <TableHead className="text-center">결제일시</TableHead>
                                                 <TableHead className="text-center">환불요청일</TableHead>                                            <TableHead className="text-center">액션</TableHead>                                            </TableRow>
                                         </TableHeader>
@@ -610,26 +609,27 @@ function PaymentManagement() {
                                                         {payment.amount.toLocaleString()}원
                                                     </TableCell>
                                                     <TableCell className="text-center">
-                                                        <Badge className={getPaymentStatusColor(payment.paymentStatus)}>
-                                                            {getPaymentStatusLabel(payment.paymentStatus)}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        <div className="flex items-center justify-center gap-2">
-                                                            <Badge className={getRefundStatusColor(payment.refundStatus)}>
-                                                                {getRefundStatusLabel(payment.refundStatus)}
+                                                        {payment.refundStatus !== 'NONE' ? (
+                                                            <div className="flex items-center justify-center gap-2">
+                                                                <Badge className={getRefundStatusColor(payment.refundStatus)}>
+                                                                    {getRefundStatusLabel(payment.refundStatus)}
+                                                                </Badge>
+                                                                {payment.refundStatus === 'REQUESTED' && (
+                                                                    <AlertCircle className="w-4 h-4 text-red-500" />
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <Badge className={getPaymentStatusColor(payment.paymentStatus)}>
+                                                                {getPaymentStatusLabel(payment.paymentStatus)}
                                                             </Badge>
-                                                            {payment.refundStatus === 'REQUESTED' && (
-                                                                <AlertCircle className="w-4 h-4 text-red-500" />
-                                                            )}
-                                                        </div>
+                                                        )}
                                                     </TableCell>
                                                     <TableCell className="text-center text-sm">
                                                         {new Date(payment.paymentDate).toLocaleString('ko-KR')}
                                                     </TableCell>
                                                     <TableCell className="text-center text-sm">
-                                                        {payment.refundRequestDate ? 
-                                                            new Date(payment.refundRequestDate).toLocaleString('ko-KR') : 
+                                                        {payment.refundRequestDate ?
+                                                            new Date(payment.refundRequestDate).toLocaleString('ko-KR') :
                                                             '-'
                                                         }
                                                     </TableCell>
@@ -681,7 +681,7 @@ function PaymentManagement() {
                                             >
                                                 이전
                                             </Button>
-                                            
+
                                             {Array.from({ length: Math.min(10, totalPages) }, (_, i) => {
                                                 let pageNumber;
                                                 if (totalPages <= 10) {
@@ -692,7 +692,7 @@ function PaymentManagement() {
                                                     pageNumber = start + i;
                                                     if (pageNumber > end) return null;
                                                 }
-                                                
+
                                                 return (
                                                     <Button
                                                         key={pageNumber}
@@ -705,7 +705,7 @@ function PaymentManagement() {
                                                     </Button>
                                                 );
                                             })}
-                                            
+
                                             <Button
                                                 variant="outline"
                                                 size="sm"
