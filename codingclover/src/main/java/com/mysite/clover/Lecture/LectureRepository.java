@@ -42,6 +42,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
     List<Integer> findOrderNosByCourseId(@Param("courseId") Long courseId);
 
     // 저장 전 중복 검사용 (안전장치)
+    
     boolean existsByCourseCourseIdAndOrderNo(Long courseId, Integer orderNo);
 
     // 특정 강좌(CourseId)에 속한 강의들을 순서(OrderNo)대로 조회

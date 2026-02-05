@@ -22,6 +22,14 @@ const toEmbedUrl = (url) => {
     return match ? `https://www.youtube.com/embed/${match[1]}` : url;
 };
 
+// 초 단위 시간을 mm:ss 형식으로 변환하는 함수 추가
+const formatDuration = (seconds) => {
+    if (!seconds) return '00:00';
+    const min = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+    return `${min}:${sec.toString().padStart(2, '0')}`;
+};
+
 function StudentCourseDetail() {
 
     const { courseId } = useParams();
@@ -63,7 +71,7 @@ function StudentCourseDetail() {
                     setEnrollmentStatus(found.status);
                 }
             })
-            .catch(() => {});
+            .catch(() => { });
     }, [courseId]);
 
     // 수강 중일 때 강의 목록 가져오기
@@ -128,7 +136,7 @@ function StudentCourseDetail() {
         }
     };
 
-    
+
 
     return (
         <>
@@ -205,11 +213,10 @@ function StudentCourseDetail() {
                                         <button
                                             key={lecture.lectureId}
                                             onClick={() => setSelectedLecture(lecture)}
-                                            className={`text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                                                selectedLecture?.lectureId === lecture.lectureId
+                                            className={`text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedLecture?.lectureId === lecture.lectureId
                                                     ? 'bg-slate-200 font-semibold'
                                                     : 'hover:bg-slate-100'
-                                            }`}
+                                                }`}
                                         >
                                             <div>{lecture.orderNo}강. {lecture.title}</div>
                                             {lecture.duration && (
@@ -227,7 +234,7 @@ function StudentCourseDetail() {
                             </div>
                         </div>
 
-                 
+
                     </div>
                 </section>
             )}

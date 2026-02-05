@@ -12,6 +12,7 @@ const QnaTest = () => {
   const [question, setQuestion] = useState('');
   const [courseId, setCourseId] = useState('');
   const [user, setUser] = useState(null);
+  const [courseList, setCourseList] = useState([]);
   const [viewMode, setViewMode] = useState('all'); // 'all' | 'my'
 
   // 상세 보기 관련 state
@@ -64,6 +65,21 @@ const QnaTest = () => {
   useEffect(() => {
     fetchQnaList();
   }, [viewMode, user]);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch('/course');
+        if (response.ok) {
+          const data = await response.json();
+          setCourseList(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch courses", err);
+      }
+    };
+    fetchCourses();
+  }, []);
 
   const handleAnswerSubmit = async (e) => {
     e.preventDefault();
@@ -324,16 +340,21 @@ const QnaTest = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* ... (Existing form fields: courseId, title, question) ... */}
                 <div>
-                  <Label htmlFor="courseId">강좌 ID (숫자)</Label>
-                  <Input
+                  <Label htmlFor="courseId">강좌 선택</Label>
+                  <select
                     id="courseId"
-                    type="number"
-                    placeholder="예: 1"
                     value={courseId}
                     onChange={(e) => setCourseId(e.target.value)}
                     required
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">테스트용이라 강좌 ID를 직접 입력해야 합니다.</p>
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="">강좌를 선택해주세요</option>
+                    {courseList.map((course) => (
+                      <option key={course.courseId} value={course.courseId}>
+                        {course.title}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <Label htmlFor="title">제목</Label>
