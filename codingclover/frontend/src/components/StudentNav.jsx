@@ -107,10 +107,26 @@ function StudentNav() {
             await fetchUserPoints();
         };
 
+        // 사용자 정보 업데이트를 위한 이벤트 리스너
+        const handleUserInfoUpdate = () => {
+            const storedUsers = localStorage.getItem("users");
+            if (storedUsers) {
+                try {
+                    const parsedUsers = JSON.parse(storedUsers);
+                    setUsers(parsedUsers);
+                    console.log("사용자 정보 업데이트:", parsedUsers);
+                } catch (error) {
+                    console.error("사용자 정보 업데이트 실패:", error);
+                }
+            }
+        };
+
         window.addEventListener('pointsUpdated', handlePointsUpdate);
+        window.addEventListener('userInfoUpdated', handleUserInfoUpdate);
         
         return () => {
             window.removeEventListener('pointsUpdated', handlePointsUpdate);
+            window.removeEventListener('userInfoUpdated', handleUserInfoUpdate);
         };
     }, []);
 
@@ -194,7 +210,7 @@ function StudentNav() {
                         <div className="flex items-center gap-3">
                             {/* 포인트 표시 */}
                             <div 
-                                className="flex items-center cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
+                                className="flex items-center cursor-pointer px-2 py-1"
                                 onClick={() => navigate('/student/points')}
                             >
                                 <img 
@@ -208,7 +224,7 @@ function StudentNav() {
                             </div>
                             
                             {/* 사용자 이름 */}
-                            <Button variant="ghost" className="text-sm">{users.name}님</Button>
+                            <span className="text-sm text-foreground">{users.name}님</span>
                         </div>
                         <Logout />
                     </>)}
