@@ -230,17 +230,36 @@ function PaymentManagement() {
 
     // 필터 초기화
     const resetFilters = () => {
+        // 페이지 로드 시와 동일한 기본 상태로 복원
         setFilters({
             paymentStatus: 'ALL',
             refundStatus: 'ALL',
-            period: '7',
+            period: '7', // 기본값 7일
             startDate: '',
             endDate: '',
             searchKeyword: '',
             searchType: 'student'
         });
-        // 초기화 후 자동으로 검색 실행
-        setTimeout(() => applyFilters(), 100);
+        
+        // 탭도 기본값으로 초기화
+        setActiveTab('all');
+        
+        // 페이지도 첫 페이지로 초기화
+        setCurrentPage(1);
+        
+        // 초기 로드 시와 동일한 필터링 적용 (7일 기간, 전체 탭)
+        let filtered = [...payments];
+        
+        // 기본 7일 기간 필터 적용
+        const now = new Date();
+        const days = 7;
+        const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+        filtered = filtered.filter(p => new Date(p.paymentDate) >= startDate);
+        
+        // 최신순 정렬
+        filtered.sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate));
+        
+        setFilteredPayments(filtered);
     };
 
     // 상태 배지 색상
