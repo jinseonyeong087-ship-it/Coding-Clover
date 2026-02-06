@@ -174,10 +174,7 @@ public class CourseService {
         }
 
         // 5. 새로운 Enrollment(수강) 엔티티 생성 및 설정
-        Enrollment enrollment = new Enrollment();
-        enrollment.setUser(user);
-        enrollment.setCourse(course);
-        enrollment.setStatus(EnrollmentStatus.ENROLLED); // 상태를 '수강 중'으로 설정
+        Enrollment enrollment = new Enrollment(user, course); // 매개변수 생성자 사용
 
         // 5. DB에 저장
         enrollmentRepository.save(enrollment); // 6. DB에 저장

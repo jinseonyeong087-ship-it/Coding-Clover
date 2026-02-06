@@ -5,18 +5,22 @@ import Tail from '../../components/Tail';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 function Enroll() {
 
   const { id } = useParams()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true);
   const [isEnrolled, setIsEnrolled] = useState(false); // 수강신청 완료 여부
+  const [showPointModal, setShowPointModal] = useState(false); // 포인트 부족 모달
 
   const [course, setCourse] = useState({
     title: '',
     instructorName: '',
     level: '',
     description: '',
+    price: 0
   })
 
   useEffect(() => {
@@ -35,16 +39,26 @@ function Enroll() {
         headers: { 'Content-Type': 'application/json' }, 
         credentials: 'include'
       });
+      
       if (response.ok) {
         const message = await response.text();
         alert(message);
         setIsEnrolled(true); // 수강신청 성공
       } else {
         const errorMessage = await response.text();
-        alert(errorMessage);
+        console.log('에러 메시지:', errorMessage);
+        
+        // 포인트 부족 에러인지 확인
+        if (errorMessage.includes('포인트가 부족') || errorMessage.includes('포인트') || 
+            errorMessage.includes('잔액') || errorMessage.includes('부족')) {
+          setShowPointModal(true);
+        } else {
+          alert(errorMessage);
+        }
       }
     } catch (error) {
       console.error('수강 신청 오류:', error);
+      alert('수강 신청 중 오류가 발생했습니다.');
     }
   }
 
@@ -112,6 +126,26 @@ function Enroll() {
           </CardFooter>
         </Card>
       </section>
+
+      {/* 포인트 부족 모달 */}
+      <AlertDialog open={showPointModal} onOpenChange={setShowPointModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>포인트 부족</AlertDialogTitle>
+            <AlertDialogDescription>
+              수강료를 결제하기 위한 포인트가 부족합니다.
+              <br />
+              포인트를 충전해 주세요.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction onClick={() => navigate('/payment')}>
+              포인트 충전하기
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Tail />
     </>
