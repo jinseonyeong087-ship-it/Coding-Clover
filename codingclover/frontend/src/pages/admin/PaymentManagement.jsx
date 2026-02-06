@@ -97,8 +97,10 @@ function PaymentManagement() {
                 paymentId: `PAY-${payment.paymentId.toString().padStart(3, '0')}`,
                 studentName: payment.studentName,
                 studentId: payment.studentLoginId,
-                courseTitle: payment.courseTitle || getTransactionDescription(payment.type),
+                courseTitle: payment.courseTitle || getTransactionDescription(payment.type, payment.orderId),
                 amount: payment.amount,
+                type: payment.type, // type 정보 추가
+                orderId: payment.orderId, // orderId 정보 추가
                 paymentStatus: getPaymentStatus(payment.type, payment.status),
                 refundStatus: getRefundStatus(payment.type, payment.status),
                 paymentDate: payment.paidAt,
@@ -121,7 +123,12 @@ function PaymentManagement() {
     };
 
     // 백엔드 데이터 변환 헬퍼 함수들
-    const getTransactionDescription = (type) => {
+    const getTransactionDescription = (type, orderId) => {
+        // 수강신청인 경우 (orderId가 COURSE_로 시작)
+        if (orderId && orderId.startsWith('COURSE_')) {
+            return '수강신청';
+        }
+        
         switch (type) {
             case 'CHARGE': return '포인트 충전';
             case 'USE': return '포인트 사용';
@@ -282,7 +289,12 @@ function PaymentManagement() {
         }
     };
 
-    const getPaymentStatusLabel = (status) => {
+    const getPaymentStatusLabel = (status, type, orderId) => {
+        // 수강신청인 경우 (orderId가 COURSE_로 시작)
+        if (orderId && orderId.startsWith('COURSE_')) {
+            return '포인트 사용';
+        }
+        
         switch (status) {
             case 'PAID': return '결제완료';
             case 'CANCELLED': return '결제취소';
@@ -633,7 +645,7 @@ function PaymentManagement() {
                                                             </div>
                                                         ) : (
                                                             <Badge className={getPaymentStatusColor(payment.paymentStatus)}>
-                                                                {getPaymentStatusLabel(payment.paymentStatus)}
+                                                                {getPaymentStatusLabel(payment.paymentStatus, payment.type, payment.orderId)}
                                                             </Badge>
                                                         )}
                                                     </TableCell>
