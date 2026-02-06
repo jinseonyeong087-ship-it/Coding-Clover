@@ -3,12 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Editor from "@monaco-editor/react";
 import Nav from "@/components/Nav";
+import Tail from '@/components/Tail';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import {
   Play, Send, Code2, Terminal,
   ChevronRight, Check, X,
   RotateCcw, BookOpen, LayoutDashboard, ListTodo, AlertCircle, Sparkles,
-  Save, Trash2, Edit, History // Admin Icons
+  Save, Trash2, Edit, History, ArrowLeft // Admin Icons
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -65,6 +66,7 @@ const CodingTestDetail = () => {
   // 관리자용 제출 기록
   const [submissions, setSubmissions] = useState([]);
   const [showSubmissions, setShowSubmissions] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState(null); // 선택된 제출 기록
 
   // 1. 초기 로드: 문제 목록 불러오기
   useEffect(() => {
@@ -215,8 +217,9 @@ const CodingTestDetail = () => {
         // 목록 상태 업데이트 (성공 표시 등)
         setTasks(prev => prev.map(t => t.problemId === selectedTask.problemId ? { ...t, status: 'PASS' } : t));
       } else {
-        // toast.error 제거 및 목록 상태 업데이트
+        // toast.error 제거 -> 오답이어도 제출은 되었음을 알림
         setTasks(prev => prev.map(t => t.problemId === selectedTask.problemId ? { ...t, status: 'FAIL' } : t));
+        toast.success("제출되었습니다.", { description: "오답입니다." });
       }
     } catch (e) {
       toast.error("제출 처리 오류");
@@ -267,13 +270,13 @@ const CodingTestDetail = () => {
   }
 
   return (
-    <div className="h-screen w-full flex flex-col bg-white font-sans text-gray-900">
+    <div className="min-h-screen w-full flex flex-col bg-white font-sans text-gray-900">
       <Toaster position="top-right" richColors />
       <Nav />
       {/* Nav fixed height compensation */}
       <div className="h-[70px] shrink-0"></div>
 
-      <main className="flex-1 flex overflow-hidden p-4 md:p-6 gap-6">
+      <main className="h-[calc(100vh-70px)] flex overflow-hidden p-4 md:p-6 gap-6 shrink-0">
         {/* Left Sidebar: Problem List */}
         <aside className="w-72 bg-white rounded-2xl border border-gray-200 flex flex-col overflow-hidden shrink-0">
           <div className="p-5 border-b border-gray-100">
@@ -419,25 +422,59 @@ const CodingTestDetail = () => {
                   <Panel defaultSize={40} minSize={30} className="flex flex-col h-full">
                     {showSubmissions ? (
                       <div className="h-full bg-white flex flex-col">
-                        <div className="px-6 py-3 bg-gray-50 flex items-center border-b border-gray-100 justify-between shrink-0">
-                          <span className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-                            <History className="w-4 h-4" /> 학생 제출 기록
-                          </span>
-                        </div>
-                        <ScrollArea className="flex-1 px-8 py-8">
-                          <div className="space-y-4">
-                            {submissions.map((sub, idx) => (
-                              <div key={idx} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
-                                <div className="text-sm">
-                                  <div className="font-bold text-gray-900">{sub.loginId || "User"}</div>
-                                  <div className="text-xs text-gray-500">{sub.submittedAt}</div>
-                                </div>
-                                <Badge variant={sub.status === "PASS" ? "default" : "destructive"} className={sub.status === 'PASS' ? 'bg-black hover:bg-gray-800' : ''}>{sub.status}</Badge>
+                        {selectedSubmission ? (
+                          // 상세 코드 보기 모드
+                          <div className="flex flex-col h-full">
+                            <div className="px-6 py-3 bg-gray-50 flex items-center border-b border-gray-100 justify-between shrink-0">
+                              <button
+                                onClick={() => setSelectedSubmission(null)}
+                                className="text-xs font-bold text-gray-600 hover:text-black flex items-center gap-1 transition-colors"
+                              >
+                                <ArrowLeft className="w-3.5 h-3.5" /> 뒤로가기
+                              </button>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500 font-medium">{selectedSubmission.loginId}</span>
+                                <Badge variant={selectedSubmission.status === "PASS" ? "default" : "destructive"} className="h-5 text-[10px]">
+                                  {selectedSubmission.status}
+                                </Badge>
                               </div>
-                            ))}
-                            {submissions.length === 0 && <div className="text-center text-gray-400 text-sm">기록이 없습니다.</div>}
+                            </div>
+                            <div className="flex-1 overflow-hidden relative bg-gray-50/50">
+                              <div className="absolute inset-0 p-4 overflow-auto">
+                                <pre className="font-mono text-sm leading-relaxed bg-white p-4 rounded-lg border border-gray-200 shadow-sm whitespace-pre-wrap">
+                                  {selectedSubmission.code || "// 코드가 없습니다."}
+                                </pre>
+                              </div>
+                            </div>
                           </div>
-                        </ScrollArea>
+                        ) : (
+                          // 목록 보기 모드
+                          <>
+                            <div className="px-6 py-3 bg-gray-50 flex items-center border-b border-gray-100 justify-between shrink-0">
+                              <span className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                                <History className="w-4 h-4" /> 학생 제출 기록
+                              </span>
+                            </div>
+                            <ScrollArea className="flex-1 px-8 py-8">
+                              <div className="space-y-4">
+                                {submissions.map((sub, idx) => (
+                                  <div
+                                    key={idx}
+                                    onClick={() => setSelectedSubmission(sub)}
+                                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-indigo-50 cursor-pointer transition-colors group"
+                                  >
+                                    <div className="text-sm">
+                                      <div className="font-bold text-gray-900 group-hover:text-indigo-700 transition-colors">{sub.loginId || "User"}</div>
+                                      <div className="text-xs text-gray-500">{sub.submittedAt}</div>
+                                    </div>
+                                    <Badge variant={sub.status === "PASS" ? "default" : "destructive"} className={sub.status === 'PASS' ? 'bg-black group-hover:bg-indigo-600' : ''}>{sub.status}</Badge>
+                                  </div>
+                                ))}
+                                {submissions.length === 0 && <div className="text-center text-gray-400 text-sm">기록이 없습니다.</div>}
+                              </div>
+                            </ScrollArea>
+                          </>
+                        )}
                       </div>
                     ) : (
                       <div className="flex flex-col h-full w-full">
@@ -582,6 +619,7 @@ const CodingTestDetail = () => {
           )}
         </section>
       </main>
+      <Tail />
     </div>
   );
 };

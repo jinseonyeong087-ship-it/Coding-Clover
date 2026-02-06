@@ -1,99 +1,129 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Tail from '@/components/Tail';
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
 import { Badge } from "@/components/ui/badge";
 import {
   Search, MessageCircle, CheckCircle2, HelpCircle,
-  Plus, ChevronRight, User, Calendar, BookOpen
+  Plus, User, BookOpen, AlertCircle
 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogDescription,
   DialogFooter
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/Label";
-import { Textarea } from "@/components/ui/textarea";
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const StudentQnaList = () => {
   const navigate = useNavigate();
   const [qnaList, setQnaList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [courseList, setCourseList] = useState([]);
+  const [title, setTitle] = useState('');
+  const [question, setQuestion] = useState('');
+  const [courseId, setCourseId] = useState('');
+  const [user, setUser] = useState(null);
+  const [courseList, setCourseList] = useState([]); // Enrolled courses
+  const [viewMode, setViewMode] = useState('all'); // 'all' | 'my'
 
-  // Filters
-  const [filterType, setFilterType] = useState('all'); // 'all', 'my', 'solved', 'unsolved'
-  const [selectedCourseId, setSelectedCourseId] = useState('all');
+  // UI States
   const [searchTerm, setSearchTerm] = useState('');
-
-  // New Question Form
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newQna, setNewQna] = useState({ title: '', question: '', courseId: '' });
+  const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
 
   useEffect(() => {
-    // Fetch User
+    // 유저 정보 가져오기
     const storedUser = localStorage.getItem('users');
     if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
+      const u = JSON.parse(storedUser);
+      setUser(u);
     }
-
-    // Fetch Courses for Dropdown
-    fetch('/course').then(res => res.json()).then(data => setCourseList(data));
-
-    // Fetch QnA List
-    fetchQnaList();
   }, []);
 
   const fetchQnaList = async () => {
-    setLoading(true);
     try {
-      // In a real scenario, you might want server-side filtering. 
-      // For now, fetching all and filtering client-side or using the simple 'my' endpoint.
       let url = '/student/qna';
-      const res = await axios.get(url, { withCredentials: true });
-      setQnaList(res.data);
-    } catch (err) {
-      console.error("Failed to fetch QnA:", err);
-    } finally {
-      setLoading(false);
+      if (viewMode === 'my') {
+        if (!user) {
+          setQnaList([]);
+          return;
+        }
+        url = `/student/qna/my?userId=${user.userId || user.id}`;
+      }
+
+      const response = await axios.get(url);
+      setQnaList(response.data);
+    } catch (e) {
+      console.error("Failed fetch qna list", e);
     }
   };
 
-  const handleCreateQna = async () => {
-    if (!currentUser) return alert("로그인이 필요합니다.");
-    if (!newQna.courseId) return alert("강좌를 선택해주세요.");
-    if (!newQna.title || !newQna.question) return alert("제목과 내용을 입력해주세요.");
+  useEffect(() => {
+    fetchQnaList();
+  }, [viewMode, user]);
+
+  // Fetch enrolled courses for the dropdown
+  useEffect(() => {
+    const fetchEnrolledCourses = async () => {
+      try {
+        // Use the endpoint that returns enrolled courses for the logged-in student
+        const response = await axios.get('/student/enrollment', { withCredentials: true });
+        setCourseList(response.data);
+      } catch (err) {
+        console.error("Failed to fetch enrolled courses", err);
+      }
+    };
+    if (user) {
+      fetchEnrolledCourses();
+    }
+  }, [user]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    if (!courseId) {
+      alert('강좌를 선택해주세요.');
+      return;
+    }
+
+    const qnaData = {
+      title,
+      question,
+      userId: user.userId || user.id,
+      courseId: Number(courseId)
+    };
 
     try {
-      await axios.post('/student/qna/add', {
-        ...newQna,
-        userId: currentUser.userId || currentUser.id,
-        courseId: Number(newQna.courseId)
-      }, { withCredentials: true });
+      const response = await axios.post('/student/qna/add', qnaData);
 
-      alert("질문이 등록되었습니다.");
-      setIsDialogOpen(false);
-      setNewQna({ title: '', question: '', courseId: '' });
-      fetchQnaList();
-    } catch (err) {
-      console.error(err);
-      alert("등록 실패");
+      if (response.status === 200) {
+        alert('질문이 등록되었습니다.');
+        setTitle('');
+        setQuestion('');
+        setCourseId('');
+        setIsWriteModalOpen(false);
+        fetchQnaList();
+      } else {
+        alert('등록 실패');
+      }
+    } catch (error) {
+      console.error('Error submitting QnA:', error);
+      alert('에러 발생');
     }
   };
 
   // Filter Logic
-  const getFilteredPosts = () => {
+  const getFilteredList = () => {
     let filtered = [...qnaList];
-
-    // 1. Text Search
     if (searchTerm) {
       const lower = searchTerm.toLowerCase();
       filtered = filtered.filter(q =>
@@ -102,285 +132,236 @@ const StudentQnaList = () => {
         (q.courseTitle && q.courseTitle.toLowerCase().includes(lower))
       );
     }
-
-    // 2. Sidebar Filter
-    if (filterType === 'my' && currentUser) {
-      filtered = filtered.filter(q => q.userId === (currentUser.userId || currentUser.id));
-    } else if (filterType === 'solved') {
-      filtered = filtered.filter(q => q.status === 'ANSWERED' || q.answers?.length > 0);
-    } else if (filterType === 'unsolved') {
-      filtered = filtered.filter(q => (!q.status || q.status === 'WAIT') && (!q.answers || q.answers.length === 0));
-    }
-
-    // 3. Course Filter
-    if (selectedCourseId !== 'all') {
-      filtered = filtered.filter(q => q.courseId === Number(selectedCourseId));
-    }
-
-    // Sort by Newest
-    filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-    return filtered;
+    return filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   };
+  const filteredQnaList = getFilteredList();
 
-  const displayPosts = getFilteredPosts();
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] font-sans">
-      <Nav />
-      <div className="h-16"></div> {/* Spacer for fixed nav if needed, or just padding */}
+    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
+      {/* Background Decoration */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
+      <Nav />
+      {/* Spacer for fixed nav */}
+      <div className="h-4"></div>
+
+      <main className="container mx-auto px-4 py-8 max-w-7xl relative z-0">
         <div className="flex flex-col lg:flex-row gap-8">
 
-          {/* Left Sidebar */}
-          <aside className="w-full lg:w-64 shrink-0 space-y-8">
+          {/* Sidebar */}
+          <aside className="w-full lg:w-72 shrink-0 space-y-6">
             {/* Write Button */}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="w-full h-12 text-base font-bold bg-[#5d5feF] hover:bg-[#4b4ddb] shadow-md transition-all">
-                  <Plus className="mr-2 h-5 w-5" />
-                  질문하기
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
-                <DialogHeader>
-                  <DialogTitle>새로운 질문 작성</DialogTitle>
-                  <DialogDescription>
-                    궁금한 점을 자세히 적어주세요. 강사님과 다른 수강생들이 답변해드립니다.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label>강좌 선택</Label>
-                    <select
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      value={newQna.courseId}
-                      onChange={(e) => setNewQna({ ...newQna, courseId: e.target.value })}
-                    >
-                      <option value="">질문할 강좌를 선택하세요</option>
-                      {courseList.map(c => (
-                        <option key={c.courseId} value={c.courseId}>{c.title}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>제목</Label>
-                    <Input
-                      placeholder="핵심 내용을 요약해주세요"
-                      value={newQna.title}
-                      onChange={(e) => setNewQna({ ...newQna, title: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>내용</Label>
-                    <Textarea
-                      placeholder="코드 에러가 발생했다면 에러 메시지와 코드를 함께 첨부해주세요."
-                      className="min-h-[200px]"
-                      value={newQna.question}
-                      onChange={(e) => setNewQna({ ...newQna, question: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>취소</Button>
-                  <Button onClick={handleCreateQna} className="bg-[#5d5feF]">등록하기</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            {/* Navigation Menu */}
-            <nav className="space-y-1">
-              <button
-                onClick={() => setFilterType('all')}
-                className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${filterType === 'all' ? 'bg-white text-[#5d5feF] shadow-sm ring-1 ring-gray-200' : 'text-gray-600 hover:bg-gray-100'
-                  }`}
+            {(!user || user.role !== 'ADMIN') && (
+              <Button
+                onClick={() => {
+                  if (!user) return alert("로그인이 필요합니다.");
+                  setIsWriteModalOpen(true);
+                }}
+                className="w-full h-14 text-base font-bold shadow-lg bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 transition-all rounded-xl"
               >
-                <div className="flex items-center gap-3">
-                  <BookOpen className="h-4 w-4" />
-                  전체 질문
-                </div>
-                <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
-                  {qnaList.length}
-                </span>
-              </button>
+                <Plus className="mr-2 h-5 w-5" />
+                새 질문 작성하기
+              </Button>
+            )}
 
-              <button
-                onClick={() => currentUser ? setFilterType('my') : alert('로그인이 필요합니다.')}
-                className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${filterType === 'my' ? 'bg-white text-[#5d5feF] shadow-sm ring-1 ring-gray-200' : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-              >
-                <div className="flex items-center gap-3">
-                  <User className="h-4 w-4" />
-                  내 질문
-                </div>
-              </button>
+            {/* Filter Menu */}
+            <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-xl p-2 shadow-sm">
+              <nav className="space-y-1">
+                <button
+                  onClick={() => setViewMode('all')}
+                  className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-all ${viewMode === 'all'
+                    ? 'bg-primary/10 text-primary shadow-sm'
+                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                    }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <BookOpen className="h-4 w-4" />
+                    전체 질문
+                  </div>
+                  {viewMode === 'all' && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                </button>
 
-              <FilterButton
-                isActive={filterType === 'unsolved'}
-                onClick={() => setFilterType('unsolved')}
-                icon={<HelpCircle className="h-4 w-4" />}
-                label="해결 중인 질문"
-                count={qnaList.filter(q => (!q.status || q.status === 'WAIT') && (!q.answers || q.answers.length === 0)).length}
-              />
+                <button
+                  onClick={() => {
+                    if (!user) return alert('로그인이 필요합니다.');
+                    setViewMode('my');
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-all ${viewMode === 'my'
+                    ? 'bg-primary/10 text-primary shadow-sm'
+                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                    }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <User className="h-4 w-4" />
+                    내 질문
+                  </div>
+                  {viewMode === 'my' && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                </button>
+              </nav>
+            </div>
 
-              <FilterButton
-                isActive={filterType === 'solved'}
-                onClick={() => setFilterType('solved')}
-                icon={<CheckCircle2 className="h-4 w-4" />}
-                label="해결된 질문"
-                count={qnaList.filter(q => q.status === 'ANSWERED' || q.answers?.length > 0).length}
-              />
-            </nav>
-
-            {/* Course Filter Box */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-              <h3 className="font-bold text-gray-900 mb-4 text-sm">강좌별 모아보기</h3>
-              <select
-                className="w-full h-10 rounded-md border border-gray-200 text-sm px-3 text-gray-600 focus:outline-none focus:border-[#5d5feF] transition-colors"
-                value={selectedCourseId}
-                onChange={(e) => setSelectedCourseId(e.target.value)}
-              >
-                <option value="all">모든 강좌</option>
-                {courseList.map(course => (
-                  <option key={course.courseId} value={course.courseId}>{course.title}</option>
-                ))}
-              </select>
+            {/* Helper Card */}
+            <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 p-6 rounded-xl border border-purple-500/20 shadow-sm">
+              <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                <HelpCircle className="h-4 w-4 text-primary" />
+                도움말
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                궁금한 내용이 있다면 주저하지 말고 질문해보세요. 강사님과 다른 학생들이 답변해드립니다.
+              </p>
             </div>
           </aside>
 
           {/* Main Content */}
           <section className="flex-1 min-w-0">
-            <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+            <div className="mb-8 flex flex-col sm:flex-row gap-6 justify-between items-start sm:items-end">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">QnA 게시판</h1>
-                <p className="text-gray-500 text-sm mt-1">지식 공유의 장, 서로 묻고 답하며 함께 성장하세요.</p>
+                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 mb-2">QnA 게시판</h1>
+                <p className="text-muted-foreground">
+                  {viewMode === 'my' ? '내가 작성한 질문들의 목록입니다.' : '함께 배우고 성장하는 지식 공유의 공간입니다.'}
+                </p>
               </div>
-
               {/* Search */}
-              <div className="relative w-full sm:w-72">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <div className="relative w-full sm:w-80">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                </div>
                 <Input
-                  className="pl-10 bg-white border-gray-200 focus:ring-[#5d5feF]"
-                  placeholder="제목, 내용, 강좌명 검색"
+                  className="pl-10 h-11 bg-background/50 backdrop-blur-sm border-border/50 focus:bg-background transition-all"
+                  placeholder="제목, 내용으로 검색..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
             </div>
 
-            {/* Question List */}
+            {/* List */}
             <div className="space-y-4">
-              {loading ? (
-                <div className="text-center py-20 text-gray-500">로딩 중...</div>
-              ) : displayPosts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-dashed border-gray-200">
-                  <HelpCircle className="h-12 w-12 text-gray-300 mb-4" />
-                  <p className="text-lg font-medium text-gray-900">등록된 질문이 없습니다</p>
-                  <p className="text-sm text-gray-500">첫 번째 질문을 남겨보세요!</p>
+              {filteredQnaList.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 bg-background/40 rounded-2xl border border-dashed border-border/50">
+                  <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
+                    <HelpCircle className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <p className="text-lg font-medium text-foreground">등록된 질문이 없습니다</p>
+                  <p className="text-sm text-muted-foreground mt-1">첫 번째 질문의 주인공이 되어보세요!</p>
                 </div>
               ) : (
-                displayPosts.map((qna) => (
-                  <QnaCard key={qna.qnaId} qna={qna} onClick={() => navigate(`/student/qna/${qna.qnaId}`)} />
-                ))
+                filteredQnaList.map(qna => {
+                  const isSolved = qna.status === 'ANSWERED' || (qna.answers && qna.answers.length > 0);
+                  const answerCount = qna.answers ? qna.answers.length : 0;
+
+                  return (
+                    <div
+                      key={qna.qnaId}
+                      onClick={() => navigate(`/student/qna/${qna.qnaId}`)}
+                      className="group relative bg-background/60 backdrop-blur-md rounded-xl border border-border/50 p-6 cursor-pointer hover:bg-background/80 hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+                    >
+                      {/* Left Accent Bar */}
+                      <div className={`absolute left-0 top-6 bottom-6 w-1 rounded-r-full transition-colors ${isSolved ? 'bg-green-500' : 'bg-orange-400'}`} />
+
+                      <div className="flex items-start gap-5 pl-3">
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {qna.courseTitle && (
+                              <Badge variant="outline" className="bg-muted/50 text-muted-foreground font-normal border-border/50">
+                                {qna.courseTitle}
+                              </Badge>
+                            )}
+                            <Badge variant={isSolved ? "default" : "secondary"} className={`${isSolved ? "bg-green-500 hover:bg-green-600" : "bg-orange-400/10 text-orange-500 hover:bg-orange-400/20"}`}>
+                              {isSolved ? <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />해결됨</span> : "답변 대기"}
+                            </Badge>
+                          </div>
+
+                          <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1 pr-4">
+                            {qna.title}
+                          </h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                            {qna.question}
+                          </p>
+
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
+                            <span className="flex items-center gap-1 font-medium text-foreground/80">
+                              <User className="h-3 w-3" />
+                              {qna.userName || '익명'}
+                            </span>
+                            <div className="w-px h-3 bg-border"></div>
+                            <span>{new Date(qna.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+
+                        {/* Right Side Answer Count */}
+                        <div className="hidden sm:flex flex-col items-center justify-center min-w-[4rem] self-center">
+                          <div className={`flex flex-col items-center justify-center w-12 h-12 rounded-2xl border transition-colors ${answerCount > 0
+                            ? 'bg-primary/10 border-primary/20 text-primary'
+                            : 'bg-muted/30 border-border/50 text-muted-foreground'
+                            }`}>
+                            <span className="text-lg font-bold leading-none">{answerCount}</span>
+                            <MessageCircle className="h-3 w-3 mt-1" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })
               )}
             </div>
           </section>
         </div>
       </main>
+
+      {/* Write Modal */}
+      <Dialog open={isWriteModalOpen} onOpenChange={setIsWriteModalOpen}>
+        <DialogContent className="sm:max-w-[600px] bg-background/95 backdrop-blur-xl border-border/50">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">새로운 질문 작성</DialogTitle>
+            <DialogDescription>
+              궁금한 점을 자세히 적어주세요. 상세한 질문은 더 좋은 답변을 받습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="courseId" className="font-semibold">강좌 선택</Label>
+              <select
+                id="courseId"
+                value={courseId}
+                onChange={(e) => setCourseId(e.target.value)}
+                required
+                className="flex h-11 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">강좌를 선택해주세요 (수강 중인 강좌만 표시됩니다)</option>
+                {courseList.length === 0 && <option disabled>수강 중인 강좌가 없습니다.</option>}
+                {courseList.map((course) => (
+                  <option key={course.courseId} value={course.courseId}>{course.courseTitle}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="title" className="font-semibold">제목</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                placeholder="핵심 내용을 요약해주세요"
+                className="h-11 bg-background/50"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="question" className="font-semibold">내용</Label>
+              <textarea
+                className="flex min-h-[200px] w-full rounded-md border border-input bg-background/50 px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none leading-relaxed"
+                value={question} onChange={(e) => setQuestion(e.target.value)} required placeholder="질문 내용을 자세히 입력해주세요. 코드나 에러 메시지를 포함하면 좋습니다."
+              />
+            </div>
+            <DialogFooter className="gap-2">
+              <Button type="button" variant="ghost" onClick={() => setIsWriteModalOpen(false)}>취소</Button>
+              <Button type="submit" className="bg-primary hover:bg-primary/90">등록하기</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
       <Tail />
-    </div>
-  );
-};
-
-const FilterButton = ({ isActive, onClick, icon, label, count }) => (
-  <button
-    onClick={onClick}
-    className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isActive ? 'bg-white text-[#5d5feF] shadow-sm ring-1 ring-gray-200' : 'text-gray-600 hover:bg-gray-100'
-      }`}
-  >
-    <div className="flex items-center gap-3">
-      {icon}
-      {label}
-    </div>
-    {count !== undefined && (
-      <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
-        {count}
-      </span>
-    )}
-  </button>
-);
-
-const QnaCard = ({ qna, onClick }) => {
-  const isSolved = qna.status === 'ANSWERED' || (qna.answers && qna.answers.length > 0);
-  const answerCount = qna.answers ? qna.answers.length : 0;
-
-  return (
-    <div
-      onClick={onClick}
-      className="group bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:border-[#5d5feF] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
-    >
-      <div className="flex items-start gap-4">
-        {/* Status Icon */}
-        <div className={`mt-1 shrink-0 ${isSolved ? 'text-green-500' : 'text-gray-300'}`}>
-          {isSolved ? (
-            <CheckCircle2 className="h-6 w-6" />
-          ) : (
-            <HelpCircle className="h-6 w-6" />
-          )}
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            {/* Course Badge */}
-            {qna.courseTitle && (
-              <Badge variant="secondary" className="bg-gray-100 text-gray-600 hover:bg-gray-200 font-normal">
-                {qna.courseTitle}
-              </Badge>
-            )}
-            {/* Status Badge */}
-            <div className={`text-xs font-bold px-2 py-0.5 rounded ${isSolved ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-              }`}>
-              {isSolved ? '해결됨' : '미해결'}
-            </div>
-          </div>
-
-          <h3 className="text-lg font-bold text-gray-900 group-hover:text-[#5d5feF] transition-colors mb-2 line-clamp-1">
-            {qna.title}
-          </h3>
-
-          <p className="text-sm text-gray-500 line-clamp-2 mb-4">
-            {qna.question}
-          </p>
-
-          <div className="flex items-center gap-4 text-xs text-gray-400">
-            <div className="flex items-center gap-1.5">
-              <span className="font-medium text-gray-600">{qna.userName || '익명'}</span>
-            </div>
-            <div className="w-px h-3 bg-gray-200"></div>
-            <span>{new Date(qna.createdAt).toLocaleDateString()}</span>
-
-            {/* Answer Count (Small) */}
-            {answerCount > 0 && (
-              <>
-                <div className="w-px h-3 bg-gray-200"></div>
-                <div className="flex items-center gap-1 text-[#5d5feF] font-medium">
-                  <MessageCircle className="h-3.5 w-3.5" />
-                  답변 {answerCount}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="hidden sm:block self-center">
-          <div className={`flex flex-col items-center justify-center w-14 h-14 rounded-xl border ${isSolved ? 'bg-green-50 border-green-100 text-green-600' : 'bg-gray-50 border-gray-100 text-gray-400'
-            }`}>
-            <span className="text-xl font-bold leading-none">{answerCount}</span>
-            <span className="text-[10px] mt-1">답변</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

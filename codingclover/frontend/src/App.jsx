@@ -15,7 +15,7 @@ import CodingTest from './test/CodingTest'
 import EmailTest from './test/EmailTest'
 import CourseCreateRequest from '@/pages/instructor/CourseCreateRequest'
 import FindAccount from '@/pages/FindAccount'
-import QnaTest from './test/QnaTest'
+
 import SubmissionTest from './test/SubmissionTest'
 import ProtectedRoute from '@/components/ProtectdRoute'
 import Noroll from '@/pages/Noroll'
@@ -84,7 +84,7 @@ function App() {
         {/* 이메일 발송 테스트 페이지 */}
         <Route path="/test/email" element={<EmailTest />} />
         {/* QnA 테스트 페이지 */}
-        <Route path="/test/qna" element={<QnaTest />} />
+
         {/* Submission 테스트 페이지 */}
         <Route path="/test/submission" element={<SubmissionTest />} />
         {/* 강의 일괄 승인 테스트 경로 추가 */}
@@ -137,6 +137,9 @@ function App() {
         {/* 커뮤니티 (전체 공개, 로그인 불필요) */}
         <Route path="/student/community" element={<CommunityPostList />} />
         <Route path="/student/community/posts/:postId" element={<CommunityPostDetail />} />
+        <Route path="/student/qna" element={<StudentQnaList />} />
+        <Route path="/student/qna/:qnaId" element={<StudentQnaDetail />} />
+        {/* <Route path="/student/lecture/:lectureId" element={<StudentCourseDetail />} /> */}
 
         {/* 수강생 페이지 (로그인 필요) */}
         <Route path="/student/*" element={
@@ -153,6 +156,7 @@ function App() {
           <Route path="dashboard" element={<InstructorMain />} />
           <Route path="course/new" element={<CourseCreateRequest />} />
           <Route path="course/:courseId" element={<InstructorCourseDetail />} />
+          <Route path="course/:courseId/qna/:qnaId" element={<StudentQnaDetail />} />
           <Route path="mypage" element={<InstructorMypage />} />
         </Route>
         {/* 관리자 */}
