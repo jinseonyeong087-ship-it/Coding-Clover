@@ -270,7 +270,15 @@ function PaymentManagement() {
     };
 
     // 상태 배지 색상
-    const getPaymentStatusColor = (status) => {
+    const getPaymentStatusColor = (status, statusLabel) => {
+        // 라벨에 따른 색상 설정
+        if (statusLabel === '포인트 사용') {
+            return 'bg-yellow-100 text-yellow-800';
+        }
+        if (statusLabel === '환불완료') {
+            return 'bg-blue-100 text-blue-800';
+        }
+        
         switch (status) {
             case 'PAID': return 'bg-green-100 text-green-800';
             case 'CANCELLED': return 'bg-gray-100 text-gray-800';
@@ -282,7 +290,7 @@ function PaymentManagement() {
     const getRefundStatusColor = (status) => {
         switch (status) {
             case 'REQUESTED': return 'bg-red-100 text-red-800';
-            case 'APPROVED': return 'bg-green-100 text-green-800';
+            case 'APPROVED': return 'bg-blue-100 text-blue-800'; // 환불완료는 파란색
             case 'REJECTED': return 'bg-gray-100 text-gray-800';
             case 'NONE': return 'bg-gray-50 text-gray-500';
             default: return 'bg-gray-100 text-gray-800';
@@ -644,7 +652,7 @@ function PaymentManagement() {
                                                                 </Badge>
                                                             </div>
                                                         ) : (
-                                                            <Badge className={getPaymentStatusColor(payment.paymentStatus)}>
+                                                            <Badge className={getPaymentStatusColor(payment.paymentStatus, getPaymentStatusLabel(payment.paymentStatus, payment.type, payment.orderId))}>
                                                                 {getPaymentStatusLabel(payment.paymentStatus, payment.type, payment.orderId)}
                                                             </Badge>
                                                         )}
