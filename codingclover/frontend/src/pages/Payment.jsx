@@ -9,6 +9,7 @@ import { Label } from '../components/ui/Label';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../components/ui/alert-dialog';
 import { CheckCircle, XCircle } from 'lucide-react';
 import StudentNav from '../components/StudentNav';
+import Tail from '../components/Tail';
 import coinImg from '../img/coin.png';
 
 const clientKey = "test_ck_EP59LybZ8B6bWgaqMRRY86GYo7pR";
