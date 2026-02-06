@@ -12,7 +12,6 @@ import Nav from '../components/Nav';
 import StudentNav from '../components/StudentNav';
 import Tail from '../components/Tail';
 import coinImg from '../img/coin.png';
-import Tail from '../components/Tail';
 
 const clientKey = "test_ck_EP59LybZ8B6bWgaqMRRY86GYo7pR";
 
