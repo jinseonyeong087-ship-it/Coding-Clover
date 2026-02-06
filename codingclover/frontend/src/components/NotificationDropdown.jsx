@@ -108,9 +108,9 @@ const NotificationDropdown = () => {
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`relative p-4 hover:bg-gray-50 cursor-pointer transition-colors group ${!notification.read
-                    ? 'bg-blue-50/50'
-                    : 'bg-white opacity-60 hover:opacity-100 grayscale-[0.5] hover:grayscale-0'
+                  className={`relative p-4 cursor-pointer transition-colors group ${!notification.read
+                    ? 'bg-blue-50 hover:bg-blue-100/50'
+                    : 'bg-white opacity-50 hover:opacity-100 grayscale'
                     }`}
                   onClick={() => handleNotificationClick(notification)}
                 >

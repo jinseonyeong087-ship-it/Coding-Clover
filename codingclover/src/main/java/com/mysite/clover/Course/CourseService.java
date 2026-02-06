@@ -98,7 +98,7 @@ public class CourseService {
                         admin,
                         "NEW_COURSE_REQUEST",
                         "강사 " + user.getName() + "님의 신규 강좌 승인 요청: '" + title + "'",
-                        "/admin/courses");
+                        "/admin/course/" + course.getCourseId());
             }
         }
     }
@@ -158,7 +158,7 @@ public class CourseService {
         // 4. 수강료 확인 및 포인트 차감
         int price = course.getPrice();
         System.out.println("수강료: " + price + "원, 강좌: " + course.getTitle());
-        
+
         if (price > 0) {
             try {
                 // 포인트 차감 및 결제 리스트 기록 (PaymentService 사용)
@@ -288,7 +288,7 @@ public class CourseService {
                     admin,
                     "COURSE_RESUBMITTED",
                     "강사 " + course.getCreatedBy().getName() + "님의 강좌 재승인 요청: '" + course.getTitle() + "'",
-                    "/admin/courses");
+                    "/admin/course/" + course.getCourseId());
         }
     }
 
@@ -354,7 +354,7 @@ public class CourseService {
                     admin,
                     "NEW_COURSE_REQUEST",
                     "강사 " + course.getCreatedBy().getName() + "님의 신규 강좌 승인 요청: '" + course.getTitle() + "'",
-                    "/admin/courses");
+                    "/admin/course/" + course.getCourseId());
         }
     }
 }

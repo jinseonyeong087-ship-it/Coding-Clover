@@ -13,6 +13,7 @@ public class NotificationDto {
   private String title;
   private String linkUrl;
   private LocalDateTime readAt;
+  private boolean read;
   private LocalDateTime createdAt;
 
   public static NotificationDto fromEntity(Notification notification) {
@@ -22,6 +23,7 @@ public class NotificationDto {
         .title(notification.getTitle())
         .linkUrl(notification.getLinkUrl())
         .readAt(notification.getReadAt())
+        .read(notification.getReadAt() != null)
         .createdAt(notification.getCreatedAt())
         .build();
   }
