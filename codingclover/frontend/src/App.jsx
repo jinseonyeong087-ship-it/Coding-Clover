@@ -106,7 +106,6 @@ function App() {
         <Route path="/ask" element={<ChatBot />} />
 
         {/* 아이디/비밀번호 찾기 테스트 */}
-        {/* 아이디/비밀번호 찾기 테스트 */}
         <Route path="/test/findaccount" element={<FindAccountTest />} />
 
         {/* 강사 통합 관리 테스트 영역 */}
@@ -125,6 +124,7 @@ function App() {
         <Route path="/auth/register" element={<Register />} />
         <Route path="/auth/findReques" element={<FindAccount />} />
         {/* <Route path="/auth/oauth element={FindAccount} /> 소셜 로그인 아이콘도 없음*/}
+        {/* <Route path="/auth/oauth" element={<FindAccount />} /> 소셜 로그인 아이콘도 없음 */}
         {/* 권한 없음 페이지 */}
         <Route path="/noroll" element={<Noroll />} />
         <Route path="/course/level/:level" element={<Level />} />
