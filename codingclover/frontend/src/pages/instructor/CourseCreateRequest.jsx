@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Nav from '@/components/Nav';
 import Tail from '@/components/Tail';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card"
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import InstructorMain from './InstructorMain'
-import axios from 'axios';
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
+import { BookOpen, CheckCircle2, ChevronRight, AlertCircle, Sparkles } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -30,10 +30,10 @@ function CourseCreateRequest() {
   const navigate = useNavigate();
 
   const levelMapping = [
-    { id: 1, level: 1, name: "초급" },
-    { id: 2, level: 2, name: "중급" },
-    { id: 3, level: 3, name: "고급" }
-  ]
+    { id: 1, level: 1, name: "초급", description: "입문자를 위한 기초 과정" },
+    { id: 2, level: 2, name: "중급", description: "실무 활용 및 심화 과정" },
+    { id: 3, level: 3, name: "고급", description: "전문가를 위한 마스터 과정" }
+  ];
 
   // 사용자 정보 로드
   useEffect(() => {
@@ -42,31 +42,28 @@ function CourseCreateRequest() {
       try {
         const userData = JSON.parse(storedUser);
         const loginId = userData.loginId;
-        
-        // 강사 프로필에서 이름 가져오기
+
         fetch('/api/instructor/mypage', {
           method: 'GET',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             'X-Login-Id': loginId
           },
           credentials: 'include'
         })
-        .then((res) => {
-          if (res.ok) return res.json();
-          throw new Error('프로필 조회 실패');
-        })
-        .then((data) => {
-          // 사용자 이름 자동 설정
-          setCourse(prev => ({ ...prev, createdBy: userData.name || loginId }));
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error('사용자 정보 조회 오류:', err);
-          // 프로필 조회 실패 시 localStorage의 이름 사용
-          setCourse(prev => ({ ...prev, createdBy: userData.name || userData.loginId || '강사명 없음' }));
-          setLoading(false);
-        });
+          .then((res) => {
+            if (res.ok) return res.json();
+            throw new Error('프로필 조회 실패');
+          })
+          .then((data) => {
+            setCourse(prev => ({ ...prev, createdBy: userData.name || loginId }));
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.error('사용자 정보 조회 오류:', err);
+            setCourse(prev => ({ ...prev, createdBy: userData.name || userData.loginId || '강사명 없음' }));
+            setLoading(false);
+          });
       } catch (error) {
         console.error('localStorage 파싱 오류:', error);
         setLoading(false);
@@ -75,8 +72,6 @@ function CourseCreateRequest() {
       setLoading(false);
     }
   }, []);
-
-  
 
   // 페이지 진입 시 임시저장 데이터 존재 여부 확인
   useEffect(() => {
@@ -102,7 +97,7 @@ function CourseCreateRequest() {
     setShowDraftDialog(false);
   };
 
-  // 임시저장 데이터 삭제 (새로 작성)
+  // 임시저장 데이터 삭제
   const handleDiscardDraft = () => {
     localStorage.removeItem(DRAFT_KEY);
     setShowDraftDialog(false);
@@ -121,8 +116,6 @@ function CourseCreateRequest() {
     alert('임시 저장되었습니다.');
   };
 
-  // 요고는 유저가 입력한 걸 State에 저장해주는 고얌
-  // 입력하면 에러메세지 없애줌
   const handleChange = (event) => {
     const { name, value } = event.target;
     setCourse(prev => ({ ...prev, [name]: value }));
@@ -135,11 +128,6 @@ function CourseCreateRequest() {
 
   const handleClick = () => {
     setErrors({});
-    console.log('제출버튼누름');
-    // 유저 정보 가져오기
-    const storedUser = localStorage.getItem('users');
-    const userData = storedUser ? JSON.parse(storedUser) : null;
-    const instructorId = userData ? (userData.userId || userData.id) : null;
 
     axios.post('/instructor/course/new', {
       title: course.title,
@@ -148,7 +136,6 @@ function CourseCreateRequest() {
       price: Number(course.price),
     }, { withCredentials: true })
       .then((response) => {
-        console.log('결과 : ', response.data);
         localStorage.removeItem(DRAFT_KEY);
         alert("개설 신청이 완료되었습니다.");
         navigate('/instructor/dashboard')
@@ -156,7 +143,6 @@ function CourseCreateRequest() {
       .catch((err) => {
         if (err.response && err.response.status === 400) {
           const errorData = err.response.data;
-          // 서버에서 문자열로 반환하면 global 에러로 처리
           if (typeof errorData === 'string') {
             setErrors({ global: errorData });
           } else {
@@ -171,94 +157,188 @@ function CourseCreateRequest() {
   };
 
   return (
-    <>
-      {/* 임시저장 데이터 불러오기 확인 다이얼로그 */}
+    <div className="min-h-screen bg-slate-50 relative overflow-hidden">
+      {/* Background Decorations */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-indigo-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+      </div>
+
       <AlertDialog open={showDraftDialog} onOpenChange={setShowDraftDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>임시 저장된 데이터가 있습니다</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="flex items-center gap-2 text-indigo-900">
+              <Sparkles className="w-5 h-5 text-indigo-500" />
+              임시 저장된 데이터 발견
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-600">
               이전에 작성하던 강좌 정보가 있습니다. 불러오시겠습니까?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleDiscardDraft}>새로 작성</AlertDialogCancel>
-            <AlertDialogAction onClick={handleLoadDraft}>불러오기</AlertDialogAction>
+            <AlertDialogCancel onClick={handleDiscardDraft} className="border-slate-200 hover:bg-slate-50">새로 작성</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLoadDraft} className="bg-indigo-600 hover:bg-indigo-700">불러오기</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <Nav />
 
-      <section className="container mx-auto px-4 py-16">
-        <Card className="max-w-4xl mx-auto">
-          <CardHeader><h1 className="text-3xl font-bold mb-8">강좌 개설</h1></CardHeader>
+      <section className="relative container mx-auto px-4 py-24">
+        <div className="max-w-4xl mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600 mb-4">
+              새로운 강좌 개설
+            </h1>
+            <p className="text-slate-600 text-lg">
+              여러분의 지식을 공유하고 새로운 가치를 창출하세요.
+            </p>
+          </div>
 
-          {loading ? (
-            <CardContent className="text-center py-8">
-              <p>사용자 정보를 불러오는 중...</p>
-            </CardContent>
-          ) : (
-            <CardContent className="space-y-2">
-              {errors.global && <p className="text-red-500 text-sm text-center mb-4">{errors.global}</p>}
-              <div className="grid grid-cols-4 items-center gap-6">
-                <label className="text-right font-medium">강좌명</label>
-                <Input name="title" type="text" onChange={handleChange} value={course.title} className="col-span-3" method="post" />
-                {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
-              </div>
+          <Card className="border-0 shadow-2xl bg-white/80 backdrop-blur-xl ring-1 ring-white/50">
+            {loading ? (
+              <CardContent className="flex flex-col items-center justify-center py-20 text-slate-500">
+                <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+                <p>사용자 정보를 불러오는 중...</p>
+              </CardContent>
+            ) : (
+              <div className="p-8">
+                {errors.global && (
+                  <div className="mb-8 p-4 bg-red-50/50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <p className="text-sm font-medium">{errors.global}</p>
+                  </div>
+                )}
 
-              <div className="grid grid-cols-4 items-center gap-6">
-                <label className="text-right font-medium">강사명</label>
-                <div className="col-span-3">
-                  <Input 
-                    value={course.createdBy} 
-                    readOnly 
-                    className="bg-gray-50 cursor-not-allowed" 
-                    placeholder="강사명이 자동으로 입력됩니다"
-                  />
+                <div className="space-y-8">
+                  {/* Basic Info Section */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                      <BookOpen className="w-5 h-5 text-indigo-600" />
+                      <h3 className="text-lg font-semibold text-slate-800">기본 정보</h3>
+                    </div>
+
+                    <div className="grid gap-6">
+                      <div className="space-y-2">
+                        <Label className="text-slate-600 text-sm font-medium">강좌명</Label>
+                        <Input
+                          name="title"
+                          value={course.title}
+                          onChange={handleChange}
+                          placeholder="매력적인 강좌 제목을 입력해주세요"
+                          className="bg-white/50 border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 py-6"
+                        />
+                        {errors.title && <p className="text-red-500 text-xs ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.title}</p>}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-slate-600 text-sm font-medium">강사명</Label>
+                        <Input
+                          value={course.createdBy}
+                          readOnly
+                          className="bg-slate-50/80 border-slate-200 text-slate-500 cursor-not-allowed py-6"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Level Selection Section */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                      <Sparkles className="w-5 h-5 text-indigo-600" />
+                      <h3 className="text-lg font-semibold text-slate-800">난이도 설정</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {levelMapping.map((grade) => (
+                        <div
+                          key={grade.id}
+                          className={`
+                                        relative p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md
+                                        ${selectLevel === grade.level
+                              ? 'border-indigo-600 bg-indigo-50/50'
+                              : 'border-slate-100 bg-white hover:border-indigo-200'}
+                                    `}
+                          onClick={() => handleCheckboxChange(grade.level)}
+                        >
+                          <div className="flex items-start gap-3">
+                            <Checkbox
+                              checked={selectLevel === grade.level}
+                              onCheckedChange={() => handleCheckboxChange(grade.level)}
+                              className="mt-1 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                            />
+                            <div>
+                              <Label className="text-base font-semibold text-slate-800 cursor-pointer">{grade.name}</Label>
+                              <p className="text-xs text-slate-500 mt-1">{grade.description}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {errors.level && <p className="text-red-500 text-xs flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.level}</p>}
+                  </div>
+
+                  {/* Details Section */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                      <CheckCircle2 className="w-5 h-5 text-indigo-600" />
+                      <h3 className="text-lg font-semibold text-slate-800">상세 정보</h3>
+                    </div>
+
+                    <div className="grid gap-6">
+                      <div className="space-y-2">
+                        <Label className="text-slate-600 text-sm font-medium">강좌 개요</Label>
+                        <Input
+                          name="description"
+                          value={course.description}
+                          onChange={handleChange}
+                          placeholder="수강생들에게 보여질 강좌 소개를 입력해주세요"
+                          className="bg-white/50 border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 py-6"
+                        />
+                        {errors.description && <p className="text-red-500 text-xs ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.description}</p>}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-slate-600 text-sm font-medium">수강료 (원)</Label>
+                        <Input
+                          name="price"
+                          type="number"
+                          value={course.price}
+                          onChange={handleChange}
+                          placeholder="0"
+                          className="bg-white/50 border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 py-6 font-mono"
+                        />
+                        {errors.price && <p className="text-red-500 text-xs ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.price}</p>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-12 flex justify-end gap-3 pt-6 border-t border-slate-100">
+                  <Button
+                    variant="outline"
+                    onClick={handleTempSave}
+                    className="px-6 py-6 text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
+                  >
+                    임시 저장
+                  </Button>
+                  <Button
+                    onClick={handleClick}
+                    className="px-8 py-6 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg hover:shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5"
+                  >
+                    <span className="mr-2">개설 신청하기</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
-
-            <div className="grid grid-cols-4 items-center gap-6">
-              <label className="text-right font-medium">난이도</label>
-              <div className="flex justify-between gap-6">
-                {levelMapping.map((grade) => {
-                  return (
-                    <div className="flex justify-between items-center" key={grade.id}>
-                      <>
-                        <Checkbox checked={selectLevel === grade.level} name={grade.id} onCheckedChange={() => handleCheckboxChange(grade.level)} />
-                        <Label>{grade.name}</Label>
-                      </>
-                    </div>
-                  )
-                })}
-              </div>
-              {errors.level && <p className="text-red-500 text-sm mt-1">{errors.level}</p>}
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-6">
-              <label className="text-right font-medium">강좌 개요</label>
-              <Input name="description" type="text" onChange={handleChange} value={course.description} className="col-span-3" method="post" />
-              {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-6">
-              <label className="text-right font-medium">강좌 이용료</label>
-              <Input name="price" type="text" onChange={handleChange} value={course.price} className="col-span-3" method="post" />
-              {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
-            </div>
-
-            <CardFooter className="flex justify-end gap-3">
-              <Button variant="outline" onClick={handleTempSave}>임시 저장</Button>
-              <Button onClick={handleClick} method="post">개설 신청</Button>
-            </CardFooter>
-          </CardContent>
-          )}
-        </Card>
+            )}
+          </Card>
+        </div>
       </section>
 
       <Tail />
-    </>
+    </div>
   );
 }
 

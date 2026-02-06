@@ -46,32 +46,59 @@ const CodingTestList = () => {
   const tabs = ["전체", "초급", "중급", "고급"];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#ffffff]">
+    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
       <Nav />
-      <main className="flex-grow container mx-auto px-6 pt-32 pb-16 max-w-[1200px]">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-6">
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight italic uppercase">
-            Coding Test Management
-          </h1>
+      {/* Background Decoration */}
+      <div className="absolute top-0 right-0 w-[800px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[400px] bg-purple-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+
+      <main className="flex-grow container mx-auto px-6 pt-12 pb-16 max-w-7xl relative z-0">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6 border-b border-border/50 pb-8">
+          <div>
+            <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 mb-4">
+              Coding Challenges
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-2xl leading-relaxed">
+              실전 같은 코딩 테스트 문제로 알고리즘 역량을 키워보세요. <br className="hidden md:block" />
+              다양한 난이도의 문제를 풀며 성장할 수 있습니다.
+            </p>
+          </div>
+
           {userRole === "ADMIN" && (
-            <Button onClick={() => navigate("/coding-test/new")} className="h-12 px-6 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-black transition-all">
+            <Button
+              onClick={() => navigate("/coding-test/new")}
+              className="h-12 px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-lg hover:shadow-primary/25 transition-all text-base"
+            >
               <Plus className="mr-2 h-5 w-5" /> 새 문제 등록
             </Button>
           )}
         </div>
 
-        <div className="flex items-center gap-2 mb-8 border-b border-gray-100 pb-1">
+        {/* Tab Navigation */}
+        <div className="flex items-center gap-2 mb-8">
           {tabs.map((tab) => (
-            <button key={tab} onClick={() => setCurrentTab(tab)} className={`px-6 py-3 text-sm font-black transition-all relative ${currentTab === tab ? "text-indigo-600" : "text-gray-400 hover:text-gray-900"}`}>
-              {tab}
-              {currentTab === tab && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full" />}
+            <button
+              key={tab}
+              onClick={() => setCurrentTab(tab)}
+              className={`px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 relative overflow-hidden group ${currentTab === tab
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-background/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+            >
+              <span className="relative z-10">{tab}</span>
+              {currentTab !== tab && <div className="absolute inset-0 bg-muted opacity-0 group-hover:opacity-100 transition-opacity" />}
             </button>
           ))}
         </div>
 
-        <div className="bg-white rounded-[2rem] border border-gray-100 shadow-2xl overflow-hidden">
+        {/* Problem Grid */}
+        <div className="min-h-[400px]">
           {loading ? (
-            <div className="py-32 text-center text-gray-400 font-bold animate-pulse">LOADING...</div>
+            <div className="flex flex-col items-center justify-center py-32 gap-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <div className="text-muted-foreground font-medium animate-pulse">문제를 불러오는 중입니다...</div>
+            </div>
           ) : filteredProblems.length === 0 ? (
             <div className="py-32 text-center text-gray-400 font-bold">등록된 문제가 없습니다.</div>
           ) : (
@@ -118,10 +145,10 @@ const CodingTestList = () => {
                     </td>
                     {/* 제출 인원 표시 (어드민) */}
                     {userRole === "ADMIN" && (
-                      <td className="px-6 py-5 text-center text-gray-500 font-bold text-xs align-middle">
+                      <td className="px-6 py-8 text-center text-gray-500 font-bold text-xs">
                         <div className="flex items-center justify-center gap-1">
                           <Users className="h-3 w-3" />
-                          {problem.submissionCount || 0}
+                          {problem.submissionCount || 0}명
                         </div>
                       </td>
                     )}

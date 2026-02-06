@@ -98,7 +98,7 @@ public class CourseService {
                         admin,
                         "NEW_COURSE_REQUEST",
                         "강사 " + user.getName() + "님의 신규 강좌 승인 요청: '" + title + "'",
-                        "/admin/courses");
+                        "/admin/course/" + course.getCourseId());
             }
         }
     }
@@ -157,20 +157,24 @@ public class CourseService {
 
         // 4. 수강료 확인 및 포인트 차감
         int price = course.getPrice();
-        if (price > 0) {
-            // 포인트 차감 및 결제 리스트 기록 (PaymentService 사용)
-            // orderId에 COURSE_{courseId} 형식으로 저장하여 환불 시 식별
-            paymentService.usePoints(user.getUserId(), price, "COURSE_" + courseId);
+        System.out.println("수강료: " + price + "원, 강좌: " + course.getTitle());
 
-            // 포인트 사용 이력 기록 (WalletHistory는 별도 유지 or PaymentService 내부로 이동 고려 가능하나 일단 유지)
-            walletHistoryService.recordUse(user.getUserId(), price, null);
+        if (price > 0) {
+            try {
+                // 포인트 차감 및 결제 리스트 기록 (PaymentService 사용)
+                // orderId에 COURSE_{courseId} 형식으로 저장하여 환불 시 식별
+                paymentService.usePoints(user.getUserId(), price, "COURSE_" + courseId);
+                System.out.println("수강료 결제 완료: " + price + "원");
+                // walletHistoryService.recordUse는 paymentService.usePoints 내부에서 처리되므로 중복 호출 제거
+            } catch (Exception e) {
+                String errorMsg = "수강료 결제 실패: " + e.getMessage();
+                System.out.println(errorMsg);
+                throw new RuntimeException(errorMsg);
+            }
         }
 
         // 5. 새로운 Enrollment(수강) 엔티티 생성 및 설정
-        Enrollment enrollment = new Enrollment();
-        enrollment.setUser(user);
-        enrollment.setCourse(course);
-        enrollment.setStatus(EnrollmentStatus.ENROLLED); // 상태를 '수강 중'으로 설정
+        Enrollment enrollment = new Enrollment(user, course); // 매개변수 생성자 사용
 
         // 5. DB에 저장
         enrollmentRepository.save(enrollment); // 6. DB에 저장
@@ -284,7 +288,7 @@ public class CourseService {
                     admin,
                     "COURSE_RESUBMITTED",
                     "강사 " + course.getCreatedBy().getName() + "님의 강좌 재승인 요청: '" + course.getTitle() + "'",
-                    "/admin/courses");
+                    "/admin/course/" + course.getCourseId());
         }
     }
 
@@ -350,7 +354,7 @@ public class CourseService {
                     admin,
                     "NEW_COURSE_REQUEST",
                     "강사 " + course.getCreatedBy().getName() + "님의 신규 강좌 승인 요청: '" + course.getTitle() + "'",
-                    "/admin/courses");
+                    "/admin/course/" + course.getCourseId());
         }
     }
 }

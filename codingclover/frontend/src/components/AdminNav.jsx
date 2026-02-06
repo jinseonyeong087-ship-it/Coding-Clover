@@ -13,11 +13,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Search } from "lucide-react"
 import Logout from "@/components/Logout"
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
+import NotificationDropdown from './NotificationDropdown';
 
 function AdminNav() {
     const [loginId, setLoginId] = useState(false);
@@ -59,7 +55,7 @@ function AdminNav() {
                         <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/test/coding') }}>코딩테스트</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/admin/payments') }}>결제 관리</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/admin/payments') }}>결제관리</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
@@ -88,12 +84,8 @@ function AdminNav() {
                         }} />
                 </div>
 
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="ghost" className="text-sm">{users.name}님</Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80">알람띠링띠링</PopoverContent>
-                </Popover>
+                <NotificationDropdown />
+                <Button variant="ghost" className="text-sm">{users.name}님</Button>
                 <Logout />
             </div>
         </nav>

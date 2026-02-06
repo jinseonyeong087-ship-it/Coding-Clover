@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.mysite.clover.Users.UsersRole;
 import com.mysite.clover.Users.Users;
+import com.mysite.clover.Users.UsersRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 public class NotificationService {
 
   private final NotificationRepository notificationRepository;
+  private final UsersRepository usersRepository;
 
   public void createNotification(Users user, String type, String title, String linkUrl) {
     Notification notification = new Notification();
@@ -26,7 +29,9 @@ public class NotificationService {
   }
 
   public List<Notification> getNotificationsByUser(Users user) {
-    return notificationRepository.findByUserOrderByCreatedAtDesc(user);
+    // 7일 이내의 알림만 조회
+    LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+    return notificationRepository.findByUserAndCreatedAtAfterOrderByCreatedAtDesc(user, sevenDaysAgo);
   }
 
   public void markAsRead(Long notificationId) {
@@ -34,6 +39,17 @@ public class NotificationService {
         .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
     notification.setReadAt(LocalDateTime.now());
     notificationRepository.save(notification);
+  }
+
+  public void deleteNotification(Long notificationId, Users user) {
+    Notification notification = notificationRepository.findById(notificationId)
+        .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+
+    if (notification.getUser().getUserId() != user.getUserId()) {
+      throw new SecurityException("No permission to delete this notification");
+    }
+
+    notificationRepository.delete(notification);
   }
 
   public void markAllAsRead(Users user) {
@@ -44,5 +60,22 @@ public class NotificationService {
       }
     }
     notificationRepository.saveAll(notifications);
+  }
+
+  public void notifyAdmins(String type, String title, String linkUrl) {
+    List<Users> admins = usersRepository.findByRole(UsersRole.ADMIN);
+    for (Users admin : admins) {
+      createNotification(admin, type, title, linkUrl);
+    }
+  }
+
+  public void notifyUsers(List<Users> users, String type, String title, String linkUrl) {
+    for (Users user : users) {
+      createNotification(user, type, title, linkUrl);
+    }
+  }
+
+  public long countUnread(Users user) {
+    return notificationRepository.countByUserAndReadAtIsNull(user);
   }
 }

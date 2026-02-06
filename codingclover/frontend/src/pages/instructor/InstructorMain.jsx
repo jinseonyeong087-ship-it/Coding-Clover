@@ -67,50 +67,85 @@ function InstructorMain() {
     };
 
     return (
-        <>
+        <div className="flex min-h-screen flex-col bg-background relative overflow-hidden">
             <Nav />
+            {/* Background Decoration */}
+            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
+            <div className="fixed bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
+
             {instructorStatus == 'ACTIVE' ? (
-                <section className="container mx-auto px-16 py-24">
-                    <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-2xl font-bold">내 강좌 목록</h1>
+                <main className="container mx-auto px-6 py-24 flex-1">
+                    <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
+                        <div>
+                            <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 mb-2">
+                                내 강좌 관리
+                            </h1>
+                            <p className="text-muted-foreground">
+                                등록한 강좌의 상태를 확인하고 관리하세요.
+                            </p>
+                        </div>
                         <Link to="/instructor/course/new">
-                            <Button>강좌 개설 신청</Button>
+                            <Button className="shadow-lg hover:shadow-primary/25 transition-all">
+                                + 강좌 개설 신청
+                            </Button>
                         </Link>
                     </div>
 
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>강좌명</TableHead>
-                                <TableHead>난이도</TableHead>
-                                <TableHead>가격</TableHead>
-                                <TableHead>상태</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {courses.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="text-center text-muted-foreground">
-                                        등록된 강좌가 없습니다.
-                                    </TableCell>
+                    <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl shadow-xl overflow-hidden p-6">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="hover:bg-muted/50 border-b border-border/50">
+                                    <TableHead className="w-[400px]">강좌명</TableHead>
+                                    <TableHead>난이도</TableHead>
+                                    <TableHead>가격</TableHead>
+                                    <TableHead>상태</TableHead>
                                 </TableRow>
-                            ) : (
-                                courses.map((course) => (
-                                    <TableRow key={course.courseId}>
-                                        <TableCell className="font-medium"><Link to={`/instructor/course/${course.courseId}`}>{course.title}</Link></TableCell>
-                                        <TableCell>{getLevelText(course.level)}</TableCell>
-                                        <TableCell>{course.price?.toLocaleString()}원</TableCell>
-                                        <TableCell>{getStatusText(course.proposalStatus)}</TableCell>
+                            </TableHeader>
+                            <TableBody>
+                                {courses.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="text-center py-20 text-muted-foreground">
+                                            등록된 강좌가 없습니다.
+                                        </TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </section>
+                                ) : (
+                                    courses.map((course) => (
+                                        <TableRow key={course.courseId} className="hover:bg-muted/50 border-b border-border/50 transition-colors">
+                                            <TableCell className="font-medium">
+                                                <Link to={`/instructor/course/${course.courseId}`} className="hover:text-primary transition-colors flex items-center gap-2">
+                                                    {course.title}
+                                                </Link>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className={`px-2 py-1 rounded text-xs font-medium ${course.level === 1 ? 'bg-yellow-500/10 text-yellow-600' :
+                                                        course.level === 2 ? 'bg-green-500/10 text-green-600' :
+                                                            'bg-red-500/10 text-red-600'
+                                                    }`}>
+                                                    {getLevelText(course.level)}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="font-mono text-muted-foreground">
+                                                {course.price?.toLocaleString()}원
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className={`px-2 py-1 rounded-full text-xs font-bold border ${course.proposalStatus === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                                                        course.proposalStatus === 'PENDING' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                                                            'bg-red-500/10 text-red-600 border-red-500/20'
+                                                    }`}>
+                                                    {getStatusText(course.proposalStatus)}
+                                                </span>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </main>
             ) : (<InstructorPermit />)}
 
             <Tail />
-        </>
+        </div>
     );
 
 }

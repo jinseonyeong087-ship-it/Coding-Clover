@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mysite.clover.Course.Course;
 import com.mysite.clover.Course.CourseRepository;
+import com.mysite.clover.Course.CourseService;
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.Users.UsersRepository;
 
@@ -25,6 +26,7 @@ public class EnrollmentController {
     private final EnrollmentService enrollmentService;
     private final CourseRepository courseRepository;
     private final UsersRepository usersRepository;
+    private final CourseService courseService;
 
     // ==========================================
     // 수강생 영역
@@ -75,7 +77,10 @@ public class EnrollmentController {
 
             Course course = courseRepository.findById(courseId)
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
-            enrollmentService.enroll(student, course);
+
+            // CourseService의 enroll 메서드 사용 (포인트 차감 포함)
+            courseService.enroll(courseId, student.getLoginId());
+            
             return ResponseEntity.ok("수강 신청이 완료되었습니다.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

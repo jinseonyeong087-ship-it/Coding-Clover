@@ -50,7 +50,7 @@ function PointsHistory() {
             case 'USE':
                 return '수강 신청';
             case 'REFUND':
-                return '환불 처리';
+                return '환불 완료';
             case 'ADMIN':
                 return '관리자 조정';
             default:
@@ -125,8 +125,39 @@ function PointsHistory() {
                 console.log('잔액 데이터:', balanceData);
                 setPoints(balanceData.balance || balanceData.amount || 0);
             } else {
-                console.warn('잔액 조회 실패, 기본값 사용');
-                setPoints(150000); // 기본값
+                console.warn('잔액 조회 실패');
+                setPoints(0); // API 실패 시 0으로 설정
+            }
+
+            // 환불 상태 확인 로직
+            let paymentData = [];
+            if (paymentResponse.ok) {
+                paymentData = await paymentResponse.json();
+                console.log('결제 데이터:', paymentData);
+                const payments = Array.isArray(paymentData) ? paymentData : [];
+
+                // 가장 최근의 환불 관련 결제 내역 찾기
+                const refundPayments = payments.filter(p => p.type === 'REFUND');
+                console.log('환불 결제 내역:', refundPayments);
+
+                if (refundPayments.length > 0) {
+                    // 최신순 정렬 (ID 기준)
+                    refundPayments.sort((a, b) => b.paymentId - a.paymentId);
+                    const latestRefund = refundPayments[0];
+                    console.log('최근 환불 내역:', latestRefund);
+
+                    if (latestRefund.status === 'REFUND_REQUEST') {
+                        setRefundStatus('REQUESTED');
+                    } else {
+                        // 환불 완료, 거절 등 모든 경우에 다시 요청 가능하도록 설정
+                        setRefundStatus(null);
+                    }
+                } else {
+                    setRefundStatus(null);
+                }
+            } else {
+                console.warn('결제 내역 조회 실패, 환불 상태 초기화');
+                setRefundStatus(null); // API 실패 시 환불 상태 초기화
             }
 
             if (historyResponse.ok) {
@@ -136,105 +167,63 @@ function PointsHistory() {
                 // 백엔드에서 배열로 반환
                 const historyArr = Array.isArray(historyData) ? historyData : [];
 
+                // 결제 내역을 기준으로 환불 여부 판단하기 위한 Map 생성
+                const refundPaymentMap = new Map();
+                if (Array.isArray(paymentData)) {
+                    paymentData.forEach(payment => {
+                        if (payment.type === 'REFUND') {
+                            refundPaymentMap.set(payment.paymentId, payment);
+                        }
+                    });
+                }
+
                 // 월렛히스토리 엔티티 필드에 맞게 매핑
-                const mappedHistory = historyArr.map(item => ({
-                    id: item.walletHistoryId,
-                    type: item.reason, // WalletChangeReason: CHARGE, USE, REFUND, ADMIN
-                    amount: item.changeAmount, // 변경된 금액 (양수/음수)
-                    description: getTransactionDescription(item.reason, item.paymentId),
-                    date: item.createdAt,
-                    orderId: item.paymentId ? `ORDER-${item.paymentId}` : `TXN-${item.walletHistoryId}`,
-                    status: 'COMPLETED'
-                }));
+                const mappedHistory = historyArr.map(item => {
+                    console.log('원본 데이터:', item); // 디버깅용
+
+                    // 타입 결정 로직 개선 - 결제 내역을 참조
+                    let type = item.reason;
+
+                    // paymentId가 있고 해당 결제가 환불 타입인지 확인
+                    if (item.paymentId && refundPaymentMap.has(item.paymentId)) {
+                        type = 'REFUND';
+                    } else if (item.reason === 'REFUND') {
+                        type = 'REFUND';
+                    } else if (item.reason === 'CHARGE') {
+                        type = 'CHARGE';
+                    } else if (item.reason === 'USE') {
+                        type = 'USE';
+                    }
+
+                    // 최종 설명 생성
+                    const description = getTransactionDescription(type, item.paymentId);
+
+                    console.log('매핑된 데이터:', { type, amount: item.changeAmount, description }); // 디버깅용
+
+                    return {
+                        id: item.walletHistoryId,
+                        type: type,
+                        amount: item.changeAmount,
+                        description: description,
+                        date: item.createdAt,
+                        orderId: item.paymentId ? `ORDER-${item.paymentId}` : `TXN-${item.walletHistoryId}`,
+                        status: 'COMPLETED'
+                    };
+                });
 
                 setHistory(mappedHistory);
             } else {
-                console.warn('히스토리 조회 실패, 샘플 데이터 사용');
-                // 샘플 데이터 사용
-                setHistory([
-                    {
-                        id: 1,
-                        type: 'CHARGE',
-                        amount: 100000,
-                        description: '포인트 충전',
-                        date: '2024-01-15T14:30:00',
-                        orderId: 'ORDER-001',
-                        status: 'COMPLETED'
-                    },
-                    {
-                        id: 2,
-                        type: 'CHARGE',
-                        amount: 50000,
-                        description: '포인트 충전',
-                        date: '2024-01-20T16:45:00',
-                        orderId: 'ORDER-002',
-                        status: 'COMPLETED'
-                    },
-                    {
-                        id: 3,
-                        type: 'USE',
-                        amount: -30000,
-                        description: '수강 신청',
-                        date: '2024-01-25T10:00:00',
-                        orderId: 'USE-001',
-                        status: 'COMPLETED'
-                    }
-                ]);
-            }
-
-            // 환불 상태 확인 로직
-            if (paymentResponse.ok) {
-                const paymentData = await paymentResponse.json();
-                const payments = Array.isArray(paymentData) ? paymentData : [];
-
-                // 가장 최근의 환불 관련 결제 내역 찾기
-                const refundPayments = payments.filter(p => p.type === 'REFUND');
-                if (refundPayments.length > 0) {
-                    // 최신순 정렬 (ID 기준)
-                    refundPayments.sort((a, b) => b.paymentId - a.paymentId);
-                    const latestRefund = refundPayments[0];
-
-                    if (latestRefund.status === 'REFUND_REQUEST') {
-                        setRefundStatus('REQUESTED');
-                    } else if (latestRefund.status === 'REFUNDED') {
-                        setRefundStatus('COMPLETED');
-                    } else if (latestRefund.status === 'REJECTED') {
-                        setRefundStatus('REJECTED'); // 거절됨은 다시 요청 가능하게 할 수도 있음
-                    } else {
-                        setRefundStatus(null);
-                    }
-                } else {
-                    setRefundStatus(null);
-                }
+                console.warn('히스토리 조회 실패');
+                setHistory([]); // API 실패 시 빈 배열로 설정
             }
 
 
         } catch (error) {
             console.error('데이터 조회 실패:', error);
             setError('데이터를 불러오는 중 오류가 발생했습니다.');
-
-            // 오류 시 샘플 데이터
-            setPoints(150000);
-            setHistory([
-                {
-                    id: 1,
-                    type: 'CHARGE',
-                    amount: 100000,
-                    description: '포인트 충전',
-                    date: '2024-01-15T14:30:00',
-                    orderId: 'ORDER-001',
-                    status: 'COMPLETED'
-                },
-                {
-                    id: 2,
-                    type: 'USE',
-                    amount: -30000,
-                    description: '수강 신청',
-                    date: '2024-01-25T10:00:00',
-                    orderId: 'USE-001',
-                    status: 'COMPLETED'
-                }
-            ]);
+            setRefundStatus(null); // 오류 시 환불 상태도 초기화
+            setPoints(0); // 오류 시 포인트 0으로 설정
+            setHistory([]); // 오류 시 빈 배열로 설정
         } finally {
             setLoading(false);
         }
@@ -261,18 +250,14 @@ function PointsHistory() {
         return amount ? amount.toLocaleString() : '0';
     };
 
-    // 페이지네이션 로직
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = history.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(history.length / itemsPerPage);
-
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
     };
 
     // 버튼 렌더링 헬퍼
     const renderRefundButton = () => {
+        console.log('현재 포인트:', points, '환불 상태:', refundStatus);
+
         if (refundStatus === 'REQUESTED') {
             return (
                 <Button
@@ -281,30 +266,22 @@ function PointsHistory() {
                     className="text-orange-600 border-orange-300 bg-orange-50 cursor-not-allowed"
                     disabled={true}
                 >
-                    환불 요청 완료
-                </Button>
-            );
-        } else if (refundStatus === 'COMPLETED') {
-            return (
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-green-600 border-green-300 bg-green-50 cursor-not-allowed"
-                    disabled={true}
-                >
-                    환불 완료
+                    환불 대기중
                 </Button>
             );
         } else {
+            // 환불 완료 상태 제거 - 완료되면 다시 환불 요청 가능
+            // 포인트가 0보다 클 때만 활성화
+            const isDisabled = points <= 0;
             return (
                 <Button
                     onClick={requestFullRefund}
                     variant="outline"
                     size="sm"
-                    className="text-red-600 border-red-300 hover:bg-red-50"
-                    disabled={points <= 0}
+                    className={isDisabled ? "text-gray-400 border-gray-300 bg-gray-50 cursor-not-allowed" : "text-red-600 border-red-300 hover:bg-red-50"}
+                    disabled={isDisabled}
                 >
-                    환불요청
+                    환불 요청
                 </Button>
             );
         }
@@ -324,84 +301,109 @@ function PointsHistory() {
         );
     }
 
+    // 페이지네이션 로직 (로딩 후 계산)
+    const safeHistory = Array.isArray(history) ? history : [];
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = safeHistory.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(safeHistory.length / itemsPerPage);
+
     return (
-        <div className="min-h-screen bg-white">
+        <div className="flex min-h-screen flex-col bg-background relative overflow-hidden">
             <Nav />
-            <div className="container mx-auto px-4 py-16 pt-32">
+            {/* Background Decoration */}
+            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
+            <div className="fixed bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
+            <div className="fixed top-1/2 left-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
+
+            <div className="container mx-auto px-4 py-24 flex-1">
                 <div className="max-w-6xl mx-auto">
                     {/* 헤더 */}
-                    <div className="mb-8">
-
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div>
-                                    <h1 className="text-3xl font-bold text-gray-900">포인트 내역</h1>
-                                </div>
-                            </div>
-                        </div>
+                    <div className="mb-10 text-center">
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent inline-block">
+                            포인트 내역
+                        </h1>
+                        <p className="text-muted-foreground mt-2">
+                            보유하신 포인트와 사용 내역을 확인하세요.
+                        </p>
                     </div>
 
                     {/* 현재 포인트 카드 */}
-                    <Card className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-                        <CardContent className="p-6">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Coins className="w-5 h-5 text-blue-600" />
-                                <h3 className="text-lg font-semibold text-gray-900">보유 포인트</h3>
-                            </div>
-                            <div className="text-4xl font-bold text-blue-600">
-                                {points.toLocaleString()}
-                                <span className="text-xl ml-1">P</span>
-                            </div>
-                            <div className="flex items-center justify-between mt-2">
-                                <p className="text-sm text-gray-600">
-                                    환불은 보유 포인트 내에서만 가능합니다
-                                </p>
-                                {renderRefundButton()}
+                    <Card className="mb-10 border-border/50 bg-background/60 backdrop-blur-xl shadow-2xl overflow-hidden relative group">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <CardContent className="p-8 relative">
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                                <div className="flex items-center gap-6">
+                                    <div className="p-4 bg-blue-100 rounded-full shadow-inner ring-4 ring-blue-50">
+                                        <Coins className="w-10 h-10 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-medium text-muted-foreground mb-1">현재 보유 포인트</h3>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-5xl font-extrabold text-foreground tracking-tight">
+                                                {points.toLocaleString()}
+                                            </span>
+                                            <span className="text-2xl font-bold text-muted-foreground">P</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-end gap-3 w-full md:w-auto">
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground bg-background/50 px-3 py-1 rounded-full border border-border/50">
+                                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                                        환불은 보유 포인트 내에서만 가능합니다
+                                    </div>
+                                    {renderRefundButton()}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
 
                     {/* 포인트 내역 테이블 */}
-                    <Card>
-                        <CardHeader>
+                    <Card className="border-border/50 bg-background/60 backdrop-blur-xl shadow-xl overflow-hidden">
+                        <CardHeader className="border-b border-border/50 bg-muted/20 pb-4">
                             <div className="flex justify-between items-center">
-                                <div>
+                                <div className="flex items-center gap-2">
+                                    <RefreshCw className="h-5 w-5 text-muted-foreground" />
                                     <CardTitle>포인트 사용 내역</CardTitle>
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                    최근 {itemsPerPage}건씩 표시됩니다
                                 </div>
                             </div>
                         </CardHeader>
-                        <CardContent>
-
+                        <CardContent className="p-0">
                             {currentItems.length === 0 ? (
-                                <div className="text-center py-8 text-gray-500">
-                                    포인트 사용 내역이 없습니다.
+                                <div className="text-center py-20 flex flex-col items-center gap-4">
+                                    <div className="h-16 w-16 bg-muted/50 rounded-full flex items-center justify-center">
+                                        <Coins className="h-8 w-8 text-muted-foreground/50" />
+                                    </div>
+                                    <span className="text-lg text-muted-foreground font-medium">포인트 사용 내역이 없습니다.</span>
                                 </div>
                             ) : (
                                 <>
                                     <Table>
                                         <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="text-left">일시</TableHead>
-                                                <TableHead className="text-center">구분</TableHead>
-                                                <TableHead className="text-center">내용</TableHead>
-                                                <TableHead className="text-center">금액</TableHead>
+                                            <TableRow className="bg-muted/30 hover:bg-muted/30">
+                                                <TableHead className="w-[200px] pl-6">일시</TableHead>
+                                                <TableHead className="text-center w-[120px]">구분</TableHead>
+                                                <TableHead>내용</TableHead>
+                                                <TableHead className="text-right w-[150px] pr-8">금액</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {currentItems.map((item) => (
-                                                <TableRow key={item.id}>
-                                                    <TableCell className="font-medium text-left">
+                                                <TableRow key={item.id} className="hover:bg-primary/5 transition-colors cursor-default">
+                                                    <TableCell className="font-medium pl-6 text-muted-foreground">
                                                         {new Date(item.date).toLocaleString('ko-KR')}
                                                     </TableCell>
                                                     <TableCell className="text-center">
-                                                        <Badge className={getTypeColor(item.type)}>
+                                                        <Badge variant="outline" className={`border-0 font-bold px-3 py-1 ${getTypeColor(item.type)}`}>
                                                             {getTypeLabel(item.type)}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell className="text-center">{item.description}</TableCell>
-                                                    <TableCell className={`text-center font-medium ${item.amount >= 0 ? 'text-green-600' : 'text-red-600'
-                                                        }`}>
-                                                        {formatAmount(item.amount)}
+                                                    <TableCell className="text-foreground/90 font-medium">{item.description}</TableCell>
+                                                    <TableCell className={`text-right pr-8 font-bold text-lg ${item.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                        {item.amount >= 0 ? '+' : ''}{formatAmount(item.amount)} P
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -410,33 +412,37 @@ function PointsHistory() {
 
                                     {/* 페이징 컨트롤 */}
                                     {totalPages > 1 && (
-                                        <div className="flex justify-center items-center gap-2 mt-6">
+                                        <div className="flex justify-center items-center gap-2 py-6 border-t border-border/50 bg-muted/10">
                                             <Button
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => handlePageChange(currentPage - 1)}
                                                 disabled={currentPage === 1}
+                                                className="bg-background/80"
                                             >
                                                 이전
                                             </Button>
 
-                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
-                                                <Button
-                                                    key={pageNumber}
-                                                    variant={currentPage === pageNumber ? "default" : "outline"}
-                                                    size="sm"
-                                                    onClick={() => handlePageChange(pageNumber)}
-                                                    className="min-w-[2rem]"
-                                                >
-                                                    {pageNumber}
-                                                </Button>
-                                            ))}
+                                            <div className="flex gap-1">
+                                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                                                    <Button
+                                                        key={pageNumber}
+                                                        variant={currentPage === pageNumber ? "default" : "outline"}
+                                                        size="sm"
+                                                        onClick={() => handlePageChange(pageNumber)}
+                                                        className={`w-8 ${currentPage === pageNumber ? "bg-primary shadow-md" : "bg-background/80"}`}
+                                                    >
+                                                        {pageNumber}
+                                                    </Button>
+                                                ))}
+                                            </div>
 
                                             <Button
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => handlePageChange(currentPage + 1)}
                                                 disabled={currentPage === totalPages}
+                                                className="bg-background/80"
                                             >
                                                 다음
                                             </Button>

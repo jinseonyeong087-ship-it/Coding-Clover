@@ -139,16 +139,18 @@ const Register = ({ onToLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
       <Nav />
-      <div className='py-8'/>
+      {/* Background Decoration */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
+      <div className="fixed bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
-      <main className="flex-1 flex items-center justify-center py-12 px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold">회원가입</CardTitle>
-            <CardDescription>
-              계정을 생성하여 서비스를 이용하세요
+      <main className="flex-1 flex items-center justify-center py-12 px-4 relative z-10">
+        <Card className="w-full max-w-lg border-border/50 bg-background/60 backdrop-blur-xl shadow-2xl">
+          <CardHeader className="space-y-2 text-center pb-8 pt-8">
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">회원가입</CardTitle>
+            <CardDescription className="text-base">
+              Coding-Clover와 함께 성장을 시작하세요
             </CardDescription>
           </CardHeader>
 
@@ -168,7 +170,7 @@ const Register = ({ onToLogin }) => {
                   onValueChange={handleRoleChange}
                   className="grid grid-cols-2 gap-4"
                 >
-                  <div>
+                  <div className="relative">
                     <RadioGroupItem
                       value="STUDENT"
                       id="roleStudent"
@@ -177,28 +179,31 @@ const Register = ({ onToLogin }) => {
                     <Label
                       htmlFor="roleStudent"
                       className={cn(
-                        "flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all",
-                        formData.role === 'STUDENT' && "border-primary bg-primary/5"
+                        "flex flex-col items-center justify-center rounded-xl border-2 border-muted bg-white/50 backdrop-blur-sm p-6 hover:bg-accent/50 hover:border-primary/50 cursor-pointer transition-all duration-200 shadow-sm",
+                        formData.role === 'STUDENT' && "border-primary bg-primary/10 shadow-md ring-2 ring-primary/20 ring-offset-0"
                       )}
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mb-2 h-6 w-6"
-                      >
-                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
-                      <span className="text-sm font-medium">수강생</span>
+                      <div className={cn("p-2 rounded-full mb-3 bg-muted transition-colors", formData.role === 'STUDENT' && "bg-primary text-primary-foreground")}>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-6 w-6"
+                        >
+                          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                          <circle cx="12" cy="7" r="4" />
+                        </svg>
+                      </div>
+                      <span className="text-base font-bold">수강생</span>
+                      <span className="text-xs text-muted-foreground mt-1">학습을 시작하고 싶어요</span>
                     </Label>
                   </div>
 
-                  <div>
+                  <div className="relative">
                     <RadioGroupItem
                       value="INSTRUCTOR"
                       id="roleInstructor"
@@ -207,31 +212,34 @@ const Register = ({ onToLogin }) => {
                     <Label
                       htmlFor="roleInstructor"
                       className={cn(
-                        "flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all",
-                        formData.role === 'INSTRUCTOR' && "border-primary bg-primary/5"
+                        "flex flex-col items-center justify-center rounded-xl border-2 border-muted bg-white/50 backdrop-blur-sm p-6 hover:bg-accent/50 hover:border-primary/50 cursor-pointer transition-all duration-200 shadow-sm",
+                        formData.role === 'INSTRUCTOR' && "border-primary bg-primary/10 shadow-md ring-2 ring-primary/20 ring-offset-0"
                       )}
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mb-2 h-6 w-6"
-                      >
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                      </svg>
-                      <span className="text-sm font-medium">강사</span>
+                      <div className={cn("p-2 rounded-full mb-3 bg-muted transition-colors", formData.role === 'INSTRUCTOR' && "bg-primary text-primary-foreground")}>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-6 w-6"
+                        >
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                          <circle cx="9" cy="7" r="4" />
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                      </div>
+                      <span className="text-base font-bold">강사</span>
+                      <span className="text-xs text-muted-foreground mt-1">지식을 공유하고 싶어요</span>
                     </Label>
                   </div>
                 </RadioGroup>
                 {errors.role && (
-                  <p className="text-sm text-destructive">{errors.role}</p>
+                  <p className="text-sm text-destructive font-medium ml-1">{errors.role}</p>
                 )}
               </div>
 

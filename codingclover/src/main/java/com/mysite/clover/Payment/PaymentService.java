@@ -32,6 +32,7 @@ public class PaymentService {
     private final UsersRepository usersRepository;
     private final WalletIntegrationService walletIntegrationService;
     private final com.mysite.clover.Enrollment.EnrollmentRepository enrollmentRepository;
+    private final com.mysite.clover.Notification.NotificationService notificationService;
 
     // 간단한 메모리 캐시 (5분)
     private final ConcurrentHashMap<String, CacheEntry> cache = new ConcurrentHashMap<>();
@@ -121,11 +122,26 @@ public class PaymentService {
 
         // 1. 사용 가능한 포인트 확인
         Integer currentPoints = getUserPoints(userId);
+        System.out.println("사용자 ID: " + userId + ", 현재 포인트: " + currentPoints + ", 사용 요청: " + amount);
+
         if (currentPoints < amount) {
-            throw new RuntimeException("Insufficient points. Current: " + currentPoints + ", Required: " + amount);
+            String errorMsg = "포인트가 부족합니다. 현재 잔액: " + currentPoints + "P, 필요 금액: " + amount + "P";
+            System.out.println(errorMsg);
+            throw new RuntimeException(errorMsg);
         }
 
-        // 2. 포인트 사용 기록 생성
+        // 2. 실제 포인트 잔액 차감
+        try {
+            System.out.println("포인트 차감 시작: " + amount + "P");
+            walletIntegrationService.usePoints(userId, amount, null);
+            System.out.println("포인트 차감 성공");
+        } catch (Exception e) {
+            String errorMsg = "포인트 차감 실패: " + e.getMessage();
+            System.out.println(errorMsg);
+            throw new RuntimeException(errorMsg);
+        }
+
+        // 3. 포인트 사용 기록 생성
         Payment payment = new Payment();
         payment.setUserId(userId);
         payment.setType(PaymentType.USE);
@@ -136,7 +152,10 @@ public class PaymentService {
         String orderPrefix = (purpose != null && !purpose.isEmpty()) ? purpose : "USE";
         payment.setOrderId(orderPrefix + "_" + System.currentTimeMillis());
 
-        return paymentRepository.save(payment);
+        Payment savedPayment = paymentRepository.save(payment);
+        System.out.println("포인트 사용 기록 저장 완료. Payment ID: " + savedPayment.getPaymentId());
+
+        return savedPayment;
     }
 
     /**
@@ -167,7 +186,16 @@ public class PaymentService {
         refundPayment.setRelatedPaymentId(paymentId);
         refundPayment.setOrderId("REFUND_" + paymentId + "_" + System.currentTimeMillis());
 
-        return paymentRepository.save(refundPayment);
+        Payment savedRefund = paymentRepository.save(refundPayment);
+
+        // 관리자에게 알림 전송 (환불 요청)
+        notificationService.notifyAdmins(
+                "REFUND_REQUEST",
+                "새로운 환불 요청이 접수되었습니다. (금액: " + originalPayment.getAmount() + "P)",
+                "/admin/payment/refunds" // 관리자 환불 관리 페이지 (가정)
+        );
+
+        return savedRefund;
     }
 
     /**
@@ -196,7 +224,15 @@ public class PaymentService {
         fullRefundRequest.setOrderId("BALANCE_REFUND_" + userId + "_" + System.currentTimeMillis());
         // 보유 포인트 환불의 경우 특정 원본 결제 ID가 없으므로 null로 유지
 
-        return paymentRepository.save(fullRefundRequest);
+        Payment savedPayment = paymentRepository.save(fullRefundRequest);
+
+        // 관리자에게 알림 전송 (전액 환불 요청)
+        notificationService.notifyAdmins(
+                "REFUND_REQUEST",
+                "사용자(ID:" + userId + ")로부터 전액 환불 요청이 접수되었습니다. (금액: " + refundAmount + "P)",
+                "/admin/payment/refunds");
+
+        return savedPayment;
     }
 
     /**
@@ -225,6 +261,15 @@ public class PaymentService {
                     refundPayment.getUserId(),
                     refundPayment.getAmount(),
                     refundPayment.getPaymentId());
+
+            // 사용자에게 알림 전송 (환불 완료)
+            usersRepository.findById(refundPayment.getUserId()).ifPresent(user -> {
+                notificationService.createNotification(
+                        user,
+                        "REFUND_APPROVED",
+                        "요청하신 환불처리가 완료되었습니다. (" + refundPayment.getAmount() + "P)",
+                        "/student/points");
+            });
 
             // 2. 수강 취소 (Enrollment Cancel)
             String orderId = originalPayment.getOrderId(); // 예: COURSE_15_123456
@@ -296,29 +341,29 @@ public class PaymentService {
         refundPayment.setStatus(PaymentStatus.REJECTED);
         Payment savedRefund = paymentRepository.save(refundPayment);
         invalidateCache(); // 캐시 무효화
+
+        // 사용자에게 알림 전송 (환불 거절)
+        usersRepository.findById(refundPayment.getUserId()).ifPresent(user -> {
+            notificationService.createNotification(
+                    user,
+                    "REFUND_REJECTED",
+                    "요청하신 환불이 거절되었습니다.",
+                    "/student/points");
+        });
+
         return savedRefund;
     }
 
     /**
-     * 사용자의 현재 포인트 계산
+     * 사용자의 현재 포인트 계산 (UserWallet에서 실제 잔액 조회)
      */
     public Integer getUserPoints(Long userId) {
-        List<Payment> payments = paymentRepository.findByUserIdAndStatus(userId, PaymentStatus.PAID);
-
-        return payments.stream()
-                .mapToInt(payment -> {
-                    switch (payment.getType()) {
-                        case CHARGE:
-                            return payment.getAmount(); // 충전: +
-                        case USE:
-                            return -payment.getAmount(); // 사용: -
-                        case REFUND:
-                            return payment.getAmount(); // 환불: +
-                        default:
-                            return 0;
-                    }
-                })
-                .sum();
+        try {
+            return walletIntegrationService.getCurrentBalance(userId);
+        } catch (Exception e) {
+            // UserWallet이 없는 경우 0 반환
+            return 0;
+        }
     }
 
     /**

@@ -15,6 +15,7 @@ import { Search } from "lucide-react"
 import Logout from "@/components/Logout"
 import axios from 'axios';
 import coinImg from '../img/coin.png';
+import NotificationDropdown from './NotificationDropdown';
 
 function StudentNav() {
     const [loginId, setLoginId] = useState(false);
@@ -33,10 +34,10 @@ function StudentNav() {
             });
             console.log('DB에서 가져온 포인트:', response.data.balance);
             setPoints(response.data.balance || 0);
-            
+
             // DB에서 성공적으로 가져왔으면 localStorage도 동기화
             localStorage.setItem('userPoints', (response.data.balance || 0).toString());
-            
+
         } catch (error) {
             console.error('포인트 조회 실패:', error);
             console.log('백엔드 연결 실패로 0P 표시');
@@ -58,7 +59,7 @@ function StudentNav() {
                 const parsedUsers = JSON.parse(storedUsers);
                 setUsers(parsedUsers);
                 console.log("현재 로그인한 사용자:", parsedUsers);
-                
+
                 // 로그인 상태면 실제 포인트 조회 (초기값 0P에서 시작)
                 setPoints(0);
                 await fetchUserPoints();
@@ -123,7 +124,7 @@ function StudentNav() {
 
         window.addEventListener('pointsUpdated', handlePointsUpdate);
         window.addEventListener('userInfoUpdated', handleUserInfoUpdate);
-        
+
         return () => {
             window.removeEventListener('pointsUpdated', handlePointsUpdate);
             window.removeEventListener('userInfoUpdated', handleUserInfoUpdate);
@@ -135,25 +136,26 @@ function StudentNav() {
     // container mx-auto px-4 py-16
 
     return (
-        <nav className="flex mx-auto w-full justify-between py-3 px-16 border-b fixed bg-white z-50">
+        <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md shadow-sm transition-all">
             {/* 로고 + 메뉴바 */}
-            <div className="flex items-center gap-6">
-                <Link to="/" className="text-xl font-bold text-primary no-underline">
-                    Coding-Clover
-                </Link>
+            <div className="container mx-auto flex h-16 items-center justify-between px-6">
+                <div className="flex items-center gap-8">
+                    <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity no-underline">
+                        Coding-Clover
+                    </Link>
 
-                <Menubar className="border-none shadow-none bg-transparent">
-                    <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer">전체 강좌</MenubarTrigger>
-                        <MenubarContent>
-                            <MenubarGroup>
-                                <Link to="/course/level/1"><MenubarItem>초급</MenubarItem></Link>
-                                <Link to="/course/level/2"><MenubarItem>중급</MenubarItem></Link>
-                                <Link to="/course/level/3"><MenubarItem>고급</MenubarItem></Link>
-                            </MenubarGroup>
-                        </MenubarContent>
-                    </MenubarMenu>
-                    {/* <MenubarMenu>
+                    <Menubar className="border-none shadow-none bg-transparent">
+                        <MenubarMenu>
+                            <MenubarTrigger className="cursor-pointer">전체 강좌</MenubarTrigger>
+                            <MenubarContent>
+                                <MenubarGroup>
+                                    <Link to="/course/level/1"><MenubarItem>초급</MenubarItem></Link>
+                                    <Link to="/course/level/2"><MenubarItem>중급</MenubarItem></Link>
+                                    <Link to="/course/level/3"><MenubarItem>고급</MenubarItem></Link>
+                                </MenubarGroup>
+                            </MenubarContent>
+                        </MenubarMenu>
+                        {/* <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">내 강의실</MenubarTrigger>
                         <MenubarContent>
                             <MenubarItem>수강 중인 강좌</MenubarItem>
@@ -161,75 +163,75 @@ function StudentNav() {
                             <MenubarItem>학습 기록</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu> */}
-                    <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
-                        <MenubarContent>
-                            <MenubarItem onClick={() => { navigate('/test/qna') }}>Q&A</MenubarItem>
-                            <MenubarItem onClick={() => { navigate('/student/community') }}>자유게시판</MenubarItem>
-                        </MenubarContent>
-                    </MenubarMenu>
-                    <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/notice') }}>공지사항</MenubarTrigger>
-                    </MenubarMenu>
-                    <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/test/coding') }}>코딩테스트</MenubarTrigger>
-                    </MenubarMenu>
+                        <MenubarMenu>
+                            <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
+                            <MenubarContent>
+                                <MenubarItem onClick={() => { navigate('/test/qna') }}>Q&A</MenubarItem>
+                                <MenubarItem onClick={() => { navigate('/student/community') }}>자유게시판</MenubarItem>
+                            </MenubarContent>
+                        </MenubarMenu>
+                        <MenubarMenu>
+                            <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/notice') }}>공지사항</MenubarTrigger>
+                        </MenubarMenu>
+                        <MenubarMenu>
+                            <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/test/coding') }}>코딩테스트</MenubarTrigger>
+                        </MenubarMenu>
                         <MenubarMenu>
                             <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/payment') }}>충전하기</MenubarTrigger>
                         </MenubarMenu>
-                    <MenubarMenu>
-                        <Link
-                            to="/student/mypage"
-                            className="px-3 py-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors cursor-pointer"
-                        >
-                            마이페이지
-                        </Link>
-                    </MenubarMenu>
-                </Menubar>
-            </div>
-
-            {/* 검색 & 로그인 */}
-            <div className="flex items-center gap-3">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        type="search"
-                        placeholder="강좌 검색..."
-                        className="pl-9 w-48"
-                        value={keyword}
-                        onChange={(e) => setKeyword(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && keyword.trim()) {
-                                navigate(`/test/search?category=COURSE&keyword=${encodeURIComponent(keyword)}`);
-                            }
-                        }} />
-                </div>
-                {!loginId ? (
-                    <Button size="sm"><Link to="/auth/login">로그인</Link></Button>)
-                    : (<>
-                        <div className="flex items-center gap-3">
-                            {/* 포인트 표시 */}
-                            <div 
-                                className="flex items-center cursor-pointer px-2 py-1"
-                                onClick={() => navigate('/student/points')}
+                        <MenubarMenu>
+                            <Link
+                                to="/student/mypage"
+                                className="px-3 py-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors cursor-pointer"
                             >
-                                <img 
-                                    src={coinImg}
-                                    alt="코인" 
-                                    className="w-5 h-5"
-                                />
-                                <span className="text-sm">
-                                    {isLoadingPoints ? '...' : `${points.toLocaleString()}P`}
-                                </span>
-                            </div>
-                            
-                            {/* 사용자 이름 */}
-                            <span className="text-sm text-foreground">{users.name}님</span>
-                        </div>
-                        <Logout />
-                    </>)}
+                                마이페이지
+                            </Link>
+                        </MenubarMenu>
+                    </Menubar>
+                </div>
 
-                {/* <Button size="sm"><Link to="/auth/register">회원가입</Link></Button> */}
+                {/* 검색 & 로그인 */}
+                <div className="flex items-center gap-4">
+                    <div className="relative hidden md:block">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type="search"
+                            placeholder="강좌 검색..."
+                            className="pl-9 w-64 bg-secondary/50 border-transparent focus:bg-background transition-all"
+                            value={keyword}
+                            onChange={(e) => setKeyword(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && keyword.trim()) {
+                                    navigate(`/test/search?category=COURSE&keyword=${encodeURIComponent(keyword)}`);
+                                }
+                            }} />
+                    </div>
+                    {!loginId ? (
+                        <Button size="sm" variant="default" className="font-semibold"><Link to="/auth/login">로그인</Link></Button>)
+                        : (<>
+                            <NotificationDropdown />
+                            <div className="flex items-center gap-3 pl-2 border-l border-border/50">
+                                {/* 포인트 표시 */}
+                                <div
+                                    className="flex items-center cursor-pointer gap-2 px-3 py-1.5 rounded-full bg-secondary/50 hover:bg-secondary transition-colors"
+                                    onClick={() => navigate('/student/points')}
+                                >
+                                    <img
+                                        src={coinImg}
+                                        alt="코인"
+                                        className="w-4 h-4"
+                                    />
+                                    <span className="text-sm font-semibold text-primary">
+                                        {isLoadingPoints ? '...' : `${points.toLocaleString()}P`}
+                                    </span>
+                                </div>
+
+                                {/* 사용자 이름 */}
+                                <span className="text-sm font-medium text-foreground">{users.name}님</span>
+                            </div>
+                            <Logout />
+                        </>)}
+                </div>
             </div>
         </nav>
     );

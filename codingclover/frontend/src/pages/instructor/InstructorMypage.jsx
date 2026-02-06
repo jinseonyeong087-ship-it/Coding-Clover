@@ -166,31 +166,31 @@ function InstructorMypage() {
 
     // 유효성 검사
     const errors = [];
-    
+
     if (!formData.bio || formData.bio.trim().length === 0) {
       errors.push('자기소개를 입력해주세요.');
     } else if (formData.bio.trim().length < 10) {
       errors.push('자기소개는 최소 10자 이상 입력해주세요.');
     }
-    
+
     if (!formData.careerYears || formData.careerYears.toString().trim().length === 0) {
       errors.push('경력 년수를 입력해주세요.');
     } else if (isNaN(formData.careerYears) || parseInt(formData.careerYears) < 0) {
       errors.push('경력 년수는 0 이상의 숫자를 입력해주세요.');
     }
-    
+
     // 신규 신청인 경우 이력서 필수
     if (!profile?.resumeFilePath && !formData.resumeFile) {
       errors.push('이력서 파일을 업로드해주세요.');
     }
-    
+
     // 이력서 파일 형식 확인 (업로드된 경우)
     if (formData.resumeFile) {
       const fileExtension = formData.resumeFile.name.split('.').pop().toLowerCase();
       if (fileExtension !== 'pdf') {
         errors.push('이력서는 PDF 파일만 업로드 가능합니다.');
       }
-      
+
       // 파일 크기 확인 (10MB 제한)
       if (formData.resumeFile.size > 10 * 1024 * 1024) {
         errors.push('파일 크기는 10MB 이하만 허용됩니다.');
@@ -285,33 +285,43 @@ function InstructorMypage() {
   const hasProfile = profile?.status !== null;
 
   return (
-    <>
+    <div className="flex min-h-screen flex-col bg-background relative overflow-hidden">
       <Nav />
+      {/* Background Decoration */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
+      <div className="fixed bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
-      <section className="container mx-auto px-4 py-16">
-        <div className="flex justify-between mb-8">
-          <h1 className="text-3xl font-bold">강사 마이페이지</h1>
-          
+      <main className="container mx-auto px-4 py-16 flex-1">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
+          <div>
+            <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 mb-2">
+              강사 마이페이지
+            </h1>
+            <p className="text-muted-foreground">
+              프로필 정보를 관리하고 활동 내역을 확인하세요.
+            </p>
+          </div>
+
           {/* 승인 상태 표시 */}
           {hasProfile && (
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${statusInfo.bg}`}>
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-full border shadow-sm backdrop-blur-sm ${statusInfo.bg.replace('50', '500/10')} border-${statusInfo.color.split('-')[1]}-200`}>
               <StatusIcon className={`w-5 h-5 ${statusInfo.color}`} />
-              <span className={`font-medium ${statusInfo.color}`}>{statusInfo.text}</span>
+              <span className={`font-bold ${statusInfo.color}`}>{statusInfo.text}</span>
             </div>
           )}
         </div>
 
         {/* 승인되지 않은 경우 - 신청 폼 또는 대기 메시지 */}
         {!isApproved && (
-          <Card className="max-w-4xl mx-auto">
+          <Card className="max-w-4xl mx-auto bg-background/60 backdrop-blur-xl border-border/50 shadow-xl">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <FileText className="w-5 h-5 text-primary" />
                 강사 신청
               </CardTitle>
               <CardDescription>
-                {hasProfile 
-                  ? '신청이 완료되었습니다. 관리자 승인을 기다려주세요.' 
+                {hasProfile
+                  ? '신청이 완료되었습니다. 관리자 승인을 기다려주세요.'
                   : '강사로 활동하기 위해 신청서를 작성해주세요.'}
               </CardDescription>
             </CardHeader>
@@ -320,18 +330,18 @@ function InstructorMypage() {
               {!hasProfile || isEditing ? (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div>
+                    <div className="space-y-2">
                       <Label>이름</Label>
-                      <Input value={profile?.name || ''} readOnly className="bg-gray-50" />
+                      <div className="p-3 bg-muted/50 rounded-lg border border-border/50 text-foreground/80">{profile?.name}</div>
                     </div>
-                    <div>
+                    <div className="space-y-2">
                       <Label>이메일</Label>
-                      <Input value={profile?.email || ''} readOnly className="bg-gray-50" />
+                      <div className="p-3 bg-muted/50 rounded-lg border border-border/50 text-foreground/80">{profile?.email}</div>
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="bio">자기소개 <span className="text-red-500">*</span></Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="bio">자기소개 <span className="text-destructive">*</span></Label>
                     <Textarea
                       id="bio"
                       value={formData.bio}
@@ -339,15 +349,15 @@ function InstructorMypage() {
                       placeholder="강사로서의 경험과 전문 분야를 소개해주세요. (최소 10자 이상)"
                       rows={4}
                       required
-                      className={formData.bio.trim().length > 0 && formData.bio.trim().length < 10 ? 'border-red-300' : ''}
+                      className={`bg-background/50 ${formData.bio.trim().length > 0 && formData.bio.trim().length < 10 ? 'border-destructive' : ''}`}
                     />
                     {formData.bio.trim().length > 0 && formData.bio.trim().length < 10 && (
-                      <p className="text-sm text-red-500 mt-1">자기소개는 최소 10자 이상 입력해주세요.</p>
+                      <p className="text-sm text-destructive mt-1">자기소개는 최소 10자 이상 입력해주세요.</p>
                     )}
                   </div>
 
-                  <div>
-                    <Label htmlFor="careerYears">경력 연차 <span className="text-red-500">*</span></Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="careerYears">경력 연차 <span className="text-destructive">*</span></Label>
                     <Input
                       id="careerYears"
                       type="number"
@@ -357,34 +367,33 @@ function InstructorMypage() {
                       min="0"
                       max="50"
                       required
-                      className={formData.careerYears && (isNaN(formData.careerYears) || parseInt(formData.careerYears) < 0) ? 'border-red-300' : ''}
+                      className={`bg-background/50 ${formData.careerYears && (isNaN(formData.careerYears) || parseInt(formData.careerYears) < 0) ? 'border-destructive' : ''}`}
                     />
                     {formData.careerYears && (isNaN(formData.careerYears) || parseInt(formData.careerYears) < 0) && (
-                      <p className="text-sm text-red-500 mt-1">경력은 0년 이상의 숫자를 입력해주세요.</p>
+                      <p className="text-sm text-destructive mt-1">경력은 0년 이상의 숫자를 입력해주세요.</p>
                     )}
                   </div>
 
-                  <div>
-                    <Label>이력서 첨부 <span className="text-red-500">*</span></Label>
+                  <div className="space-y-2">
+                    <Label>이력서 첨부 <span className="text-destructive">*</span></Label>
                     <div className="space-y-3">
                       {/* 선택된 파일 표시 박스 */}
-                      <div className={`border-2 border-dashed rounded-lg p-4 text-center ${
-                        formData.resumeFile || profile?.resumeFilePath 
-                          ? 'border-green-300 bg-green-50' 
-                          : 'border-gray-300 bg-gray-50'
-                      }`}>
+                      <div className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${formData.resumeFile || profile?.resumeFilePath
+                        ? 'border-emerald-500/50 bg-emerald-500/5'
+                        : 'border-border/50 bg-muted/30 hover:border-primary/50'
+                        }`}>
                         {formData.resumeFile ? (
-                          <div className="flex items-center justify-center gap-2 text-sm text-green-700">
+                          <div className="flex items-center justify-center gap-2 text-sm text-emerald-600 font-medium">
                             <FileText className="w-4 h-4" />
                             <span>{formData.resumeFile.name}</span>
                           </div>
                         ) : profile?.resumeFilePath ? (
-                          <div className="flex items-center justify-center gap-2 text-sm text-green-700">
+                          <div className="flex items-center justify-center gap-2 text-sm text-emerald-600 font-medium">
                             <FileText className="w-4 h-4" />
                             <span>기존 이력서 파일이 있습니다</span>
                           </div>
                         ) : (
-                          <p className="text-sm text-red-500">
+                          <p className="text-sm text-destructive/80 font-medium">
                             이력서 파일을 업로드해주세요 (필수)
                           </p>
                         )}
@@ -400,74 +409,77 @@ function InstructorMypage() {
                       />
 
                       {/* 커스텀 파일 선택 버튼 */}
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         onClick={handleFileButtonClick}
-                        className="w-full"
+                        className="w-full h-11 border-dashed"
                       >
                         <Upload className="w-4 h-4 mr-2" />
                         이력서 첨부하기 (PDF만 가능)
                       </Button>
 
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-muted-foreground text-center">
                         PDF 파일만 업로드 가능합니다. (최대 10MB)
                         {!profile?.resumeFilePath && !formData.resumeFile && (
-                          <span className="text-red-500 font-medium"> - 필수 항목입니다</span>
+                          <span className="text-destructive font-medium ml-1"> * 필수</span>
                         )}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-3 pt-4 border-t">
+                  <div className="flex justify-end gap-3 pt-6 border-t border-border/50">
                     {isEditing && (
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="ghost"
                         onClick={() => setIsEditing(false)}
                         disabled={isSubmitting}
                       >
                         취소
                       </Button>
                     )}
-                    <Button type="submit" disabled={isSubmitting}>
+                    <Button type="submit" disabled={isSubmitting} className="shadow-lg hover:shadow-primary/25">
                       {isSubmitting ? '처리 중...' : '신청서 제출'}
                     </Button>
                   </div>
                 </form>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <Label>이름</Label>
-                      <p className="mt-1 p-2 bg-gray-50 rounded">{profile.name}</p>
+                    <div className="space-y-2">
+                      <Label className="text-muted-foreground">이름</Label>
+                      <div className="text-lg font-medium">{profile.name}</div>
                     </div>
-                    <div>
-                      <Label>이메일</Label>
-                      <p className="mt-1 p-2 bg-gray-50 rounded">{profile.email}</p>
+                    <div className="space-y-2">
+                      <Label className="text-muted-foreground">이메일</Label>
+                      <div className="text-lg font-medium">{profile.email}</div>
                     </div>
                   </div>
 
-                  <div>
-                    <Label>자기소개</Label>
-                    <p className="mt-1 p-3 bg-gray-50 rounded">{profile.bio}</p>
+                  <div className="space-y-2">
+                    <Label className="text-muted-foreground">자기소개</Label>
+                    <div className="p-4 bg-muted/30 rounded-lg border border-border/50">{profile.bio}</div>
                   </div>
 
-                  <div>
-                    <Label>경력 연차</Label>
-                    <p className="mt-1 p-2 bg-gray-50 rounded">{profile.careerYears}년</p>
+                  <div className="space-y-2">
+                    <Label className="text-muted-foreground">경력 연차</Label>
+                    <div className="text-lg font-medium">{profile.careerYears}년</div>
                   </div>
 
                   {profile.resumeFilePath && (
-                    <div>
-                      <Label>이력서</Label>
-                      <p className="mt-1 p-2 bg-gray-50 rounded">파일이 업로드되었습니다.</p>
+                    <div className="space-y-2">
+                      <Label className="text-muted-foreground">이력서</Label>
+                      <div className="flex items-center gap-2 text-emerald-600 font-medium p-3 bg-emerald-500/5 rounded-lg border border-emerald-500/20 w-fit">
+                        <CheckCircle className="w-4 h-4" />
+                        파일이 업로드되었습니다.
+                      </div>
                     </div>
                   )}
 
                   {profile.status === 'APPLIED' && (
-                    <div className="flex justify-end pt-4 border-t">
-                      <Button onClick={() => setIsEditing(true)}>
+                    <div className="flex justify-end pt-6 border-t border-border/50">
+                      <Button variant="outline" onClick={() => setIsEditing(true)}>
                         <Edit className="w-4 h-4 mr-2" />
                         정보 수정
                       </Button>
@@ -482,124 +494,114 @@ function InstructorMypage() {
         {/* 승인된 경우 - 강사 정보 및 강좌 목록 */}
         {isApproved && (
           <>
-            <Card className="max-w-4xl mx-auto">
+            <Card className="max-w-4xl mx-auto bg-background/60 backdrop-blur-xl border-border/50 shadow-xl mb-12">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" /> 강사 정보
+                  <User className="w-5 h-5 text-primary" /> 강사 정보
                 </CardTitle>
                 <CardDescription>승인된 강사 프로필</CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <Label>이름</Label>
-                    <Input value={profile.name} readOnly />
+                  <div className="space-y-2">
+                    <Label className="text-muted-foreground">이름</Label>
+                    <div className="text-lg font-medium">{profile.name}</div>
                   </div>
-                  <div>
-                    <Label>이메일</Label>
-                    <Input value={profile.email} readOnly />
+                  <div className="space-y-2">
+                    <Label className="text-muted-foreground">이메일</Label>
+                    <div className="text-lg font-medium">{profile.email}</div>
                   </div>
                 </div>
 
-                <div>
-                  <Label>자기소개</Label>
-                  <Textarea value={profile.bio || ''} readOnly rows={3} />
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground">자기소개</Label>
+                  <div className="p-4 bg-muted/30 rounded-lg border border-border/50">{profile.bio || '자기소개가 없습니다.'}</div>
                 </div>
 
-                <div>
-                  <Label>경력 연차</Label>
-                  <Input value={`${profile.careerYears}년`} readOnly />
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground">경력 연차</Label>
+                  <div className="text-lg font-medium">{profile.careerYears}년</div>
                 </div>
               </CardContent>
             </Card>
 
             {/* 개설 강좌 목록 */}
-            <div className="max-w-4xl mx-auto mt-12">
+            <div className="max-w-4xl mx-auto">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">개설 강좌</h2>
+                <h2 className="text-2xl font-bold">개설 강좌 관리</h2>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex items-center gap-2">
+                    <Button variant="outline" className="flex items-center gap-2 bg-background/50 backdrop-blur-sm">
                       {getFilterLabel(courseFilter)}
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setCourseFilter('ALL')}>
-                      전체
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCourseFilter('APPROVED')}>
-                      승인
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCourseFilter('PENDING')}>
-                      승인 대기
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCourseFilter('REJECTED')}>
-                      반려
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCourseFilter('ALL')}>전체</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCourseFilter('APPROVED')}>승인</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCourseFilter('PENDING')}>승인 대기</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCourseFilter('REJECTED')}>반려</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
+
               {currentCourses.length === 0 ? (
-                <Card>
-                  <CardContent className="p-6 text-center text-gray-500">
-                    <p>{courseFilter === 'ALL' ? '아직 개설된 강좌가 없습니다.' : `${getFilterLabel(courseFilter)} 상태의 강좌가 없습니다.`}</p>
-                  </CardContent>
-                </Card>
+                <div className="text-center py-20 text-muted-foreground bg-muted/30 rounded-2xl border border-dashed border-border/50">
+                  <p>{courseFilter === 'ALL' ? '아직 개설된 강좌가 없습니다.' : `${getFilterLabel(courseFilter)} 상태의 강좌가 없습니다.`}</p>
+                </div>
               ) : (
                 <>
                   <div className="space-y-4">
                     {currentCourses.map((course) => (
-                    <Card 
-                      key={course.courseId}
-                      className="cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() => navigate(`/instructor/course/${course.courseId}`)}
-                    >
-                      <CardContent className="p-6">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h3 className="text-lg font-semibold mb-2">{course.title}</h3>
-                            <p className="text-gray-600 mb-3 line-clamp-2">{course.description}</p>
-                            <div className="flex items-center gap-4 text-sm text-gray-500">
-                              <span>레벨: {course.level}</span>
-                              <span>가격: {course.price.toLocaleString()}원</span>
-                              <span>생성일: {new Date(course.createdAt).toLocaleDateString()}</span>
+                      <Card
+                        key={course.courseId}
+                        className="cursor-pointer hover:shadow-lg transition-all duration-300 bg-background/60 backdrop-blur-xl border-border/50 hover:bg-background/80 group"
+                        onClick={() => navigate(`/instructor/course/${course.courseId}`)}
+                      >
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">{course.title}</h3>
+                              <p className="text-muted-foreground mb-3 line-clamp-2 text-sm">{course.description}</p>
+                              <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground">
+                                <span className="bg-muted px-2 py-1 rounded">Lv. {course.level}</span>
+                                <span className="bg-muted px-2 py-1 rounded">{course.price.toLocaleString()}원</span>
+                                <span>{new Date(course.createdAt).toLocaleDateString()}</span>
+                              </div>
                             </div>
-                          </div>
-                          <div className="ml-6">
-                            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              course.proposalStatus === 'APPROVED' 
-                                ? 'bg-green-100 text-green-800'
+                            <div className="ml-6">
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold border ${course.proposalStatus === 'APPROVED'
+                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                                 : course.proposalStatus === 'PENDING'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}>
-                              {course.proposalStatus === 'APPROVED' && '승인'}
-                              {course.proposalStatus === 'PENDING' && '승인 대기'}
-                              {course.proposalStatus === 'REJECTED' && '반려'}
+                                  ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                                  : 'bg-red-500/10 text-red-600 border-red-500/20'
+                                }`}>
+                                {course.proposalStatus === 'APPROVED' && '승인'}
+                                {course.proposalStatus === 'PENDING' && '심사 대기'}
+                                {course.proposalStatus === 'REJECTED' && '반려'}
+                              </span>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
-                  
+
                   {/* 페이징 */}
                   {totalPages > 1 && (
-                    <div className="flex justify-center items-center gap-2 mt-6">
+                    <div className="flex justify-center items-center gap-2 mt-8">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setCurrentPage(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 bg-background/50 backdrop-blur-sm"
                       >
                         <ChevronLeft className="h-4 w-4" />
                         이전
                       </Button>
-                      
+
                       <div className="flex gap-1">
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                           <Button
@@ -607,19 +609,19 @@ function InstructorMypage() {
                             variant={currentPage === page ? "default" : "outline"}
                             size="sm"
                             onClick={() => setCurrentPage(page)}
-                            className="w-8"
+                            className={`w-8 ${currentPage !== page && "bg-background/50 backdrop-blur-sm"}`}
                           >
                             {page}
                           </Button>
                         ))}
                       </div>
-                      
+
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setCurrentPage(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 bg-background/50 backdrop-blur-sm"
                       >
                         다음
                         <ChevronRight className="h-4 w-4" />
@@ -631,10 +633,10 @@ function InstructorMypage() {
             </div>
           </>
         )}
-      </section>
+      </main>
 
       <Tail />
-    </>
+    </div>
   );
 }
 

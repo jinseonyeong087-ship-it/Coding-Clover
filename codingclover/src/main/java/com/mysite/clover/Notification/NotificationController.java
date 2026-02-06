@@ -46,6 +46,23 @@ public class NotificationController {
     Users user = usersRepository.findByLoginId(principal.getName())
         .orElseThrow(() -> new RuntimeException("User not found"));
     notificationService.markAllAsRead(user);
+    notificationService.markAllAsRead(user);
+    return ResponseEntity.ok().build();
+  }
+
+  @GetMapping("/unread-count")
+  public ResponseEntity<Long> getUnreadCount(Principal principal) {
+    Users user = usersRepository.findByLoginId(principal.getName())
+        .orElseThrow(() -> new RuntimeException("User not found"));
+    long count = notificationService.countUnread(user);
+    return ResponseEntity.ok(count);
+  }
+
+  @org.springframework.web.bind.annotation.DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteNotification(@PathVariable("id") Long id, Principal principal) {
+    Users user = usersRepository.findByLoginId(principal.getName())
+        .orElseThrow(() -> new RuntimeException("User not found"));
+    notificationService.deleteNotification(id, user);
     return ResponseEntity.ok().build();
   }
 }

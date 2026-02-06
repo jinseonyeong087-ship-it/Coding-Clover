@@ -28,6 +28,7 @@ public class InstructorProfileService {
 
     private final InstructorProfileRepository instructorProfileRepository;
     private final UsersRepository usersRepository;
+    private final com.mysite.clover.Notification.NotificationService notificationService;
 
     @Value("${file.upload.path:./uploads}")
     private String uploadPath;
@@ -125,9 +126,14 @@ public class InstructorProfileService {
         try {
             instructorProfileRepository.save(profile);
 
-            // Users 상태 업데이트 (심사 중으로 변경)
             user.setStatus(UsersStatus.SUSPENDED);
             usersRepository.save(user);
+
+            // 관리자에게 알림 전송 (강사 신청)
+            notificationService.notifyAdmins(
+                    "INSTRUCTOR_APPLICATION",
+                    "사용자 " + user.getName() + "님의 강사 신청이 접수되었습니다.",
+                    "/admin/users/instructors");
         } catch (Exception e) {
             throw new RuntimeException("프로필 저장 중 오류가 발생했습니다: " + e.getMessage());
         }
@@ -142,18 +148,18 @@ public class InstructorProfileService {
                 Files.createDirectories(uploadDir);
                 System.out.println("Created upload directory: " + uploadDir);
             }
-            
+
             // 파일명 생성 (중복 방지)
             String originalFilename = file.getOriginalFilename();
             String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String fileName = "resume_" + loginId + "_" + System.currentTimeMillis() + extension;
-            
+
             Path filePath = uploadDir.resolve(fileName);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-            
+
             System.out.println("File saved to: " + filePath.toAbsolutePath());
             return fileName; // 파일명만 저장 (전체 경로 아님)
-            
+
         } catch (IOException e) {
             throw new RuntimeException("파일 저장에 실패했습니다: " + e.getMessage());
         }
@@ -165,45 +171,62 @@ public class InstructorProfileService {
             InstructorProfile profile = instructorProfileRepository
                     .findByUserId(Long.parseLong(userId))
                     .orElseThrow(() -> new EntityNotFoundException("강사 프로필이 없습니다."));
-            
+
             profile.setStatus(InstructorStatus.APPROVED);
             profile.setApprovedAt(LocalDateTime.now());
             instructorProfileRepository.save(profile);
-            
+
             // Users 상태를 활성화로 변경
             Users user = usersRepository.findById(Long.parseLong(userId))
                     .orElseThrow(() -> new EntityNotFoundException("사용자 정보가 없습니다."));
             user.setStatus(UsersStatus.ACTIVE);
             usersRepository.save(user);
-            
+
+            // 사용자에게 알림 전송 (강사 승인)
+            notificationService.createNotification(
+                    user,
+                    "INSTRUCTOR_APPROVED",
+                    "강사 신청이 승인되었습니다. 이제 강좌를 개설할 수 있습니다.",
+                    "/instructor");
+
             return true;
         } catch (Exception e) {
             return false;
         }
     }
-    
+
     // 강사 반료 처리 (어드민용)
     public boolean rejectInstructor(String userId) {
         try {
             InstructorProfile profile = instructorProfileRepository
                     .findByUserId(Long.parseLong(userId))
                     .orElseThrow(() -> new EntityNotFoundException("강사 프로필이 없습니다."));
-            
+
             profile.setStatus(InstructorStatus.REJECTED);
             instructorProfileRepository.save(profile);
-            
+
+            // 사용자에게 알림 전송 (강사 거절)
+            // userId로 유저 조회 필요
+            usersRepository.findById(Long.parseLong(userId)).ifPresent(user -> {
+                notificationService.createNotification(
+                        user,
+                        "INSTRUCTOR_REJECTED",
+                        "강사 신청이 반려되었습니다.",
+                        "/mypage");
+            });
+
             return true;
         } catch (Exception e) {
             return false;
         }
     }
-    
+
     // 모든 강사 프로필 조회 (어드민용)
     @Transactional(readOnly = true)
     public List<InstructorProfile> getAllInstructorProfiles() {
         return instructorProfileRepository.findAll();
     }
-    
+
     // 특정 강사 프로필 조회 (어드민용)
     @Transactional(readOnly = true)
     public InstructorProfile getInstructorProfileByUserId(String userId) {
