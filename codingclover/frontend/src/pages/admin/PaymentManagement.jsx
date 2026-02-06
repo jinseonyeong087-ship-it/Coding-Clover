@@ -22,7 +22,7 @@ import {
     TabsList,
     TabsTrigger
 } from "@/components/ui/Tabs";
-import { Search, Filter, Download, RefreshCw, AlertCircle } from 'lucide-react';
+import { Search, Filter, Download, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
 
 function PaymentManagement() {
     const navigate = useNavigate();
@@ -536,136 +536,71 @@ function PaymentManagement() {
                             </CardHeader>
                             <CardContent className="pt-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                                    {/* 결제 상태 */}
+                                    {/* 내용(Type) 필터 */}
                                     <div className="space-y-2">
-                                        <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">결제 상태</Label>
+                                        <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">거래 내용</Label>
                                         <div className="relative">
                                             <select
                                                 className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
-                                                value={filters.paymentStatus}
-                                                onChange={(e) => handleFilterChange('paymentStatus', e.target.value)}
+                                                value={filters.contentType}
+                                                onChange={(e) => handleFilterChange('contentType', e.target.value)}
                                             >
-                                                <option value="ALL">전체 보기</option>
-                                                <option value="PAID">결제완료</option>
-                                                <option value="CANCELLED">결제취소</option>
-                                                <option value="REFUNDED">환불완료</option>
+                                                <option value="ALL">전체</option>
+                                                <option value="CHARGE">포인트 충전</option>
+                                                <option value="USE">포인트 사용</option>
+                                                <option value="REFUND">포인트 환불</option>
                                             </select>
                                         </div>
                                     </div>
-                    {/* 필터 */}
-                    <Card className="mb-6">
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2">
-                                    <Filter className="w-5 h-5" />
-                                    필터
-                                </CardTitle>
-                                <Button variant="outline" onClick={resetFilters} size="sm">
-                                    초기화
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                                {/* 내용 필터 */}
-                                <div>
-                                    <Label>내용</Label>
-                                    <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={filters.contentType}
-                                        onChange={(e) => handleFilterChange('contentType', e.target.value)}
-                                    >
-                                        <option value="ALL">전체</option>
-                                        <option value="CHARGE">포인트 충전</option>
-                                        <option value="USE">포인트 사용</option>
-                                        <option value="REFUND">포인트 환불</option>
-                                    </select>
-                                </div>
 
-                                    {/* 환불 상태 */}
+                                    {/* 상태(Status) 필터 */}
                                     <div className="space-y-2">
-                                        <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">환불 상태</Label>
-                                        <select
-                                            className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
-                                            value={filters.refundStatus}
-                                            onChange={(e) => handleFilterChange('refundStatus', e.target.value)}
-                                        >
-                                            <option value="ALL">전체 보기</option>
-                                            <option value="NONE">없음</option>
-                                            <option value="REQUESTED">환불요청</option>
-                                            <option value="APPROVED">환불승인</option>
-                                            <option value="REJECTED">환불거절</option>
-                                        </select>
+                                        <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">처리 상태</Label>
+                                        <div className="relative">
+                                            <select
+                                                className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
+                                                value={filters.status}
+                                                onChange={(e) => handleFilterChange('status', e.target.value)}
+                                            >
+                                                <option value="ALL">전체 상태</option>
+                                                <option value="PAID">결제완료</option>
+                                                <option value="ENROLLMENT">수강신청</option>
+                                                <option value="REFUNDED">환불완료</option>
+                                                <option value="REJECTED">환불거절</option>
+                                            </select>
+                                        </div>
                                     </div>
-                                {/* 상태 필터 */}
-                                <div>
-                                    <Label>상태</Label>
-                                    <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={filters.status}
-                                        onChange={(e) => handleFilterChange('status', e.target.value)}
-                                    >
-                                        <option value="ALL">전체</option>
-                                        <option value="PAID">결제완료</option>
-                                        <option value="ENROLLMENT">수강신청</option>
-                                        <option value="REFUNDED">환불완료</option>
-                                        <option value="REJECTED">환불거절</option>
-                                    </select>
-                                </div>
 
-                                {/* 기간 */}
-                                <div>
-                                    <Label>기간</Label>
-                                    <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={filters.period}
-                                        onChange={(e) => handleFilterChange('period', e.target.value)}
-                                    >
-                                        <option value="1">오늘</option>
-                                        <option value="7">7일</option>
-                                        <option value="30">30일</option>
-                                        <option value="custom">직접 지정</option>
-                                    </select>
-                                </div>
-                                    {/* 기간 */}
+                                    {/* 기간(Period) 필터 */}
                                     <div className="space-y-2">
                                         <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">조회 기간</Label>
-                                        <select
-                                            className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
-                                            value={filters.period}
-                                            onChange={(e) => handleFilterChange('period', e.target.value)}
-                                        >
-                                            <option value="1">오늘 하루</option>
-                                            <option value="7">최근 7일</option>
-                                            <option value="30">최근 30일</option>
-                                            <option value="custom">직접 지정</option>
-                                        </select>
+                                        <div className="relative">
+                                            <select
+                                                className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
+                                                value={filters.period}
+                                                onChange={(e) => handleFilterChange('period', e.target.value)}
+                                            >
+                                                <option value="1">오늘 하루</option>
+                                                <option value="7">최근 7일</option>
+                                                <option value="30">최근 30일</option>
+                                                <option value="custom">직접 지정</option>
+                                            </select>
+                                        </div>
                                     </div>
 
-                                {/* 검색 타입 */}
-                                <div>
-                                    <Label>검색 대상</Label>
-                                    <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={filters.searchType}
-                                        onChange={(e) => handleFilterChange('searchType', e.target.value)}
-                                    >
-                                        <option value="student">학생명</option>
-                                        <option value="course">강좌명</option>
-                                    </select>
-                                </div>
-                            </div>
-                                    {/* 검색 타입 */}
+                                    {/* 검색 기준(SearchType) 필터 */}
                                     <div className="space-y-2">
                                         <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">검색 기준</Label>
-                                        <select
-                                            className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
-                                            value={filters.searchType}
-                                            onChange={(e) => handleFilterChange('searchType', e.target.value)}
-                                        >
-                                            <option value="student">학생명</option>
-                                            <option value="course">강좌명</option>
-                                        </select>
+                                        <div className="relative">
+                                            <select
+                                                className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
+                                                value={filters.searchType}
+                                                onChange={(e) => handleFilterChange('searchType', e.target.value)}
+                                            >
+                                                <option value="student">학생명</option>
+                                                <option value="course">강좌명</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
 
