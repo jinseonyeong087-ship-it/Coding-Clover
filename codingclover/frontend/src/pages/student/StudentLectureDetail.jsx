@@ -1,10 +1,32 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Play, Clock, Video, MonitorPlay } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import Nav from "@/components/Nav";
 import Tail from "@/components/Tail";
 
 function StudentLectureDetail() {
+
+    useEffect(() => {
+        fetch('/student/lecture/detail', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        })
+            .then((response) => {   
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log("Lecture Detail Data:", data);
+            })
+            .catch((error) => {
+                console.error("Error fetching lecture detail:", error);
+            });
+    }, []);
+
+
 
     // YouTube URL → embed URL 변환
     const toEmbedUrl = (url) => {
@@ -24,9 +46,9 @@ function StudentLectureDetail() {
 
     return (
         <>
-        <Nav />
-        <div className="flex-1 h-full">
-            {selectedLecture ? (
+            <Nav />
+            <div className="flex-1 h-full">
+                {/* {selectedLecture ? ( */}
                 <div className="flex flex-col gap-6 p-6 md:p-8 h-full">
                     <div className="border-b border-indigo-100/50 pb-6">
                         <div className="flex items-center gap-2 mb-3">
@@ -80,18 +102,19 @@ function StudentLectureDetail() {
                         </p>
                     </div>
                 </div>
-            ) : (
-                <div className="flex flex-col items-center justify-center h-full py-32 text-center">
-                    <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mb-6 animate-pulse">
-                        <Play className="w-10 h-10 text-indigo-300 ml-1" />
-                    </div>
-                    <h3 className="text-xl font-bold text-slate-700 mb-2">강의를 선택해주세요</h3>
-                    <p className="text-slate-500 max-w-xs mx-auto">
-                        왼쪽 목록에서 수강하고 싶은 강의를 클릭하면 상세 내용과 영상을 확인할 수 있습니다.
-                    </p>
-                </div>
-            )}
-        </div>
+                {/*// ) : (
+            //     <div className="flex flex-col items-center justify-center h-full py-32 text-center">
+            //         <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mb-6 animate-pulse">
+            //             <Play className="w-10 h-10 text-indigo-300 ml-1" />
+            //         </div>
+            //         <h3 className="text-xl font-bold text-slate-700 mb-2">강의를 선택해주세요</h3>
+            //         <p className="text-slate-500 max-w-xs mx-auto">
+            //             왼쪽 목록에서 수강하고 싶은 강의를 클릭하면 상세 내용과 영상을 확인할 수 있습니다.
+            //         </p>
+            //     </div>
+            // )} */}
+            </div>
+            <Tail />
 
         </>
     );
