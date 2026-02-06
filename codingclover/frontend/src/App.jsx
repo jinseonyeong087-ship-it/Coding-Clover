@@ -43,7 +43,9 @@ import CodingTestDetail from './pages/coding/CodingTestDetail';
 import CodingTestList from './pages/coding/CodingTestList';
 import CodingTestCreate from './pages/coding/CodingTestCreate';
 import PaymentManagement from './pages/admin/PaymentManagement';
-import ChatBot from '@/pages/student/ChatBot'
+import StudentQnaList from './pages/student/StudentQnaList';
+import StudentQnaDetail from './pages/student/StudentQnaDetail';
+import ChatBot from './pages/student/ChatBot';
 
 
 

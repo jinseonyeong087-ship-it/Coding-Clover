@@ -4,7 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
-
+import { Badge } from "@/components/ui/badge";
+import {
+  Search, MessageCircle, CheckCircle2, HelpCircle,
+  Plus, User, BookOpen, AlertCircle, X, MoreHorizontal
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
 
 const QnaTest = () => {
   const [qnaList, setQnaList] = useState([]);
@@ -28,6 +40,10 @@ const QnaTest = () => {
   const [isEditingQna, setIsEditingQna] = useState(false);
   const [editQnaTitle, setEditQnaTitle] = useState('');
   const [editQnaQuestion, setEditQnaQuestion] = useState('');
+
+  // UI States
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
 
   useEffect(() => {
     // 유저 정보 가져오기
@@ -103,8 +119,9 @@ const QnaTest = () => {
       if (response.ok) {
         alert("답변이 등록되었습니다!");
         setAnswerContent('');
-        setSelectedQna(null); // 모달 닫기
-        fetchQnaList(); // 리스트 갱신
+        // 리스트 갱신 및 상세 정보 갱신 (모달 유지)
+        handleQnaClick(selectedQna.qnaId);
+        fetchQnaList();
       } else {
         alert("답변 등록 실패");
       }
@@ -164,7 +181,6 @@ const QnaTest = () => {
       if (response.ok) {
         alert("답변이 삭제되었습니다.");
         if (selectedQna) {
-          // 상태 업데이트를 위해 다시 불러오거나 리스트 갱신
           handleQnaClick(selectedQna.qnaId);
           fetchQnaList();
         }
@@ -200,7 +216,6 @@ const QnaTest = () => {
       if (response.ok) {
         alert("질문이 수정되었습니다.");
         setIsEditingQna(false);
-        // 리스트 및 상세 갱신
         fetchQnaList();
         handleQnaClick(selectedQna.qnaId);
       } else {
@@ -295,7 +310,9 @@ const QnaTest = () => {
         alert('질문이 등록되었습니다.');
         setTitle('');
         setQuestion('');
-        fetchQnaList(); // 리스트 갱신
+        setCourseId('');
+        setIsWriteModalOpen(false);
+        fetchQnaList();
       } else {
         alert('등록 실패');
       }
@@ -305,342 +322,360 @@ const QnaTest = () => {
     }
   };
 
+  // Filter Logic
+  const getFilteredList = () => {
+    let filtered = [...qnaList];
+    if (searchTerm) {
+      const lower = searchTerm.toLowerCase();
+      filtered = filtered.filter(q =>
+        q.title.toLowerCase().includes(lower) ||
+        q.question.toLowerCase().includes(lower) ||
+        (q.courseTitle && q.courseTitle.toLowerCase().includes(lower))
+      );
+    }
+    return filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  };
+  const filteredQnaList = getFilteredList();
+
+
   return (
-    <div className="min-h-screen flex flex-col bg-background relative">
+    <div className="min-h-screen flex flex-col bg-[#F8F9FA]">
       <Nav />
-      <div className="container mx-auto py-10 px-4">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">QnA 테스트 페이지</h1>
-          <div className="flex gap-2 items-center">
-            <span className="text-sm text-muted-foreground mr-2">
-              {user ? `${user.name}(${user.role})님` : '비로그인'}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                localStorage.removeItem('users');
-                localStorage.removeItem('token'); // if used
-                window.location.reload();
-              }}
-            >
-              로그아웃/세션초기화
-            </Button>
-          </div>
-        </div>
+      <div className="h-16"></div> {/* Spacer */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* QnA 등록 폼 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>질문 등록하기</CardTitle>
-              <CardDescription>새로운 질문을 등록해봅니다.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* ... (Existing form fields: courseId, title, question) ... */}
-                <div>
-                  <Label htmlFor="courseId">강좌 선택</Label>
-                  <select
-                    id="courseId"
-                    value={courseId}
-                    onChange={(e) => setCourseId(e.target.value)}
-                    required
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <option value="">강좌를 선택해주세요</option>
-                    {courseList.map((course) => (
-                      <option key={course.courseId} value={course.courseId}>
-                        {course.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <Label htmlFor="title">제목</Label>
-                  <Input
-                    id="title"
-                    placeholder="질문 제목"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="question">내용</Label>
-                  <textarea
-                    id="question"
-                    placeholder="질문 내용"
-                    value={question}
-                    onChange={(e) => setQuestion(e.target.value)}
-                    required
-                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                </div>
-                <Button type="submit" className="w-full">질문 등록</Button>
-              </form>
-            </CardContent>
-          </Card>
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="flex flex-col lg:flex-row gap-8">
 
-          {/* QnA 리스트 */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+          {/* Sidebar */}
+          <aside className="w-full lg:w-64 shrink-0 space-y-6">
+            {/* Write Button */}
+            {/* Write Button - Hidden for Admin */}
+            {(!user || user.role !== 'ADMIN') && (
+              <Button
+                onClick={() => {
+                  if (!user) return alert("로그인이 필요합니다.");
+                  setIsWriteModalOpen(true);
+                }}
+                className="w-full h-12 text-base font-bold bg-[#5d5feF] hover:bg-[#4b4ddb] shadow-md transition-all"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                질문하기
+              </Button>
+            )}
+
+            {/* Filters */}
+            <nav className="space-y-1">
+              <button
+                onClick={() => setViewMode('all')}
+                className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${viewMode === 'all' ? 'bg-white text-[#5d5feF] shadow-sm ring-1 ring-gray-200' : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <BookOpen className="h-4 w-4" />
+                  전체 질문
+                </div>
+              </button>
+
+              <button
+                onClick={() => {
+                  if (!user) return alert('로그인이 필요합니다.');
+                  setViewMode('my');
+                }}
+                className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${viewMode === 'my' ? 'bg-white text-[#5d5feF] shadow-sm ring-1 ring-gray-200' : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <User className="h-4 w-4" />
+                  내 질문
+                </div>
+              </button>
+            </nav>
+
+            {/* Course Filter Info */}
+            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-sm text-gray-500">
+              <p>원하는 강좌의 질문을 찾고 싶다면 상단 검색창을 이용해보세요.</p>
+            </div>
+          </aside>
+
+          {/* Main Content */}
+          <section className="flex-1 min-w-0">
+            <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
               <div>
-                <CardTitle>질문 목록</CardTitle>
-                <CardDescription>
-                  질문을 클릭하면 상세 내용을 확인하고 답변을 달 수 있습니다.
-                </CardDescription>
+                <h1 className="text-2xl font-bold text-gray-900">QnA 게시판</h1>
+                <p className="text-gray-500 text-sm mt-1">
+                  {viewMode === 'my' ? '내가 작성한 질문 목록입니다.' : '지식 공유의 장, 서로 묻고 답하며 함께 성장하세요.'}
+                </p>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={viewMode === 'all' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('all')}
-                >
-                  전체 보기
-                </Button>
-                <Button
-                  variant={viewMode === 'my' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('my')}
-                >
-                  내 질문만
-                </Button>
+              {/* Search */}
+              <div className="relative w-full sm:w-72">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  className="pl-10 bg-white border-gray-200 focus:ring-[#5d5feF]"
+                  placeholder="제목, 내용 검색"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4 max-h-[500px] overflow-y-auto">
-                {qnaList.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    {viewMode === 'my' && !user ? '로그인이 필요합니다.' : '등록된 질문이 없습니다.'}
-                  </p>
-                ) : (
-                  qnaList.map((qna) => (
+            </div>
+
+            {/* List */}
+            <div className="space-y-4">
+              {filteredQnaList.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-dashed border-gray-200">
+                  <HelpCircle className="h-12 w-12 text-gray-300 mb-4" />
+                  <p className="text-lg font-medium text-gray-900">질문이 없습니다</p>
+                </div>
+              ) : (
+                filteredQnaList.map(qna => {
+                  const isSolved = qna.status === 'ANSWERED' || (qna.answers && qna.answers.length > 0);
+                  const answerCount = qna.answers ? qna.answers.length : 0;
+
+                  return (
                     <div
                       key={qna.qnaId}
-                      className="p-4 border rounded-lg hover:bg-slate-50 relative group cursor-pointer transition-colors"
                       onClick={() => handleQnaClick(qna.qnaId)}
+                      className="group bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:border-[#5d5feF] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
                     >
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-semibold">{qna.title}</h3>
-                        <span className={`text-xs px-2 py-1 rounded ${qna.status === 'ANSWERED'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
-                          }`}>
-                          {qna.status || 'WAIT'}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                        {qna.question}
-                      </p>
-                      <div className="flex justify-between items-center text-xs text-muted-foreground mt-2">
-                        <div className="flex items-center gap-1">
-                          <span className="font-medium text-foreground">
-                            {qna.userName || 'User'}
-                          </span>
+                      <div className="flex items-start gap-4">
+                        <div className={`mt-1 shrink-0 ${isSolved ? 'text-green-500' : 'text-gray-300'}`}>
+                          {isSolved ? <CheckCircle2 className="h-6 w-6" /> : <HelpCircle className="h-6 w-6" />}
                         </div>
-                        <span>{new Date(qna.createdAt).toLocaleDateString()}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                            {qna.courseTitle && (
+                              <Badge variant="secondary" className="bg-gray-100 text-gray-600 font-normal">
+                                {qna.courseTitle}
+                              </Badge>
+                            )}
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded ${isSolved ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                              {isSolved ? '해결됨' : '미해결'}
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-bold text-gray-900 group-hover:text-[#5d5feF] transition-colors mb-2 line-clamp-1">
+                            {qna.title}
+                          </h3>
+                          <p className="text-sm text-gray-500 line-clamp-2 mb-4">
+                            {qna.question}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-gray-400">
+                            <span className="font-medium text-gray-600">{qna.userName || '익명'}</span>
+                            <div className="w-px h-3 bg-gray-200"></div>
+                            <span>{new Date(qna.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+
+                        {/* Right Side Answer Count */}
+                        <div className="hidden sm:block self-center min-w-[3.5rem] text-center">
+                          <div className={`flex flex-col items-center justify-center w-14 h-14 rounded-xl border ${isSolved ? 'bg-green-50 border-green-100 text-green-600' : 'bg-gray-50 border-gray-100 text-gray-400'}`}>
+                            <span className="text-xl font-bold leading-none">{answerCount}</span>
+                            <span className="text-[10px] mt-1">답변</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  )
+                })
+              )}
+            </div>
+          </section>
         </div>
-      </div>
+      </main>
 
-      {/* 상세 보기 모달 */}
+      {/* Write Modal */}
+      <Dialog open={isWriteModalOpen} onOpenChange={setIsWriteModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>새로운 질문 작성</DialogTitle>
+            <DialogDescription>궁금한 점을 자세히 적어주세요.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="courseId">강좌 선택</Label>
+              <select
+                id="courseId"
+                value={courseId}
+                onChange={(e) => setCourseId(e.target.value)}
+                required
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">강좌를 선택해주세요</option>
+                {courseList.map((course) => (
+                  <option key={course.courseId} value={course.courseId}>{course.title}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="title">제목</Label>
+              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="제목을 입력하세요" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="question">내용</Label>
+              <textarea
+                className="flex min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                value={question} onChange={(e) => setQuestion(e.target.value)} required placeholder="내용을 입력하세요"
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsWriteModalOpen(false)}>취소</Button>
+              <Button type="submit" className="bg-[#5d5feF]">등록하기</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Detail Modal */}
       {selectedQna && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-background animate-in fade-in zoom-in duration-200">
-            <CardHeader className="border-b">
-              <div className="flex justify-between items-start">
-                <div>
-                  {isEditingQna ? (
-                    <div className="flex gap-2 items-center mb-2">
-                      <Input
-                        value={editQnaTitle}
-                        onChange={(e) => setEditQnaTitle(e.target.value)}
-                        className="text-lg font-bold"
-                      />
-                    </div>
-                  ) : (
-                    <CardTitle className="text-xl">{selectedQna.title}</CardTitle>
-                  )}
-                  <CardDescription className="mt-1 flex gap-2">
-                    <span>작성자: {selectedQna.userName}</span>
-                    <span>•</span>
-                    <span>{new Date(selectedQna.createdAt).toLocaleString()}</span>
-                  </CardDescription>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col bg-white shadow-2xl">
+            {/* Modal Header */}
+            <div className="p-6 border-b flex justify-between items-start bg-white shrink-0">
+              <div className="flex-1 min-w-0 mr-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="outline">{selectedQna.courseTitle || '강좌 미정'}</Badge>
+                  <span className="text-xs text-gray-400">{new Date(selectedQna.createdAt).toLocaleString()}</span>
                 </div>
-                <div className="flex gap-2">
-                  {!isEditingQna && user && (
-                    <>
-                      {(user.userId || user.id) === selectedQna.userId && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 text-xs"
-                          onClick={() => {
-                            setIsEditingQna(true);
-                            setEditQnaTitle(selectedQna.title);
-                            setEditQnaQuestion(selectedQna.question);
-                          }}
-                        >
-                          수정
-                        </Button>
-                      )}
-                      {((user.userId || user.id) === selectedQna.userId || user.role === 'ADMIN') && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="h-8 text-xs"
-                          onClick={handleQnaDelete}
-                        >
-                          삭제
-                        </Button>
-                      )}
-                    </>
-                  )}
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedQna(null)}>✕</Button>
+                {isEditingQna ? (
+                  <Input value={editQnaTitle} onChange={(e) => setEditQnaTitle(e.target.value)} className="text-xl font-bold mb-2" />
+                ) : (
+                  <h2 className="text-2xl font-bold text-gray-900 leading-tight">{selectedQna.title}</h2>
+                )}
+                <div className="flex items-center gap-2 mt-2">
+                  <User className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm font-medium text-gray-700">{selectedQna.userName}</span>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="p-6 space-y-6">
-              {console.log("Selected QnA Debug:", selectedQna)}
-              <div>
-                <h3 className="font-semibold mb-2">질문 내용</h3>
+
+              <div className="flex items-center gap-2">
+                {!isEditingQna && user && ((user.userId || user.id) === selectedQna.userId || user.role === 'ADMIN') && (
+                  <div className="flex gap-2 mr-2">
+                    {(user.userId || user.id) === selectedQna.userId && (
+                      <Button variant="outline" size="sm" onClick={() => {
+                        setIsEditingQna(true);
+                        setEditQnaTitle(selectedQna.title);
+                        setEditQnaQuestion(selectedQna.question);
+                      }}>수정</Button>
+                    )}
+                    <Button variant="destructive" size="sm" onClick={handleQnaDelete}>삭제</Button>
+                  </div>
+                )}
+                <Button variant="ghost" size="icon" onClick={() => setSelectedQna(null)}>
+                  <X className="h-6 w-6 text-gray-500" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Modal Body (Scrollable) */}
+            <div className="flex-1 overflow-y-auto p-6 bg-[#F8F9FA]">
+              {/* Question Content */}
+              <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
                 {isEditingQna ? (
                   <div className="space-y-4">
                     <textarea
-                      className="flex min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      value={editQnaQuestion}
-                      onChange={(e) => setEditQnaQuestion(e.target.value)}
+                      className="flex min-h-[200px] w-full rounded-md border border-input px-3 py-2 text-sm"
+                      value={editQnaQuestion} onChange={(e) => setEditQnaQuestion(e.target.value)}
                     />
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" onClick={() => setIsEditingQna(false)}>취소</Button>
-                      <Button onClick={handleQnaUpdate}>저장</Button>
+                      <Button onClick={handleQnaUpdate}>저장 완료</Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-slate-50 p-4 rounded-md min-h-[100px] whitespace-pre-wrap border">
-                    {selectedQna.question || "질문 내용이 없습니다."}
+                  <div className="text-gray-800 whitespace-pre-wrap leading-relaxed min-h-[100px]">
+                    {selectedQna.question}
                   </div>
                 )}
               </div>
 
-              {/* 답변 리스트 표시 */}
-              {selectedQna.answers && selectedQna.answers.length > 0 && (
-                <div className="border-t pt-6">
-                  <h3 className="font-semibold mb-4 text-green-700">등록된 답변</h3>
-                  <div className="space-y-4">
-                    {selectedQna.answers.map((ans) => {
-                      const isOwner = user && (user.userId || user.id) === ans.instructorId;
-                      const isAdmin = user && user.role === 'ADMIN';
+              {/* Answers */}
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold flex items-center gap-2 text-gray-900">
+                  <MessageCircle className="h-5 w-5 text-[#5d5feF]" />
+                  답변 {selectedQna.answers ? selectedQna.answers.length : 0}개
+                </h3>
 
-                      return (
-                        <div key={ans.answerId} className="bg-green-50 p-4 rounded-md border border-green-100">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="font-medium text-sm">{ans.instructorName || '강사'}</span>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground mr-2">{new Date(ans.answeredAt).toLocaleString()}</span>
-                              {editingAnswerId !== ans.answerId && (
-                                <div className="flex gap-1">
-                                  {isOwner && (
-                                    <Button
-                                      variant="ghost"
-                                      size="xs"
-                                      className="h-7 px-2 text-xs text-blue-600 hover:text-blue-800"
-                                      onClick={() => {
-                                        setEditingAnswerId(ans.answerId);
-                                        setEditContent(ans.content);
-                                      }}
-                                    >
-                                      수정
-                                    </Button>
-                                  )}
-                                  {(isOwner || isAdmin) && (
-                                    <Button
-                                      variant="ghost"
-                                      size="xs"
-                                      className="h-7 px-2 text-xs text-red-600 hover:text-red-800"
-                                      onClick={() => handleAnswerDelete(ans.answerId)}
-                                    >
-                                      삭제
-                                    </Button>
-                                  )}
-                                </div>
-                              )}
+                {selectedQna.answers && selectedQna.answers.length > 0 ? (
+                  selectedQna.answers.map(ans => {
+                    const isAnsOwner = user && (user.userId || user.id) === ans.instructorId;
+                    return (
+                      <div key={ans.answerId} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm relative overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-[#5d5feF]"></div>
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-[#5d5feF]/10 flex items-center justify-center">
+                              <User className="h-4 w-4 text-[#5d5feF]" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-gray-900">{ans.instructorName}</span>
+                                <Badge variant="secondary" className="bg-[#5d5feF] text-white hover:bg-[#4b4ddb] text-[10px] h-5">강사</Badge>
+                              </div>
+                              <span className="text-xs text-gray-400">{new Date(ans.answeredAt).toLocaleString()}</span>
                             </div>
                           </div>
-
-                          {editingAnswerId === ans.answerId ? (
-                            <div className="space-y-2">
-                              <textarea
-                                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                value={editContent}
-                                onChange={(e) => setEditContent(e.target.value)}
-                              />
-                              <div className="flex justify-end gap-2">
-                                <Button size="sm" variant="outline" onClick={() => setEditingAnswerId(null)}>취소</Button>
-                                <Button size="sm" onClick={() => handleAnswerUpdate(ans.answerId)}>저장</Button>
-                              </div>
+                          {((user && (user.userId || user.id) === ans.instructorId) || (user && user.role === 'ADMIN')) && editingAnswerId !== ans.answerId && (
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {isAnsOwner && <Button variant="ghost" size="xs" className="h-7 text-xs" onClick={() => {
+                                setEditingAnswerId(ans.answerId);
+                                setEditContent(ans.content);
+                              }}>수정</Button>}
+                              <Button variant="ghost" size="xs" className="h-7 text-xs text-red-500 hover:text-red-700" onClick={() => handleAnswerDelete(ans.answerId)}>삭제</Button>
                             </div>
-                          ) : (
-                            <p className="text-sm whitespace-pre-wrap">{ans.content}</p>
                           )}
                         </div>
-                      );
-                    })}
+
+                        {editingAnswerId === ans.answerId ? (
+                          <div className="space-y-2">
+                            <textarea className="w-full border rounded p-2 text-sm" value={editContent} onChange={(e) => setEditContent(e.target.value)} />
+                            <div className="flex justify-end gap-2">
+                              <Button variant="outline" size="sm" onClick={() => setEditingAnswerId(null)}>취소</Button>
+                              <Button size="sm" onClick={() => handleAnswerUpdate(ans.answerId)}>저장</Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-gray-800 whitespace-pre-wrap leading-relaxed pl-11">
+                            {ans.content}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-gray-400 bg-white rounded-xl border border-dashed">
+                    <p>아직 등록된 답변이 없습니다.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Answer Form */}
+              {user && user.role === 'INSTRUCTOR' && (
+                <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6 shadow-md">
+                  <h3 className="font-bold text-gray-900 mb-4">답변 작성하기</h3>
+                  <div className="space-y-4">
+                    <Input
+                      type="number"
+                      placeholder="강사 ID (디버그용/실제론 자동할당 권장)"
+                      value={instructorId}
+                      onChange={e => setInstructorId(e.target.value)}
+                      className="mb-2 hidden" // Hide if not needed visually
+                    />
+                    <textarea
+                      className="flex min-h-[100px] w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-sm focus:bg-white transition-colors"
+                      placeholder="답변 내용을 입력하세요..."
+                      value={answerContent}
+                      onChange={(e) => setAnswerContent(e.target.value)}
+                    />
+                    <div className="flex justify-end">
+                      <Button onClick={handleAnswerSubmit} className="bg-[#5d5feF]">답변 등록</Button>
+                    </div>
                   </div>
                 </div>
               )}
-
-              {/* 답변 작성 폼 (강사 권한일 때만 표시) */}
-              <div className="border-t pt-6">
-                <div className="mb-4 bg-yellow-50 p-2 text-xs text-yellow-800 rounded">
-                  DEBUG: 현재 로그인 Role: {user ? JSON.stringify(user.role) : '없음'} / ID: {user ? (user.userId || user.id) : '없음'}
-                </div>
-              </div>
-              {user && user.role === 'INSTRUCTOR' && (
-                <div className="mt-4">
-                  <h3 className="font-semibold mb-4">답변 작성 (강사 전용)</h3>
-                  <form onSubmit={handleAnswerSubmit} className="space-y-4">
-                    <div>
-                      <Label htmlFor="modalInstructorId">강사 ID (User ID)</Label>
-                      <Input
-                        id="modalInstructorId"
-                        type="number"
-                        value={instructorId}
-                        onChange={(e) => setInstructorId(e.target.value)}
-                        placeholder="강사 ID 입력"
-                        className="mb-2"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="modalAnswerContent">답변 내용</Label>
-                      <textarea
-                        id="modalAnswerContent"
-                        className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        placeholder="답변 내용을 입력하세요..."
-                        value={answerContent}
-                        onChange={(e) => setAnswerContent(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <Button type="button" variant="outline" onClick={() => setSelectedQna(null)}>취소</Button>
-                      <Button type="submit">답변 등록</Button>
-                    </div>
-                  </form>
-                </div>
-              )}
-            </CardContent>
-          </Card >
-        </div >
+            </div>
+          </Card>
+        </div>
       )}
-    </div >
+
+    </div>
   );
 };
 
