@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import { Save, ArrowLeft, Code2, Terminal, Sparkles, BookOpen, Play } from "lucide-react";
+import Tail from '@/components/Tail';
 import Editor from "@monaco-editor/react";
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
@@ -98,12 +99,12 @@ const CodingTestCreate = () => {
   if (userRole !== "ADMIN") return null;
 
   return (
-    <div className="h-screen w-full flex flex-col bg-white font-sans text-gray-900">
+    <div className="min-h-screen w-full flex flex-col bg-white font-sans text-gray-900">
       <Toaster position="top-right" richColors />
       <Nav />
       <div className="h-[70px] shrink-0"></div>
 
-      <main className="flex-1 flex overflow-hidden p-4 md:p-6 gap-6">
+      <main className="h-[calc(100vh-70px)] flex overflow-hidden p-4 md:p-6 gap-6 shrink-0">
         {/* Main Content Area */}
         <section className="flex-1 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col">
           {/* Toolbar */}
@@ -257,6 +258,7 @@ const CodingTestCreate = () => {
           </div>
         </section>
       </main>
+      <Tail />
     </div>
   );
 };
