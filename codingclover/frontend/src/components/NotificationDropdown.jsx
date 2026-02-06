@@ -109,8 +109,8 @@ const NotificationDropdown = () => {
                 <div
                   key={notification.id}
                   className={`relative p-4 cursor-pointer transition-colors group ${!notification.read
-                    ? 'bg-blue-50 hover:bg-blue-100/50'
-                    : 'bg-white opacity-50 hover:opacity-100 grayscale'
+                    ? 'bg-white border-l-4 border-blue-500 shadow-sm'
+                    : 'bg-gray-100/80 text-gray-500'
                     }`}
                   onClick={() => handleNotificationClick(notification)}
                 >
@@ -124,7 +124,7 @@ const NotificationDropdown = () => {
                         {formatDate(notification.createdAt)}
                       </span>
                     </div>
-                    <p className={`text-sm ${!notification.read ? 'font-medium text-gray-900' : 'text-gray-500 line-through'}`}>
+                    <p className={`text-sm ${!notification.read ? 'font-medium text-gray-900' : 'text-gray-600'}`}>
                       {notification.title}
                     </p>
                   </div>
