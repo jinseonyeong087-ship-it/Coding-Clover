@@ -15,6 +15,10 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import remarkGfm from 'remark-gfm';
 
 function ChatBot({ className }) {
 
@@ -49,7 +53,7 @@ function ChatBot({ className }) {
     if (!input.trim()) return; // trim=공백 메시지 방지
     setChatHistory(prev => [...prev, { role: 'user', content: input }]); // 사용자 질문을 화면에 추가
     setInput(''); // 입력창 초기화
-    
+
     try {
       const response = await fetch(`/ask?message=${encodeURIComponent(input)}`, { method: 'GET' })
       if (response.ok) console.log("서버 응답 성공");
@@ -91,17 +95,53 @@ function ChatBot({ className }) {
             <ScrollArea className="flex flex-col gap-4 h-[450px]">
               {chatHistory.map((msg, i) => (
                 <div key={i} className={`mb-2 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-                  <span className={`inline-block p-2 rounded-lg ${msg.role === 'user' ? 'bg-blue-100' : 'bg-gray-100'}`}>
-                    {msg.content}
-                  </span>
+                  <div className={`inline-block p-2 rounded-lg text-left max-w-[85%] ${msg.role === 'user' ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                    {msg.role === 'user' ? (
+                      <span className="whitespace-pre-wrap">{msg.content}</span>
+                    ) : (
+                      <div className="markdown-content">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            code({ node, inline, className, children, ...props }) {
+                              const match = /language-(\w+)/.exec(className || '')
+                              return !inline && match ? (
+                                <SyntaxHighlighter
+                                  {...props}
+                                  style={vscDarkPlus}
+                                  language={match[1]}
+                                  PreTag="div"
+                                  className="rounded-md my-2"
+                                >
+                                  {String(children).replace(/\n$/, '')}
+                                </SyntaxHighlighter>
+                              ) : (
+                                <code {...props} className="bg-slate-200 rounded px-1 py-0.5">
+                                  {children}
+                                </code>
+                              )
+                            }
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </ScrollArea>
             <div className="flex gap-2">
-              <Textarea 
-                value={input} 
-                onChange={(e) => setInput(e.target.value)} 
-                placeholder="어시스턴트에게 물어보세요" 
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder="어시스턴트에게 물어보세요"
                 className="flex-1"
               />
               <Button onClick={handleSend}>전송</Button>
