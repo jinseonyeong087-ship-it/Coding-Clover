@@ -18,14 +18,13 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import LectureCreate from "./LectureCreate";
 import InstructorLecture from "./InstructorLecture";
-import LectureDetail from "@/pages/student/StudentLectureDetail";
+import LectureDetail from "./LectureDetail";
  
 function InstructorCourseDetail() {
     const { courseId } = useParams();
     const [courseInfo, setCourseInfo] = useState(null);
     const [lectureList, setLectureList] = useState([]);
     const [selectedLecture, setSelectedLecture] = useState(null);
-    const [selectCourse, setSelectCourse] = useState(null);
     const navigate = useNavigate();
 
     // 강좌 정보 가져오기
@@ -85,10 +84,10 @@ function InstructorCourseDetail() {
             <SidebarProvider className="bg-white">
                 <Sidebar dir="rtl" side="left" className="!top-16 !h-[calc(100svh-4rem)]">
                     <SidebarHeader
-                        onClick={() => setSelectCourse(InstructorCourseDetail)}
+                        onClick={() => setSelectedLecture(null)}
                         className="cursor-pointer hover:bg-accent"
                     >
-                        {courseInfo ? courseInfo.title : '강좌명'}
+                        강의 업로드 {courseInfo ? courseInfo.title : '강좌명'}
                     </SidebarHeader>
                     <SidebarContent>
                         <ScrollArea>
@@ -123,7 +122,7 @@ function InstructorCourseDetail() {
                     <section className="container mx-auto px-16 py-24">
                     {selectedLecture ? (
                         /* 강의 상세 */
-                        <LectureDetail selectedLecture={selectedLecture} />
+                        <LectureDetail lecture={selectedLecture} />
                     ) : (
                         <>
                             {/* 강좌 소개 */}

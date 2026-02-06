@@ -45,7 +45,7 @@ import StudentQnaDetail from './pages/student/StudentQnaDetail';
 import ChatBot from './pages/student/ChatBot';
 import StudentLectureDetail from './pages/student/StudentLectureDetail';
 import InstructorCourseList from './pages/instructor/InstructorCourseList';
-import LectureUpload from './pages/instructor/LectureUpload';
+import InstructorLecture from './pages/instructor/InstructorLecture';
 
 
 
@@ -157,7 +157,7 @@ function App() {
           <Route path="course" element={<InstructorCourseList />} />
           <Route path="course/:courseId" element={<InstructorCourseDetail />} />
           <Route path="course/:courseId/lectures" element={<StudentLectureDetail />} />
-          <Route path="lecture/upload" element={<LectureUpload />} />
+          <Route path="lecture/upload" element={<InstructorLecture />} />
           <Route path="mypage" element={<InstructorMypage />} />
         </Route>
         {/* 관리자 */}

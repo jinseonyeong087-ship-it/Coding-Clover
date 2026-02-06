@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/Input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/Label";
-import InstructorLecture from "@/pages/instructor/InstructorLecture";
+import LectureUpload from "@/components/LectureUpload";
 
 function LectureCreate() {
 
@@ -13,6 +13,7 @@ function LectureCreate() {
     const [isEditing, setIsEditing] = useState(false);  // 수정 모드 여부
     const [formData, setFormData] = useState(null);
     const [isDelete, setDelete] = useState(false);
+    const [isAdding, setIsAdding] = useState(false);
     const [selectLevel, setSelectLevel] = useState(null);
     const navigate = useNavigate();
 
@@ -223,7 +224,10 @@ function LectureCreate() {
                             강좌 선택 후 강의를 추가해주세요.<br></br>
                             관리자 승인 후 강의를 오픈합니다.
                         </p>
-                        <InstructorLecture />
+                        <Button onClick={() => setIsAdding(!isAdding)}>
+                            {isAdding ? '취소' : '강의 추가'}
+                        </Button>
+                        {isAdding && <LectureUpload courseInfo={formData} />}
                     </>
                 ) : formData.proposalStatus === 'PENDING' ? (
                     <p className="text-yellow-600">

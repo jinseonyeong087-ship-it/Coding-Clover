@@ -1,175 +1,149 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import InstructorNav from "@/components/InstructorNav";
+import Tail from "@/components/Tail";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import LectureUpload from "@/components/LectureUpload";
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel";
 
 function InstructorLecture() {
-    const { courseId } = useParams();
-    const navigate = useNavigate();
-    const [courseInfo, setCourseInfo] = useState(null);
+    const [courses, setCourses] = useState([]);
+    const [selectedCourse, setSelectedCourse] = useState(null);
+    const [lectureList, setLectureList] = useState([]);
     const [isAdding, setIsAdding] = useState(false);
 
-    // 신규 강의 추가용 폼 데이터
-    const [formData, setFormData] = useState({
-        title: '',
-        orderNo: '',
-        videoUrl: '',
-        duration: '',
-        uploadType: 'IMMEDIATE',
-        scheduledAt: '',
-    });
-
-    // 해당 강좌 정보 가져오기
+    // 승인된 강좌 목록 가져오기
     useEffect(() => {
-        fetch(`/instructor/course/${courseId}`, {
+        fetch('/instructor/course', {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
         })
             .then((res) => {
-                if (res.status === 401 || res.status === 403) {
-                    throw new Error('인증 필요: 강사로 로그인해주세요.');
-                }
-                if (res.status === 500) {
-                    throw new Error('서버 에러: 해당 강좌가 존재하지 않거나 접근 권한이 없습니다.');
-                }
-                if (!res.ok) throw new Error(`에러 발생: ${res.status}`);
+                if (!res.ok) throw new Error('강좌 목록 조회 실패');
                 return res.json();
             })
-            .then((data) => setCourseInfo(data))
-            .catch((error) => console.error(error.message));
-    }, [courseId]);
+            .then((data) => {
+                const approved = data.filter(c => c.proposalStatus === 'APPROVED');
+                setCourses(approved);
+            })
+            .catch((err) => console.error(err.message));
+    }, []);
 
-    // 새로운 강의 추가
-    const handleAddLecture = async () => {
-        const addData = {
-            courseId: Number(courseId),
-            title: formData.title,
-            orderNo: Number(formData.orderNo),
-            videoUrl: formData.videoUrl,
-            duration: Number(formData.duration),
-            uploadType: formData.uploadType,
-            scheduledAt: formData.uploadType === 'RESERVED' ? formData.scheduledAt : null
-        };
-
-        try {
-            const res = await fetch(`/instructor/lecture/upload`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify(addData)
+    // 강좌 선택 시 강의 목록 가져오기
+    const handleSelectCourse = (course) => {
+        setSelectedCourse(course);
+        setIsAdding(false);
+        fetch(`/instructor/course/${course.courseId}/lectures`, {
+            method: 'GET',
+            credentials: 'include'
+        })
+            .then((res) => {
+                if (!res.ok) throw new Error('강의 목록 조회 실패');
+                return res.json();
+            })
+            .then((data) => setLectureList(data))
+            .catch((err) => {
+                console.error(err.message);
+                setLectureList([]);
             });
-            if (!res.ok) {
-                const errorText = await res.text();
-                throw new Error(errorText || '강의 추가 실패');
-            }
-            alert('강의 정보를 제출하였습니다. 승인 요청을 기다려주세요.');
-            navigate(`/instructor/course/${courseId}`);
-            setFormData({
-                title: '',
-                orderNo: '',
-                videoUrl: '',
-                duration: '',
-                uploadType: 'IMMEDIATE',
-                scheduledAt: '',
-            });
-            setIsAdding(false);
-        } catch (err) {
-            alert(err.message || '강의 추가에 실패했습니다.');
-        }
     };
 
-
-    // 강의 등록 예약 토글
-    const handleBookLecture = () => {
-        if (formData.uploadType === 'RESERVED') {
-            setFormData({ ...formData, uploadType: 'IMMEDIATE', scheduledAt: '' });
-        } else {
-            setFormData({ ...formData, uploadType: 'RESERVED' });
+    // 업로드 완료 후 목록 갱신
+    const handleUploaded = () => {
+        if (selectedCourse) {
+            handleSelectCourse(selectedCourse);
         }
-    }
+        setIsAdding(false);
+    };
+
+    const nextOrderNo = lectureList.length + 1;
 
     return (
-        <div className="container mx-auto">
-            <div className="flex justify-between items-center mb-4">
-                {/* <h2 className="text-xl font-bold">
-                    {courseInfo ? `${courseInfo.title} - 강의 추가` : '강의 추가'}
-                </h2> */}
-                <Button onClick={() => setIsAdding(!isAdding)}>
-                    {isAdding ? '취소' : '강의 추가'}
-                </Button>
-            </div>
+        <>
+            <InstructorNav />
+            <div className="container mx-auto px-4 py-8">
+                <h1 className="text-2xl font-bold mb-6">강의 업로드</h1>
 
-            {/* 강의 추가 폼 */}
-            {isAdding && (
-                <div className="mb-6 p-4 border rounded-md bg-slate-50 space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">강좌명</label>
-                        <Input
-                            value={courseInfo?.title || ''}
-                            placeholder="강좌명"
-                            readOnly
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">강의 제목</label>
-                        <Input
-                            value={formData.title}
-                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            placeholder="강의 제목을 입력하세요"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">강의 순서</label>
-                        <Input
-                            type="number"
-                            value={formData.orderNo}
-                            onChange={(e) => setFormData({ ...formData, orderNo: e.target.value })}
-                            min={1}
-                            placeholder="강의 순서를 입력하세요"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">영상 URL</label>
-                        <Input
-                            value={formData.videoUrl}
-                            onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                            placeholder="영상 URL을 입력하세요"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">재생 시간 (초)</label>
-                        <Input
-                            type="number"
-                            value={formData.duration}
-                            onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                            min={0}
-                            placeholder="재생 시간을 입력하세요"
-                        />
-                    </div>
-                    {formData.uploadType === 'RESERVED' && (
-                        <div>
-                            <label className="block text-sm font-medium mb-1">공개 예정일</label>
-                            <Input
-                                type="datetime-local"
-                                value={formData.scheduledAt}
-                                onChange={(e) => setFormData({ ...formData, scheduledAt: e.target.value })}
-                            />
-                        </div>
+                {/* 강좌 선택 */}
+                <div className="mb-6">
+                    <label className="block text-sm font-medium mb-2">강좌 선택</label>
+                    {courses.length > 0 ? (
+                        <Carousel className="w-full">
+                            <CarouselContent>
+                                {courses.map((course) => (
+                                    <CarouselItem key={course.courseId} className="basis-1/5">
+                                        <div
+                                            onClick={() => handleSelectCourse(course)}
+                                            className={`cursor-pointer p-4 border rounded-md text-center transition-colors ${
+                                                selectedCourse?.courseId === course.courseId
+                                                    ? 'bg-primary text-primary-foreground border-primary'
+                                                    : 'bg-white hover:bg-accent'
+                                            }`}
+                                        >
+                                            <p className="font-medium truncate">{course.title}</p>
+                                        </div>
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            <CarouselPrevious />
+                            <CarouselNext />
+                        </Carousel>
+                    ) : (
+                        <p className="text-muted-foreground">승인된 강좌가 없습니다.</p>
                     )}
-                    <div className="flex gap-2">
-                        <Button onClick={handleAddLecture}>승인 요청</Button>
-                        <Button
-                            variant={formData.uploadType === 'RESERVED' ? 'destructive' : 'outline'}
-                            onClick={handleBookLecture}
-                        >
-                            {formData.uploadType === 'RESERVED' ? '예약 취소' : '예약 업로드'}
+                </div>
+
+                {/* 선택된 강좌의 강의 목록 */}
+                {selectedCourse && (
+                    <div className="mb-6">
+                        <h2 className="text-lg font-semibold mb-3">
+                            {selectedCourse.title} - 등록된 강의 ({lectureList.length}개)
+                        </h2>
+                        {lectureList.length > 0 ? (
+                            <ul className="space-y-1 mb-4">
+                                {lectureList.map((lecture) => (
+                                    <li key={lecture.lectureId} className="flex items-center gap-2 p-2 bg-slate-50 rounded">
+                                        <span className="font-medium">{lecture.orderNo}강.</span>
+                                        <span>{lecture.title}</span>
+                                        <span className={`text-xs px-2 py-0.5 rounded ${
+                                            lecture.approvalStatus === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                                            lecture.approvalStatus === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                                            'bg-yellow-100 text-yellow-800'
+                                        }`}>
+                                            {lecture.approvalStatus === 'APPROVED' ? '승인' :
+                                             lecture.approvalStatus === 'REJECTED' ? '반려' : '대기'}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-muted-foreground mb-4">등록된 강의가 없습니다.</p>
+                        )}
+
+                        <Button onClick={() => setIsAdding(!isAdding)}>
+                            {isAdding ? '취소' : `${nextOrderNo}강 추가`}
                         </Button>
                     </div>
-                </div>
-            )}
+                )}
 
-        </div>
+                {/* 강의 업로드 폼 */}
+                {isAdding && selectedCourse && (
+                    <LectureUpload
+                        courseId={selectedCourse.courseId}
+                        courseInfo={selectedCourse}
+                        nextOrderNo={nextOrderNo}
+                        onUploaded={handleUploaded}
+                    />
+                )}
+            </div>
+            <Tail />
+        </>
     );
 }
 
