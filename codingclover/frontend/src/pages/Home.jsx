@@ -10,7 +10,7 @@ import ChatBot from './student/ChatBot';
 
 function Home() {
 
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const [course, setCourse] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,9 +41,6 @@ function Home() {
   return (
     <>
       <Nav />
-      <div className='py-8' />
-
-
       {/* 히어로 섹션 */}
       <section className="relative overflow-hidden pt-32 pb-40">
         {/* Background Gradients */}
@@ -75,7 +72,7 @@ function Home() {
               <BookOpen className="mr-2 h-5 w-5" />
               수강신청하기
             </Button>
-            <Button size="lg" variant="outline" className="h-12 px-8 text-lg border-primary/20 hover:bg-primary/5 hover:-translate-y-0.5 transition-all">
+            <Button onClick={() => navigate('/course/level/1')} size="lg" variant="outline" className="h-12 px-8 text-lg border-primary/20 hover:bg-primary/5 hover:-translate-y-0.5 transition-all">
               <PlayCircle className="mr-2 h-5 w-5" />
               강좌 둘러보기
             </Button>

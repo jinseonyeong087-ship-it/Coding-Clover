@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/Label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/RadioGroup';
 import { cn } from '@/lib/utils';
 import { Eye, EyeOff } from 'lucide-react';
-
 import { useNavigate } from 'react-router-dom';
 
 const Register = ({ onToLogin }) => {
@@ -402,7 +401,7 @@ const Register = ({ onToLogin }) => {
               이미 계정이 있으신가요?{' '}
               <button
                 type="button"
-                onClick={onToLogin}
+                onClick={() => navigate('/auth/login')}
                 className="font-medium text-primary underline-offset-4 hover:underline bg-transparent border-none p-0 cursor-pointer"
               >
                 로그인

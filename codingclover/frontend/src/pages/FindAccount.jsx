@@ -12,6 +12,10 @@ function FindAccount() {
     const [activeTab, setActiveTab] = useState("id");
     const navigate = useNavigate();
 
+    const findId = () => {}
+
+    const findPassword = () => {}
+
     return (
         <div className="flex min-h-screen flex-col bg-background relative overflow-hidden">
             <Nav />
@@ -57,7 +61,7 @@ function FindAccount() {
                         </Tabs>
 
                         <div className="mt-6 text-center text-sm text-muted-foreground">
-                            <Link to="/auth/login" className="font-medium text-primary hover:underline underline-offset-4">
+                            <Link to="/auth/login" className="text-base text-primary hover:underline underline-offset-4">
                                 로그인 화면으로 돌아가기
                             </Link>
                         </div>

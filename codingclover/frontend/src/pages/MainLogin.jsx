@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
+import { Separator } from '@/components/ui/separator';
 
 
 // Users 엔티티의 UsersRole enum과 일치
@@ -132,9 +133,7 @@ const MainLogin = () => {
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-center">
                                         <Label htmlFor="password" className="text-sm font-semibold ml-1">비밀번호</Label>
-                                        <Link to="/auth/findaccount" className="text-xs text-muted-foreground hover:text-primary transition-colors">
-                                            비밀번호 찾기
-                                        </Link>
+
                                     </div>
                                     <Input
                                         id="password"
@@ -177,10 +176,14 @@ const MainLogin = () => {
                                 <Button variant="outline" className="h-12 hover:bg-[#03C75A] hover:text-white hover:border-[#03C75A] hover:-translate-y-0.5 transition-all duration-300" onClick={() => handleSocialLogin('naver')}>
                                     <span className="font-bold">Naver</span>
                                 </Button>
-                                <Button variant="outline" className="h-12 hover:bg-white hover:text-black hover:border-gray-200 hover:-translate-y-0.5 transition-all duration-300" onClick={() => handleSocialLogin('google')}>
+                                <Button variant="outline" className="h-12 hover:bg-[#4285F4] hover:text-white hover:border-[#4285F4] hover:-translate-y-0.5 transition-all duration-300" onClick={() => handleSocialLogin('google')}>
                                     <span className="font-bold">Google</span>
                                 </Button>
                             </div>
+                            <Separator />
+                            <Link to="/auth/findReques" className="text-base text-muted-foreground hover:text-primary transition-colors align-center w-full text-center block">
+                                아이디 / 비밀번호를 잊으셨나요?
+                            </Link>
                         </div>
                     </CardContent>
                 </Card>

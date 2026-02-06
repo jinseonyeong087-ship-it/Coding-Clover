@@ -25,6 +25,7 @@ function InstructorCourseDetail() {
     const [courseInfo, setCourseInfo] = useState(null);
     const [lectureList, setLectureList] = useState([]);
     const [selectedLecture, setSelectedLecture] = useState(null);
+    const [selectCourse, setSelectCourse] = useState(null);
     const navigate = useNavigate();
 
     // 강좌 정보 가져오기
@@ -84,7 +85,7 @@ function InstructorCourseDetail() {
             <SidebarProvider className="bg-white">
                 <Sidebar dir="rtl" side="left" className="!top-16 !h-[calc(100svh-4rem)]">
                     <SidebarHeader
-                        onClick={() => setSelectedLecture(null)}
+                        onClick={() => setSelectCourse(InstructorCourseDetail)}
                         className="cursor-pointer hover:bg-accent"
                     >
                         {courseInfo ? courseInfo.title : '강좌명'}
