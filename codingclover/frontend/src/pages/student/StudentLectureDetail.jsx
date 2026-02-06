@@ -2,7 +2,7 @@ import React from "react";
 import { Play, Clock, Video, MonitorPlay } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 
-function LectureDetail({ selectedLecture }) {
+function StudentLectureDetail() {
 
     // YouTube URL → embed URL 변환
     const toEmbedUrl = (url) => {
@@ -21,6 +21,8 @@ function LectureDetail({ selectedLecture }) {
     };
 
     return (
+        <>
+        <Nav />
         <div className="flex-1 h-full">
             {selectedLecture ? (
                 <div className="flex flex-col gap-6 p-6 md:p-8 h-full">
@@ -88,7 +90,9 @@ function LectureDetail({ selectedLecture }) {
                 </div>
             )}
         </div>
+
+        </>
     );
 }
 
-export default LectureDetail;
+export default StudentLectureDetail;

@@ -20,7 +20,7 @@ import {
     AlertDialogDescription,
     AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import LectureDetail from "@/pages/public/LectureDetail";
+import LectureDetail from "@/pages/student/StudentLectureDetail";
 
 function StudentCourseDetail() {
     const { courseId } = useParams();
@@ -147,7 +147,7 @@ function StudentCourseDetail() {
         <div className="min-h-screen bg-background text-foreground flex flex-col">
             <Nav />
             {/* Nav spacer */}
-            <div className="h-[70px] shrink-0"></div>
+            {/* <div className="h-[70px] shrink-0"></div> */}
 
             {isEnrolled ? (
                 /* Classroom Layout (Enrolled) */

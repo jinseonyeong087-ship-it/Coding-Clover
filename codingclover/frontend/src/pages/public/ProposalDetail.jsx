@@ -18,7 +18,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminPropsalDetail from "@/pages/admin/AdminPropsalDetail"
 import StudentCourseDetail from "@/pages/student/StudentCourseDetail"
-import LectureDetail from "@/pages/public/LectureDetail"
+import LectureDetail from "@/pages/student/StudentLectureDetail"
 
 function ProposalDetail() {
     const { courseId } = useParams();

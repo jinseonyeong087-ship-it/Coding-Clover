@@ -46,6 +46,7 @@ import PaymentManagement from './pages/admin/PaymentManagement';
 import StudentQnaList from './pages/student/StudentQnaList';
 import StudentQnaDetail from './pages/student/StudentQnaDetail';
 import ChatBot from './pages/student/ChatBot';
+import StudentLectureDetail from './pages/student/StudentLectureDetail';
 
 
 
@@ -128,14 +129,14 @@ function App() {
         {/* 권한 없음 페이지 */}
         <Route path="/noroll" element={<Noroll />} />
         <Route path="/course/level/:level" element={<Level />} />
-        <Route path="/course/:courseId" element={<ProposalDetail />} />
+        <Route path="/course/:courseId" element={<StudentCourseDetail />} />
+
         {/* 디비 연동하고 /student/course/{courseId}/enroll로 경로수정 */}
         {/* 럭쳐 링크 수정 필요함 */}
         {/* 수강생 페이지 */}
         {/* 커뮤니티 (전체 공개, 로그인 불필요) */}
         <Route path="/student/community" element={<CommunityPostList />} />
         <Route path="/student/community/posts/:postId" element={<CommunityPostDetail />} />
-        {/* <Route path="/student/lecture/:lectureId" element={<StudentCourseDetail />} /> */}
 
         {/* 수강생 페이지 (로그인 필요) */}
         <Route path="/student/*" element={
@@ -143,8 +144,7 @@ function App() {
         }>
           <Route path="mypage" element={<MyPage />} />
           <Route path="points" element={<PointsHistory />} />
-          <Route path="course/:courseId" element={<StudentCourseDetail />} />
-          {/* <Route path="course/:courseId/lectures" element={<Lecture />} /> */}
+          <Route path="course/:courseId/lectures" element={<StudentLectureDetail />} />
         </Route>
         {/* 강사페이지 */}
         <Route path="/instructor/*" element={
