@@ -24,6 +24,17 @@ const StatusIcon = ({ status }) => {
   return <div className="w-3.5 h-3.5 rounded-full border-2 border-gray-300" />;
 };
 
+const getDifficultyLabel = (diff) => {
+  if (diff === 'EASY') return '초급';
+  if (diff === 'MEDIUM') return '중급';
+  if (diff === 'HARD') return '고급';
+  return diff;
+};
+
+const DEFAULT_CODE = `public class main {
+    // 여기에 코드를 입력하세요.
+}`;
+
 const CodingTestDetail = () => {
   const { id } = useParams(); // URL의 id (초기 로드용)
   const navigate = useNavigate();
@@ -82,10 +93,43 @@ const CodingTestDetail = () => {
     fetchProblems();
   }, [id]);
 
+  const fetchSubmissions = async (problemId) => {
+    try {
+      const subRes = await axios.get(`/api/problems/${problemId}/submissions`);
+      setSubmissions(Array.isArray(subRes.data) ? subRes.data : []);
+    } catch (e) {
+      console.error("제출 기록 로드 실패");
+    }
+  };
+
+  // 변경사항 감지 (학생일 때만)
+  const isDirty = userRole !== 'ADMIN' && code !== DEFAULT_CODE && code.trim() !== "";
+
+  // 1. 브라우저 새로고침/닫기 방지
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
+  // 2. SPA 내부 이동(뒤로가기, 네비바 등) 방지
+
+
+
   // 문제 선택 핸들러
   const handleTaskSelect = async (task) => {
     // 이미 선택된 경우 중복 호출 방지 (편집 중이 아닐 때만)
     if (selectedTask?.problemId === task.problemId && !isEditing) return;
+
+    // 변경사항 확인 (학생인 경우에만)
+    if (isDirty) {
+      if (!window.confirm("작성 중인 코드가 사라집니다. 이동하시겠습니까?")) return;
+    }
 
     setSelectedTask(task);
     setResult(null);
@@ -93,22 +137,28 @@ const CodingTestDetail = () => {
     setIsEditing(false); // 문제 변경 시 편집 모드 해제
     setShowSubmissions(false);
 
-    // 상세 정보(BaseCode 포함) 다시 조회 (목록에는 baseCode가 없을 수 있음)
+    // 상세 정보(BaseCode 포함) 다시 조회
     try {
       const res = await axios.get(`/api/problems/${task.problemId}`);
       const detail = res.data;
       setSelectedTask(detail);
 
-      // 코드 초기화 (기본값 변경: public class main)
-      setCode(detail.baseCode || `public class main {\n    // 여기에 코드를 입력해주세요.\n}`);
+      // 코드 초기화
+      // 학생: 항상 기본 템플릿 (관리자가 푼 코드 안 보여줌)
+      // 관리자: 저장된 코드 보여줌 (없으면 템플릿)
+      if (userRole !== 'ADMIN') {
+        setCode(DEFAULT_CODE);
+      } else {
+        setCode(detail.baseCode || DEFAULT_CODE);
+      }
 
       // 수정 폼 초기화
       setEditForm({
         title: detail.title,
         description: detail.description,
         difficulty: detail.difficulty || "EASY",
-        baseCode: detail.baseCode || "",
-        expectedOutput: detail.expectedOutput || "" // 예상 결과 추가
+        baseCode: detail.baseCode || DEFAULT_CODE,
+        expectedOutput: detail.expectedOutput || ""
       });
 
       // 관리자라면 제출 기록 로드
@@ -124,15 +174,6 @@ const CodingTestDetail = () => {
     }
   };
 
-  const fetchSubmissions = async (problemId) => {
-    try {
-      const subRes = await axios.get(`/api/problems/${problemId}/submissions`);
-      setSubmissions(Array.isArray(subRes.data) ? subRes.data : []);
-    } catch (e) {
-      console.error("제출 기록 로드 실패");
-    }
-  };
-
   // 코드 실행 (단순 Run)
   const handleRun = async () => {
     if (!selectedTask) return;
@@ -144,9 +185,12 @@ const CodingTestDetail = () => {
       const res = await axios.post(`/api/problems/${selectedTask.problemId}/run`, { code });
       const data = res.data;
       setOutput(data.output || "출력값이 없습니다.");
-      if (data.error) setOutput(`[Error]\n${data.error}`);
+      if (data.error) {
+        // 에러 메시지 한글화
+        setOutput(`코드를 다시 확인해주세요.\n\n[상세 내용]\n${data.error}`);
+      }
     } catch (e) {
-      setOutput(`[Error] ${e.message}`);
+      setOutput(`[시스템 오류] ${e.message}`);
     } finally {
       setIsRunning(false);
     }
@@ -260,9 +304,9 @@ const CodingTestDetail = () => {
                       {idx + 1}. {task.title}
                     </div>
                     {task.difficulty && <span className={`inline-block mt-1.5 px-2 py-0.5 rounded text-[10px] font-medium border ${task.difficulty === 'EASY' ? 'bg-gray-50 text-gray-600 border-gray-200' :
-                      task.difficulty === 'NORMAL' ? 'bg-gray-50 text-gray-800 border-gray-300' : 'bg-black text-white border-black'
+                      task.difficulty === 'MEDIUM' ? 'bg-gray-50 text-gray-800 border-gray-300' : 'bg-black text-white border-black'
                       }`}>
-                      {task.difficulty}
+                      {getDifficultyLabel(task.difficulty)}
                     </span>}
                   </div>
                 </button>
@@ -288,7 +332,7 @@ const CodingTestDetail = () => {
                     <div className="flex items-center gap-2">
                       <h2 className="font-bold text-lg text-gray-900 tracking-tight">{selectedTask.title}</h2>
                       <Badge variant="secondary" className="bg-gray-100 text-gray-600 font-medium border-0 px-2 h-5 text-[10px]">
-                        {selectedTask.difficulty}
+                        {getDifficultyLabel(selectedTask.difficulty)}
                       </Badge>
                     </div>
                   )}
@@ -300,9 +344,9 @@ const CodingTestDetail = () => {
                       onChange={(e) => setEditForm({ ...editForm, difficulty: e.target.value })}
                       className="text-xs border rounded p-1"
                     >
-                      <option value="EASY">EASY</option>
-                      <option value="NORMAL">NORMAL</option>
-                      <option value="HARD">HARD</option>
+                      <option value="EASY">초급</option>
+                      <option value="MEDIUM">중급</option>
+                      <option value="HARD">고급</option>
                     </select>
                   )}
                 </div>
@@ -313,7 +357,7 @@ const CodingTestDetail = () => {
                       <Button size="sm" variant="outline" onClick={() => setShowSubmissions(!showSubmissions)} className="h-9 gap-2 border-gray-300 text-gray-700 hover:bg-gray-50">
                         <History className="w-4 h-4" /> 제출기록
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => { setIsEditing(true); }} className="h-9 text-gray-500 hover:text-black hover:bg-gray-50">
+                      <Button size="sm" variant="ghost" onClick={() => { setIsEditing(true); setShowSubmissions(false); }} className="h-9 text-gray-500 hover:text-black hover:bg-gray-50">
                         <Edit className="w-4 h-4" /> 수정
                       </Button>
                       <Button size="sm" variant="ghost" onClick={handleDelete} className="h-9 text-gray-500 hover:text-red-600 hover:bg-red-50">
@@ -341,7 +385,7 @@ const CodingTestDetail = () => {
                     </>
                   ) : (
                     <>
-                      {/* 학생: 실행 및 제출 버튼 */}
+                      {/* 실행 버튼 (공통) */}
                       <Button
                         variant="secondary"
                         size="sm"
@@ -351,15 +395,18 @@ const CodingTestDetail = () => {
                       >
                         <Play className="w-4 h-4 mr-2 fill-gray-700" /> 실행
                       </Button>
-                      <Button
-                        size="sm"
-                        onClick={handleSubmitCode}
-                        disabled={isRunning}
-                        className="bg-black hover:bg-gray-800 text-white h-9 px-6 font-bold rounded-lg shadow-md transition-all active:scale-95"
-                      >
-                        {isRunning ? <RotateCcw className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
-                        제출
-                      </Button>
+                      {/* 학생: 제출 버튼 (관리자는 숨김) */}
+                      {userRole !== "ADMIN" && (
+                        <Button
+                          size="sm"
+                          onClick={handleSubmitCode}
+                          disabled={isRunning}
+                          className="bg-black hover:bg-gray-800 text-white h-9 px-6 font-bold rounded-lg shadow-md transition-all active:scale-95"
+                        >
+                          {isRunning ? <RotateCcw className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                          제출
+                        </Button>
+                      )}
                     </>
                   )}
                 </div>
@@ -369,15 +416,15 @@ const CodingTestDetail = () => {
               <div className="flex-1 overflow-hidden">
                 <PanelGroup direction="horizontal">
                   {/* Left: Description or Submission List */}
-                  <Panel defaultSize={40} minSize={30}>
-                    <div className="h-full bg-white flex flex-col">
-                      <div className="px-6 py-3 bg-gray-50 flex items-center border-b border-gray-100 justify-between">
-                        <span className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
-                          <BookOpen className="w-4 h-4" /> {showSubmissions ? "학생 제출 기록" : "문제 설명"}
-                        </span>
-                      </div>
-                      <ScrollArea className="flex-1 px-8 py-8">
-                        {showSubmissions ? (
+                  <Panel defaultSize={40} minSize={30} className="flex flex-col h-full">
+                    {showSubmissions ? (
+                      <div className="h-full bg-white flex flex-col">
+                        <div className="px-6 py-3 bg-gray-50 flex items-center border-b border-gray-100 justify-between shrink-0">
+                          <span className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                            <History className="w-4 h-4" /> 학생 제출 기록
+                          </span>
+                        </div>
+                        <ScrollArea className="flex-1 px-8 py-8">
                           <div className="space-y-4">
                             {submissions.map((sub, idx) => (
                               <div key={idx} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
@@ -390,31 +437,63 @@ const CodingTestDetail = () => {
                             ))}
                             {submissions.length === 0 && <div className="text-center text-gray-400 text-sm">기록이 없습니다.</div>}
                           </div>
-                        ) : isEditing ? (
-                          <div className="flex flex-col gap-4 h-full">
-                            <textarea
-                              className="w-full h-1/2 border p-2 focus:outline-none focus:ring-2 ring-black rounded-md resize-none"
-                              value={editForm.description}
-                              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                              placeholder="문제 설명을 입력하세요..."
-                            />
-                            <div className="flex-1 flex flex-col gap-2">
-                              <label className="text-sm font-bold text-gray-700">예상 실행 결과 (Expected Output)</label>
+                        </ScrollArea>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col h-full w-full">
+                        {/* Description (Top - Fixed 65%) */}
+                        <div className="h-[65%] flex flex-col bg-white border-b border-gray-200">
+                          <div className="px-6 py-3 bg-gray-50 flex items-center border-b border-gray-100 shrink-0">
+                            <span className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                              <BookOpen className="w-3.5 h-3.5" /> 문제 설명
+                            </span>
+                          </div>
+                          <div className="flex-1 flex flex-col relative">
+                            {isEditing ? (
                               <textarea
-                                className="w-full flex-1 border p-2 focus:outline-none focus:ring-2 ring-black rounded-md resize-none font-mono text-sm"
+                                className="absolute inset-0 w-full h-full border-none p-6 resize-none focus:ring-0 focus:outline-none text-sm leading-relaxed"
+                                value={editForm.description}
+                                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                                placeholder="문제 설명을 입력하세요..."
+                              />
+                            ) : (
+                              <div className="absolute inset-0 w-full h-full overflow-y-auto p-6">
+                                <div className="prose prose-gray prose-sm max-w-none text-gray-700 leading-7">
+                                  <p className="whitespace-pre-wrap font-medium text-[15px]">{selectedTask.description}</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Expected Output (Bottom - Fixed 35%) */}
+                        <div className="h-[35%] flex flex-col bg-gray-50/30">
+                          <div className="px-6 py-3 bg-gray-50 flex items-center border-b border-gray-100 justify-between shrink-0">
+                            <span className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                              <Sparkles className="w-3.5 h-3.5" /> 예상 실행 결과 (Expected Output)
+                            </span>
+                          </div>
+                          <div className="flex-1 flex flex-col relative">
+                            {isEditing ? (
+                              <textarea
+                                className="absolute inset-0 w-full h-full border-none p-6 resize-none focus:ring-0 focus:outline-none text-sm font-mono bg-transparent"
                                 value={editForm.expectedOutput || ""}
                                 onChange={(e) => setEditForm({ ...editForm, expectedOutput: e.target.value })}
-                                placeholder="정답 처리를 위한 예상 실행 결과를 입력하세요. (단순 실행 검증용)"
+                                placeholder="정답 처리를 위한 예상 실행 결과를 입력하세요."
                               />
-                            </div>
+                            ) : (
+                              <div className="absolute inset-0 w-full h-full overflow-y-auto p-6">
+                                {selectedTask.expectedOutput ? (
+                                  <pre className="font-mono text-sm text-gray-800 whitespace-pre-wrap">{selectedTask.expectedOutput}</pre>
+                                ) : (
+                                  <div className="text-gray-400 text-sm italic">등록된 예상 실행 결과가 없습니다.</div>
+                                )}
+                              </div>
+                            )}
                           </div>
-                        ) : (
-                          <div className="prose prose-gray prose-sm max-w-none text-gray-700 leading-7">
-                            <p className="whitespace-pre-wrap font-medium text-[15px]">{selectedTask.description}</p>
-                          </div>
-                        )}
-                      </ScrollArea>
-                    </div>
+                        </div>
+                      </div>
+                    )}
                   </Panel>
 
                   <PanelResizeHandle className="w-[1px] bg-gray-200 hover:bg-black transition-colors flex items-center justify-center z-10">

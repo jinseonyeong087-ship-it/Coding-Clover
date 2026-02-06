@@ -34,10 +34,11 @@ const CodingTestList = () => {
   }, []);
 
   // 탭 필터링 로직 수정 (difficulty 필드 사용)
+  // 탭 필터링 로직 수정 (difficulty 필드 사용)
   const filteredProblems = problems.filter(p => {
     if (currentTab === "전체") return true;
     if (currentTab === "초급") return p.difficulty === "EASY";
-    if (currentTab === "중급") return p.difficulty === "NORMAL";
+    if (currentTab === "중급") return p.difficulty === "MEDIUM";
     if (currentTab === "고급") return p.difficulty === "HARD";
     return true;
   });
@@ -77,11 +78,12 @@ const CodingTestList = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-gray-50/50 border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                  <th className="px-10 py-5 w-[100px] text-center">ID</th>
-                  <th className="px-6 py-5">Problem Name</th>
-                  <th className="px-6 py-5 w-[150px] text-center">Level</th>
-                  <th className="px-6 py-5 w-[180px] text-center">Pass Rate</th>
-                  <th className="px-6 py-5 w-[80px]"></th>
+                  <th className="px-6 py-4 w-[15%] text-center">ID</th>
+                  <th className="px-6 py-4 w-[30%] text-left">Problem Name</th>
+                  <th className="px-6 py-4 w-[25%] text-center">Level</th>
+                  <th className="px-6 py-4 w-[20%] text-center">Pass Rate</th>
+                  {userRole === "ADMIN" && <th className="px-6 py-4 w-[10%] text-center">Submitters</th>}
+                  <th className="px-6 py-4 w-[5%]"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -89,46 +91,42 @@ const CodingTestList = () => {
                   <tr
                     key={`problem-${problem.problemId}`}
                     onClick={() => navigate(`/coding-test/${problem.problemId}`)}
-                    className="group cursor-pointer hover:bg-indigo-50/20 transition-all"
+                    className="group cursor-pointer hover:bg-indigo-50/20 transition-all origin-center"
                   >
-                    <td className="px-10 py-8 text-center font-mono text-xs font-bold text-indigo-400">
+                    <td className="px-6 py-5 text-center font-mono text-xs font-bold text-indigo-400 align-middle">
                       #{String(problem.problemId).padStart(3, '0')}
                     </td>
-                    <td className="px-6 py-8">
-                      <div className="text-lg font-black text-gray-800 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">
+                    <td className="px-6 py-5 align-middle">
+                      <div className="text-base font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">
                         {problem.title}
                       </div>
                     </td>
-                    <td className="px-6 py-8 text-center">
-                      <span className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase ${problem.difficulty === "EASY" ? "bg-emerald-50 text-emerald-600" :
-                          problem.difficulty === "NORMAL" ? "bg-amber-50 text-amber-600" : "bg-rose-50 text-rose-600"
+                    <td className="px-6 py-5 text-center align-middle">
+                      <span className={`px-3 py-1 rounded text-[10px] font-bold uppercase ${problem.difficulty === "EASY" ? "bg-emerald-50 text-emerald-600" :
+                        problem.difficulty === "MEDIUM" ? "bg-amber-50 text-amber-600" : "bg-rose-50 text-rose-600"
                         }`}>
-                        {problem.difficulty}
+                        {problem.difficulty === 'EASY' ? '초급' : problem.difficulty === 'MEDIUM' ? '중급' : '고급'}
                       </span>
                     </td>
-                    <td className="px-6 py-7 text-right">
-                      <ChevronRight className="h-6 w-6 text-gray-200 group-hover:text-indigo-400" />
-                    </td>
-                    {/* 통과율 표시 영역 */}
-                    <td className="px-6 py-8 text-center">
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="text-xs font-black text-indigo-600">{problem.passRate || 0}%</span>
-                        <div className="w-24 bg-gray-100 h-1 rounded-full overflow-hidden">
+                    <td className="px-6 py-5 text-center align-middle">
+                      <div className="flex flex-col items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-gray-400">{problem.passRate || 0}%</span>
+                        <div className="w-20 bg-gray-100 h-1.5 rounded-full overflow-hidden">
                           <div className="bg-indigo-500 h-full" style={{ width: `${problem.passRate || 0}%` }} />
                         </div>
                       </div>
                     </td>
                     {/* 제출 인원 표시 (어드민) */}
                     {userRole === "ADMIN" && (
-                      <td className="px-6 py-8 text-center text-gray-500 font-bold text-xs">
+                      <td className="px-6 py-5 text-center text-gray-500 font-bold text-xs align-middle">
                         <div className="flex items-center justify-center gap-1">
                           <Users className="h-3 w-3" />
-                          {problem.submissionCount || 0}명
+                          {problem.submissionCount || 0}
                         </div>
                       </td>
                     )}
-                    <td className="px-6 py-8 text-right">
-                      <ChevronRight className="h-6 w-6 text-gray-200 group-hover:text-indigo-300 transition-all transform group-hover:translate-x-1" />
+                    <td className="px-6 py-5 text-right align-middle">
+                      <ChevronRight className="h-5 w-5 text-gray-300 group-hover:text-indigo-400 transition-all transform group-hover:translate-x-1" />
                     </td>
                   </tr>
                 ))}
