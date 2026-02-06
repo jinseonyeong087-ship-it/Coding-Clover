@@ -46,6 +46,8 @@ import ChatBot from './pages/student/ChatBot';
 import StudentLectureDetail from './pages/student/StudentLectureDetail';
 import InstructorCourseList from './pages/instructor/InstructorCourseList';
 import InstructorLecture from './pages/instructor/InstructorLecture';
+import InstructorQnaList from './pages/instructor/InstructorQnaList';
+import InstructorQnaDetail from './pages/instructor/InstructorQnaDetail';
 
 
 
@@ -159,6 +161,8 @@ function App() {
           <Route path="course/:courseId/lectures" element={<StudentLectureDetail />} />
           <Route path="lecture/upload" element={<InstructorLecture />} />
           <Route path="mypage" element={<InstructorMypage />} />
+          <Route path="qna" element={<InstructorQnaList />} />
+          <Route path="qna/:qnaId" element={<InstructorQnaDetail />} />
         </Route>
         {/* 관리자 */}
         <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']} />}>

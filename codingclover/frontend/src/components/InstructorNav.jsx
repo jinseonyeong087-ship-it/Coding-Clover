@@ -60,9 +60,9 @@ function InstructorNav() {
                             </MenubarContent>
                         </MenubarMenu>
                         <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer font-medium text-muted-foreground hover:text-foreground transition-colors" onClick={() => { navigate('/student/qna') }}>Q&A 답변관리</MenubarTrigger>
+                            <MenubarTrigger className="cursor-pointer font-medium text-muted-foreground hover:text-foreground transition-colors" onClick={() => { navigate('/instructor/qna') }}>Q&A 답변관리</MenubarTrigger>
                             <MenubarContent>
-                                <MenubarItem onClick={() => { navigate('/student/qna') }}>수강생 질문</MenubarItem>
+                                <MenubarItem onClick={() => { navigate('/instructor/qna') }}>수강생 질문</MenubarItem>
                             </MenubarContent>
                         </MenubarMenu>
                         <MenubarMenu>
