@@ -135,14 +135,12 @@ const NoticeDetail = () => {
     return (
         <div className="flex min-h-screen flex-col bg-background relative overflow-hidden">
             <Nav />
-            {/* Background Decoration */}
-            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
-            <div className="fixed bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
+            <div className='py-8' />
+            <div className="container mx-auto px-4 py-12 relative">
+                {/* Background Decoration */}
+                <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
-            <div className="container mx-auto px-4 py-24 flex-1">
-                <div className="max-w-4xl mx-auto">
-                    <h1 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">공지사항</h1>
-
+                <div className="max-w-6xl mx-auto">
                     {/* 수정 화면 */}
                     {viewMode === 'edit' && isAdmin() && (
                         <div className="space-y-6">
@@ -228,98 +226,101 @@ const NoticeDetail = () => {
                     {/* 상세 화면 */}
                     {viewMode === 'detail' && (
                         <div className="space-y-6">
+                            {/* 공지사항 헤더 */}
+                            <div className="text-center mb-8">
+                                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent inline-block">공지사항</h1>
+                            </div>
+                            
                             <Button
-                                variant="outline"
+                                variant="ghost"
                                 onClick={() => {
                                     navigate('/notice');
                                 }}
-                                className="flex items-center gap-2 bg-background/50 backdrop-blur-sm hover:bg-background/80"
+                                className="flex items-center gap-2 -ml-2 text-muted-foreground hover:text-foreground"
                             >
                                 <ArrowLeft className="h-4 w-4" />
-                                목록으로
+                                목록으로 돌아가기
                             </Button>
 
-                            <Card className="border-border/50 bg-background/60 backdrop-blur-xl shadow-2xl overflow-hidden">
-                                <CardHeader className="bg-muted/10 p-8 pb-6">
-                                    <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-                                        <CardTitle className="text-2xl md:text-3xl font-bold flex items-center gap-3 text-foreground/90">
-                                            {selectedNotice.title}
+                            <Card className="border-border/50 bg-background/60 backdrop-blur-xl shadow-lg overflow-hidden">
+                                <CardHeader className="bg-muted/30 border-b border-border/50 pb-6">
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="outline" className="bg-background/50 backdrop-blur-sm">공지사항</Badge>
                                             {isNewNotice(selectedNotice.createdAt) && (
-                                                <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-red-100 bg-red-500 rounded-full shadow-sm">
-                                                    N
-                                                </span>
+                                                <Badge className="h-5 w-5 rounded-full bg-red-500 hover:bg-red-600 border-none flex items-center justify-center p-0 text-xs font-bold">N</Badge>
                                             )}
                                             {isAdmin() && (
                                                 <Badge variant={selectedNotice.status === 'VISIBLE' ? 'default' : 'secondary'} className={selectedNotice.status === 'VISIBLE' ? "bg-green-500/15 text-green-600 border-green-200" : ""}>
                                                     {selectedNotice.status === 'VISIBLE' ? '공개' : '비공개'}
                                                 </Badge>
                                             )}
-                                        </CardTitle>
-
-                                        {/* 관리자 버튼들 */}
-                                        {isAdmin() && (
-                                            <div className="flex gap-2">
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={toggleNoticeStatus}
-                                                    className="flex items-center gap-2"
-                                                >
-                                                    {selectedNotice.status === 'VISIBLE' ? (
-                                                        <>
-                                                            <EyeOff className="h-4 w-4" />
-                                                            비공개로 전환
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Eye className="h-4 w-4" />
-                                                            공개로 전환
-                                                        </>
-                                                    )}
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        setNoticeForm({
-                                                            title: selectedNotice.title,
-                                                            content: selectedNotice.content,
-                                                            status: selectedNotice.status
-                                                        });
-                                                        setViewMode('edit');
-                                                    }}
-                                                    className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                    수정
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => handleDeleteNotice(selectedNotice.noticeId)}
-                                                    className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                    삭제
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex items-center gap-6 text-sm text-muted-foreground border-b border-border/50 pb-4">
-                                        <div className="flex items-center gap-2 bg-background/50 px-3 py-1 rounded-full">
-                                            <User className="h-4 w-4" />
-                                            <span className="font-medium text-foreground/80">{selectedNotice.authorName}</span>
                                         </div>
-                                        <div className="flex items-center gap-2 bg-background/50 px-3 py-1 rounded-full">
-                                            <Calendar className="h-4 w-4" />
-                                            <span>{new Date(selectedNotice.createdAt).toLocaleString()}</span>
+                                        <CardTitle className="text-3xl font-bold leading-tight">{selectedNotice.title}</CardTitle>
+                                        <div className="flex items-center justify-between text-sm text-muted-foreground pt-2">
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border border-primary/20">
+                                                        {selectedNotice.authorName.charAt(0)}
+                                                    </div>
+                                                    <span className="font-medium">{selectedNotice.authorName}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <Calendar className="w-4 h-4" />
+                                                    <span>{new Date(selectedNotice.createdAt).toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            {/* 관리자 버튼들 */}
+                                            {isAdmin() && (
+                                                <div className="flex gap-1">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        onClick={toggleNoticeStatus}
+                                                        className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all"
+                                                    >
+                                                        {selectedNotice.status === 'VISIBLE' ? (
+                                                            <EyeOff className="h-4 w-4" />
+                                                        ) : (
+                                                            <Eye className="h-4 w-4" />
+                                                        )}
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        onClick={() => {
+                                                            setNoticeForm({
+                                                                title: selectedNotice.title,
+                                                                content: selectedNotice.content,
+                                                                status: selectedNotice.status
+                                                            });
+                                                            setViewMode('edit');
+                                                        }}
+                                                        className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all"
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        onClick={() => handleDeleteNotice(selectedNotice.noticeId)}
+                                                        className="h-8 w-8 p-0 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </CardHeader>
-                                <CardContent className="p-8 pt-6">
-                                    <div className="min-h-[300px] whitespace-pre-wrap text-foreground/90 leading-loose text-lg">
-                                        {selectedNotice.content}
+                                <CardContent className="px-8 py-6">
+                                    <div className="prose prose-lg max-w-none text-foreground leading-relaxed">
+                                        {selectedNotice.content.split('\n').map((line, index) => (
+                                            <p key={index} className="mb-4 last:mb-0">
+                                                {line || '\u00A0'}
+                                            </p>
+                                        ))}
                                     </div>
                                 </CardContent>
                             </Card>

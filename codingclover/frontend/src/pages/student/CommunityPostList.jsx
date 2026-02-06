@@ -164,7 +164,7 @@ const CommunityPostList = () => {
 
                 <div className="max-w-6xl mx-auto space-y-8">
                     <div className="text-center space-y-4">
-                        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent inline-block">커뮤니티</h1>
+                        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent inline-block">자유게시판</h1>
                         <p className="text-muted-foreground text-lg">지식을 공유하고 함께 성장하는 공간입니다.</p>
                     </div>
 
@@ -266,7 +266,7 @@ const CommunityPostList = () => {
                                                                         </Badge>
                                                                     )}
                                                                     {isNewPost(post.createdAt) && (
-                                                                        <Badge className="h-5 px-1.5 text-[10px] bg-red-500 hover:bg-red-600 border-none">N</Badge>
+                                                                        <Badge className="h-4 w-4 rounded-full bg-red-500 border-none flex items-center justify-center p-0 text-[9px] font-bold">N</Badge>
                                                                     )}
                                                                 </div>
                                                             </TableCell>

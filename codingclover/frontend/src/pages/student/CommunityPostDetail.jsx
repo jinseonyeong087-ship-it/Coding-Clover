@@ -139,6 +139,10 @@ const CommunityPostDetail = () => {
             alert('로그인이 필요합니다.');
             return;
         }
+        if (currentUser.role === 'ADMIN') {
+            alert('관리자는 댓글을 작성할 수 없습니다.');
+            return;
+        }
         if (!commentContent) return alert("내용을 입력하세요.");
         axios.post(`/api/community/posts/${selectedPost.id}/comments`, { content: commentContent }, { withCredentials: true })
             .then(() => {
@@ -188,8 +192,6 @@ const CommunityPostDetail = () => {
                 <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
                 <div className="max-w-6xl mx-auto">
-                    <h1 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent inline-block">커뮤니티</h1>
-
                     {/* 수정 화면 */}
                     {viewMode === 'edit' && (
                         <div className="space-y-6">
@@ -254,6 +256,11 @@ const CommunityPostDetail = () => {
                     {/* 상세 화면 */}
                     {viewMode === 'detail' && (
                         <div className="space-y-6">
+                            {/* 자유게시판 헤더 */}
+                            <div className="text-center mb-8">
+                                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent inline-block">자유게시판</h1>
+                            </div>
+                            
                             <Button
                                 variant="ghost"
                                 onClick={() => {
@@ -271,7 +278,7 @@ const CommunityPostDetail = () => {
                                         <div className="flex items-center gap-2">
                                             <Badge variant="outline" className="bg-background/50 backdrop-blur-sm">자유게시판</Badge>
                                             {isNewPost(selectedPost.createdAt) && (
-                                                <Badge className="bg-red-500 hover:bg-red-600 border-none">NEW</Badge>
+                                                <Badge className="h-4 w-4 rounded-full bg-red-500 border-none flex items-center justify-center p-0 text-[9px] font-bold">N</Badge>
                                             )}
                                         </div>
                                         <CardTitle className="text-3xl font-bold leading-tight">{selectedPost.title}</CardTitle>
@@ -416,7 +423,7 @@ const CommunityPostDetail = () => {
                                                                                         <div className="flex items-center gap-2">
                                                                                             <span className="font-semibold text-sm">{comment.authorName}</span>
                                                                                             {isNewComment(comment.createdAt) && (
-                                                                                                <Badge className="h-4 px-1 text-[9px] bg-red-500 border-none">N</Badge>
+                                                                                                <Badge className="h-4 w-4 rounded-full bg-red-500 border-none flex items-center justify-center p-0 text-[9px] font-bold">N</Badge>
                                                                                             )}
                                                                                         </div>
                                                                                         <span className="text-xs text-muted-foreground block mt-0.5">
@@ -425,7 +432,7 @@ const CommunityPostDetail = () => {
                                                                                     </div>
                                                                                 </div>
                                                                                 {(canEdit(comment.authorLoginId, comment.authorName) || canDelete(comment.authorLoginId, comment.authorName)) && (
-                                                                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                                    <div className="flex gap-1">
                                                                                         {canEdit(comment.authorLoginId, comment.authorName) && (
                                                                                             <Button
                                                                                                 size="sm"
@@ -434,9 +441,9 @@ const CommunityPostDetail = () => {
                                                                                                     setEditCommentId(comment.id);
                                                                                                     setEditCommentContent(comment.content);
                                                                                                 }}
-                                                                                                className="h-7 w-7 p-0"
+                                                                                                className="h-7 w-7 p-0 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all"
                                                                                             >
-                                                                                                <Edit className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                                                                                                <Edit className="h-3.5 w-3.5" />
                                                                                             </Button>
                                                                                         )}
                                                                                         {canDelete(comment.authorLoginId, comment.authorName) && (
@@ -444,9 +451,9 @@ const CommunityPostDetail = () => {
                                                                                                 size="sm"
                                                                                                 variant="ghost"
                                                                                                 onClick={() => handleDeleteComment(comment.id)}
-                                                                                                className="h-7 w-7 p-0 hover:bg-destructive/10 hover:text-destructive"
+                                                                                                className="h-7 w-7 p-0 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all"
                                                                                             >
-                                                                                                <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                                                                                                <Trash2 className="h-3.5 w-3.5" />
                                                                                             </Button>
                                                                                         )}
                                                                                     </div>
@@ -508,42 +515,44 @@ const CommunityPostDetail = () => {
                                         )}
                                     </div>
 
-                                    {/* 댓글 작성 */}
-                                    <div className="p-6 bg-muted/30 border-t border-border/50">
-                                        {currentUser ? (
-                                            <div className="flex flex-col gap-3">
-                                                <Label className="text-sm font-semibold pl-1">새 댓글 작성</Label>
-                                                <div className="relative">
-                                                    <Textarea
-                                                        placeholder="따뜻한 댓글을 남겨주세요..."
-                                                        value={commentContent}
-                                                        onChange={e => setCommentContent(e.target.value)}
-                                                        className="min-h-[80px] bg-background pr-12 resize-none"
-                                                        onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleCreateComment())}
-                                                    />
+                                    {/* 댓글 작성 - 관리자가 아닐 때만 표시 */}
+                                    {currentUser && currentUser.role !== 'ADMIN' && (
+                                        <div className="p-6 bg-muted/30 border-t border-border/50">
+                                            {currentUser ? (
+                                                <div className="flex flex-col gap-3">
+                                                    <Label className="text-sm font-semibold pl-1">새 댓글 작성</Label>
+                                                    <div className="relative">
+                                                        <Textarea
+                                                            placeholder="따뜻한 댓글을 남겨주세요..."
+                                                            value={commentContent}
+                                                            onChange={e => setCommentContent(e.target.value)}
+                                                            className="min-h-[80px] bg-background pr-12 resize-none"
+                                                            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleCreateComment())}
+                                                        />
+                                                        <Button
+                                                            onClick={handleCreateComment}
+                                                            disabled={!commentContent.trim()}
+                                                            size="icon"
+                                                            className="absolute bottom-3 right-3 h-8 w-8 shadow-sm"
+                                                        >
+                                                            <Send className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center py-6 px-6 bg-background/50 rounded-xl border border-dashed border-border/50">
+                                                    <p className="text-muted-foreground mb-4 text-sm">댓글을 작성하려면 로그인이 필요합니다.</p>
                                                     <Button
-                                                        onClick={handleCreateComment}
-                                                        disabled={!commentContent.trim()}
-                                                        size="icon"
-                                                        className="absolute bottom-3 right-3 h-8 w-8 shadow-sm"
+                                                        variant="outline"
+                                                        onClick={() => navigate('/auth/login')}
+                                                        className="shadow-sm hover:bg-primary/5 hover:text-primary hover:border-primary/20"
                                                     >
-                                                        <Send className="h-4 w-4" />
+                                                        로그인하러 가기
                                                     </Button>
                                                 </div>
-                                            </div>
-                                        ) : (
-                                            <div className="text-center py-6 px-6 bg-background/50 rounded-xl border border-dashed border-border/50">
-                                                <p className="text-muted-foreground mb-4 text-sm">댓글을 작성하려면 로그인이 필요합니다.</p>
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() => navigate('/auth/login')}
-                                                    className="shadow-sm hover:bg-primary/5 hover:text-primary hover:border-primary/20"
-                                                >
-                                                    로그인하러 가기
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>

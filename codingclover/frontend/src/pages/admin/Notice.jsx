@@ -222,13 +222,16 @@ const Notice = () => {
     return (
         <div className="flex min-h-screen flex-col bg-background relative overflow-hidden">
             <Nav />
-            {/* Background Decoration */}
-            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
-            <div className="fixed bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
+            <div className='py-8' />
+            <div className="container mx-auto px-4 py-12 flex-1 relative">
+                {/* Background Decoration */}
+                <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
-            <div className="container mx-auto px-4 py-24 flex-1">
-                <div className="max-w-6xl mx-auto">
-                    <h1 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">공지사항</h1>
+                <div className="max-w-6xl mx-auto space-y-8">
+                    <div className="text-center space-y-4">
+                        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent inline-block">공지사항</h1>
+                        <p className="text-muted-foreground text-lg">중요한 소식과 업데이트를 확인하세요.</p>
+                    </div>
 
                     {/* 1. 목록 화면 */}
                     {viewMode === 'list' && (
@@ -269,27 +272,27 @@ const Notice = () => {
                                 />
                             </div>
 
-                            <Card className="border-border/50 bg-background/60 backdrop-blur-xl shadow-2xl overflow-hidden">
+                            <Card className="border-border/50 bg-background/60 backdrop-blur-xl shadow-lg">
                                 <Table>
-                                    <TableHeader>
-                                        <TableRow className="bg-muted/30 hover:bg-muted/30">
-                                            <TableHead className="w-16 text-center">번호</TableHead>
-                                            <TableHead>제목</TableHead>
-                                            <TableHead className="w-24 text-center">작성자</TableHead>
+                                    <TableHeader className="bg-muted/50">
+                                        <TableRow className="hover:bg-transparent">
+                                            <TableHead className="w-20 text-center font-semibold">번호</TableHead>
+                                            <TableHead className="font-semibold">제목</TableHead>
+                                            <TableHead className="w-32 text-center font-semibold">작성자</TableHead>
                                             <TableHead
-                                                className="w-32 text-center cursor-pointer hover:text-primary transition-colors select-none"
+                                                className="w-40 text-center cursor-pointer hover:text-primary transition-colors select-none font-semibold"
                                                 onClick={handleSortToggle}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
                                                     등록일
                                                     {sortOrder === 'newest' ?
-                                                        <ChevronDown className="h-4 w-4" /> :
-                                                        <ChevronUp className="h-4 w-4" />
+                                                        <ChevronDown className="h-3 w-3" /> :
+                                                        <ChevronUp className="h-3 w-3" />
                                                     }
                                                 </div>
                                             </TableHead>
-                                            {isAdmin() && <TableHead className="w-20 text-center">상태</TableHead>}
-                                            {isAdmin() && <TableHead className="w-32 text-center">관리</TableHead>}
+                                            {isAdmin() && <TableHead className="w-20 text-center font-semibold">상태</TableHead>}
+                                            {isAdmin() && <TableHead className="w-32 text-center font-semibold">관리</TableHead>}
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -303,25 +306,34 @@ const Notice = () => {
                                             currentNotices.map((notice, index) => (
                                                 <TableRow
                                                     key={notice.noticeId}
-                                                    className="cursor-pointer hover:bg-primary/5 transition-colors"
+                                                    className="cursor-pointer hover:bg-muted/50 transition-colors group"
                                                     onClick={() => openDetail(notice.noticeId)}
                                                 >
-                                                    <TableCell className="text-center font-medium opacity-70">
+                                                    <TableCell className="text-center font-medium text-muted-foreground group-hover:text-foreground">
                                                         {filteredNotices.length - (indexOfFirstNotice + index)}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="font-medium text-foreground/90">{notice.title}</span>
+                                                        <div className="flex items-center gap-2 py-1">
+                                                            <span className="font-medium text-base group-hover:text-primary transition-colors line-clamp-1">{notice.title}</span>
                                                             {isNewNotice(notice.createdAt) && (
-                                                                <span className="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-red-100 bg-red-500 rounded-full shadow-sm">
-                                                                    N
-                                                                </span>
+                                                                <Badge className="h-4 w-4 rounded-full bg-red-500 border-none flex items-center justify-center p-0 text-[9px] font-bold">N</Badge>
                                                             )}
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="text-center text-sm">{notice.authorName}</TableCell>
+                                                    <TableCell className="text-center">
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                                                                {notice.authorName.charAt(0)}
+                                                            </div>
+                                                            <span className="text-sm font-medium">{notice.authorName}</span>
+                                                        </div>
+                                                    </TableCell>
                                                     <TableCell className="text-center text-sm text-muted-foreground">
-                                                        {new Date(notice.createdAt).toLocaleDateString()}
+                                                        {new Date(notice.createdAt).toLocaleDateString('ko-KR', {
+                                                            year: 'numeric',
+                                                            month: '2-digit',
+                                                            day: '2-digit'
+                                                        })}
                                                     </TableCell>
                                                     {isAdmin() && (
                                                         <TableCell className="text-center">
