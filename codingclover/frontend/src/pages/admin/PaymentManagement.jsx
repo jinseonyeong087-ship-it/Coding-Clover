@@ -344,7 +344,7 @@ function PaymentManagement() {
                             <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
                                 <span>관리자</span>
                                 <span>/</span>
-                                <span className="text-blue-600">결제 관리</span>
+                                <span className="text-blue-600">결제관리</span>
                             </div>
                             <div className="flex items-center justify-between">
                                 <div>
@@ -411,15 +411,9 @@ function PaymentManagement() {
                 <div className="max-w-7xl mx-auto">
                     {/* 헤더 */}
                     <div className="mb-8">
-                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                            <span>관리자</span>
-                            <span>/</span>
-                            <span className="text-blue-600">결제 관리</span>
-                        </div>
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">결제 관리</h1>
-                                <p className="text-gray-600 mt-1">결제 내역 및 환불 요청을 관리하세요</p>
+                                <h1 className="text-3xl font-bold text-gray-900">결제관리</h1>
                             </div>
                         </div>
                     </div>
@@ -429,7 +423,7 @@ function PaymentManagement() {
                         <TabsList>
                             <TabsTrigger value="all">전체</TabsTrigger>
                             <TabsTrigger value="refund" className="relative">
-                                🔴 환불요청 있음
+                                환불요청
                                 {refundRequestCount > 0 && (
                                     <Badge className="ml-2 bg-red-500 text-white text-xs">
                                         {refundRequestCount}
