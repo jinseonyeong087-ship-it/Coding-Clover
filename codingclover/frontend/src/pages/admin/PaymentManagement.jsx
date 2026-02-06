@@ -128,7 +128,7 @@ function PaymentManagement() {
         if (orderId && orderId.startsWith('COURSE_')) {
             return '수강신청';
         }
-        
+
         switch (type) {
             case 'CHARGE': return '포인트 충전';
             case 'USE': return '포인트 사용';
@@ -247,53 +247,53 @@ function PaymentManagement() {
             searchKeyword: '',
             searchType: 'student'
         });
-        
+
         // 탭도 기본값으로 초기화
         setActiveTab('all');
-        
+
         // 페이지도 첫 페이지로 초기화
         setCurrentPage(1);
-        
+
         // 초기 로드 시와 동일한 필터링 적용 (7일 기간, 전체 탭)
         let filtered = [...payments];
-        
+
         // 기본 7일 기간 필터 적용
         const now = new Date();
         const days = 7;
         const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
         filtered = filtered.filter(p => new Date(p.paymentDate) >= startDate);
-        
+
         // 최신순 정렬
         filtered.sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate));
-        
+
         setFilteredPayments(filtered);
     };
 
-    // 상태 배지 색상
+    // 상태 배지 색상 (Premium Styling)
     const getPaymentStatusColor = (status, statusLabel) => {
         // 라벨에 따른 색상 설정
         if (statusLabel === '포인트 사용') {
-            return 'bg-yellow-100 text-yellow-800';
+            return 'bg-amber-100 text-amber-700 border-amber-200';
         }
         if (statusLabel === '환불완료') {
-            return 'bg-blue-100 text-blue-800';
+            return 'bg-indigo-100 text-indigo-700 border-indigo-200';
         }
-        
+
         switch (status) {
-            case 'PAID': return 'bg-green-100 text-green-800';
-            case 'CANCELLED': return 'bg-gray-100 text-gray-800';
-            case 'REFUNDED': return 'bg-blue-100 text-blue-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'PAID': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+            case 'CANCELLED': return 'bg-slate-100 text-slate-700 border-slate-200';
+            case 'REFUNDED': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+            default: return 'bg-slate-100 text-slate-700 border-slate-200';
         }
     };
 
     const getRefundStatusColor = (status) => {
         switch (status) {
-            case 'REQUESTED': return 'bg-red-100 text-red-800';
-            case 'APPROVED': return 'bg-blue-100 text-blue-800'; // 환불완료는 파란색
-            case 'REJECTED': return 'bg-gray-100 text-gray-800';
-            case 'NONE': return 'bg-gray-50 text-gray-500';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'REQUESTED': return 'bg-rose-100 text-rose-700 border-rose-200 animate-pulse';
+            case 'APPROVED': return 'bg-indigo-100 text-indigo-700 border-indigo-200'; // 환불완료는 파란색
+            case 'REJECTED': return 'bg-slate-100 text-slate-700 border-slate-200';
+            case 'NONE': return 'bg-slate-50 text-slate-400 border-transparent';
+            default: return 'bg-slate-100 text-slate-700 border-slate-200';
         }
     };
 
@@ -302,7 +302,7 @@ function PaymentManagement() {
         if (orderId && orderId.startsWith('COURSE_')) {
             return '포인트 사용';
         }
-        
+
         switch (status) {
             case 'PAID': return '결제완료';
             case 'CANCELLED': return '결제취소';
@@ -369,394 +369,462 @@ function PaymentManagement() {
         }
     };
 
-    // 환불 요청 건수
     const refundRequestCount = payments.filter(p => p.refundStatus === 'REQUESTED').length;
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-white">
+            <div className="min-h-screen bg-slate-50 relative overflow-hidden">
+                {/* Background Decorations */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                    <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-indigo-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+                    <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+                </div>
+
+                <div className="relative z-10">
+                    <AdminNav />
+                    <div className="container mx-auto px-4 py-16 pt-32">
+                        <div className="max-w-7xl mx-auto">
+                            {/* 헤더 스켈레톤 */}
+                            <div className="mb-8">
+                                <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
+                                    <span>관리자</span>
+                                    <span>/</span>
+                                    <span className="text-indigo-600 font-medium">결제관리</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="h-10 bg-slate-200/50 rounded-lg w-48 mb-2 animate-pulse"></div>
+                                        <div className="h-5 bg-slate-100/50 rounded w-64 animate-pulse"></div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 bg-slate-200/50 rounded-lg w-24 animate-pulse"></div>
+                                        <div className="h-10 bg-slate-200/50 rounded-lg w-24 animate-pulse"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 필터 스켈레톤 */}
+                            <Card className="mb-6 border-0 shadow-lg bg-white/80 backdrop-blur-xl ring-1 ring-white/50">
+                                <CardHeader>
+                                    <div className="h-6 bg-slate-200/50 rounded w-20 animate-pulse"></div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                                        {Array.from({ length: 4 }).map((_, i) => (
+                                            <div key={i} className="space-y-2">
+                                                <div className="h-4 bg-slate-200/50 rounded w-16 animate-pulse"></div>
+                                                <div className="h-10 bg-slate-100/50 rounded animate-pulse"></div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <div className="h-10 bg-slate-100/50 rounded flex-1 animate-pulse"></div>
+                                        <div className="h-10 bg-slate-200/50 rounded w-20 animate-pulse"></div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* 테이블 스켈레톤 */}
+                            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-xl ring-1 ring-white/50">
+                                <CardContent className="p-0">
+                                    <div className="p-6">
+                                        {Array.from({ length: 10 }).map((_, i) => (
+                                            <div key={i} className="flex items-center space-x-4 py-4 border-b border-slate-100">
+                                                <div className="h-4 bg-slate-200/50 rounded w-20 animate-pulse"></div>
+                                                <div className="h-4 bg-slate-200/50 rounded w-16 animate-pulse"></div>
+                                                <div className="h-4 bg-slate-200/50 rounded w-32 animate-pulse"></div>
+                                                <div className="h-4 bg-slate-200/50 rounded w-20 animate-pulse"></div>
+                                                <div className="h-4 bg-slate-200/50 rounded w-16 animate-pulse"></div>
+                                                <div className="h-4 bg-slate-200/50 rounded w-16 animate-pulse"></div>
+                                                <div className="h-4 bg-slate-200/50 rounded w-24 animate-pulse"></div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                    <Tail />
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-slate-50 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-indigo-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+                <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-purple-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+                <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] bg-blue-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+            </div>
+
+            <div className="relative z-10">
                 <AdminNav />
                 <div className="container mx-auto px-4 py-16 pt-32">
                     <div className="max-w-7xl mx-auto">
-                        {/* 헤더 스켈레톤 */}
-                        <div className="mb-8">
-                            <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                                <span>관리자</span>
-                                <span>/</span>
-                                <span className="text-blue-600">결제관리</span>
+                        {/* 헤더 */}
+                        <div className="mb-10 text-center md:text-left">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-medium mb-4">
+                                <Sparkles className="w-3 h-3" />
+                                <span>관리자 페이지</span>
                             </div>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <div className="h-8 bg-gray-200 rounded w-32 mb-2 animate-pulse"></div>
-                                    <div className="h-4 bg-gray-100 rounded w-48 animate-pulse"></div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 bg-gray-200 rounded w-24 animate-pulse"></div>
-                                    <div className="h-10 bg-gray-200 rounded w-24 animate-pulse"></div>
-                                </div>
-                            </div>
+                            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 mb-2">
+                                결제 관리
+                            </h1>
+                            <p className="text-slate-600">
+                                모든 결제 및 환불 요청을 한눈에 관리하세요.
+                            </p>
                         </div>
 
-                        {/* 필터 스켈레톤 */}
-                        <Card className="mb-6">
-                            <CardHeader>
-                                <div className="h-6 bg-gray-200 rounded w-20 animate-pulse"></div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                                    {Array.from({ length: 4 }).map((_, i) => (
-                                        <div key={i} className="space-y-2">
-                                            <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
-                                            <div className="h-10 bg-gray-100 rounded animate-pulse"></div>
-                                        </div>
-                                    ))}
+                        {/* 탭 */}
+                        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+                            <TabsList className="bg-white/50 backdrop-blur-sm border border-white/40 p-1 rounded-xl shadow-sm">
+                                <TabsTrigger
+                                    value="all"
+                                    className="data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-lg px-6 transition-all"
+                                >
+                                    전체 내역
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="refund"
+                                    className="relative data-[state=active]:bg-white data-[state=active]:text-rose-600 data-[state=active]:shadow-sm rounded-lg px-6 transition-all"
+                                >
+                                    환불 요청
+                                    {refundRequestCount > 0 && (
+                                        <Badge className="ml-2 bg-rose-500 text-white border-0 text-[10px] px-1.5 py-0.5 h-auto">
+                                            {refundRequestCount}
+                                        </Badge>
+                                    )}
+                                </TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+
+                        {/* 필터 */}
+                        <Card className="mb-8 border-0 shadow-xl bg-white/80 backdrop-blur-xl ring-1 ring-white/50 overflow-visible">
+                            <CardHeader className="pb-4 border-b border-slate-100/50">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="flex items-center gap-2 text-lg text-slate-800">
+                                        <Filter className="w-5 h-5 text-indigo-500" />
+                                        상세 검색
+                                    </CardTitle>
+                                    <Button
+                                        variant="ghost"
+                                        onClick={resetFilters}
+                                        size="sm"
+                                        className="text-slate-500 hover:text-indigo-600 hover:bg-indigo-50"
+                                    >
+                                        <RefreshCw className="w-4 h-4 mr-2" />
+                                        필터 초기화
+                                    </Button>
                                 </div>
-                                <div className="flex gap-2">
-                                    <div className="h-10 bg-gray-100 rounded flex-1 animate-pulse"></div>
-                                    <div className="h-10 bg-gray-200 rounded w-20 animate-pulse"></div>
+                            </CardHeader>
+                            <CardContent className="pt-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                                    {/* 결제 상태 */}
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">결제 상태</Label>
+                                        <div className="relative">
+                                            <select
+                                                className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
+                                                value={filters.paymentStatus}
+                                                onChange={(e) => handleFilterChange('paymentStatus', e.target.value)}
+                                            >
+                                                <option value="ALL">전체 보기</option>
+                                                <option value="PAID">결제완료</option>
+                                                <option value="CANCELLED">결제취소</option>
+                                                <option value="REFUNDED">환불완료</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* 환불 상태 */}
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">환불 상태</Label>
+                                        <select
+                                            className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
+                                            value={filters.refundStatus}
+                                            onChange={(e) => handleFilterChange('refundStatus', e.target.value)}
+                                        >
+                                            <option value="ALL">전체 보기</option>
+                                            <option value="NONE">없음</option>
+                                            <option value="REQUESTED">환불요청</option>
+                                            <option value="APPROVED">환불승인</option>
+                                            <option value="REJECTED">환불거절</option>
+                                        </select>
+                                    </div>
+
+                                    {/* 기간 */}
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">조회 기간</Label>
+                                        <select
+                                            className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
+                                            value={filters.period}
+                                            onChange={(e) => handleFilterChange('period', e.target.value)}
+                                        >
+                                            <option value="1">오늘 하루</option>
+                                            <option value="7">최근 7일</option>
+                                            <option value="30">최근 30일</option>
+                                            <option value="custom">직접 지정</option>
+                                        </select>
+                                    </div>
+
+                                    {/* 검색 타입 */}
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">검색 기준</Label>
+                                        <select
+                                            className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
+                                            value={filters.searchType}
+                                            onChange={(e) => handleFilterChange('searchType', e.target.value)}
+                                        >
+                                            <option value="student">학생명</option>
+                                            <option value="course">강좌명</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* 직접 지정 기간 */}
+                                {filters.period === 'custom' && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 p-4 bg-slate-50/50 rounded-xl border border-slate-100">
+                                        <div className="space-y-2">
+                                            <Label className="text-slate-600">시작일</Label>
+                                            <Input
+                                                type="date"
+                                                className="bg-white border-slate-200"
+                                                value={filters.startDate}
+                                                onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-slate-600">종료일</Label>
+                                            <Input
+                                                type="date"
+                                                className="bg-white border-slate-200"
+                                                value={filters.endDate}
+                                                onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 검색 */}
+                                <div className="flex gap-3">
+                                    <div className="relative flex-1">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                        <Input
+                                            placeholder={`${filters.searchType === 'student' ? '학생명' : '강좌명'}으로 검색...`}
+                                            className="pl-11 h-12 bg-white/50 border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 text-base rounded-xl transition-all"
+                                            value={filters.searchKeyword}
+                                            onChange={(e) => handleFilterChange('searchKeyword', e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && applyFilters()}
+                                        />
+                                    </div>
+                                    <Button
+                                        onClick={applyFilters}
+                                        className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg hover:shadow-indigo-500/30 transition-all"
+                                    >
+                                        검색
+                                    </Button>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        {/* 테이블 스켈레톤 */}
-                        <Card>
+                        {/* 결과 요약 */}
+                        <div className="mb-4 flex items-center justify-between px-2">
+                            <span className="text-sm font-medium text-slate-500">
+                                검색 결과: <span className="text-indigo-600 font-bold">{filteredPayments.length}</span> 건
+                            </span>
+                            <span className="text-xs text-slate-400">
+                                ({new Date().toLocaleDateString()} 기준)
+                            </span>
+                        </div>
+
+                        {/* 결제 내역 테이블 */}
+                        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-xl ring-1 ring-white/50 overflow-hidden">
                             <CardContent className="p-0">
-                                <div className="p-6">
-                                    {Array.from({ length: 10 }).map((_, i) => (
-                                        <div key={i} className="flex items-center space-x-4 py-3 border-b border-gray-100">
-                                            <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
-                                        </div>
-                                    ))}
-                                </div>
+                                {currentItems.length === 0 ? (
+                                    <div className="text-center py-20">
+                                        {error ? (
+                                            <div className="flex flex-col items-center">
+                                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                                                    <AlertCircle className="w-8 h-8 text-red-500" />
+                                                </div>
+                                                <h3 className="text-lg font-bold text-slate-800 mb-2">데이터 로드 실패</h3>
+                                                <p className="text-slate-500 mb-6">{error}</p>
+                                                <Button onClick={fetchPayments} variant="outline" className="border-slate-200">
+                                                    <RefreshCw className="w-4 h-4 mr-2" />
+                                                    다시 시도
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col items-center text-slate-500">
+                                                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                                                    <Filter className="w-8 h-8 text-slate-400" />
+                                                </div>
+                                                <h3 className="text-lg font-bold text-slate-700 mb-2">결제 내역이 없습니다</h3>
+                                                <p>검색 조건을 변경하거나 필터를 초기화해보세요.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <>
+                                        <Table>
+                                            <TableHeader className="bg-slate-50/80">
+                                                <TableRow className="border-b-slate-100 hover:bg-transparent">
+                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-[100px]">결제ID</TableHead>
+                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">학생명</TableHead>
+                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider min-w-[200px]">내용</TableHead>
+                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">금액</TableHead>
+                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">상태</TableHead>
+                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">결제일시</TableHead>
+                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">환불요청일</TableHead>
+                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">액션</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {currentItems.map((payment) => (
+                                                    <TableRow
+                                                        key={payment.id}
+                                                        className={`
+                                                            border-b-slate-50 transition-colors hover:bg-indigo-50/30
+                                                            ${payment.refundStatus === 'REQUESTED' ? 'bg-rose-50/50 hover:bg-rose-50' : ''}
+                                                        `}
+                                                    >
+                                                        <TableCell className="text-center py-4">
+                                                            <span className="inline-flex items-center px-2 py-1 rounded bg-slate-100 text-slate-600 font-mono text-xs">
+                                                                {payment.paymentId}
+                                                            </span>
+                                                        </TableCell>
+                                                        <TableCell className="text-center py-4 font-medium text-slate-700">
+                                                            {payment.studentName}
+                                                        </TableCell>
+                                                        <TableCell className="text-center py-4 text-slate-600">
+                                                            {payment.courseTitle}
+                                                        </TableCell>
+                                                        <TableCell className="text-center py-4">
+                                                            <span className="font-bold text-slate-800">
+                                                                {payment.amount.toLocaleString()}
+                                                            </span>
+                                                            <span className="text-xs text-slate-500 ml-1">원</span>
+                                                        </TableCell>
+                                                        <TableCell className="text-center py-4">
+                                                            {payment.refundStatus !== 'NONE' ? (
+                                                                <Badge variant="outline" className={`border ${getRefundStatusColor(payment.refundStatus)}`}>
+                                                                    {getRefundStatusLabel(payment.refundStatus)}
+                                                                </Badge>
+                                                            ) : (
+                                                                <Badge variant="outline" className={`border ${getPaymentStatusColor(payment.paymentStatus, getPaymentStatusLabel(payment.paymentStatus, payment.type, payment.orderId))}`}>
+                                                                    {getPaymentStatusLabel(payment.paymentStatus, payment.type, payment.orderId)}
+                                                                </Badge>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell className="text-center py-4 text-xs text-slate-500">
+                                                            {new Date(payment.paymentDate).toLocaleString('ko-KR')}
+                                                        </TableCell>
+                                                        <TableCell className="text-center py-4 text-xs text-slate-500">
+                                                            {payment.refundRequestDate ?
+                                                                new Date(payment.refundRequestDate).toLocaleString('ko-KR') :
+                                                                '-'
+                                                            }
+                                                        </TableCell>
+                                                        <TableCell className="text-center py-4">
+                                                            {payment.refundStatus === 'REQUESTED' ? (
+                                                                <div className="flex gap-2 justify-center">
+                                                                    <Button
+                                                                        size="sm"
+                                                                        className="h-8 bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-sm"
+                                                                        onClick={() => {
+                                                                            if (confirm('환불을 승인하시겠습니까?')) {
+                                                                                handleRefundApproval(payment.id);
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        승인
+                                                                    </Button>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        className="h-8 text-rose-500 border-rose-200 hover:bg-rose-50"
+                                                                        onClick={() => {
+                                                                            if (confirm('환불을 거절하시겠습니까?')) {
+                                                                                handleRefundReject(payment.id);
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        거절
+                                                                    </Button>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-slate-300">-</span>
+                                                            )}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+
+                                        {/* 페이징 */}
+                                        {totalPages > 1 && (
+                                            <div className="flex justify-center items-center gap-2 p-6 border-t border-slate-100 bg-slate-50/30">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handlePageChange(currentPage - 1)}
+                                                    disabled={currentPage === 1}
+                                                    className="border-slate-200 hover:bg-white hover:text-indigo-600 disabled:opacity-50"
+                                                >
+                                                    이전
+                                                </Button>
+
+                                                {Array.from({ length: Math.min(10, totalPages) }, (_, i) => {
+                                                    let pageNumber;
+                                                    if (totalPages <= 10) {
+                                                        pageNumber = i + 1;
+                                                    } else {
+                                                        const start = Math.max(1, currentPage - 5);
+                                                        const end = Math.min(totalPages, start + 9);
+                                                        pageNumber = start + i;
+                                                        if (pageNumber > end) return null;
+                                                    }
+
+                                                    return (
+                                                        <Button
+                                                            key={pageNumber}
+                                                            variant={currentPage === pageNumber ? "default" : "outline"}
+                                                            size="sm"
+                                                            onClick={() => handlePageChange(pageNumber)}
+                                                            className={`
+                                                                w-9 h-9 rounded-lg p-0 transition-all
+                                                                ${currentPage === pageNumber
+                                                                    ? "bg-indigo-600 text-white shadow-md hover:bg-indigo-700"
+                                                                    : "border-slate-200 text-slate-600 hover:bg-white hover:text-indigo-600 hover:border-indigo-200"}
+                                                            `}
+                                                        >
+                                                            {pageNumber}
+                                                        </Button>
+                                                    );
+                                                })}
+
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handlePageChange(currentPage + 1)}
+                                                    disabled={currentPage === totalPages}
+                                                    className="border-slate-200 hover:bg-white hover:text-indigo-600 disabled:opacity-50"
+                                                >
+                                                    다음
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
                             </CardContent>
                         </Card>
                     </div>
                 </div>
                 <Tail />
             </div>
-        );
-    }
-
-    return (
-        <div className="min-h-screen bg-white">
-            <AdminNav />
-            <div className="container mx-auto px-4 py-16 pt-32">
-                <div className="max-w-7xl mx-auto">
-                    {/* 헤더 */}
-                    <div className="mb-8">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-3xl font-bold text-gray-900">결제관리</h1>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 탭 */}
-                    <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-                        <TabsList>
-                            <TabsTrigger value="all">전체</TabsTrigger>
-                            <TabsTrigger value="refund" className="relative">
-                                환불요청
-                                {refundRequestCount > 0 && (
-                                    <Badge className="ml-2 bg-red-500 text-white text-xs">
-                                        {refundRequestCount}
-                                    </Badge>
-                                )}
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-
-                    {/* 필터 */}
-                    <Card className="mb-6">
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2">
-                                    <Filter className="w-5 h-5" />
-                                    필터
-                                </CardTitle>
-                                <Button variant="outline" onClick={resetFilters} size="sm">
-                                    초기화
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                                {/* 결제 상태 */}
-                                <div>
-                                    <Label>결제 상태</Label>
-                                    <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={filters.paymentStatus}
-                                        onChange={(e) => handleFilterChange('paymentStatus', e.target.value)}
-                                    >
-                                        <option value="ALL">전체</option>
-                                        <option value="PAID">결제완료</option>
-                                        <option value="CANCELLED">결제취소</option>
-                                        <option value="REFUNDED">환불완료</option>
-                                    </select>
-                                </div>
-
-                                {/* 환불 상태 */}
-                                <div>
-                                    <Label>환불 상태</Label>
-                                    <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={filters.refundStatus}
-                                        onChange={(e) => handleFilterChange('refundStatus', e.target.value)}
-                                    >
-                                        <option value="ALL">전체</option>
-                                        <option value="NONE">없음</option>
-                                        <option value="REQUESTED">환불요청</option>
-                                        <option value="APPROVED">환불승인</option>
-                                        <option value="REJECTED">환불거절</option>
-                                    </select>
-                                </div>
-
-                                {/* 기간 */}
-                                <div>
-                                    <Label>기간</Label>
-                                    <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={filters.period}
-                                        onChange={(e) => handleFilterChange('period', e.target.value)}
-                                    >
-                                        <option value="1">오늘</option>
-                                        <option value="7">7일</option>
-                                        <option value="30">30일</option>
-                                        <option value="custom">직접 지정</option>
-                                    </select>
-                                </div>
-
-                                {/* 검색 타입 */}
-                                <div>
-                                    <Label>검색 대상</Label>
-                                    <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={filters.searchType}
-                                        onChange={(e) => handleFilterChange('searchType', e.target.value)}
-                                    >
-                                        <option value="student">학생명</option>
-                                        <option value="course">강좌명</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* 직접 지정 기간 */}
-                            {filters.period === 'custom' && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <Label>시작일</Label>
-                                        <Input
-                                            type="date"
-                                            value={filters.startDate}
-                                            onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label>종료일</Label>
-                                        <Input
-                                            type="date"
-                                            value={filters.endDate}
-                                            onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* 검색 */}
-                            <div className="flex gap-2">
-                                <div className="relative flex-1">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        placeholder={`${filters.searchType === 'student' ? '학생명' : '강좌명'}으로 검색...`}
-                                        className="pl-9"
-                                        value={filters.searchKeyword}
-                                        onChange={(e) => handleFilterChange('searchKeyword', e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && applyFilters()}
-                                    />
-                                </div>
-                                <Button onClick={applyFilters}>
-                                    검색
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* 결과 요약 */}
-                    <div className="mb-4 text-sm text-gray-600">
-                        총 {filteredPayments.length}건의 결과 ({currentItems.length}건 표시 중)
-                    </div>
-
-                    {/* 결제 내역 테이블 */}
-                    <Card>
-                        <CardContent className="p-0">
-                            {currentItems.length === 0 ? (
-                                <div className="text-center py-12">
-                                    {error ? (
-                                        <div className="text-red-500">
-                                            <AlertCircle className="w-12 h-12 mx-auto mb-4" />
-                                            <p className="mb-4">{error}</p>
-                                            <Button onClick={fetchPayments} variant="outline">
-                                                <RefreshCw className="w-4 h-4 mr-2" />
-                                                다시 시도
-                                            </Button>
-                                        </div>
-                                    ) : (
-                                        <div className="text-gray-500">
-                                            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                                            결제 내역이 없습니다.
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <>
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="text-center">결제ID</TableHead>
-                                                <TableHead className="text-center">학생명</TableHead>
-                                                <TableHead className="text-center">내용</TableHead>
-                                                <TableHead className="text-center">금액</TableHead>
-                                                <TableHead className="text-center">상태</TableHead>
-                                                <TableHead className="text-center">결제일시</TableHead>
-                                                <TableHead className="text-center">환불요청일</TableHead>
-                                                <TableHead className="text-center">액션</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {currentItems.map((payment) => (
-                                                <TableRow key={payment.id} className={payment.refundStatus === 'REQUESTED' ? 'bg-red-50' : ''}>
-                                                    <TableCell className="text-center font-mono text-sm">
-                                                        {payment.paymentId}
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        {payment.studentName}
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        {payment.courseTitle}
-                                                    </TableCell>
-                                                    <TableCell className="text-center font-medium">
-                                                        {payment.amount.toLocaleString()}원
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        {payment.refundStatus !== 'NONE' ? (
-                                                            <div className="flex items-center justify-center gap-2">
-                                                                <Badge className={getRefundStatusColor(payment.refundStatus)}>
-                                                                    {getRefundStatusLabel(payment.refundStatus)}
-                                                                </Badge>
-                                                            </div>
-                                                        ) : (
-                                                            <Badge className={getPaymentStatusColor(payment.paymentStatus, getPaymentStatusLabel(payment.paymentStatus, payment.type, payment.orderId))}>
-                                                                {getPaymentStatusLabel(payment.paymentStatus, payment.type, payment.orderId)}
-                                                            </Badge>
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell className="text-center text-sm">
-                                                        {new Date(payment.paymentDate).toLocaleString('ko-KR')}
-                                                    </TableCell>
-                                                    <TableCell className="text-center text-sm">
-                                                        {payment.refundRequestDate ?
-                                                            new Date(payment.refundRequestDate).toLocaleString('ko-KR') :
-                                                            '-'
-                                                        }
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        {payment.refundStatus === 'REQUESTED' ? (
-                                                            <div className="flex gap-2 justify-center">
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="outline"
-                                                                    className="text-green-600 border-green-300 hover:bg-green-50"
-                                                                    onClick={() => {
-                                                                        if (confirm('환불을 승인하시겠습니까?')) {
-                                                                            handleRefundApproval(payment.id);
-                                                                        }
-                                                                    }}
-                                                                >
-                                                                    승인
-                                                                </Button>
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="outline"
-                                                                    className="text-red-600 border-red-300 hover:bg-red-50"
-                                                                    onClick={() => {
-                                                                        if (confirm('환불을 거절하시겠습니까?')) {
-                                                                            handleRefundReject(payment.id);
-                                                                        }
-                                                                    }}
-                                                                >
-                                                                    거절
-                                                                </Button>
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-gray-400 text-sm">-</span>
-                                                        )}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-
-                                    {/* 페이징 */}
-                                    {totalPages > 1 && (
-                                        <div className="flex justify-center items-center gap-2 p-6 border-t">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handlePageChange(currentPage - 1)}
-                                                disabled={currentPage === 1}
-                                            >
-                                                이전
-                                            </Button>
-
-                                            {Array.from({ length: Math.min(10, totalPages) }, (_, i) => {
-                                                let pageNumber;
-                                                if (totalPages <= 10) {
-                                                    pageNumber = i + 1;
-                                                } else {
-                                                    const start = Math.max(1, currentPage - 5);
-                                                    const end = Math.min(totalPages, start + 9);
-                                                    pageNumber = start + i;
-                                                    if (pageNumber > end) return null;
-                                                }
-
-                                                return (
-                                                    <Button
-                                                        key={pageNumber}
-                                                        variant={currentPage === pageNumber ? "default" : "outline"}
-                                                        size="sm"
-                                                        onClick={() => handlePageChange(pageNumber)}
-                                                        className="min-w-[2rem]"
-                                                    >
-                                                        {pageNumber}
-                                                    </Button>
-                                                );
-                                            })}
-
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handlePageChange(currentPage + 1)}
-                                                disabled={currentPage === totalPages}
-                                            >
-                                                다음
-                                            </Button>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-            <Tail />
-        </div >
+        </div>
     );
 }
 

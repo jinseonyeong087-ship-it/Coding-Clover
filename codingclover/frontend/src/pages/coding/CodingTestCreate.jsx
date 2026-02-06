@@ -74,24 +74,29 @@ const CodingTestCreate = () => {
   if (userRole !== "ADMIN") return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#ffffff]">
+    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
       <Nav />
+      {/* Background Decoration */}
+      <div className="absolute top-0 right-0 w-[800px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[400px] bg-purple-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
-      <main className="flex-grow container mx-auto px-6 pt-20 pb-16 max-w-[1200px]">
-        {/* 상단 헤더 섹션 */}
-        <div className="flex justify-between items-center mb-8">
+      <main className="flex-grow container mx-auto px-6 pt-12 pb-16 max-w-7xl relative z-0">
+        {/* Header Section */}
+        <div className="flex justify-between items-center mb-8 border-b border-border/50 pb-6">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 hover:bg-white rounded-full transition-colors text-gray-400 hover:text-gray-600"
+              className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="h-6 w-6" />
             </button>
-            <h1 className="text-3xl font-black text-gray-900 tracking-tight">새 문제 등록</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
+              New Problem
+            </h1>
           </div>
           <button
             onClick={handleSubmit}
-            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all active:scale-95"
+            className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold shadow-lg hover:shadow-primary/25 transition-all active:scale-95"
           >
             <Save className="h-5 w-5" />
             문제 저장하기
@@ -99,27 +104,27 @@ const CodingTestCreate = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* 왼쪽 입력 폼 (5/12) */}
+          {/* Left: Input Form (5/12) */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6">
-              {/* 제목 입력 */}
+            <div className="bg-background/60 backdrop-blur-xl p-8 rounded-2xl border border-border/50 shadow-sm space-y-6">
+              {/* Title Input */}
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase text-gray-400 tracking-widest flex items-center gap-2">
+                <label className="text-xs font-bold uppercase text-muted-foreground tracking-widest flex items-center gap-2">
                   <LayoutList className="h-3 w-3" /> Problem Title
                 </label>
                 <input
                   type="text"
                   name="title"
                   placeholder="문제 제목을 입력하세요"
-                  className="w-full text-lg font-bold border-b-2 border-gray-100 focus:border-indigo-500 outline-none py-2 transition-colors"
+                  className="w-full text-lg font-bold bg-transparent border-b-2 border-border/50 focus:border-primary outline-none py-2 transition-colors text-foreground placeholder:text-muted-foreground/50"
                   value={problem.title}
                   onChange={handleChange}
                 />
               </div>
 
-              {/* 난이도 선택 */}
+              {/* Difficulty Select */}
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Difficulty</label>
+                <label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Difficulty</label>
                 <div className="flex gap-2">
                   {["초급", "중급", "고급"].map((lvl) => (
                     <button
@@ -127,8 +132,8 @@ const CodingTestCreate = () => {
                       type="button"
                       onClick={() => setProblem(prev => ({ ...prev, level: lvl }))}
                       className={`px-4 py-2 rounded-lg text-xs font-bold border transition-all ${problem.level === lvl
-                          ? "bg-indigo-50 border-indigo-200 text-indigo-600"
-                          : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
+                        ? "bg-primary/10 border-primary/20 text-primary"
+                        : "bg-background/50 border-border/50 text-muted-foreground hover:border-border hover:text-foreground"
                         }`}
                     >
                       {lvl}
@@ -137,13 +142,13 @@ const CodingTestCreate = () => {
                 </div>
               </div>
 
-              {/* 문제 설명 입력 */}
+              {/* Description Input */}
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Description</label>
+                <label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Description</label>
                 <textarea
                   name="description"
                   placeholder="문제를 설명해주세요 (제약 사항, 입출력 예시 등)"
-                  className="w-full h-80 border border-gray-100 p-4 rounded-xl focus:ring-2 focus:ring-indigo-500/10 outline-none resize-none text-sm leading-relaxed"
+                  className="w-full h-96 bg-background/50 border border-input p-4 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none resize-none text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/50"
                   value={problem.description}
                   onChange={handleChange}
                 />
@@ -151,14 +156,14 @@ const CodingTestCreate = () => {
             </div>
           </div>
 
-          {/* 오른쪽 에디터 폼 (7/12) */}
+          {/* Right: Editor Form (7/12) */}
           <div className="lg:col-span-7 flex flex-col gap-4">
-            <div className="bg-white p-1 rounded-2xl border border-gray-100 shadow-sm flex-grow flex flex-col overflow-hidden">
-              <div className="px-5 py-3 border-b border-gray-50 flex justify-between items-center text-gray-400 font-black text-[10px] uppercase tracking-widest">
+            <div className="bg-[#1e1e1e] p-1 rounded-2xl border border-border/50 shadow-lg flex-grow flex flex-col overflow-hidden">
+              <div className="px-5 py-3 border-b border-white/10 flex justify-between items-center text-gray-400 font-bold text-[10px] uppercase tracking-widest bg-white/5">
                 <div className="flex items-center gap-2"><FileCode className="h-3 w-3" /> Base Code Template</div>
-                <span className="bg-indigo-50 text-indigo-400 px-2 py-0.5 rounded">Java</span>
+                <span className="bg-primary/20 text-primary px-2 py-0.5 rounded">Java</span>
               </div>
-              <div className="flex-grow bg-[#1e1e1e]">
+              <div className="flex-grow relative">
                 <Editor
                   height="600px"
                   defaultLanguage="java"
@@ -171,12 +176,14 @@ const CodingTestCreate = () => {
                     lineHeight: 22,
                     padding: { top: 20 },
                     scrollBeyondLastLine: false,
+                    fontFamily: "'JetBrains Mono', 'D2Coding', monospace",
                   }}
                 />
               </div>
             </div>
-            <p className="text-[11px] text-gray-400 font-medium px-2">
-              * 학생들이 문제를 처음 열었을 때 보여질 기본 코드 구조를 작성해주세요.
+            <p className="text-[11px] text-muted-foreground font-medium px-2 flex items-center gap-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary/50" />
+              학생들이 문제를 처음 열었을 때 보여질 기본 코드 구조를 작성해주세요.
             </p>
           </div>
         </div>

@@ -126,51 +126,80 @@ function ProposalDetail() {
 
 
     return (
-        <>
-            <Nav />
-            
-            <SidebarProvider className="bg-white">
-                <Sidebar dir="rtl" side="left" className="!top-16 !h-[calc(100svh-4rem)]">
-                    <div className="py-4" />
-                    <SidebarHeader onClick={() => setSelectedLecture(null)}>{courseInfo ? courseInfo.title : '강좌명'}</SidebarHeader>
-                    <SidebarContent>
-                        <ScrollArea>
-                            <SidebarGroup>
-                                <SidebarMenu>
-                                    {lectureList.length > 0 ? (
-                                        lectureList.map((lecture) => (
-                                            <SidebarMenuItem key={lecture.lectureId}>
-                                                <SidebarMenuButton onClick={() => handleLectureClick(lecture)}
-                                                    isActive={selectedLecture?.lectureId === lecture.lectureId}>
-                                                    <span>{lecture.orderNo}강. {lecture.title}</span>
-                                                    {role === 'ADMIN' && getStatusBadge(lecture.approvalStatus)}
-                                                </SidebarMenuButton>
+        <div className="min-h-screen bg-slate-50 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+                <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-indigo-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+                <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+            </div>
+
+            <div className="relative z-10 flex flex-col min-h-screen">
+                <Nav />
+
+                <SidebarProvider className="flex-1 bg-transparent/0 backdrop-blur-sm">
+                    <Sidebar dir="rtl" side="left" className="!top-16 !h-[calc(100svh-4rem)] border-r border-white/20 shadow-xl bg-white/70 backdrop-blur-xl">
+                        <div className="py-4" />
+                        <SidebarHeader
+                            className="px-6 py-4 font-bold text-lg text-slate-800 border-b border-indigo-100/50 bg-gradient-to-r from-indigo-50/50 to-white/50 cursor-pointer hover:bg-indigo-50/80 transition-colors"
+                            onClick={() => setSelectedLecture(null)}
+                        >
+                            {courseInfo ? courseInfo.title : '강좌명'}
+                        </SidebarHeader>
+                        <SidebarContent className="px-2">
+                            <ScrollArea className="h-full">
+                                <SidebarGroup>
+                                    <SidebarMenu className="gap-1.5 pt-3">
+                                        {lectureList.length > 0 ? (
+                                            lectureList.map((lecture) => (
+                                                <SidebarMenuItem key={lecture.lectureId}>
+                                                    <SidebarMenuButton
+                                                        onClick={() => handleLectureClick(lecture)}
+                                                        isActive={selectedLecture?.lectureId === lecture.lectureId}
+                                                        className={`
+                                                            w-full justify-start py-6 px-4 rounded-xl transition-all duration-200
+                                                            ${selectedLecture?.lectureId === lecture.lectureId
+                                                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 font-medium hover:bg-indigo-700'
+                                                                : 'text-slate-600 hover:bg-white hover:shadow-sm hover:text-indigo-600'}
+                                                        `}
+                                                    >
+                                                        <div className="flex w-full items-center justify-between">
+                                                            <span className="truncate pr-2 text-sm">{lecture.orderNo}강. {lecture.title}</span>
+                                                            {role === 'ADMIN' && getStatusBadge(lecture.approvalStatus)}
+                                                        </div>
+                                                    </SidebarMenuButton>
+                                                </SidebarMenuItem>
+                                            ))
+                                        ) : (
+                                            <SidebarMenuItem>
+                                                <div className="p-4 text-center text-sm text-slate-400 bg-slate-50 rounded-xl m-2">
+                                                    등록된 강의가 없습니다
+                                                </div>
                                             </SidebarMenuItem>
-                                        ))
-                                    ) : (
-                                        <SidebarMenuItem>
-                                            <p>등록된 강의가 없습니다</p>
-                                        </SidebarMenuItem>
-                                    )}
-                                </SidebarMenu>
-                            </SidebarGroup>
-                        </ScrollArea>
-                        {role === 'ADMIN' && (
-                            <SidebarFooter>
-                                승인 {approvedCount}개 / 반려 {rejectedCount}개 / 대기 {pendingCount}개
-                            </SidebarFooter>
-                        )}
-                    </SidebarContent>
-                </Sidebar>
-                <SidebarInset>
-                    <div className="flex items-center gap-2 px-4 py-16">
-                        <SidebarTrigger />
-                    </div>
-                    {renderContent()}
-                    <Tail />
-                </SidebarInset>
-            </SidebarProvider>
-        </>
+                                        )}
+                                    </SidebarMenu>
+                                </SidebarGroup>
+                            </ScrollArea>
+                            {role === 'ADMIN' && (
+                                <SidebarFooter className="p-4 border-t border-slate-100/50 bg-slate-50/50 text-xs text-slate-500 font-medium text-center">
+                                    승인 {approvedCount} / 반려 {rejectedCount} / 대기 {pendingCount}
+                                </SidebarFooter>
+                            )}
+                        </SidebarContent>
+                    </Sidebar>
+                    <SidebarInset className="bg-transparent">
+                        <div className="flex items-center gap-2 px-6 py-4 lg:hidden">
+                            <SidebarTrigger className="text-slate-500 hover:text-indigo-600" />
+                        </div>
+                        <div className="p-4 lg:p-8 max-w-7xl mx-auto w-full">
+                            <div className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-xl ring-1 ring-white/60 overflow-hidden min-h-[600px] relative">
+                                {renderContent()}
+                            </div>
+                        </div>
+                        <Tail />
+                    </SidebarInset>
+                </SidebarProvider>
+            </div>
+        </div>
     );
 }
 

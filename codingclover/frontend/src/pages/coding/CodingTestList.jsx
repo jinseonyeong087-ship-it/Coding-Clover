@@ -45,95 +45,130 @@ const CodingTestList = () => {
   const tabs = ["전체", "초급", "중급", "고급"];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#ffffff]">
+    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
       <Nav />
-      <main className="flex-grow container mx-auto px-6 pt-32 pb-16 max-w-[1200px]">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-6">
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight italic uppercase">
-            Coding Test Management
-          </h1>
+      {/* Background Decoration */}
+      <div className="absolute top-0 right-0 w-[800px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[400px] bg-purple-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+
+      <main className="flex-grow container mx-auto px-6 pt-12 pb-16 max-w-7xl relative z-0">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6 border-b border-border/50 pb-8">
+          <div>
+            <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 mb-4">
+              Coding Challenges
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-2xl leading-relaxed">
+              실전 같은 코딩 테스트 문제로 알고리즘 역량을 키워보세요. <br className="hidden md:block" />
+              다양한 난이도의 문제를 풀며 성장할 수 있습니다.
+            </p>
+          </div>
+
           {userRole === "ADMIN" && (
-            <Button onClick={() => navigate("/coding-test/new")} className="h-12 px-6 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-black transition-all">
+            <Button
+              onClick={() => navigate("/coding-test/new")}
+              className="h-12 px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-lg hover:shadow-primary/25 transition-all text-base"
+            >
               <Plus className="mr-2 h-5 w-5" /> 새 문제 등록
             </Button>
           )}
         </div>
 
-        <div className="flex items-center gap-2 mb-8 border-b border-gray-100 pb-1">
+        {/* Tab Navigation */}
+        <div className="flex items-center gap-2 mb-8">
           {tabs.map((tab) => (
-            <button key={tab} onClick={() => setCurrentTab(tab)} className={`px-6 py-3 text-sm font-black transition-all relative ${currentTab === tab ? "text-indigo-600" : "text-gray-400 hover:text-gray-900"}`}>
-              {tab}
-              {currentTab === tab && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full" />}
+            <button
+              key={tab}
+              onClick={() => setCurrentTab(tab)}
+              className={`px-5 py-2.5 text-sm font-bold rounded-full transition-all duration-300 relative overflow-hidden group ${currentTab === tab
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-background/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+            >
+              <span className="relative z-10">{tab}</span>
+              {currentTab !== tab && <div className="absolute inset-0 bg-muted opacity-0 group-hover:opacity-100 transition-opacity" />}
             </button>
           ))}
         </div>
 
-        <div className="bg-white rounded-[2rem] border border-gray-100 shadow-2xl overflow-hidden">
+        {/* Problem Grid */}
+        <div className="min-h-[400px]">
           {loading ? (
-            <div className="py-32 text-center text-gray-400 font-bold animate-pulse">LOADING...</div>
+            <div className="flex flex-col items-center justify-center py-32 gap-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <div className="text-muted-foreground font-medium animate-pulse">문제를 불러오는 중입니다...</div>
+            </div>
           ) : filteredProblems.length === 0 ? (
-            <div className="py-32 text-center text-gray-400 font-bold">등록된 문제가 없습니다.</div>
+            <div className="flex flex-col items-center justify-center py-32 bg-background/40 rounded-[2.5rem] border border-dashed border-border/50">
+              <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4 text-muted-foreground">
+                <BarChart3 className="h-8 w-8 opacity-50" />
+              </div>
+              <p className="text-xl font-bold text-muted-foreground">등록된 문제가 없습니다.</p>
+            </div>
           ) : (
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-gray-50/50 border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                  <th className="px-10 py-5 w-[100px] text-center">ID</th>
-                  <th className="px-6 py-5">Problem Name</th>
-                  <th className="px-6 py-5 w-[150px] text-center">Level</th>
-                  <th className="px-6 py-5 w-[180px] text-center">Pass Rate</th>
-                  <th className="px-6 py-5 w-[80px]"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filteredProblems.map((problem) => (
-                  <tr
-                    key={`problem-${problem.problemId}`}
-                    onClick={() => navigate(`/coding-test/${problem.problemId}`)}
-                    className="group cursor-pointer hover:bg-indigo-50/20 transition-all"
-                  >
-                    <td className="px-10 py-8 text-center font-mono text-xs font-bold text-indigo-400">
-                      #{String(problem.problemId).padStart(3, '0')}
-                    </td>
-                    <td className="px-6 py-8">
-                      <div className="text-lg font-black text-gray-800 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">
-                        {problem.title}
-                      </div>
-                    </td>
-                    <td className="px-6 py-8 text-center">
-                      <span className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase ${problem.difficulty === "EASY" ? "bg-emerald-50 text-emerald-600" :
-                          problem.difficulty === "NORMAL" ? "bg-amber-50 text-amber-600" : "bg-rose-50 text-rose-600"
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProblems.map((problem) => (
+                <div
+                  key={`problem-${problem.problemId}`}
+                  onClick={() => navigate(`/coding-test/${problem.problemId}`)}
+                  className="group relative bg-background/60 backdrop-blur-xl rounded-2xl border border-border/50 p-6 cursor-pointer hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+                >
+                  {/* Hover Glow */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-purple-500/0 group-hover:from-primary/5 group-hover:to-purple-500/5 transition-all duration-500" />
+
+                  <div className="relative z-10 flex flex-col h-full">
+                    {/* Top Row: Difficulty & ID */}
+                    <div className="flex justify-between items-start mb-4">
+                      <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${problem.difficulty === "EASY" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" :
+                          problem.difficulty === "NORMAL" ? "bg-amber-500/10 text-amber-500 border border-amber-500/20" :
+                            "bg-rose-500/10 text-rose-500 border border-rose-500/20"
                         }`}>
                         {problem.difficulty}
                       </span>
-                    </td>
-                    <td className="px-6 py-7 text-right">
-                      <ChevronRight className="h-6 w-6 text-gray-200 group-hover:text-indigo-400" />
-                    </td>
-                    {/* 통과율 표시 영역 */}
-                    <td className="px-6 py-8 text-center">
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="text-xs font-black text-indigo-600">{problem.passRate || 0}%</span>
-                        <div className="w-24 bg-gray-100 h-1 rounded-full overflow-hidden">
-                          <div className="bg-indigo-500 h-full" style={{ width: `${problem.passRate || 0}%` }} />
+                      <span className="font-mono text-xs font-bold text-muted-foreground/50">
+                        #{String(problem.problemId).padStart(3, '0')}
+                      </span>
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                      {problem.title}
+                    </h3>
+
+                    <div className="flex-grow" />
+
+                    {/* Bottom Info: Pass Rate & Users */}
+                    <div className="pt-6 mt-2 border-t border-border/30 flex items-end justify-between">
+                      <div className="space-y-1.5 w-full pr-4">
+                        <div className="flex justify-between text-xs font-semibold text-muted-foreground">
+                          <span>정답률</span>
+                          <span className="text-foreground">{problem.passRate || 0}%</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-primary to-purple-500 rounded-full transition-all duration-1000"
+                            style={{ width: `${problem.passRate || 0}%` }}
+                          />
                         </div>
                       </div>
-                    </td>
-                    {/* 제출 인원 표시 (어드민) */}
-                    {userRole === "ADMIN" && (
-                      <td className="px-6 py-8 text-center text-gray-500 font-bold text-xs">
-                        <div className="flex items-center justify-center gap-1">
-                          <Users className="h-3 w-3" />
-                          {problem.submissionCount || 0}명
+
+                      {userRole === "ADMIN" && (
+                        <div className="flex flex-col items-end gap-0.5 min-w-[60px]">
+                          <span className="text-[10px] text-muted-foreground font-medium uppercase">Submitted</span>
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                            <Users className="h-3 w-3 text-muted-foreground" />
+                            {problem.submissionCount || 0}
+                          </div>
                         </div>
-                      </td>
-                    )}
-                    <td className="px-6 py-8 text-right">
-                      <ChevronRight className="h-6 w-6 text-gray-200 group-hover:text-indigo-300 transition-all transform group-hover:translate-x-1" />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Decorative Icon Background */}
+                  <Code2 className="absolute -bottom-4 -right-4 w-32 h-32 text-primary/5 rotate-[-10deg] pointer-events-none group-hover:text-primary/10 transition-colors" />
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </main>

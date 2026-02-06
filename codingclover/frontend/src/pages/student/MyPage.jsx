@@ -6,7 +6,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { User, Edit, Coins, ChevronRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { User, Edit, Coins, ChevronRight, BookOpen, MonitorPlay, Calendar, AlertCircle } from "lucide-react";
 import axios from 'axios';
 import coinImg from '../../img/coin.png';
 
@@ -306,237 +307,264 @@ function MyPage() {
   return (
     <>
       <Nav />
-      <div className='py-8' />
+      {/* Background Decoration */}
+      <div className="fixed inset-0 z-[-1] bg-background">
+        <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-primary/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[100px]" />
+      </div>
 
-      <section className="container mx-auto px-4 py-20">
-
-        {loading && <p className="text-center">사용자 정보를 불러오는 중...</p>}
+      <div className="pt-20 pb-12 container mx-auto px-6 max-w-7xl">
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p className="text-muted-foreground animate-pulse">사용자 정보를 불러오는 중...</p>
+          </div>
+        )}
 
         {error && (
-          <div className="max-w-2xl mx-auto">
-            <Card className="border-destructive">
-              <CardContent className="p-6 text-center">
-                <h2 className="text-xl font-semibold text-destructive mb-2">
-                  {error.includes('로그인') ? '로그인 필요' : '서버 오류'}
-                </h2>
-                <p className="text-muted-foreground mb-4">{error}</p>
-                {error.includes('백엔드 서버를 재시작') && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mb-4 text-sm text-yellow-800">
-                    <p className="font-medium">해결 방법:</p>
-                    <p>1. 백엔드 서버를 중지하고 재시작하세요</p>
-                    <p>2. 새로고침 버튼을 눌러 다시 시도하세요</p>
-                  </div>
-                )}
-                <div className="flex justify-center gap-3">
-                  <Button variant="outline" onClick={() => window.location.reload()}>
-                    새로고침
-                  </Button>
-                  <Button onClick={() => window.location.href = '/auth/login'}>
-                    로그인 페이지로
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="max-w-md mx-auto mt-20 p-8 rounded-2xl border border-destructive/20 bg-destructive/5 text-center shadow-lg backdrop-blur-sm">
+            <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4 opacity-80" />
+            <h2 className="text-xl font-bold text-destructive mb-2">
+              {error.includes('로그인') ? '로그인 필요' : '오류 발생'}
+            </h2>
+            <p className="text-muted-foreground mb-6">{error}</p>
+            <div className="flex justify-center gap-3">
+              <Button variant="outline" onClick={() => window.location.reload()}>새로고침</Button>
+              <Button onClick={() => navigate('/auth/login')}>로그인</Button>
+            </div>
           </div>
         )}
 
         {!loading && !error && user && (
-          <>
-            <div className="max-w-4xl mx-auto mb-8">
-              <h1 className="text-3xl font-bold">마이페이지</h1>
-            </div>
+          <div className="space-y-12">
+            {/* Header & Stats */}
+            <header>
+              <h1 className="text-3xl font-extrabold tracking-tight mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
+                My Dashboard
+              </h1>
+              <p className="text-base text-muted-foreground">
+                안녕하세요, <span className="font-bold text-foreground">{user.name}</span>님. 오늘의 학습 현황입니다.
+              </p>
+            </header>
 
-            {/* 포인트 카드 */}
-            <Card className="max-w-4xl mx-auto mt-8">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <img src={coinImg} alt="코인" className="w-6 h-6" />
-                  내 포인트
-                </CardTitle>
-                <CardDescription>
-                  포인트 잔액 및 사용 내역을 확인하세요
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div>
-                  <div className="text-3xl font-bold text-blue-600 mb-2">
-                    {pointsLoading ? '로딩중...' : `${points.toLocaleString()}P`}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600">
-                      현재 보유 포인트
-                    </p>
-                    <Button
-                      variant="ghost"
-                      onClick={() => navigate('/student/points')}
-                      className="text-sm text-gray-600 hover:text-gray-600 hover:bg-transparent p-0 h-auto cursor-pointer flex items-center gap-1"
-                    >
-                      상세보기
-                      <ChevronRight className="w-3 h-3" />
-                    </Button>
-                  </div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Profile Summary Card */}
+              <div className="md:col-span-2 bg-background/60 backdrop-blur-xl border border-border/50 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center gap-6 relative overflow-hidden group">
+                {/* Decorative bg */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/10 transition-colors duration-700" />
+
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center shrink-0 border border-white/10 shadow-inner">
+                  <User className="w-8 h-8 text-primary" />
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="max-w-4xl mx-auto mt-8">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="w-5 h-5" /> 프로필 정보
-                    </CardTitle>
-                    <CardDescription>회원 기본 정보</CardDescription>
+                <div className="flex-1 z-10 w-full">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-xl font-bold">{user.name}</h2>
+                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                    </div>
+                    {!isEditing && (
+                      <Button variant="ghost" size="sm" onClick={handleEditToggle} className="hover:bg-primary/10 hover:text-primary transition-colors h-8">
+                        <Edit className="w-3.5 h-3.5 mr-2" /> 정보 수정
+                      </Button>
+                    )}
                   </div>
-                  {!isEditing && (
-                    <Button
-                      variant="ghost"
-                      onClick={handleEditToggle}
-                      className="text-gray-600 hover:text-gray-600 hover:bg-transparent p-2 h-auto cursor-pointer flex items-center gap-2"
-                    >
-                      <Edit className="w-4 h-4" />
-                      정보 수정
-                    </Button>
+
+                  {isEditing ? (
+                    <div className="mt-4 space-y-4 bg-background/50 p-4 rounded-xl border border-border/50">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-xs font-bold text-muted-foreground uppercase">이름</Label>
+                          <Input
+                            value={editForm.name}
+                            onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                            className="mt-1 h-9"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs font-bold text-muted-foreground uppercase">학습 수준</Label>
+                          <select
+                            className="w-full h-9 mt-1 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            value={editForm.educationLevel}
+                            onChange={e => setEditForm({ ...editForm, educationLevel: e.target.value })}
+                          >
+                            <option value="">선택해주세요</option>
+                            {EDUCATION_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs font-bold text-muted-foreground uppercase mb-2 block">관심 분야</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {INTEREST_OPTIONS.map(i => (
+                            <label
+                              key={i}
+                              className={`px-3 py-1 rounded-full text-xs font-bold border cursor-pointer transition-all select-none
+                                                    ${selectedInterests.includes(i)
+                                  ? "bg-primary text-primary-foreground border-primary shadow-md transform scale-105"
+                                  : "bg-background border-border text-muted-foreground hover:border-primary/50"}`}
+                            >
+                              <input
+                                type="checkbox"
+                                className="hidden"
+                                checked={selectedInterests.includes(i)}
+                                onChange={e => handleInterestChange(i, e.target.checked)}
+                              />
+                              {i}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2 pt-2">
+                        <Button variant="outline" size="sm" onClick={handleCancel} className="h-8">취소</Button>
+                        <Button size="sm" onClick={handleSave} className="h-8">저장하기</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-6 flex flex-wrap gap-4">
+                      <div className="bg-background/50 px-4 py-2 rounded-lg border border-border/50">
+                        <span className="text-xs font-bold text-muted-foreground block mb-0.5">가입일</span>
+                        <span className="text-sm font-medium">{user.joinDate}</span>
+                      </div>
+                      <div className="bg-background/50 px-4 py-2 rounded-lg border border-border/50">
+                        <span className="text-xs font-bold text-muted-foreground block mb-0.5">학습 수준</span>
+                        <span className="text-sm font-medium">{user.educationLevel || "미설정"}</span>
+                      </div>
+                      <div className="bg-background/50 px-4 py-2 rounded-lg border border-border/50">
+                        <span className="text-xs font-bold text-muted-foreground block mb-0.5">관심 분야</span>
+                        <div className="flex gap-1.5 flex-wrap">
+                          {user.interestCategory && user.interestCategory !== "미설정" ? (
+                            parseInterests(user.interestCategory).map((tag, idx) => (
+                              <Badge key={idx} variant="secondary" className="text-[10px] h-5 px-1.5">{tag}</Badge>
+                            ))
+                          ) : (
+                            <span className="text-sm text-muted-foreground">-</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
-              </CardHeader>
+              </div>
 
-              <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
+              {/* Points Card */}
+              <div onClick={() => navigate('/student/points')} className="cursor-pointer bg-gradient-to-br from-indigo-600 via-primary to-purple-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-[40px] -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
 
-                  <div>
-                    <Label>이름</Label>
-                    {isEditing ? (
-                      <Input
-                        value={editForm.name}
-                        onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                      />
-                    ) : (
-                      <Input value={user.name} readOnly />
-                    )}
+                <div className="relative z-10 flex flex-col h-full justify-between">
+                  <div className="flex justify-between items-start">
+                    <div className="p-3 bg-white/20 backdrop-blur-md rounded-2xl">
+                      <Coins className="w-6 h-6 text-white" />
+                    </div>
+                    <ChevronRight className="w-5 h-5 opacity-60 group-hover:translate-x-1 transition-transform" />
                   </div>
-
-                  <div>
-                    <Label>이메일</Label>
-                    <Input
-                      value={user.email}
-                      readOnly
-                      className={isEditing ? "bg-gray-50 text-gray-600 cursor-not-allowed" : ""}
-                    />
-                  </div>
-
-                  <div>
-                    <Label>가입일</Label>
-                    <Input
-                      value={user.joinDate}
-                      readOnly
-                      className={isEditing ? "bg-gray-50 text-gray-600 cursor-not-allowed" : ""}
-                    />
-                  </div>
-
-                  <div>
-                    <Label>학습 수준</Label>
-                    {isEditing ? (
-                      <select
-                        className="w-full border rounded px-2 py-1"
-                        value={editForm.educationLevel}
-                        onChange={e => setEditForm({ ...editForm, educationLevel: e.target.value })}
-                      >
-                        <option value="">선택</option>
-                        {EDUCATION_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                      </select>
-                    ) : (
-                      <Input value={user.educationLevel || "미설정"} readOnly />
-                    )}
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <Label>관심 분야</Label>
-
-                    {isEditing ? (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {INTEREST_OPTIONS.map(i => (
-                          <label key={i} className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              checked={selectedInterests.includes(i)}
-                              onChange={e => handleInterestChange(i, e.target.checked)}
-                            />
-                            {i}
-                          </label>
-                        ))}
-                      </div>
-                    ) : (
-                      <Input value={user.interestCategory || "미설정"} readOnly />
-                    )}
+                  <div className="mt-4">
+                    <p className="text-indigo-100 font-medium mb-1">내 포인트</p>
+                    <h3 className="text-3xl font-extrabold tracking-tight">
+                      {pointsLoading ? '...' : points.toLocaleString()} <span className="text-xl font-bold opacity-80">P</span>
+                    </h3>
                   </div>
                 </div>
-
-                {isEditing && (
-                  <div className="flex justify-end gap-3 pt-4 border-t">
-                    <Button variant="outline" onClick={handleCancel}>취소</Button>
-                    <Button onClick={handleSave}>저장</Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-
-          </>
-        )}
-        {/* 수강 목록 */}
-        <div className="max-w-4xl mx-auto mt-12">
-          <h2 className="text-2xl font-bold mb-6">내가 듣는 강좌</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-            {enrollments.length === 0 ? (
-              <div className="col-span-full text-center py-8">
-                <p className="text-gray-500">아직 수강 중인 강좌가 없습니다.</p>
-                <p className="text-sm text-gray-400 mt-2">강좌를 둘러보고 수강 신청해보세요!</p>
               </div>
-            ) : (
-              enrollments.map((enrollment) => (
-                <Card key={enrollment.enrollmentId} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{enrollment.courseTitle}</CardTitle>
-                    <CardDescription>
-                      수강 상태: {enrollment.status === 'ENROLLED' ? '수강중' :
-                        enrollment.status === 'COMPLETED' ? '완료' : '취소됨'}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="text-sm text-gray-600">
-                      수강 신청일: {new Date(enrollment.enrolledAt).toLocaleDateString('ko-KR')}
-                    </p>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full ${enrollment.status === 'ENROLLED' ? 'bg-blue-600' :
-                          enrollment.status === 'COMPLETED' ? 'bg-green-600' : 'bg-gray-400'
-                          }`}
-                        style={{ width: "0%" }}
-                      />
-                    </div>
-                    <Button
-                      className="w-full"
-                      disabled={enrollment.status === 'CANCELLED'}
-                      variant={enrollment.status === 'COMPLETED' ? 'outline' : 'default'}
-                      onClick={() => navigate(`/course/${enrollment.courseId}`)}
+            </div>
+
+            {/* Enrolled Courses */}
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold">내 강의실</h2>
+                  <p className="text-muted-foreground mt-1 text-sm">현재 수강 중인 강좌 목록입니다.</p>
+                </div>
+                {/* Optional: Filter or Sort */}
+              </div>
+
+              {enrollments.length === 0 ? (
+                <div className="bg-background/40 border border-dashed border-border rounded-3xl p-12 flex flex-col items-center justify-center text-center">
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                    <BookOpen className="w-8 h-8 text-muted-foreground/50" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-2">수강 중인 강좌가 없습니다</h3>
+                  <p className="text-muted-foreground mb-6 max-w-sm">
+                    다양한 코딩 강좌가 준비되어 있습니다. <br />지금 바로 학습을 시작해보세요!
+                  </p>
+                  <Button onClick={() => navigate('/lecture')} className="font-bold shadow-lg">
+                    강좌 둘러보기
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {enrollments.map((enrollment) => (
+                    <div
+                      key={enrollment.enrollmentId}
+                      className="group flex flex-col bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300"
                     >
-                      {enrollment.status === 'ENROLLED' ? '강의 보기' :
-                        enrollment.status === 'COMPLETED' ? '다시 보기' : '취소된 강좌'}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))
-            )}
+                      <div className="h-40 bg-muted relative overflow-hidden">
+                        {/* Placeholder Pattern/Gradient */}
+                        {/* In a real app, use enrollment.courseThumbnail */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-30">
+                          <MonitorPlay className="w-16 h-16 text-white" />
+                        </div>
+                        <div className="absolute top-4 left-4">
+                          <Badge className={`
+                                            ${enrollment.status === 'ENROLLED' ? 'bg-emerald-500 hover:bg-emerald-500 text-white border-none' :
+                              enrollment.status === 'COMPLETED' ? 'bg-purple-500 hover:bg-purple-500 text-white border-none' :
+                                'bg-slate-500 hover:bg-slate-500 text-white border-none'}
+                                        `}>
+                            {enrollment.status === 'ENROLLED' ? '수강중' :
+                              enrollment.status === 'COMPLETED' ? '수강완료' : '수강취소'}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="p-5 flex-1 flex flex-col">
+                        <div className="mb-4">
+                          <h3 className="text-lg font-bold line-clamp-2 leading-tight mb-2 group-hover:text-primary transition-colors">
+                            {enrollment.courseTitle}
+                          </h3>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            수강신청: {new Date(enrollment.enrolledAt).toLocaleDateString()}
+                          </p>
+                        </div>
 
+                        <div className="mt-auto pt-4 border-t border-border/50 space-y-4">
+                          {/* Progress Bar (Mockup - backend needs to provide progress) */}
+                          <div className="space-y-1.5">
+                            <div className="flex justify-between text-xs font-semibold">
+                              <span className="text-muted-foreground">진도율</span>
+                              <span className="text-primary">{enrollment.status === 'COMPLETED' ? '100' : '0'}%</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-1000 ${enrollment.status === 'COMPLETED' ? 'bg-purple-500' : 'bg-primary'}`}
+                                style={{ width: enrollment.status === 'COMPLETED' ? '100%' : '5%' }}
+                              />
+                            </div>
+                          </div>
+
+                          <Button
+                            className="w-full font-bold shadow-sm h-10"
+                            disabled={enrollment.status === 'CANCELLED'}
+                            variant={enrollment.status === 'COMPLETED' ? 'outline' : 'default'}
+                            onClick={() => navigate(`/course/${enrollment.courseId}`)}
+                          >
+                            {enrollment.status === 'ENROLLED' ? '이어듣기' :
+                              enrollment.status === 'COMPLETED' ? '다시보기' : '강의 보기'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-
-      </section>
+        )}
+      </div>
 
       <Tail />
+
     </>
   );
 }

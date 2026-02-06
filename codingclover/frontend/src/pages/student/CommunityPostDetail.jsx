@@ -15,7 +15,7 @@ import { MessageCircle, Edit, Trash2, Send, User, Calendar, ArrowLeft, ChevronLe
 const CommunityPostDetail = () => {
     const navigate = useNavigate();
     const params = useParams();
-    
+
     const [viewMode, setViewMode] = useState('detail');
     const [selectedPost, setSelectedPost] = useState(null);
     const [postForm, setPostForm] = useState({ title: '', content: '' });
@@ -26,7 +26,7 @@ const CommunityPostDetail = () => {
     // 댓글 페이징 상태
     const [currentCommentPage, setCurrentCommentPage] = useState(1);
     const [commentsPerPage] = useState(5);
-    
+
     // 내가 쓴 댓글 필터 상태
     const [myCommentsOnly, setMyCommentsOnly] = useState(false);
 
@@ -95,20 +95,20 @@ const CommunityPostDetail = () => {
         const myName = currentUser.name;
 
         // ID(loginId) 또는 이름이 일치하는지 확인
-        return (myLoginId && authorLoginId && myLoginId === authorLoginId) || 
-               (myName && authorName && myName === authorName);
+        return (myLoginId && authorLoginId && myLoginId === authorLoginId) ||
+            (myName && authorName && myName === authorName);
     };
-    
+
     // 관리자 권한 체크 함수
     const isAdmin = () => {
         return currentUser && currentUser.role === 'ADMIN';
     };
-    
+
     // 수정 권한 체크 (소유자만 가능)
     const canEdit = (authorLoginId, authorName) => {
         return isOwner(authorLoginId, authorName);
     };
-    
+
     // 삭제 권한 체크 (소유자 또는 관리자)
     const canDelete = (authorLoginId, authorName) => {
         return isOwner(authorLoginId, authorName) || isAdmin();
@@ -116,10 +116,10 @@ const CommunityPostDetail = () => {
 
     const handleUpdatePost = () => {
         axios.put(`/api/community/posts/${selectedPost.id}/edit`, postForm, { withCredentials: true })
-            .then(() => { 
-                alert("수정되었습니다."); 
-                setSelectedPost({ ...selectedPost, ...postForm }); 
-                setViewMode('detail'); 
+            .then(() => {
+                alert("수정되었습니다.");
+                setSelectedPost({ ...selectedPost, ...postForm });
+                setViewMode('detail');
             })
             .catch(err => alert("수정 실패: " + (err.response?.data || err.message)));
     };
@@ -127,8 +127,8 @@ const CommunityPostDetail = () => {
     const handleDeletePost = (id) => {
         if (!window.confirm("삭제하시겠습니까?")) return;
         axios.delete(`/api/community/posts/${id}/delete`, { withCredentials: true })
-            .then(() => { 
-                alert("삭제되었습니다."); 
+            .then(() => {
+                alert("삭제되었습니다.");
                 navigate('/student/community');
             })
             .catch(err => alert("삭제 실패: " + (err.response?.data || err.message)));
@@ -141,10 +141,10 @@ const CommunityPostDetail = () => {
         }
         if (!commentContent) return alert("내용을 입력하세요.");
         axios.post(`/api/community/posts/${selectedPost.id}/comments`, { content: commentContent }, { withCredentials: true })
-            .then(() => { 
-                setCommentContent(''); 
+            .then(() => {
+                setCommentContent('');
                 setCurrentCommentPage(1); // 새 댓글 작성 후 첫 페이지로 이동
-                fetchPostDetail(selectedPost.id); 
+                fetchPostDetail(selectedPost.id);
             })
             .catch(err => alert("댓글 등록 실패: " + err.response?.data));
     };
@@ -166,7 +166,7 @@ const CommunityPostDetail = () => {
         return (
             <>
                 <Nav />
-                <div className='py-8'/>
+                <div className='py-8' />
                 <div className="container mx-auto px-4 py-8">
                     <div className="max-w-6xl mx-auto">
                         <div className="text-center py-8">
@@ -182,61 +182,68 @@ const CommunityPostDetail = () => {
     return (
         <>
             <Nav />
-            <div className='py-8'/>
-            <div className="container mx-auto px-4 py-8">
+            <div className='py-8' />
+            <div className="container mx-auto px-4 py-12 relative">
+                {/* Background Decoration */}
+                <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
+
                 <div className="max-w-6xl mx-auto">
-                    <h1 className="text-3xl font-bold text-center mb-8">커뮤니티 게시판</h1>
+                    <h1 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent inline-block">커뮤니티</h1>
 
                     {/* 수정 화면 */}
                     {viewMode === 'edit' && (
                         <div className="space-y-6">
                             <div className="flex items-center gap-2">
                                 <Button
-                                    variant="outline"
+                                    variant="ghost"
                                     size="sm"
                                     onClick={() => setViewMode('detail')}
-                                    className="flex items-center gap-2"
+                                    className="-ml-2 hover:bg-transparent hover:text-primary"
                                 >
-                                    <ArrowLeft className="h-4 w-4" />
-                                    상세보기로
+                                    <ArrowLeft className="h-4 w-4 mr-2" />
+                                    취소하고 돌아가기
                                 </Button>
-                                <h2 className="text-2xl font-bold">게시글 수정</h2>
                             </div>
 
-                            <Card>
+                            <Card className="border-border/50 bg-background/60 backdrop-blur-xl shadow-lg border-2">
+                                <CardHeader>
+                                    <CardTitle>게시글 수정</CardTitle>
+                                </CardHeader>
                                 <CardContent className="p-6 space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="title">제목</Label>
+                                        <Label htmlFor="title" className="text-base font-semibold">제목</Label>
                                         <Input
                                             id="title"
                                             placeholder="제목을 입력하세요"
                                             value={postForm.title}
                                             onChange={e => setPostForm({ ...postForm, title: e.target.value })}
+                                            className="h-12 text-lg font-medium bg-background/50"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="content">내용</Label>
+                                        <Label htmlFor="content" className="text-base font-semibold">내용</Label>
                                         <Textarea
                                             id="content"
                                             placeholder="내용을 입력하세요"
                                             value={postForm.content}
                                             onChange={e => setPostForm({ ...postForm, content: e.target.value })}
-                                            className="min-h-[200px]"
+                                            className="min-h-[400px] text-base leading-relaxed bg-background/50 resize-none p-4"
                                         />
                                     </div>
-                                    <div className="flex justify-center gap-3 pt-4">
-                                        <Button
-                                            onClick={handleUpdatePost}
-                                            className="flex items-center gap-2"
-                                        >
-                                            <Send className="h-4 w-4" />
-                                            수정 완료
-                                        </Button>
+                                    <div className="flex justify-end gap-3 pt-4">
                                         <Button
                                             variant="outline"
                                             onClick={() => setViewMode('detail')}
+                                            className="w-24"
                                         >
                                             취소
+                                        </Button>
+                                        <Button
+                                            onClick={handleUpdatePost}
+                                            className="w-32 shadow-lg"
+                                        >
+                                            <Send className="h-4 w-4 mr-2" />
+                                            수정 완료
                                         </Button>
                                     </div>
                                 </CardContent>
@@ -248,164 +255,177 @@ const CommunityPostDetail = () => {
                     {viewMode === 'detail' && (
                         <div className="space-y-6">
                             <Button
-                                variant="outline"
+                                variant="ghost"
                                 onClick={() => {
                                     navigate('/student/community');
                                 }}
-                                className="flex items-center gap-2"
+                                className="flex items-center gap-2 -ml-2 text-muted-foreground hover:text-foreground"
                             >
                                 <ArrowLeft className="h-4 w-4" />
-                                목록으로
+                                목록으로 돌아가기
                             </Button>
 
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-2xl">{selectedPost.title}
-                                        {isNewPost(selectedPost.createdAt) && (
-                                            <span className="inline-flex items-center justify-center w-3.5 h-3.5 ml-1 text-[10px] font-bold leading-none text-white bg-red-400 rounded-full">
-                                                N
-                                            </span>
-                                        )}
-                                    </CardTitle>
-                                    <div className="flex items-center gap-4 text-muted-foreground">
-                                        <div className="flex items-center gap-1">
-                                            <User className="h-4 w-4" />
-                                            {selectedPost.authorName}
+                            <Card className="border-border/50 bg-background/60 backdrop-blur-xl shadow-lg overflow-hidden">
+                                <CardHeader className="bg-muted/30 border-b border-border/50 pb-6">
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="outline" className="bg-background/50 backdrop-blur-sm">자유게시판</Badge>
+                                            {isNewPost(selectedPost.createdAt) && (
+                                                <Badge className="bg-red-500 hover:bg-red-600 border-none">NEW</Badge>
+                                            )}
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <Calendar className="h-4 w-4" />
-                                            {new Date(selectedPost.createdAt).toLocaleString()}
+                                        <CardTitle className="text-3xl font-bold leading-tight">{selectedPost.title}</CardTitle>
+                                        <div className="flex items-center justify-between text-sm text-muted-foreground pt-2">
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border border-primary/20">
+                                                        {selectedPost.authorName.charAt(0)}
+                                                    </div>
+                                                    <span className="font-medium text-foreground">{selectedPost.authorName}</span>
+                                                </div>
+                                                <Separator orientation="vertical" className="h-4" />
+                                                <div className="flex items-center gap-1.5">
+                                                    <Calendar className="h-3.5 w-3.5" />
+                                                    {new Date(selectedPost.createdAt).toLocaleString()}
+                                                </div>
+                                            </div>
+
+                                            {/* 게시글 수정/삭제 권한 */}
+                                            {(canEdit(selectedPost.authorLoginId, selectedPost.authorName) || canDelete(selectedPost.authorLoginId, selectedPost.authorName)) && (
+                                                <div className="flex gap-2">
+                                                    {canEdit(selectedPost.authorLoginId, selectedPost.authorName) && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setPostForm({ title: selectedPost.title, content: selectedPost.content });
+                                                                setViewMode('edit');
+                                                            }}
+                                                            className="h-8 shadow-sm hover:bg-background"
+                                                        >
+                                                            <Edit className="h-3.5 w-3.5 mr-1" />
+                                                            수정
+                                                        </Button>
+                                                    )}
+                                                    {canDelete(selectedPost.authorLoginId, selectedPost.authorName) && (
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() => handleDeletePost(selectedPost.id)}
+                                                            className="h-8 shadow-sm"
+                                                        >
+                                                            <Trash2 className="h-3.5 w-3.5 mr-1" />
+                                                            삭제
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </CardHeader>
-                                <Separator />
-                                <CardContent className="pt-6">
-                                    <div className="min-h-[200px] whitespace-pre-wrap text-foreground leading-relaxed">
+                                <CardContent className="p-8 min-h-[300px]">
+                                    <div className="whitespace-pre-wrap text-foreground leading-relaxed text-lg">
                                         {selectedPost.content}
                                     </div>
-
-                                    {/* 게시글 수정/삭제 권한 */}
-                                    {(canEdit(selectedPost.authorLoginId, selectedPost.authorName) || canDelete(selectedPost.authorLoginId, selectedPost.authorName)) && (
-                                        <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
-                                            {canEdit(selectedPost.authorLoginId, selectedPost.authorName) && (
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        setPostForm({ title: selectedPost.title, content: selectedPost.content });
-                                                        setViewMode('edit');
-                                                    }}
-                                                    className="flex items-center gap-2"
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                    수정
-                                                </Button>
-                                            )}
-                                            {canDelete(selectedPost.authorLoginId, selectedPost.authorName) && (
-                                                <Button
-                                                    variant="destructive"
-                                                    onClick={() => handleDeletePost(selectedPost.id)}
-                                                    className="flex items-center gap-2"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                    삭제
-                                                </Button>
-                                            )}
-                                        </div>
-                                    )}
                                 </CardContent>
                             </Card>
 
                             {/* 댓글 섹션 */}
-                            <Card>
-                                <CardHeader>
+                            <Card className="border-border/50 bg-background/60 backdrop-blur-xl shadow-lg mt-8">
+                                <CardHeader className="border-b border-border/50 pb-4">
                                     <div className="flex items-center justify-between">
-                                        <CardTitle className="flex items-center gap-2">
-                                            <MessageCircle className="h-5 w-5" />
-                                            댓글 ({selectedPost.comments?.length || 0})
+                                        <CardTitle className="flex items-center gap-2 text-xl">
+                                            <MessageCircle className="h-5 w-5 text-primary" />
+                                            댓글 <span className="text-primary">{selectedPost.comments?.length || 0}</span>
                                         </CardTitle>
                                         {currentUser && currentUser.role !== 'ADMIN' && selectedPost.comments && selectedPost.comments.length > 0 && (
                                             <Button
-                                                variant={myCommentsOnly ? "default" : "outline"}
+                                                variant={myCommentsOnly ? "default" : "ghost"}
                                                 size="sm"
                                                 onClick={() => {
                                                     setMyCommentsOnly(!myCommentsOnly);
                                                     setCurrentCommentPage(1); // 필터 변경 시 첫 페이지로 이동
                                                 }}
-                                                className="flex items-center gap-1"
+                                                className="h-8 text-xs"
                                             >
-                                                <User className="h-3 w-3" />
+                                                <User className="h-3 w-3 mr-1" />
                                                 {myCommentsOnly ? '전체 댓글 보기' : '내가 쓴 댓글 보기'}
                                             </Button>
                                         )}
                                     </div>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
+                                <CardContent className="p-0">
                                     {/* 댓글 목록 */}
-                                    {selectedPost.comments && selectedPost.comments.length > 0 ? (
-                                        <div className="space-y-4">
-                                            {(() => {
-                                                // 댓글 필터링 및 페이징 로직
-                                                let comments = selectedPost.comments
-                                                    .slice() // 원본 state 보호 (중요)
-                                                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // 최신순
-                                                
-                                                // 내가 쓴 댓글 필터링
-                                                if (myCommentsOnly && currentUser) {
-                                                    comments = comments.filter(comment => 
-                                                        comment.authorName === currentUser.name
-                                                    );
-                                                }
-                                                
-                                                const indexOfLastComment = currentCommentPage * commentsPerPage;
-                                                const indexOfFirstComment = indexOfLastComment - commentsPerPage;
-                                                const currentComments = comments.slice(indexOfFirstComment, indexOfLastComment);
-                                                const totalCommentPages = Math.ceil(comments.length / commentsPerPage);
-                                                
-                                                return (
-                                                    <>
-                                                        {currentComments.map(comment => (
-                                                            <div key={comment.id} className="border-b pb-4 last:border-b-0">
-                                                                {editCommentId === comment.id ? (
-                                                                    <div className="space-y-3">
-                                                                        <Textarea
-                                                                            value={editCommentContent}
-                                                                            onChange={e => setEditCommentContent(e.target.value)}
-                                                                            className="min-h-[80px]"
-                                                                        />
-                                                                        <div className="flex gap-2">
-                                                                            <Button
-                                                                                size="sm"
-                                                                                onClick={() => handleUpdateComment(comment.id)}
-                                                                            >
-                                                                                저장
-                                                                            </Button>
-                                                                            <Button
-                                                                                size="sm"
-                                                                                variant="outline"
-                                                                                onClick={() => setEditCommentId(null)}
-                                                                            >
-                                                                                취소
-                                                                            </Button>
-                                                                        </div>
-                                                                    </div>
-                                                                ) : (
-                                                                    <div>
-                                                                        <div className="flex items-center justify-between mb-2">
-                                                                            <div className="flex items-center gap-2">
-                                                                                <User className="h-4 w-4" />
-                                                                                <span className="font-medium">{comment.authorName}</span>
-                                                                                {isNewComment(comment.createdAt) && (
-                                                                                    <span className="inline-flex items-center justify-center w-3.5 h-3.5 ml-1 text-[10px] font-bold leading-none text-white bg-red-400 rounded-full">
-                                                                                        N
-                                                                                    </span>
-                                                                                )}
+                                    <div className="divide-y divide-border/50">
+                                        {selectedPost.comments && selectedPost.comments.length > 0 ? (
+                                            <>
+                                                {(() => {
+                                                    // 댓글 필터링 및 페이징 로직
+                                                    let comments = selectedPost.comments
+                                                        .slice() // 원본 state 보호 (중요)
+                                                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // 최신순
+
+                                                    // 내가 쓴 댓글 필터링
+                                                    if (myCommentsOnly && currentUser) {
+                                                        comments = comments.filter(comment =>
+                                                            comment.authorName === currentUser.name
+                                                        );
+                                                    }
+
+                                                    const indexOfLastComment = currentCommentPage * commentsPerPage;
+                                                    const indexOfFirstComment = indexOfLastComment - commentsPerPage;
+                                                    const currentComments = comments.slice(indexOfFirstComment, indexOfLastComment);
+                                                    const totalCommentPages = Math.ceil(comments.length / commentsPerPage);
+
+                                                    return (
+                                                        <>
+                                                            {currentComments.map(comment => (
+                                                                <div key={comment.id} className="p-6 hover:bg-muted/10 transition-colors">
+                                                                    {editCommentId === comment.id ? (
+                                                                        <div className="space-y-3 bg-muted/30 p-4 rounded-lg border border-border/50">
+                                                                            <Label className="text-xs font-semibold text-primary">댓글 수정 중</Label>
+                                                                            <Textarea
+                                                                                value={editCommentContent}
+                                                                                onChange={e => setEditCommentContent(e.target.value)}
+                                                                                className="min-h-[100px] bg-background"
+                                                                            />
+                                                                            <div className="flex justify-end gap-2">
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    variant="outline"
+                                                                                    onClick={() => setEditCommentId(null)}
+                                                                                >
+                                                                                    취소
+                                                                                </Button>
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    onClick={() => handleUpdateComment(comment.id)}
+                                                                                >
+                                                                                    저장
+                                                                                </Button>
                                                                             </div>
-                                                                            <div className="flex items-center gap-2">
-                                                                                <span className="text-sm text-muted-foreground">
-                                                                                    {new Date(comment.createdAt).toLocaleString()}
-                                                                                </span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="space-y-2">
+                                                                            <div className="flex items-center justify-between">
+                                                                                <div className="flex items-center gap-3">
+                                                                                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-secondary-foreground">
+                                                                                        {comment.authorName.charAt(0)}
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <div className="flex items-center gap-2">
+                                                                                            <span className="font-semibold text-sm">{comment.authorName}</span>
+                                                                                            {isNewComment(comment.createdAt) && (
+                                                                                                <Badge className="h-4 px-1 text-[9px] bg-red-500 border-none">N</Badge>
+                                                                                            )}
+                                                                                        </div>
+                                                                                        <span className="text-xs text-muted-foreground block mt-0.5">
+                                                                                            {new Date(comment.createdAt).toLocaleString()}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                </div>
                                                                                 {(canEdit(comment.authorLoginId, comment.authorName) || canDelete(comment.authorLoginId, comment.authorName)) && (
-                                                                                    <div className="flex gap-1">
+                                                                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                                                         {canEdit(comment.authorLoginId, comment.authorName) && (
                                                                                             <Button
                                                                                                 size="sm"
@@ -414,9 +434,9 @@ const CommunityPostDetail = () => {
                                                                                                     setEditCommentId(comment.id);
                                                                                                     setEditCommentContent(comment.content);
                                                                                                 }}
-                                                                                                className="h-6 px-2 text-xs"
+                                                                                                className="h-7 w-7 p-0"
                                                                                             >
-                                                                                                <Edit className="h-3 w-3" />
+                                                                                                <Edit className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
                                                                                             </Button>
                                                                                         )}
                                                                                         {canDelete(comment.authorLoginId, comment.authorName) && (
@@ -424,104 +444,106 @@ const CommunityPostDetail = () => {
                                                                                                 size="sm"
                                                                                                 variant="ghost"
                                                                                                 onClick={() => handleDeleteComment(comment.id)}
-                                                                                                className="h-6 px-2 text-xs text-destructive"
+                                                                                                className="h-7 w-7 p-0 hover:bg-destructive/10 hover:text-destructive"
                                                                                             >
-                                                                                                <Trash2 className="h-3 w-3" />
+                                                                                                <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
                                                                                             </Button>
                                                                                         )}
                                                                                     </div>
                                                                                 )}
                                                                             </div>
+                                                                            <p className="text-sm pl-11 leading-relaxed whitespace-pre-wrap">{comment.content}</p>
                                                                         </div>
-                                                                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{comment.content}</p>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                        
-                                                        {/* 댓글 페이징 */}
-                                                        {totalCommentPages > 1 && (
-                                                            <div className="flex justify-center items-center gap-2 pt-4">
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    onClick={() => setCurrentCommentPage(currentCommentPage - 1)}
-                                                                    disabled={currentCommentPage === 1}
-                                                                    className="flex items-center gap-1"
-                                                                >
-                                                                    <ChevronLeft className="h-4 w-4" />
-                                                                    이전
-                                                                </Button>
-                                                                
-                                                                <div className="flex gap-1">
-                                                                    {Array.from({ length: totalCommentPages }, (_, i) => i + 1).map(page => (
-                                                                        <Button
-                                                                            key={page}
-                                                                            variant={currentCommentPage === page ? "default" : "outline"}
-                                                                            size="sm"
-                                                                            onClick={() => setCurrentCommentPage(page)}
-                                                                            className="w-8"
-                                                                        >
-                                                                            {page}
-                                                                        </Button>
-                                                                    ))}
+                                                                    )}
                                                                 </div>
-                                                                
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    onClick={() => setCurrentCommentPage(currentCommentPage + 1)}
-                                                                    disabled={currentCommentPage === totalCommentPages}
-                                                                    className="flex items-center gap-1"
-                                                                >
-                                                                    다음
-                                                                    <ChevronRight className="h-4 w-4" />
-                                                                </Button>
-                                                            </div>
-                                                        )}
-                                                    </>
-                                                );
-                                            })()}
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-8 text-muted-foreground">
-                                            아직 댓글이 없습니다. 첫 댓글을 남겨보세요!
-                                        </div>
-                                    )}
+                                                            ))}
 
-                                    <Separator className="my-4" />
+                                                            {/* 댓글 페이징 */}
+                                                            {totalCommentPages > 1 && (
+                                                                <div className="flex justify-center items-center gap-2 p-4 border-t border-border/50">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        onClick={() => setCurrentCommentPage(currentCommentPage - 1)}
+                                                                        disabled={currentCommentPage === 1}
+                                                                        className="h-8 w-8"
+                                                                    >
+                                                                        <ChevronLeft className="h-4 w-4" />
+                                                                    </Button>
+
+                                                                    <div className="flex gap-1">
+                                                                        {Array.from({ length: totalCommentPages }, (_, i) => i + 1).map(page => (
+                                                                            <Button
+                                                                                key={page}
+                                                                                variant={currentCommentPage === page ? "default" : "ghost"}
+                                                                                size="sm"
+                                                                                onClick={() => setCurrentCommentPage(page)}
+                                                                                className={`w-8 h-8 p-0 text-xs ${currentCommentPage === page ? 'shadow-sm' : ''}`}
+                                                                            >
+                                                                                {page}
+                                                                            </Button>
+                                                                        ))}
+                                                                    </div>
+
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        onClick={() => setCurrentCommentPage(currentCommentPage + 1)}
+                                                                        disabled={currentCommentPage === totalCommentPages}
+                                                                        className="h-8 w-8"
+                                                                    >
+                                                                        <ChevronRight className="h-4 w-4" />
+                                                                    </Button>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    );
+                                                })()}
+                                            </>
+                                        ) : (
+                                            <div className="text-center py-12 text-muted-foreground bg-muted/5">
+                                                <p className="mb-2">아직 댓글이 없습니다.</p>
+                                                <p className="text-sm">가장 먼저 댓글을 남겨보세요!</p>
+                                            </div>
+                                        )}
+                                    </div>
 
                                     {/* 댓글 작성 */}
-                                    {currentUser ? (
-                                        <div className="flex gap-2">
-                                            <Input
-                                                placeholder="댓글을 입력하세요..."
-                                                value={commentContent}
-                                                onChange={e => setCommentContent(e.target.value)}
-                                                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleCreateComment())}
-                                                className="flex-1"
-                                            />
-                                            <Button
-                                                onClick={handleCreateComment}
-                                                disabled={!commentContent.trim()}
-                                                className="flex items-center gap-2"
-                                            >
-                                                <Send className="h-4 w-4" />
-                                                등록
-                                            </Button>
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-4 px-6 bg-muted/30 rounded-lg">
-                                            <p className="text-muted-foreground mb-2">댓글을 작성하려면 로그인이 필요합니다.</p>
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm"
-                                                onClick={() => navigate('/auth/login')}
-                                            >
-                                                로그인
-                                            </Button>
-                                        </div>
-                                    )}
+                                    <div className="p-6 bg-muted/30 border-t border-border/50">
+                                        {currentUser ? (
+                                            <div className="flex flex-col gap-3">
+                                                <Label className="text-sm font-semibold pl-1">새 댓글 작성</Label>
+                                                <div className="relative">
+                                                    <Textarea
+                                                        placeholder="따뜻한 댓글을 남겨주세요..."
+                                                        value={commentContent}
+                                                        onChange={e => setCommentContent(e.target.value)}
+                                                        className="min-h-[80px] bg-background pr-12 resize-none"
+                                                        onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleCreateComment())}
+                                                    />
+                                                    <Button
+                                                        onClick={handleCreateComment}
+                                                        disabled={!commentContent.trim()}
+                                                        size="icon"
+                                                        className="absolute bottom-3 right-3 h-8 w-8 shadow-sm"
+                                                    >
+                                                        <Send className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-6 px-6 bg-background/50 rounded-xl border border-dashed border-border/50">
+                                                <p className="text-muted-foreground mb-4 text-sm">댓글을 작성하려면 로그인이 필요합니다.</p>
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => navigate('/auth/login')}
+                                                    className="shadow-sm hover:bg-primary/5 hover:text-primary hover:border-primary/20"
+                                                >
+                                                    로그인하러 가기
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </CardContent>
                             </Card>
                         </div>
