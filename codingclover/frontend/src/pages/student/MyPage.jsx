@@ -84,15 +84,16 @@ function MyPage() {
 
       if (response.ok) {
         const balanceData = await response.json();
+        console.log('마이페이지 포인트 조회 결과:', balanceData);
         const balance = balanceData.balance || balanceData.amount || 0;
         setPoints(balance);
       } else {
-        console.warn('포인트 조회 실패, 기본값 사용');
-        setPoints(150000); // 샘플 데이터
+        console.warn('포인트 조회 실패');
+        setPoints(0); // API 실패 시 0으로 설정
       }
     } catch (error) {
       console.error('포인트 조회 실패:', error);
-      setPoints(150000); // 샘플 데이터
+      setPoints(0); // 오류 시 0으로 설정
     } finally {
       setPointsLoading(false);
     }

@@ -157,13 +157,20 @@ public class CourseService {
 
         // 4. 수강료 확인 및 포인트 차감
         int price = course.getPrice();
+        System.out.println("수강료: " + price + "원, 강좌: " + course.getTitle());
+        
         if (price > 0) {
-            // 포인트 차감 및 결제 리스트 기록 (PaymentService 사용)
-            // orderId에 COURSE_{courseId} 형식으로 저장하여 환불 시 식별
-            paymentService.usePoints(user.getUserId(), price, "COURSE_" + courseId);
-
-            // 포인트 사용 이력 기록 (WalletHistory는 별도 유지 or PaymentService 내부로 이동 고려 가능하나 일단 유지)
-            walletHistoryService.recordUse(user.getUserId(), price, null);
+            try {
+                // 포인트 차감 및 결제 리스트 기록 (PaymentService 사용)
+                // orderId에 COURSE_{courseId} 형식으로 저장하여 환불 시 식별
+                paymentService.usePoints(user.getUserId(), price, "COURSE_" + courseId);
+                System.out.println("수강료 결제 완료: " + price + "원");
+                // walletHistoryService.recordUse는 paymentService.usePoints 내부에서 처리되므로 중복 호출 제거
+            } catch (Exception e) {
+                String errorMsg = "수강료 결제 실패: " + e.getMessage();
+                System.out.println(errorMsg);
+                throw new RuntimeException(errorMsg);
+            }
         }
 
         // 5. 새로운 Enrollment(수강) 엔티티 생성 및 설정

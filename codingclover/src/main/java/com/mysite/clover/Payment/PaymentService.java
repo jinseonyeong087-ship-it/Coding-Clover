@@ -118,14 +118,29 @@ public class PaymentService {
      */
     @Transactional
     public Payment usePoints(Long userId, Integer amount, String purpose) {
-
+        
         // 1. 사용 가능한 포인트 확인
         Integer currentPoints = getUserPoints(userId);
+        System.out.println("사용자 ID: " + userId + ", 현재 포인트: " + currentPoints + ", 사용 요청: " + amount);
+        
         if (currentPoints < amount) {
-            throw new RuntimeException("Insufficient points. Current: " + currentPoints + ", Required: " + amount);
+            String errorMsg = "포인트가 부족합니다. 현재 잔액: " + currentPoints + "P, 필요 금액: " + amount + "P";
+            System.out.println(errorMsg);
+            throw new RuntimeException(errorMsg);
         }
 
-        // 2. 포인트 사용 기록 생성
+        // 2. 실제 포인트 잔액 차감
+        try {
+            System.out.println("포인트 차감 시작: " + amount + "P");
+            walletIntegrationService.usePoints(userId, amount, null);
+            System.out.println("포인트 차감 성공");
+        } catch (Exception e) {
+            String errorMsg = "포인트 차감 실패: " + e.getMessage();
+            System.out.println(errorMsg);
+            throw new RuntimeException(errorMsg);
+        }
+
+        // 3. 포인트 사용 기록 생성
         Payment payment = new Payment();
         payment.setUserId(userId);
         payment.setType(PaymentType.USE);
@@ -136,7 +151,10 @@ public class PaymentService {
         String orderPrefix = (purpose != null && !purpose.isEmpty()) ? purpose : "USE";
         payment.setOrderId(orderPrefix + "_" + System.currentTimeMillis());
 
-        return paymentRepository.save(payment);
+        Payment savedPayment = paymentRepository.save(payment);
+        System.out.println("포인트 사용 기록 저장 완료. Payment ID: " + savedPayment.getPaymentId());
+        
+        return savedPayment;
     }
 
     /**
@@ -300,25 +318,15 @@ public class PaymentService {
     }
 
     /**
-     * 사용자의 현재 포인트 계산
+     * 사용자의 현재 포인트 계산 (UserWallet에서 실제 잔액 조회)
      */
     public Integer getUserPoints(Long userId) {
-        List<Payment> payments = paymentRepository.findByUserIdAndStatus(userId, PaymentStatus.PAID);
-
-        return payments.stream()
-                .mapToInt(payment -> {
-                    switch (payment.getType()) {
-                        case CHARGE:
-                            return payment.getAmount(); // 충전: +
-                        case USE:
-                            return -payment.getAmount(); // 사용: -
-                        case REFUND:
-                            return payment.getAmount(); // 환불: +
-                        default:
-                            return 0;
-                    }
-                })
-                .sum();
+        try {
+            return walletIntegrationService.getCurrentBalance(userId);
+        } catch (Exception e) {
+            // UserWallet이 없는 경우 0 반환
+            return 0;
+        }
     }
 
     /**

@@ -50,7 +50,7 @@ function PointsHistory() {
             case 'USE':
                 return '수강 신청';
             case 'REFUND':
-                return '환불 처리';
+                return '환불 완료';
             case 'ADMIN':
                 return '관리자 조정';
             default:
@@ -125,8 +125,39 @@ function PointsHistory() {
                 console.log('잔액 데이터:', balanceData);
                 setPoints(balanceData.balance || balanceData.amount || 0);
             } else {
-                console.warn('잔액 조회 실패, 기본값 사용');
-                setPoints(150000); // 기본값
+                console.warn('잔액 조회 실패');
+                setPoints(0); // API 실패 시 0으로 설정
+            }
+
+            // 환불 상태 확인 로직
+            let paymentData = [];
+            if (paymentResponse.ok) {
+                paymentData = await paymentResponse.json();
+                console.log('결제 데이터:', paymentData);
+                const payments = Array.isArray(paymentData) ? paymentData : [];
+
+                // 가장 최근의 환불 관련 결제 내역 찾기
+                const refundPayments = payments.filter(p => p.type === 'REFUND');
+                console.log('환불 결제 내역:', refundPayments);
+                
+                if (refundPayments.length > 0) {
+                    // 최신순 정렬 (ID 기준)
+                    refundPayments.sort((a, b) => b.paymentId - a.paymentId);
+                    const latestRefund = refundPayments[0];
+                    console.log('최근 환불 내역:', latestRefund);
+
+                    if (latestRefund.status === 'REFUND_REQUEST') {
+                        setRefundStatus('REQUESTED');
+                    } else {
+                        // 환불 완료, 거절 등 모든 경우에 다시 요청 가능하도록 설정
+                        setRefundStatus(null);
+                    }
+                } else {
+                    setRefundStatus(null);
+                }
+            } else {
+                console.warn('결제 내역 조회 실패, 환불 상태 초기화');
+                setRefundStatus(null); // API 실패 시 환불 상태 초기화
             }
 
             if (historyResponse.ok) {
@@ -135,106 +166,64 @@ function PointsHistory() {
 
                 // 백엔드에서 배열로 반환
                 const historyArr = Array.isArray(historyData) ? historyData : [];
+                
+                // 결제 내역을 기준으로 환불 여부 판단하기 위한 Map 생성
+                const refundPaymentMap = new Map();
+                if (Array.isArray(paymentData)) {
+                    paymentData.forEach(payment => {
+                        if (payment.type === 'REFUND') {
+                            refundPaymentMap.set(payment.paymentId, payment);
+                        }
+                    });
+                }
 
                 // 월렛히스토리 엔티티 필드에 맞게 매핑
-                const mappedHistory = historyArr.map(item => ({
-                    id: item.walletHistoryId,
-                    type: item.reason, // WalletChangeReason: CHARGE, USE, REFUND, ADMIN
-                    amount: item.changeAmount, // 변경된 금액 (양수/음수)
-                    description: getTransactionDescription(item.reason, item.paymentId),
-                    date: item.createdAt,
-                    orderId: item.paymentId ? `ORDER-${item.paymentId}` : `TXN-${item.walletHistoryId}`,
-                    status: 'COMPLETED'
-                }));
+                const mappedHistory = historyArr.map(item => {
+                    console.log('원본 데이터:', item); // 디버깅용
+                    
+                    // 타입 결정 로직 개선 - 결제 내역을 참조
+                    let type = item.reason;
+                    
+                    // paymentId가 있고 해당 결제가 환불 타입인지 확인
+                    if (item.paymentId && refundPaymentMap.has(item.paymentId)) {
+                        type = 'REFUND';
+                    } else if (item.reason === 'REFUND') {
+                        type = 'REFUND';
+                    } else if (item.reason === 'CHARGE') {
+                        type = 'CHARGE';
+                    } else if (item.reason === 'USE') {
+                        type = 'USE';
+                    }
+                    
+                    // 최종 설명 생성
+                    const description = getTransactionDescription(type, item.paymentId);
+
+                    console.log('매핑된 데이터:', { type, amount: item.changeAmount, description }); // 디버깅용
+
+                    return {
+                        id: item.walletHistoryId,
+                        type: type,
+                        amount: item.changeAmount,
+                        description: description,
+                        date: item.createdAt,
+                        orderId: item.paymentId ? `ORDER-${item.paymentId}` : `TXN-${item.walletHistoryId}`,
+                        status: 'COMPLETED'
+                    };
+                });
 
                 setHistory(mappedHistory);
             } else {
-                console.warn('히스토리 조회 실패, 샘플 데이터 사용');
-                // 샘플 데이터 사용
-                setHistory([
-                    {
-                        id: 1,
-                        type: 'CHARGE',
-                        amount: 100000,
-                        description: '포인트 충전',
-                        date: '2024-01-15T14:30:00',
-                        orderId: 'ORDER-001',
-                        status: 'COMPLETED'
-                    },
-                    {
-                        id: 2,
-                        type: 'CHARGE',
-                        amount: 50000,
-                        description: '포인트 충전',
-                        date: '2024-01-20T16:45:00',
-                        orderId: 'ORDER-002',
-                        status: 'COMPLETED'
-                    },
-                    {
-                        id: 3,
-                        type: 'USE',
-                        amount: -30000,
-                        description: '수강 신청',
-                        date: '2024-01-25T10:00:00',
-                        orderId: 'USE-001',
-                        status: 'COMPLETED'
-                    }
-                ]);
-            }
-
-            // 환불 상태 확인 로직
-            if (paymentResponse.ok) {
-                const paymentData = await paymentResponse.json();
-                const payments = Array.isArray(paymentData) ? paymentData : [];
-
-                // 가장 최근의 환불 관련 결제 내역 찾기
-                const refundPayments = payments.filter(p => p.type === 'REFUND');
-                if (refundPayments.length > 0) {
-                    // 최신순 정렬 (ID 기준)
-                    refundPayments.sort((a, b) => b.paymentId - a.paymentId);
-                    const latestRefund = refundPayments[0];
-
-                    if (latestRefund.status === 'REFUND_REQUEST') {
-                        setRefundStatus('REQUESTED');
-                    } else if (latestRefund.status === 'REFUNDED') {
-                        setRefundStatus('COMPLETED');
-                    } else if (latestRefund.status === 'REJECTED') {
-                        setRefundStatus('REJECTED'); // 거절됨은 다시 요청 가능하게 할 수도 있음
-                    } else {
-                        setRefundStatus(null);
-                    }
-                } else {
-                    setRefundStatus(null);
-                }
+                console.warn('히스토리 조회 실패');
+                setHistory([]); // API 실패 시 빈 배열로 설정
             }
 
 
         } catch (error) {
             console.error('데이터 조회 실패:', error);
             setError('데이터를 불러오는 중 오류가 발생했습니다.');
-
-            // 오류 시 샘플 데이터
-            setPoints(150000);
-            setHistory([
-                {
-                    id: 1,
-                    type: 'CHARGE',
-                    amount: 100000,
-                    description: '포인트 충전',
-                    date: '2024-01-15T14:30:00',
-                    orderId: 'ORDER-001',
-                    status: 'COMPLETED'
-                },
-                {
-                    id: 2,
-                    type: 'USE',
-                    amount: -30000,
-                    description: '수강 신청',
-                    date: '2024-01-25T10:00:00',
-                    orderId: 'USE-001',
-                    status: 'COMPLETED'
-                }
-            ]);
+            setRefundStatus(null); // 오류 시 환불 상태도 초기화
+            setPoints(0); // 오류 시 포인트 0으로 설정
+            setHistory([]); // 오류 시 빈 배열로 설정
         } finally {
             setLoading(false);
         }
@@ -273,6 +262,8 @@ function PointsHistory() {
 
     // 버튼 렌더링 헬퍼
     const renderRefundButton = () => {
+        console.log('현재 포인트:', points, '환불 상태:', refundStatus);
+        
         if (refundStatus === 'REQUESTED') {
             return (
                 <Button
@@ -281,30 +272,22 @@ function PointsHistory() {
                     className="text-orange-600 border-orange-300 bg-orange-50 cursor-not-allowed"
                     disabled={true}
                 >
-                    환불 요청 완료
-                </Button>
-            );
-        } else if (refundStatus === 'COMPLETED') {
-            return (
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-green-600 border-green-300 bg-green-50 cursor-not-allowed"
-                    disabled={true}
-                >
-                    환불 완료
+                    환불 대기중
                 </Button>
             );
         } else {
+            // 환불 완료 상태 제거 - 완료되면 다시 환불 요청 가능
+            // 포인트가 0보다 클 때만 활성화
+            const isDisabled = points <= 0;
             return (
                 <Button
                     onClick={requestFullRefund}
                     variant="outline"
                     size="sm"
-                    className="text-red-600 border-red-300 hover:bg-red-50"
-                    disabled={points <= 0}
+                    className={isDisabled ? "text-gray-400 border-gray-300 bg-gray-50 cursor-not-allowed" : "text-red-600 border-red-300 hover:bg-red-50"}
+                    disabled={isDisabled}
                 >
-                    환불요청
+                    환불 요청
                 </Button>
             );
         }
