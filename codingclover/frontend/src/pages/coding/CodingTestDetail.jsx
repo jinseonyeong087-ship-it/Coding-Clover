@@ -267,26 +267,21 @@ const CodingTestDetail = () => {
   }
 
   return (
-    <div className="h-screen w-full flex flex-col bg-background font-sans text-foreground overflow-hidden">
-      <Toaster position="top-right" richColors theme="system" />
+    <div className="h-screen w-full flex flex-col bg-white font-sans text-gray-900">
+      <Toaster position="top-right" richColors />
       <Nav />
       {/* Nav fixed height compensation */}
       <div className="h-[70px] shrink-0"></div>
 
-      <main className="flex-1 flex overflow-hidden p-4 md:p-6 gap-4 relative">
-        {/* Background Gradients */}
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/5 via-background to-purple-500/5 -z-10" />
-
+      <main className="flex-1 flex overflow-hidden p-4 md:p-6 gap-6">
         {/* Left Sidebar: Problem List */}
-        <aside className="w-72 bg-background/60 backdrop-blur-xl rounded-2xl border border-border/50 flex flex-col overflow-hidden shrink-0 shadow-lg transition-all duration-300">
-          <div className="p-4 border-b border-border/50 bg-muted/20">
-            <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
-              <div className="p-1.5 bg-primary/10 rounded-md text-primary">
+        <aside className="w-72 bg-white rounded-2xl border border-gray-200 flex flex-col overflow-hidden shrink-0">
+          <div className="p-5 border-b border-gray-100">
+            <h3 className="font-bold text-sm text-gray-900 flex items-center gap-2">
+              <div className="p-1.5 bg-gray-100 rounded-md text-gray-900">
                 <ListTodo className="w-4 h-4" />
               </div>
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                문제 목록
-              </span>
+              문제 목록
             </h3>
           </div>
           <ScrollArea className="flex-1">
@@ -295,17 +290,17 @@ const CodingTestDetail = () => {
                 <button
                   key={task.problemId}
                   onClick={() => handleTaskSelect(task)}
-                  className={`w-full text-left px-4 py-3 rounded-xl text-xs font-medium transition-all duration-200 flex items-start gap-3 group border
+                  className={`w-full text-left px-4 py-3.5 rounded-xl text-sm transition-all duration-200 flex items-start gap-3 group border border-transparent
                                 ${selectedTask?.problemId === task.problemId
-                      ? 'bg-primary/10 text-primary border-primary/20 shadow-sm'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground border-transparent'}
+                      ? 'bg-gray-100 font-bold text-black border-gray-200'
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}
                             `}
                 >
-                  <div className={`mt-0.5 shrink-0 ${selectedTask?.problemId === task.problemId ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>
+                  <div className={`mt-0.5 ${selectedTask?.problemId === task.problemId ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>
                     <StatusIcon status={task.status || (task.passRate > 0 ? 'PASS' : null)} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="line-clamp-1 mb-1">
+                  <div className="flex-1">
+                    <div className="line-clamp-1">
                       {idx + 1}. {task.title}
                     </div>
                     {task.difficulty && <span className={`inline-block mt-1.5 px-2 py-0.5 rounded text-[10px] font-medium border ${task.difficulty === 'EASY' ? 'bg-gray-50 text-gray-600 border-gray-200' :
@@ -321,15 +316,15 @@ const CodingTestDetail = () => {
         </aside>
 
         {/* Center: Coding Workspace */}
-        <section className="flex-1 bg-background/80 backdrop-blur-sm rounded-2xl border border-border/50 overflow-hidden flex flex-col shadow-2xl relative">
+        <section className="flex-1 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col">
           {selectedTask ? (
             <>
               {/* Toolbar */}
-              <div className="h-16 border-b border-border/50 flex items-center justify-between px-6 bg-muted/10 shrink-0">
+              <div className="h-16 border-b border-gray-100 flex items-center justify-between px-6 bg-white shrink-0">
                 <div className="flex items-center gap-4">
                   {isEditing ? (
                     <input
-                      className="text-lg font-bold bg-transparent border-b-2 border-primary focus:outline-none text-foreground px-1"
+                      className="text-lg font-bold border-b-2 border-black focus:outline-none"
                       value={editForm.title}
                       onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
                     />
@@ -347,7 +342,7 @@ const CodingTestDetail = () => {
                     <select
                       value={editForm.difficulty}
                       onChange={(e) => setEditForm({ ...editForm, difficulty: e.target.value })}
-                      className="text-xs border rounded p-1 bg-background text-foreground"
+                      className="text-xs border rounded p-1"
                     >
                       <option value="EASY">초급</option>
                       <option value="MEDIUM">중급</option>
@@ -359,13 +354,13 @@ const CodingTestDetail = () => {
                 <div className="flex items-center gap-3">
                   {userRole === "ADMIN" && !isEditing && (
                     <>
-                      <Button size="sm" variant="outline" onClick={() => setShowSubmissions(!showSubmissions)} className="h-9 gap-2 text-muted-foreground hover:text-foreground">
-                        <History className="w-4 h-4" /> 기록
+                      <Button size="sm" variant="outline" onClick={() => setShowSubmissions(!showSubmissions)} className="h-9 gap-2 border-gray-300 text-gray-700 hover:bg-gray-50">
+                        <History className="w-4 h-4" /> 제출기록
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => { setIsEditing(true); }} className="h-9 text-gray-500 hover:text-black hover:bg-gray-50">
+                      <Button size="sm" variant="ghost" onClick={() => { setIsEditing(true); setShowSubmissions(false); }} className="h-9 text-gray-500 hover:text-black hover:bg-gray-50">
                         <Edit className="w-4 h-4" /> 수정
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={handleDelete} className="h-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10">
+                      <Button size="sm" variant="ghost" onClick={handleDelete} className="h-9 text-gray-500 hover:text-red-600 hover:bg-red-50">
                         <Trash2 className="w-4 h-4" /> 삭제
                       </Button>
                     </>
@@ -374,16 +369,17 @@ const CodingTestDetail = () => {
                   {isEditing ? (
                     <>
                       <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)}>취소</Button>
+                      {/* 관리자: 실행 버튼 (검증용) */}
                       <Button
                         variant="secondary"
                         size="sm"
                         onClick={handleRun}
                         disabled={isRunning}
-                        className="h-9 font-medium"
+                        className="bg-white hover:bg-gray-50 text-gray-700 h-9 px-4 font-medium rounded-lg border border-gray-300 shadow-sm"
                       >
-                        <Play className="w-4 h-4 mr-2" /> 실행
+                        <Play className="w-4 h-4 mr-2 fill-gray-700" /> 실행
                       </Button>
-                      <Button size="sm" onClick={handleUpdate} className="gap-2">
+                      <Button size="sm" onClick={handleUpdate} className="bg-black hover:bg-gray-800 text-white gap-2">
                         <Save className="w-4 h-4" /> 저장
                       </Button>
                     </>
@@ -391,13 +387,13 @@ const CodingTestDetail = () => {
                     <>
                       {/* 실행 버튼 (공통) */}
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={handleRun}
                         disabled={isRunning}
-                        className="h-9 px-4 font-medium border-border/50 hover:bg-muted/50 transition-all"
+                        className="bg-white hover:bg-gray-50 text-gray-700 h-9 px-4 font-medium rounded-lg border border-gray-300 shadow-sm"
                       >
-                        <Play className="w-4 h-4 mr-2 text-primary" /> 실행
+                        <Play className="w-4 h-4 mr-2 fill-gray-700" /> 실행
                       </Button>
                       {/* 학생: 제출 버튼 (관리자는 숨김) */}
                       {userRole !== "ADMIN" && (
@@ -431,15 +427,15 @@ const CodingTestDetail = () => {
                         <ScrollArea className="flex-1 px-8 py-8">
                           <div className="space-y-4">
                             {submissions.map((sub, idx) => (
-                              <div key={idx} className="flex items-center justify-between p-3 border border-border/50 rounded-lg hover:bg-muted/30 transition-colors">
+                              <div key={idx} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
                                 <div className="text-sm">
-                                  <div className="font-bold text-foreground">{sub.loginId || "User"}</div>
-                                  <div className="text-xs text-muted-foreground">{sub.submittedAt}</div>
+                                  <div className="font-bold text-gray-900">{sub.loginId || "User"}</div>
+                                  <div className="text-xs text-gray-500">{sub.submittedAt}</div>
                                 </div>
-                                <Badge variant={sub.status === "PASS" ? "default" : "destructive"} className="shadow-none">{sub.status}</Badge>
+                                <Badge variant={sub.status === "PASS" ? "default" : "destructive"} className={sub.status === 'PASS' ? 'bg-black hover:bg-gray-800' : ''}>{sub.status}</Badge>
                               </div>
                             ))}
-                            {submissions.length === 0 && <div className="text-center text-muted-foreground text-sm">기록이 없습니다.</div>}
+                            {submissions.length === 0 && <div className="text-center text-gray-400 text-sm">기록이 없습니다.</div>}
                           </div>
                         </ScrollArea>
                       </div>
@@ -500,27 +496,26 @@ const CodingTestDetail = () => {
                     )}
                   </Panel>
 
-                  <PanelResizeHandle className="w-[1px] bg-border hover:bg-primary transition-colors flex items-center justify-center z-10 group">
-                    <div className="w-1 h-8 bg-border/50 rounded-full group-hover:bg-primary transition-colors" />
+                  <PanelResizeHandle className="w-[1px] bg-gray-200 hover:bg-black transition-colors flex items-center justify-center z-10">
+                    <div className="w-1.5 h-16 bg-gray-200 rounded-full hover:bg-black transition-colors"></div>
                   </PanelResizeHandle>
 
                   {/* Right: Editor & Console */}
                   <Panel defaultSize={60} minSize={30}>
                     <PanelGroup direction="vertical">
-                      {/* Editor Section */}
                       <Panel defaultSize={65} minSize={20} className="flex flex-col">
-                        <div className="h-10 flex items-center justify-between px-4 bg-[#1e1e1e] border-b border-white/10">
-                          <div className="flex items-center gap-2 bg-white/10 border border-white/5 px-3 py-1 rounded-md text-gray-200">
-                            <Code2 className="w-3.5 h-3.5" />
-                            <span className="text-xs font-semibold">main.java</span>
+                        <div className="h-10 flex items-center justify-between px-4 bg-gray-50 border-b border-gray-100">
+                          <div className="flex items-center gap-2 bg-white border border-gray-200 px-2.5 py-1 rounded-md">
+                            <Code2 className="w-3.5 h-3.5 text-black" />
+                            <span className="text-xs font-semibold text-gray-700">main.java</span>
                           </div>
                         </div>
-                        <div className="flex-1 bg-[#1e1e1e] relative">
+                        <div className="flex-1">
                           <Editor
                             defaultLanguage="java"
-                            value={code}
+                            value={code} // baseCode
                             onChange={setCode}
-                            theme="vs-dark"
+                            theme="vs-light"
                             options={{
                               minimap: { enabled: false },
                               fontSize: 14,
@@ -528,48 +523,46 @@ const CodingTestDetail = () => {
                               lineNumbers: 'on',
                               automaticLayout: true,
                               padding: { top: 24, bottom: 24 },
-                              scrollBeyondLastLine: false,
-                              renderLineHighlight: "line",
                             }}
                           />
                         </div>
                       </Panel>
 
-                      <PanelResizeHandle className="h-[1px] bg-border hover:bg-primary transition-colors" />
+                      <PanelResizeHandle className="h-[1px] bg-gray-200" />
 
-                      {/* Console Section */}
-                      <Panel defaultSize={35} minSize={10} className="flex flex-col bg-slate-950 text-slate-300">
-                        <div className="h-10 border-b border-white/10 bg-slate-900/50 flex items-center px-4">
-                          <span className="text-xs font-bold text-slate-400 flex items-center gap-2">
-                            <Terminal className="w-3.5 h-3.5" /> 실행 결과 (Console)
+                      <Panel defaultSize={35} minSize={10} className="flex flex-col bg-gray-50">
+                        <div className="h-10 border-b border-gray-200 bg-white flex items-center px-4">
+                          <span className="text-xs font-bold text-gray-500 flex items-center gap-2">
+                            <Terminal className="w-3.5 h-3.5" /> 실행 결과
                           </span>
                         </div>
-                        <ScrollArea className="flex-1 p-5 font-mono text-sm">
+                        <ScrollArea className="flex-1 p-5">
                           {result ? (
-                            <div className={`flex flex-col gap-3 p-5 rounded-xl border ${result.passed ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-rose-500/10 border-rose-500/20'}`}>
+                            <div className={`flex flex-col gap-3 p-5 rounded-xl border ${result.passed ? 'bg-white border-black/10' : 'bg-white border-red-200'}`}>
                               <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${result.passed ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${result.passed ? 'bg-black text-white' : 'bg-red-100 text-red-600'}`}>
                                   {result.passed ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
                                 </div>
-                                <div className={`font-bold text-lg ${result.passed ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                  {result.passed ? "테스트 통과!" : "실행 실패 / 오답"}
+                                <div className={`font-bold text-lg ${result.passed ? 'text-black' : 'text-red-600'}`}>
+                                  {result.passed ? "테스트 통과" : "오답입니다"}
                                 </div>
                               </div>
                               <div className="pl-[44px]">
+                                {/* 오답일 경우 상세 메시지(영어 에러 등) 숨김. 정답일 때만 시간 표시 */}
                                 {result.passed && result.executionTime > 0 &&
-                                  <div className="inline-flex items-center gap-2 px-2 py-1 bg-background/50 rounded text-xs font-medium text-emerald-400 border border-emerald-500/20">
-                                    <Sparkles className="w-3 h-3" />
+                                  <div className="inline-flex items-center gap-2 px-2 py-1 bg-gray-100 rounded text-xs font-medium text-gray-600">
+                                    <Sparkles className="w-3 h-3 text-black" />
                                     {result.executionTime}ms
                                   </div>
                                 }
                               </div>
                             </div>
                           ) : output ? (
-                            <pre className="whitespace-pre-wrap leading-relaxed opacity-90">{output}</pre>
+                            <pre className="font-mono text-sm text-gray-800 whitespace-pre-wrap leading-relaxed bg-white p-4 rounded-xl border border-gray-200 shadow-sm">{output}</pre>
                           ) : (
-                            <div className="h-full flex flex-col items-center justify-center text-slate-600 gap-3">
-                              <Terminal className="w-10 h-10 opacity-50" />
-                              <span className="text-xs font-medium">코드를 실행하면 결과가 텍스트로 출력됩니다.</span>
+                            <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-3 opacity-60">
+                              <Terminal className="w-8 h-8" />
+                              <span className="text-xs font-medium">실행 버튼을 눌러 결과를 확인하세요.</span>
                             </div>
                           )}
                         </ScrollArea>
@@ -580,11 +573,11 @@ const CodingTestDetail = () => {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground flex-col gap-4">
-              <div className="w-20 h-20 bg-muted/30 rounded-full flex items-center justify-center shadow-inner">
-                <AlertCircle className="w-10 h-10 opacity-30" />
+            <div className="flex-1 flex items-center justify-center text-gray-400 flex-col gap-4">
+              <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center shadow-sm ring-1 ring-gray-100">
+                <AlertCircle className="w-8 h-8 opacity-20 text-gray-500" />
               </div>
-              <span className="font-medium text-lg">왼쪽 목록에서 문제를 선택해주세요.</span>
+              <span className="font-medium text-gray-500">왼쪽 목록에서 문제를 선택해주세요.</span>
             </div>
           )}
         </section>
