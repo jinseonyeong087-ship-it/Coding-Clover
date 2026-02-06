@@ -58,6 +58,7 @@ function AdminCourseList() {
 
     return (
         <>
+        <Nav />
             {/* Background Decoration */}
             <div className="fixed inset-0 z-[-1] bg-background">
                 <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]" />
