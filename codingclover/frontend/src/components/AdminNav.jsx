@@ -13,11 +13,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Search } from "lucide-react"
 import Logout from "@/components/Logout"
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
+import NotificationDropdown from './NotificationDropdown';
 
 function AdminNav() {
     const [loginId, setLoginId] = useState(false);
@@ -88,12 +84,8 @@ function AdminNav() {
                         }} />
                 </div>
 
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="ghost" className="text-sm">{users.name}님</Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80">알람띠링띠링</PopoverContent>
-                </Popover>
+                <NotificationDropdown />
+                <Button variant="ghost" className="text-sm">{users.name}님</Button>
                 <Logout />
             </div>
         </nav>

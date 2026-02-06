@@ -139,7 +139,7 @@ function PointsHistory() {
                 // 가장 최근의 환불 관련 결제 내역 찾기
                 const refundPayments = payments.filter(p => p.type === 'REFUND');
                 console.log('환불 결제 내역:', refundPayments);
-                
+
                 if (refundPayments.length > 0) {
                     // 최신순 정렬 (ID 기준)
                     refundPayments.sort((a, b) => b.paymentId - a.paymentId);
@@ -166,7 +166,7 @@ function PointsHistory() {
 
                 // 백엔드에서 배열로 반환
                 const historyArr = Array.isArray(historyData) ? historyData : [];
-                
+
                 // 결제 내역을 기준으로 환불 여부 판단하기 위한 Map 생성
                 const refundPaymentMap = new Map();
                 if (Array.isArray(paymentData)) {
@@ -180,10 +180,10 @@ function PointsHistory() {
                 // 월렛히스토리 엔티티 필드에 맞게 매핑
                 const mappedHistory = historyArr.map(item => {
                     console.log('원본 데이터:', item); // 디버깅용
-                    
+
                     // 타입 결정 로직 개선 - 결제 내역을 참조
                     let type = item.reason;
-                    
+
                     // paymentId가 있고 해당 결제가 환불 타입인지 확인
                     if (item.paymentId && refundPaymentMap.has(item.paymentId)) {
                         type = 'REFUND';
@@ -194,7 +194,7 @@ function PointsHistory() {
                     } else if (item.reason === 'USE') {
                         type = 'USE';
                     }
-                    
+
                     // 최종 설명 생성
                     const description = getTransactionDescription(type, item.paymentId);
 
@@ -250,12 +250,6 @@ function PointsHistory() {
         return amount ? amount.toLocaleString() : '0';
     };
 
-    // 페이지네이션 로직
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = history.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(history.length / itemsPerPage);
-
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
     };
@@ -263,7 +257,7 @@ function PointsHistory() {
     // 버튼 렌더링 헬퍼
     const renderRefundButton = () => {
         console.log('현재 포인트:', points, '환불 상태:', refundStatus);
-        
+
         if (refundStatus === 'REQUESTED') {
             return (
                 <Button
@@ -306,6 +300,13 @@ function PointsHistory() {
             </div>
         );
     }
+
+    // 페이지네이션 로직 (로딩 후 계산)
+    const safeHistory = Array.isArray(history) ? history : [];
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = safeHistory.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(safeHistory.length / itemsPerPage);
 
     return (
         <div className="min-h-screen bg-white">

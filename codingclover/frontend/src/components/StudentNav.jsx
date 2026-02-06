@@ -15,6 +15,7 @@ import { Search } from "lucide-react"
 import Logout from "@/components/Logout"
 import axios from 'axios';
 import coinImg from '../img/coin.png';
+import NotificationDropdown from './NotificationDropdown';
 
 function StudentNav() {
     const [loginId, setLoginId] = useState(false);
@@ -33,10 +34,10 @@ function StudentNav() {
             });
             console.log('DB에서 가져온 포인트:', response.data.balance);
             setPoints(response.data.balance || 0);
-            
+
             // DB에서 성공적으로 가져왔으면 localStorage도 동기화
             localStorage.setItem('userPoints', (response.data.balance || 0).toString());
-            
+
         } catch (error) {
             console.error('포인트 조회 실패:', error);
             console.log('백엔드 연결 실패로 0P 표시');
@@ -58,7 +59,7 @@ function StudentNav() {
                 const parsedUsers = JSON.parse(storedUsers);
                 setUsers(parsedUsers);
                 console.log("현재 로그인한 사용자:", parsedUsers);
-                
+
                 // 로그인 상태면 실제 포인트 조회 (초기값 0P에서 시작)
                 setPoints(0);
                 await fetchUserPoints();
@@ -123,7 +124,7 @@ function StudentNav() {
 
         window.addEventListener('pointsUpdated', handlePointsUpdate);
         window.addEventListener('userInfoUpdated', handleUserInfoUpdate);
-        
+
         return () => {
             window.removeEventListener('pointsUpdated', handlePointsUpdate);
             window.removeEventListener('userInfoUpdated', handleUserInfoUpdate);
@@ -174,9 +175,9 @@ function StudentNav() {
                     <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/test/coding') }}>코딩테스트</MenubarTrigger>
                     </MenubarMenu>
-                        <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/payment') }}>충전하기</MenubarTrigger>
-                        </MenubarMenu>
+                    <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/payment') }}>충전하기</MenubarTrigger>
+                    </MenubarMenu>
                     <MenubarMenu>
                         <Link
                             to="/student/mypage"
@@ -207,22 +208,23 @@ function StudentNav() {
                 {!loginId ? (
                     <Button size="sm"><Link to="/auth/login">로그인</Link></Button>)
                     : (<>
+                        <NotificationDropdown />
                         <div className="flex items-center gap-3">
                             {/* 포인트 표시 */}
-                            <div 
+                            <div
                                 className="flex items-center cursor-pointer px-2 py-1"
                                 onClick={() => navigate('/student/points')}
                             >
-                                <img 
+                                <img
                                     src={coinImg}
-                                    alt="코인" 
+                                    alt="코인"
                                     className="w-5 h-5"
                                 />
                                 <span className="text-sm">
                                     {isLoadingPoints ? '...' : `${points.toLocaleString()}P`}
                                 </span>
                             </div>
-                            
+
                             {/* 사용자 이름 */}
                             <span className="text-sm text-foreground">{users.name}님</span>
                         </div>

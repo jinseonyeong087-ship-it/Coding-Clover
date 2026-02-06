@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/Input"
 import { Search } from "lucide-react"
 import Logout from "@/components/Logout"
 import axios from 'axios';
+import NotificationDropdown from './NotificationDropdown';
 
 function InstructorNav() {
     const [loginId, setLoginId] = useState(false);
@@ -87,6 +88,7 @@ function InstructorNav() {
                         }} />
                 </div>
 
+                <NotificationDropdown />
                 <Button variant="ghost" className="text-sm">{users.name}님</Button>
                 <Logout />
             </div>
