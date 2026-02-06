@@ -37,18 +37,18 @@ function InstructorNav() {
         <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md shadow-sm transition-all">
             <div className="container mx-auto flex h-16 items-center justify-between px-6">
                 <div className="flex items-center gap-8">
-                    <Link to="/instructor/dashboard" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity no-underline">
+                    <Link to="/instructor/dashboard" className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity no-underline">
                         Coding-Clover
-                        <span className="ml-1 text-xs text-muted-foreground font-medium uppercase tracking-wider">Instructor</span>
+                        {/* <span className="ml-1 text-xs text-muted-foreground font-medium uppercase tracking-wider">Instructor</span> */}
                     </Link>
                     <Menubar className="border-none shadow-none bg-transparent">
                         <MenubarMenu>
                             <MenubarTrigger className="cursor-pointer font-medium text-muted-foreground hover:text-foreground transition-colors">강좌 관리</MenubarTrigger>
                             <MenubarContent>
                                 <MenubarGroup>
-                                    <MenubarItem>내 강의</MenubarItem>
-                                    <MenubarItem>강좌 개설 신청</MenubarItem>
-                                    <MenubarItem>강의 업로드</MenubarItem>
+                                    <MenubarItem onClick={() => { navigate('/instructor/course/new') }}>강좌 개설</MenubarItem>
+                                    <MenubarItem onClick={() => { navigate('/instructor/course') }}>내 강의</MenubarItem>
+                                    <MenubarItem onClick={() => { navigate('/instructor/lecture/upload') }}>강의 업로드</MenubarItem>
                                 </MenubarGroup>
                             </MenubarContent>
                         </MenubarMenu>

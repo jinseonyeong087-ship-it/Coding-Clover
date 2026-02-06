@@ -36,7 +36,7 @@ function AdminNav() {
         <nav className="flex mx-auto w-full justify-between py-3 px-16 border-b fixed bg-white z-50">
             {/* 로고 + 메뉴바 */}
             <div className="flex items-center gap-6">
-                <Link to="/admin/dashboard" className="text-xl font-bold text-primary no-underline">
+                <Link to="/admin/dashboard" className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity no-underline">
                     Coding-Clover
                 </Link>
 

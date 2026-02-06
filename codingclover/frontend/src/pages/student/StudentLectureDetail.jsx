@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Play, Clock, Video, MonitorPlay } from "lucide-react";
+import { Play, Clock, Video, MonitorPlay, Users } from "lucide-react";
 import Nav from "@/components/Nav";
 import Tail from "@/components/Tail";
 
@@ -58,7 +58,13 @@ function StudentLectureDetail() {
                 <div className="w-80 border-r border-slate-200 overflow-y-auto bg-white">
                     <div className="p-4 border-b border-slate-100">
                         <h2 className="font-bold text-lg text-slate-800">강의 목록</h2>
-                        <p className="text-sm text-slate-500 mt-1">{lectures.length}개의 강의</p>
+                        <div className="flex items-center justify-between mt-1">
+                            <p className="text-sm text-slate-500">{lectures.length}개의 강의</p>
+                            <span className="flex items-center gap-1 text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                                <Users className="w-3 h-3" />
+                                24명 수강중
+                            </span>
+                        </div>
                     </div>
                     <div className="flex flex-col">
                         {lectures.map((lec) => (

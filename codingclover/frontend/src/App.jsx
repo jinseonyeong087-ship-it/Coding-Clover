@@ -4,18 +4,15 @@ import { Routes, Route, BrowserRouter } from 'react-router-dom'
 import Home from './pages/Home'
 import MainLogin from './pages/MainLogin'
 import Register from './pages/Register'
-import Enroll from './pages/student/Enroll'
 import InstructorMain from './pages/instructor/InstructorMain'
 import AdminMain from './pages/admin/AdminMain'
 import Level from './pages/student/Level'
-import Lecture from './pages/student/Lecture'
 import MyPage from './pages/student/MyPage'
 import PointsHistory from './pages/student/PointsHistory'
 import CodingTest from './test/CodingTest'
 import EmailTest from './test/EmailTest'
 import CourseCreateRequest from '@/pages/instructor/CourseCreateRequest'
 import FindAccount from '@/pages/FindAccount'
-
 import SubmissionTest from './test/SubmissionTest'
 import ProtectedRoute from '@/components/ProtectdRoute'
 import Noroll from '@/pages/Noroll'
@@ -47,6 +44,8 @@ import StudentQnaList from './pages/student/StudentQnaList';
 import StudentQnaDetail from './pages/student/StudentQnaDetail';
 import ChatBot from './pages/student/ChatBot';
 import StudentLectureDetail from './pages/student/StudentLectureDetail';
+import InstructorCourseList from './pages/instructor/InstructorCourseList';
+import LectureUpload from './pages/instructor/LectureUpload';
 
 
 
@@ -155,8 +154,10 @@ function App() {
         }>
           <Route path="dashboard" element={<InstructorMain />} />
           <Route path="course/new" element={<CourseCreateRequest />} />
+          <Route path="course" element={<InstructorCourseList />} />
           <Route path="course/:courseId" element={<InstructorCourseDetail />} />
-          <Route path="course/:courseId/qna/:qnaId" element={<StudentQnaDetail />} />
+          <Route path="course/:courseId/lectures" element={<StudentLectureDetail />} />
+          <Route path="lecture/upload" element={<LectureUpload />} />
           <Route path="mypage" element={<InstructorMypage />} />
         </Route>
         {/* 관리자 */}
