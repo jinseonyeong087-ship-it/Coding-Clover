@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
     PlayCircle, CheckCircle, Lock, MonitorPlay,
     BookOpen, User, Calendar, FileText, ChevronLeft,
-    AlertCircle
+    AlertCircle, Award
 } from "lucide-react";
 import {
     AlertDialog,
@@ -149,10 +149,9 @@ function StudentCourseDetail() {
             {/* Nav spacer */}
             {/* <div className="h-[70px] shrink-0"></div> */}
 
-            {isEnrolled ? (
-                /* Classroom Layout (Enrolled) */
+            {/* Classroom Layout (Enrolled) - 주석 처리 */}
+            {/* {isEnrolled && (
                 <div className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-70px)] overflow-hidden">
-                    {/* Main Content (Player) */}
                     <main className="flex-1 flex flex-col overflow-y-auto bg-black/95 relative">
                         <div className="flex-1 flex items-center justify-center p-4 lg:p-8">
                             <div className="w-full max-w-5xl aspect-video bg-zinc-900 rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
@@ -174,8 +173,6 @@ function StudentCourseDetail() {
                             </div>
                         </div>
                     </main>
-
-                    {/* Sidebar (Curriculum) */}
                     <aside className="w-full lg:w-96 bg-background border-l border-border flex flex-col shrink-0 z-10">
                         <div className="p-5 border-b border-border bg-muted/20 backdrop-blur-sm">
                             <h2 className="font-bold text-lg flex items-center gap-2">
@@ -222,8 +219,9 @@ function StudentCourseDetail() {
                         </ScrollArea>
                     </aside>
                 </div>
-            ) : (
-                /* Public Info Layout (Not Enrolled) */
+            )} */}
+
+            {/* Course Info Layout - 항상 표시 */}
                 <main className="container mx-auto px-6 py-12 max-w-5xl">
                     <Button variant="ghost" onClick={() => navigate(-1)} className="mb-8 hover:bg-muted/50 -ml-4">
                         <ChevronLeft className="w-4 h-4 mr-2" /> 목록으로 돌아가기
@@ -311,13 +309,42 @@ function StudentCourseDetail() {
                                         <div className="text-3xl font-black">{course.price?.toLocaleString()}원</div>
                                     </div>
 
-                                    <Button
-                                        size="lg"
-                                        className="w-full font-bold text-lg shadow-lg hover:shadow-primary/25 transition-all"
-                                        onClick={handleSubmit}
-                                    >
-                                        수강 신청하기
-                                    </Button>
+                                    {enrollmentStatus === 'COMPLETED' ? (
+                                        <div className="space-y-3">
+                                            <Button
+                                                size="lg"
+                                                className="w-full font-bold text-lg shadow-lg hover:shadow-primary/25 transition-all"
+                                                onClick={() => navigate(`/student/course/${courseId}/lectures`)}
+                                            >
+                                                수강완료
+                                            </Button>
+                                            <Button
+                                                size="lg"
+                                                variant="outline"
+                                                className="w-full font-bold text-lg"
+                                                onClick={() => navigate(`/student/course/${courseId}/certificate`)}
+                                            >
+                                                <Award className="w-5 h-5 mr-2" />
+                                                수료증 발급
+                                            </Button>
+                                        </div>
+                                    ) : enrollmentStatus === 'ENROLLED' ? (
+                                        <Button
+                                            size="lg"
+                                            className="w-full font-bold text-lg shadow-lg hover:shadow-primary/25 transition-all"
+                                            onClick={() => navigate(`/student/course/${courseId}/lectures`)}
+                                        >
+                                            강의 시청
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            size="lg"
+                                            className="w-full font-bold text-lg shadow-lg hover:shadow-primary/25 transition-all"
+                                            onClick={handleSubmit}
+                                        >
+                                            수강 신청하기
+                                        </Button>
+                                    )}
 
                                     <div className="space-y-3 text-sm text-muted-foreground">
                                         <div className="flex items-center gap-2">
@@ -338,7 +365,6 @@ function StudentCourseDetail() {
                         </div>
                     </div>
                 </main>
-            )}
 
             <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <AlertDialogContent>

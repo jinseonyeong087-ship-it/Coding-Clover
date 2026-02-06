@@ -8,8 +8,9 @@ import { RadioGroup, RadioGroupItem } from '../components/ui/RadioGroup';
 import { Label } from '../components/ui/Label';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../components/ui/alert-dialog';
 import { CheckCircle, XCircle } from 'lucide-react';
-import StudentNav from '../components/StudentNav';
+import Nav from '../components/Nav';
 import coinImg from '../img/coin.png';
+import Tail from '../components/Tail';
 
 const clientKey = "test_ck_EP59LybZ8B6bWgaqMRRY86GYo7pR";
 
@@ -170,7 +171,7 @@ export default function Payment() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background relative overflow-hidden">
-      <StudentNav />
+      <Nav />
 
       {/* Background Decoration */}
       <div className="fixed inset-0 z-[-1] bg-background">

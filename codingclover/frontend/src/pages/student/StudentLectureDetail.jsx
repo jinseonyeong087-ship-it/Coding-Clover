@@ -1,6 +1,8 @@
 import React from "react";
 import { Play, Clock, Video, MonitorPlay } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
+import Nav from "@/components/Nav";
+import Tail from "@/components/Tail";
 
 function StudentLectureDetail() {
 
