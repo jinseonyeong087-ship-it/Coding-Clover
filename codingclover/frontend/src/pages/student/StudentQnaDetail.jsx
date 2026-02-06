@@ -18,7 +18,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 const StudentQnaDetail = () => {
-  const { qnaId } = useParams();
+  const { qnaId, courseId } = useParams();
   const navigate = useNavigate();
   const [qna, setQna] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -90,9 +90,15 @@ const StudentQnaDetail = () => {
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Back Button */}
-        <Button variant="ghost" className="mb-6 pl-0 hover:bg-transparent hover:text-[#5d5feF]" onClick={() => navigate('/student/qna')}>
+        <Button variant="ghost" className="mb-6 pl-0 hover:bg-transparent hover:text-[#5d5feF]" onClick={() => {
+          if (isInstructor && courseId) {
+            navigate(`/instructor/course/${courseId}`);
+          } else {
+            navigate('/student/qna');
+          }
+        }}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          목록으로 돌아가기
+          {isInstructor ? '강좌로 돌아가기' : '목록으로 돌아가기'}
         </Button>
 
         {/* Header Section */}
