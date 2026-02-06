@@ -39,8 +39,8 @@ function PaymentManagement() {
 
     // 필터
     const [filters, setFilters] = useState({
-        paymentStatus: 'ALL',
-        refundStatus: 'ALL',
+        contentType: 'ALL', // 내용 필터 (포인트 충전, 사용, 환불)
+        status: 'ALL', // 상태 필터 (결제완료, 수강신청, 환불완료 등)
         period: '7', // 기본값을 7일로 설정
         startDate: '',
         endDate: '',
@@ -126,7 +126,7 @@ function PaymentManagement() {
     const getTransactionDescription = (type, orderId) => {
         // 수강신청인 경우 (orderId가 COURSE_로 시작)
         if (orderId && orderId.startsWith('COURSE_')) {
-            return '수강신청';
+            return '포인트 사용';
         }
 
         switch (type) {
@@ -159,14 +159,29 @@ function PaymentManagement() {
             filtered = filtered.filter(p => p.refundStatus === 'REQUESTED');
         }
 
-        // 결제 상태 필터
-        if (filters.paymentStatus !== 'ALL') {
-            filtered = filtered.filter(p => p.paymentStatus === filters.paymentStatus);
+        // 내용 필터 (type 기반)
+        if (filters.contentType !== 'ALL') {
+            filtered = filtered.filter(p => p.type === filters.contentType);
         }
 
-        // 환불 상태 필터
-        if (filters.refundStatus !== 'ALL') {
-            filtered = filtered.filter(p => p.refundStatus === filters.refundStatus);
+        // 상태 필터 (결제완료, 수강신청, 환불완료, 환불거절)
+        if (filters.status !== 'ALL') {
+            filtered = filtered.filter(p => {
+                if (filters.status === 'ENROLLMENT') {
+                    // 수강신청: orderId가 COURSE_로 시작하는 경우
+                    return p.orderId && p.orderId.startsWith('COURSE_');
+                } else if (filters.status === 'PAID') {
+                    // 결제완료: 일반적인 결제 완료 상태
+                    return p.paymentStatus === 'PAID' && !(p.orderId && p.orderId.startsWith('COURSE_'));
+                } else if (filters.status === 'REFUNDED') {
+                    // 환불완료: 환불 상태가 APPROVED
+                    return p.refundStatus === 'APPROVED';
+                } else if (filters.status === 'REJECTED') {
+                    // 환불거절: 환불 상태가 REJECTED
+                    return p.refundStatus === 'REJECTED';
+                }
+                return false;
+            });
         }
 
         // 기간 필터
@@ -239,8 +254,8 @@ function PaymentManagement() {
     const resetFilters = () => {
         // 페이지 로드 시와 동일한 기본 상태로 복원
         setFilters({
-            paymentStatus: 'ALL',
-            refundStatus: 'ALL',
+            contentType: 'ALL',
+            status: 'ALL',
             period: '7', // 기본값 7일
             startDate: '',
             endDate: '',
@@ -272,7 +287,7 @@ function PaymentManagement() {
     // 상태 배지 색상 (Premium Styling)
     const getPaymentStatusColor = (status, statusLabel) => {
         // 라벨에 따른 색상 설정
-        if (statusLabel === '포인트 사용') {
+        if (statusLabel === '수강신청') {
             return 'bg-amber-100 text-amber-700 border-amber-200';
         }
         if (statusLabel === '환불완료') {
@@ -300,7 +315,7 @@ function PaymentManagement() {
     const getPaymentStatusLabel = (status, type, orderId) => {
         // 수강신청인 경우 (orderId가 COURSE_로 시작)
         if (orderId && orderId.startsWith('COURSE_')) {
-            return '포인트 사용';
+            return '수강신청';
         }
 
         switch (status) {
@@ -537,6 +552,35 @@ function PaymentManagement() {
                                             </select>
                                         </div>
                                     </div>
+                    {/* 필터 */}
+                    <Card className="mb-6">
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="flex items-center gap-2">
+                                    <Filter className="w-5 h-5" />
+                                    필터
+                                </CardTitle>
+                                <Button variant="outline" onClick={resetFilters} size="sm">
+                                    초기화
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                                {/* 내용 필터 */}
+                                <div>
+                                    <Label>내용</Label>
+                                    <select
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                        value={filters.contentType}
+                                        onChange={(e) => handleFilterChange('contentType', e.target.value)}
+                                    >
+                                        <option value="ALL">전체</option>
+                                        <option value="CHARGE">포인트 충전</option>
+                                        <option value="USE">포인트 사용</option>
+                                        <option value="REFUND">포인트 환불</option>
+                                    </select>
+                                </div>
 
                                     {/* 환불 상태 */}
                                     <div className="space-y-2">
@@ -553,7 +597,36 @@ function PaymentManagement() {
                                             <option value="REJECTED">환불거절</option>
                                         </select>
                                     </div>
+                                {/* 상태 필터 */}
+                                <div>
+                                    <Label>상태</Label>
+                                    <select
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                        value={filters.status}
+                                        onChange={(e) => handleFilterChange('status', e.target.value)}
+                                    >
+                                        <option value="ALL">전체</option>
+                                        <option value="PAID">결제완료</option>
+                                        <option value="ENROLLMENT">수강신청</option>
+                                        <option value="REFUNDED">환불완료</option>
+                                        <option value="REJECTED">환불거절</option>
+                                    </select>
+                                </div>
 
+                                {/* 기간 */}
+                                <div>
+                                    <Label>기간</Label>
+                                    <select
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                        value={filters.period}
+                                        onChange={(e) => handleFilterChange('period', e.target.value)}
+                                    >
+                                        <option value="1">오늘</option>
+                                        <option value="7">7일</option>
+                                        <option value="30">30일</option>
+                                        <option value="custom">직접 지정</option>
+                                    </select>
+                                </div>
                                     {/* 기간 */}
                                     <div className="space-y-2">
                                         <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">조회 기간</Label>
@@ -569,6 +642,19 @@ function PaymentManagement() {
                                         </select>
                                     </div>
 
+                                {/* 검색 타입 */}
+                                <div>
+                                    <Label>검색 대상</Label>
+                                    <select
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                        value={filters.searchType}
+                                        onChange={(e) => handleFilterChange('searchType', e.target.value)}
+                                    >
+                                        <option value="student">학생명</option>
+                                        <option value="course">강좌명</option>
+                                    </select>
+                                </div>
+                            </div>
                                     {/* 검색 타입 */}
                                     <div className="space-y-2">
                                         <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">검색 기준</Label>
