@@ -9,6 +9,8 @@ import { Label } from '../components/ui/Label';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../components/ui/alert-dialog';
 import { CheckCircle, XCircle } from 'lucide-react';
 import Nav from '../components/Nav';
+import StudentNav from '../components/StudentNav';
+import Tail from '../components/Tail';
 import coinImg from '../img/coin.png';
 import Tail from '../components/Tail';
 
