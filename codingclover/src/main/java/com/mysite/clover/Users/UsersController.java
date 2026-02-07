@@ -83,6 +83,17 @@ public class UsersController {
         return ResponseEntity.ok("강사 승인이 완료되었습니다.");
     }
 
+    // 관리자: 강사 반려
+    @PostMapping("/admin/users/instructors/{userId}/reject")
+    @ResponseBody
+    public ResponseEntity<String> rejectInstructor(
+            @org.springframework.web.bind.annotation.PathVariable("userId") Long userId,
+            @RequestBody Map<String, String> body) {
+        String reason = body.get("reason");
+        usersService.rejectInstructor(userId, reason);
+        return ResponseEntity.ok("강사 반려가 처리되었습니다.");
+    }
+
     // 강사 상세 조회 (AdminMain 및 AdminApproch에서 사용)
     @GetMapping("/admin/users/instructors/{userId}")
     @ResponseBody

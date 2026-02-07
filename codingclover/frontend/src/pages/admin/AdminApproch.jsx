@@ -6,6 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Calendar, Briefcase, FileText, Mail, User, CheckCircle, ArrowLeft, Download, ShieldCheck, Clock } from "lucide-react";
 
 function AdminApproch() {
@@ -46,10 +49,22 @@ function AdminApproch() {
     };
 
     // 강사 상세 정보 불러오기
+    const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+    const [rejectReason, setRejectReason] = useState('');
+
     useEffect(() => {
-        // 먼저 강사 프로필 정보 시도
+        if (!userId) {
+            alert('잘못된 접근입니다.');
+            navigate('/admin/dashboard');
+            return;
+        }
+
+        fetchInstructorDetail();
+    }, [userId]);
+
+    const fetchInstructorDetail = () => {
+        setLoading(true);
         fetch(`/admin/users/instructors/${userId}`, {
-            method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
         })
@@ -60,15 +75,54 @@ function AdminApproch() {
                 return response.json();
             })
             .then((data) => {
-                console.log("강사 상세 데이터 로드 성공", data);
                 setInstructor(data);
                 setLoading(false);
             })
             .catch((error) => {
-                console.error('강사 상세 데이터 로딩 실패', error);
+                console.error('강사 정보 로드 실패', error);
                 setLoading(false);
             });
-    }, [userId]);
+    };
+
+    // 강사 반려 처리
+    const handleRejectClick = () => {
+        setIsRejectDialogOpen(true);
+        setRejectReason('');
+    };
+
+    const submitReject = () => {
+        if (!rejectReason.trim()) {
+            alert("반려 사유를 입력해야 합니다.");
+            return;
+        }
+
+        fetch(`/admin/users/instructors/${userId}/reject`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason: rejectReason }),
+            credentials: 'include'
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(() => {
+                setInstructor(prev => ({
+                    ...prev,
+                    status: 'SUSPENDED',
+                    profileStatus: 'REJECTED'
+                }));
+                alert('강사 반려 처리가 완료되었습니다.');
+                setIsRejectDialogOpen(false);
+                navigate('/admin/dashboard');
+            })
+            .catch((error) => {
+                console.error('강사 반려 실패', error);
+                alert('반려 처리에 실패했습니다.');
+            });
+    };
 
     // 강사 승인 처리
     const approveInstructor = () => {
@@ -174,6 +228,7 @@ function AdminApproch() {
                                             <CardTitle className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                                                 {instructor.name}
                                                 {instructor.status === 'ACTIVE' && <CheckCircle className="w-5 h-5 text-emerald-500" />}
+                                                {instructor.profileStatus === 'REJECTED' && <span className="text-red-500 text-sm font-bold border border-red-500 px-2 py-0.5 rounded">반려됨</span>}
                                             </CardTitle>
                                             <CardDescription className="text-slate-500 font-medium flex items-center gap-2 mt-1">
                                                 <Mail className="w-4 h-4" />
@@ -184,6 +239,10 @@ function AdminApproch() {
                                     {instructor.status === 'ACTIVE' ? (
                                         <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 px-4 py-1.5 text-sm font-medium hover:bg-emerald-100">
                                             승인 완료
+                                        </Badge>
+                                    ) : instructor.profileStatus === 'REJECTED' ? (
+                                        <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-200 px-4 py-1.5 text-sm font-medium hover:bg-red-100">
+                                            반려됨
                                         </Badge>
                                     ) : (
                                         <Badge className="bg-amber-100 text-amber-700 border-amber-200 px-4 py-1.5 text-sm font-medium hover:bg-amber-100 animate-pulse">
@@ -279,20 +338,67 @@ function AdminApproch() {
                                         <CheckCircle className="w-4 h-4 mr-2" />
                                         이미 승인된 강사입니다
                                     </Button>
-                                ) : (
+                                ) : instructor.profileStatus === 'REJECTED' ? (
                                     <Button
-                                        onClick={approveInstructor}
-                                        className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-indigo-500/30 transition-all text-base font-semibold"
+                                        variant="outline"
+                                        disabled
+                                        className="h-12 px-8 bg-red-50 text-red-600 border-red-200 opacity-100"
                                     >
-                                        <CheckCircle className="w-5 h-5 mr-2" />
-                                        강사 승인 처리
+                                        반려 처리된 강사입니다
                                     </Button>
+                                ) : (
+                                    <>
+                                        <Button
+                                            onClick={handleRejectClick}
+                                            variant="outline"
+                                            className="h-12 px-8 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition-all text-base font-semibold"
+                                        >
+                                            반려
+                                        </Button>
+                                        <Button
+                                            onClick={approveInstructor}
+                                            className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-indigo-500/30 transition-all text-base font-semibold"
+                                        >
+                                            <CheckCircle className="w-5 h-5 mr-2" />
+                                            강사 승인 처리
+                                        </Button>
+                                    </>
                                 )}
                             </CardFooter>
                         </Card>
                     </section>
                 )}
             </div>
+
+            <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-red-600 flex items-center gap-2">
+                            <ShieldCheck className="w-5 h-5" /> 강사 반려
+                        </DialogTitle>
+                        <DialogDescription>
+                            해당 강사 신청을 반려하시겠습니까? 반려 사유를 입력해주세요.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid w-full gap-1.5">
+                            <Label htmlFor="rejectReason">반려 사유</Label>
+                            <Textarea
+                                id="rejectReason"
+                                value={rejectReason}
+                                onChange={(e) => setRejectReason(e.target.value)}
+                                placeholder="예: 경력 증빙 자료가 부족합니다."
+                                rows={4}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>취소</Button>
+                        <Button variant="destructive" onClick={submitReject}>반려 확정</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             <Tail />
         </div>
     );

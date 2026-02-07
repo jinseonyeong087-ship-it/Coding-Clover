@@ -56,7 +56,8 @@ public class InstructorProfileService {
                     null, // resumeFilePath
                     null, // status
                     null, // appliedAt
-                    null // approvedAt
+                    null, // approvedAt
+                    null // rejectReason
             );
         }
 
@@ -70,7 +71,8 @@ public class InstructorProfileService {
                 profile.getResumeFilePath(),
                 profile.getStatus(),
                 profile.getAppliedAt(),
-                profile.getApprovedAt());
+                profile.getApprovedAt(),
+                profile.getRejectReason()); // 반려 사유 추가
     }
 
     // 강사 프로필 신청/수정
@@ -121,7 +123,10 @@ public class InstructorProfileService {
             }
         }
 
+        // 상태를 항상 APPLIED로 변경 (재신청 포함)
         profile.setStatus(InstructorStatus.APPLIED);
+        // 재신청 시 반려 사유 초기화
+        profile.setRejectReason(null);
 
         try {
             instructorProfileRepository.save(profile);

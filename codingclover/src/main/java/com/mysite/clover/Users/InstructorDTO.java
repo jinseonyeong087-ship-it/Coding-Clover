@@ -26,4 +26,5 @@ public class InstructorDTO {
   private LocalDateTime updatedAt;
   private LocalDateTime appliedAt;
   private LocalDateTime approvedAt;
+  private String rejectReason;
 }

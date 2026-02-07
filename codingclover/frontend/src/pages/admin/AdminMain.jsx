@@ -125,7 +125,7 @@ function AdminMain() {
                     </div>
                     <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                         <h3 className="text-sm font-medium text-muted-foreground mb-2">신규 강사 신청</h3>
-                        <div className="text-3xl font-bold text-amber-500">{status.filter(u => u.status === 'SUSPENDED').length} <span className="text-sm font-normal text-muted-foreground">명</span></div>
+                        <div className="text-3xl font-bold text-amber-500">{status.filter(u => u.status === 'SUSPENDED' && u.profileStatus !== 'REJECTED').length} <span className="text-sm font-normal text-muted-foreground">명</span></div>
                     </div>
                     <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                         <h3 className="text-sm font-medium text-muted-foreground mb-2">강의 업로드 대기</h3>
@@ -205,7 +205,7 @@ function AdminMain() {
                                 <span className="w-2 h-8 bg-purple-500 rounded-full" />
                                 신규 강사 승인
                             </h2>
-                            <Badge variant="outline" className="text-xs">{status.filter(u => u.status === 'SUSPENDED').length}명 대기중</Badge>
+                            <Badge variant="outline" className="text-xs">{status.filter(u => u.status === 'SUSPENDED' && u.profileStatus !== 'REJECTED').length}명 대기중</Badge>
                         </div>
                         <Card className="bg-background/60 backdrop-blur-xl border-border/50 shadow-lg overflow-hidden">
                             <Table>
@@ -218,7 +218,7 @@ function AdminMain() {
                                 </TableHeader>
                                 <TableBody>
                                     {status && status.length > 0 ? (
-                                        status.filter(users => users.status === 'SUSPENDED').slice(0, 5).map((users, index) => {
+                                        status.filter(users => users.status === 'SUSPENDED' && users.profileStatus !== 'REJECTED').slice(0, 5).map((users, index) => {
                                             const uniqueKey = users.userId || `user-idx-${index}`;
                                             return (
                                                 <TableRow key={uniqueKey} className="hover:bg-muted/30 transition-colors">

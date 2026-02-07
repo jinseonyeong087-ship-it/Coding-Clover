@@ -53,8 +53,13 @@ public class UsersService {
         List<Users> instructors = usersRepository.findByRole(UsersRole.INSTRUCTOR);
 
         return instructors.stream().map(user -> {
-            // 리스트 조회 시에는 프로필 정보는 필요없거나 null로 처리, 혹은 필요한 값만 채움
-            // loginId는 추가
+            // 프로필 상태 조회
+            String pStatus = null;
+            var profileOpt = instructorProfileRepository.findById(user.getUserId());
+            if (profileOpt.isPresent()) {
+                pStatus = profileOpt.get().getStatus().name();
+            }
+
             return new InstructorDTO(
                     user.getUserId(),
                     user.getName(),
@@ -62,14 +67,15 @@ public class UsersService {
                     user.getLoginId(),
                     user.getRole().name(),
                     user.getStatus().name(),
-                    null, // profileStatus
+                    pStatus, // profileStatus 채우기
                     null, // careerYears
                     null, // bio
                     null, // resumeFilePath
                     user.getCreatedAt(),
                     user.getUpdatedAt(),
                     null, // appliedAt
-                    null // approvedAt
+                    null, // approvedAt
+                    null // rejectReason
             );
         }).collect(Collectors.toList());
     }
@@ -79,7 +85,7 @@ public class UsersService {
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         InstructorDTO dto = new InstructorDTO();
-        // 기본 정보
+        // 기본 정보 (프로필 없을 때)
         dto = new InstructorDTO(
                 user.getUserId(),
                 user.getName(),
@@ -90,7 +96,7 @@ public class UsersService {
                 null, null, null, null,
                 user.getCreatedAt(),
                 user.getUpdatedAt(),
-                null, null);
+                null, null, null);
 
         // 프로필 정보 조회 및 병합 (Builder 패턴이 없어서 생성자로 다시 만듦)
         // 실제로는 Setter를 쓰거나 Builder를 쓰는게 좋음.
@@ -113,7 +119,8 @@ public class UsersService {
                     user.getCreatedAt(),
                     user.getUpdatedAt(),
                     p.getAppliedAt(),
-                    p.getApprovedAt());
+                    p.getApprovedAt(),
+                    p.getRejectReason()); // 반려 사유 추가
         }
 
         return dto;
@@ -133,6 +140,16 @@ public class UsersService {
         instructorProfileRepository.findById(userId).ifPresent(profile -> {
             profile.setStatus(InstructorStatus.APPROVED);
             profile.setApprovedAt(java.time.LocalDateTime.now());
+            instructorProfileRepository.save(profile);
+        });
+    }
+
+    // 강사 반려 처리
+    public void rejectInstructor(Long userId, String reason) {
+        // InstructorProfile 상태만 REJECTED로 변경 (로그인은 여전히 안됨 - SUSPENDED 상태 유지)
+        instructorProfileRepository.findById(userId).ifPresent(profile -> {
+            profile.setStatus(InstructorStatus.REJECTED);
+            profile.setRejectReason(reason);
             instructorProfileRepository.save(profile);
         });
     }

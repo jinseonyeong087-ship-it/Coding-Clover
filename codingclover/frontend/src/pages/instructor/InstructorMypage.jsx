@@ -317,18 +317,43 @@ function InstructorMypage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <FileText className="w-5 h-5 text-primary" />
-                강사 신청
+                {profile?.status === 'REJECTED' ? '강사 재신청' : '강사 신청'}
               </CardTitle>
               <CardDescription>
-                {hasProfile
-                  ? '신청이 완료되었습니다. 관리자 승인을 기다려주세요.'
-                  : '강사로 활동하기 위해 신청서를 작성해주세요.'}
+                {profile?.status === 'REJECTED'
+                  ? '강사 신청이 반려되었습니다. 사유를 확인하고 다시 신청해주세요.'
+                  : hasProfile
+                    ? '신청이 완료되었습니다. 관리자 승인을 기다려주세요.'
+                    : '강사로 활동하기 위해 신청서를 작성해주세요.'}
               </CardDescription>
             </CardHeader>
 
             <CardContent>
+              {/* 반려 사유 표시 */}
+              {profile?.status === 'REJECTED' && !isEditing && (
+                <div className="mb-8 bg-red-50 border border-red-200 rounded-xl p-6">
+                  <h3 className="text-red-800 font-bold flex items-center gap-2 mb-2">
+                    <XCircle className="w-5 h-5" />
+                    반려 사유
+                  </h3>
+                  <p className="text-red-700 whitespace-pre-wrap pl-7">
+                    {profile.rejectReason || "반려 사유가 기재되지 않았습니다."}
+                  </p>
+                  <div className="mt-4 pl-7">
+                    <Button
+                      onClick={() => setIsEditing(true)}
+                      className="bg-red-600 hover:bg-red-700 text-white border-none"
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      내용 수정 및 재신청
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {!hasProfile || isEditing ? (
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* ... existing form content ... */}
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label>이름</Label>

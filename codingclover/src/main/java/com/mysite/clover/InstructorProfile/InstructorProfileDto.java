@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class InstructorProfileDto {
-  
+
   private Long userId;
   private String loginId;
   private String name;
@@ -19,4 +19,5 @@ public class InstructorProfileDto {
   private InstructorStatus status;
   private LocalDateTime appliedAt;
   private LocalDateTime approvedAt;
+  private String rejectReason;
 }

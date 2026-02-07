@@ -58,6 +58,10 @@ public class InstructorProfile {
   @Column(name = "approved_at")
   private LocalDateTime approvedAt;
 
+  // 반려 사유
+  @Column(name = "reject_reason", columnDefinition = "TEXT")
+  private String rejectReason;
+
   // 생성자
   public InstructorProfile(Long userId) {
     this.userId = userId;
