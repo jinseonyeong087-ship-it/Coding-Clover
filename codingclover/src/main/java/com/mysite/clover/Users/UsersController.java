@@ -146,32 +146,57 @@ public class UsersController {
     @ResponseBody
     public ResponseEntity<?> handleFindRequest(@RequestBody Map<String, String> params, HttpSession session) {
         try {
-            String type = params.get("type"); // 프론트에서 'id', 'pw', 'reset' 중 하나를 보냄
+            String type = params.get("type"); // 프론트에서 'id', 'pw', 'verify', 'reset' 중 하나를 보냄
 
-            // 아이디 찾기
+            // 1. 아이디 찾기
             if ("id".equals(type)) {
                 String loginId = usersService.findId(params.get("name"), params.get("email"));
                 return ResponseEntity.ok(Map.of("loginId", loginId));
             }
 
-            // 비밀번호 찾기(인증번호 발송 전)
+            // 2. 비밀번호 찾기 - 사용자 정보 확인 및 인증번호 발송
             else if ("pw".equals(type)) {
                 usersService.verifyUserForPassword(
                         params.get("loginId"),
                         params.get("name"),
                         params.get("email"));
                 int number = mailService.sendMail(params.get("email"));
-                session.setAttribute("emailAuthNumber", number);
-                return ResponseEntity.ok(Map.of("message", "사용자 정보 확인 완료."));
+                session.setAttribute("emailAuthNumber", String.valueOf(number)); // 비교를 위해 String으로 저장
+                session.setMaxInactiveInterval(300); // 세션 유효 시간 5분 설정 (필요시 조정)
+                return ResponseEntity.ok(Map.of("message", "인증번호가 이메일로 발송되었습니다."));
             }
 
-            // 비밀번호 재설정(인증번호 확인 후)
+            // 3. 비밀번호 찾기 - 인증번호 검증
+            else if ("verify".equals(type)) {
+                String inputAuthNum = params.get("authNumber");
+                String sessionAuthNum = (String) session.getAttribute("emailAuthNumber");
+
+                if (sessionAuthNum != null && sessionAuthNum.equals(inputAuthNum)) {
+                    session.setAttribute("isPwVerified", true); // 인증 성공 플래그
+                    return ResponseEntity.ok(Map.of("message", "인증에 성공하였습니다."));
+                } else {
+                    return ResponseEntity.badRequest().body(Map.of("message", "인증번호가 일치하지 않거나 만료되었습니다."));
+                }
+            }
+
+            // 4. 비밀번호 재설정(인증 완료 후)
             else if ("reset".equals(type)) {
+                // 인증된 세션인지 확인
+                Boolean isVerified = (Boolean) session.getAttribute("isPwVerified");
+                if (isVerified == null || !isVerified) {
+                    return ResponseEntity.badRequest().body(Map.of("message", "본인 인증이 완료되지 않았습니다."));
+                }
+
                 String loginId = params.get("loginId");
                 String newPassword = params.get("newPassword");
 
                 usersService.updatePassword(loginId, newPassword);
-                return ResponseEntity.ok(Map.of("message", "비밀번호 변경이 완료되었습니다."));
+
+                // 사용된 세션 정보 제거
+                session.removeAttribute("emailAuthNumber");
+                session.removeAttribute("isPwVerified");
+
+                return ResponseEntity.ok(Map.of("message", "비밀번호가 성공적으로 변경되었습니다."));
             }
 
             return ResponseEntity.badRequest().body(Map.of("message", "잘못된 요청 타입입니다."));
