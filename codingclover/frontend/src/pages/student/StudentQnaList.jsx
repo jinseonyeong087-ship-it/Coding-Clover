@@ -144,7 +144,7 @@ const StudentQnaList = () => {
 
       <Nav />
       {/* Spacer for fixed nav */}
-      <div className="h-4"></div>
+      <div className="h-16"></div>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl relative z-0">
         <div className="flex flex-col lg:flex-row gap-8">

@@ -74,7 +74,7 @@ const InstructorQnaList = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
       <Nav />
-      <div className="h-4"></div>
+      <div className="h-16"></div>
 
       <main className="container mx-auto px-4 py-8 max-w-7xl relative z-0">
         <div className="flex flex-col lg:flex-row gap-8">
