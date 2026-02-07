@@ -28,6 +28,7 @@ function StudentCourseDetail() {
     const [enrollmentStatus, setEnrollmentStatus] = useState(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogMessage, setDialogMessage] = useState({ title: '', description: '' });
+    const [loginRequired, setLoginRequired] = useState(false);
     const navigate = useNavigate();
 
     // 강의 목록 & 선택된 강의
@@ -103,11 +104,19 @@ function StudentCourseDetail() {
                     description: '지금 바로 학습을 시작할 수 있습니다.'
                 });
             } else {
-                const errorText = await res.text();
-                setDialogMessage({
-                    title: '수강신청 실패',
-                    description: errorText || '수강신청 중 오류가 발생했습니다.'
-                });
+                if (res.status === 401 || res.status === 403) {
+                    setLoginRequired(true);
+                    setDialogMessage({
+                        title: '로그인 필요',
+                        description: '로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?'
+                    });
+                } else {
+                    const errorText = await res.text();
+                    setDialogMessage({
+                        title: '수강신청 실패',
+                        description: errorText || '수강신청 중 오류가 발생했습니다.'
+                    });
+                }
             }
             setDialogOpen(true);
         } catch (err) {
@@ -222,149 +231,149 @@ function StudentCourseDetail() {
             )} */}
 
             {/* Course Info Layout - 항상 표시 */}
-                <main className="container mx-auto px-6 py-12 max-w-5xl">
-                    <Button variant="ghost" onClick={() => navigate(-1)} className="mb-8 hover:bg-muted/50 -ml-4">
-                        <ChevronLeft className="w-4 h-4 mr-2" /> 목록으로 돌아가기
-                    </Button>
+            <main className="container mx-auto px-6 py-12 max-w-5xl">
+                <Button variant="ghost" onClick={() => navigate(-1)} className="mb-8 hover:bg-muted/50 -ml-4">
+                    <ChevronLeft className="w-4 h-4 mr-2" /> 목록으로 돌아가기
+                </Button>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                        {/* Left: Course Info */}
-                        <div className="lg:col-span-2 space-y-8">
-                            <div className="space-y-4">
-                                <div className="flex gap-2">
-                                    {getLevelBadge(course.level)}
-                                    <Badge variant="secondary">{course.category || "프로그래밍"}</Badge>
-                                </div>
-                                <h1 className="text-4xl font-extrabold tracking-tight leading-tight">{course.title}</h1>
-                                <p className="text-xl text-muted-foreground leading-relaxed">
-                                    {course.description}
-                                </p>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    {/* Left: Course Info */}
+                    <div className="lg:col-span-2 space-y-8">
+                        <div className="space-y-4">
+                            <div className="flex gap-2">
+                                {getLevelBadge(course.level)}
+                                <Badge variant="secondary">{course.category || "프로그래밍"}</Badge>
                             </div>
+                            <h1 className="text-4xl font-extrabold tracking-tight leading-tight">{course.title}</h1>
+                            <p className="text-xl text-muted-foreground leading-relaxed">
+                                {course.description}
+                            </p>
+                        </div>
 
-                            <div className="flex items-center gap-6 py-6 border-y border-border/50">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                                        <User className="w-6 h-6 text-muted-foreground" />
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-muted-foreground font-bold uppercase">Instructor</div>
-                                        <div className="font-bold">{course.instructorName}</div>
-                                    </div>
+                        <div className="flex items-center gap-6 py-6 border-y border-border/50">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                                    <User className="w-6 h-6 text-muted-foreground" />
                                 </div>
-                                <div className="w-px h-10 bg-border/50" />
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                                        <FileText className="w-6 h-6 text-muted-foreground" />
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-muted-foreground font-bold uppercase">Lectures</div>
-                                        <div className="font-bold">총 {lectureList.length || '?'}강</div>
-                                    </div>
+                                <div>
+                                    <div className="text-xs text-muted-foreground font-bold uppercase">Instructor</div>
+                                    <div className="font-bold">{course.instructorName}</div>
                                 </div>
                             </div>
+                            <div className="w-px h-10 bg-border/50" />
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                                    <FileText className="w-6 h-6 text-muted-foreground" />
+                                </div>
+                                <div>
+                                    <div className="text-xs text-muted-foreground font-bold uppercase">Lectures</div>
+                                    <div className="font-bold">총 {lectureList.length || '?'}강</div>
+                                </div>
+                            </div>
+                        </div>
 
-                            <div className="bg-muted/30 rounded-2xl p-8 border border-border/50">
-                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                                    <MonitorPlay className="w-5 h-5 text-primary" />
-                                    커리큘럼 미리보기
-                                </h3>
-                                {/* Assuming we can fetch lectures even if not enrolled? 
+                        <div className="bg-muted/30 rounded-2xl p-8 border border-border/50">
+                            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                                <MonitorPlay className="w-5 h-5 text-primary" />
+                                커리큘럼 미리보기
+                            </h3>
+                            {/* Assuming we can fetch lectures even if not enrolled? 
                                     Usually we can't or only titles. 
                                     If backend blocks it, we might show placeholder or "Enroll to view" 
                                     The current code fetches lectrues ONLY if enrolled. 
                                     So we show a placeholder here. 
                                  */}
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between p-4 bg-background rounded-xl border border-border/50 opacity-60">
-                                        <div className="flex items-center gap-3">
-                                            <Lock className="w-4 h-4" />
-                                            <span>1강. 오리엔테이션</span>
-                                        </div>
-                                        <Badge variant="outline">잠김</Badge>
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between p-4 bg-background rounded-xl border border-border/50 opacity-60">
+                                    <div className="flex items-center gap-3">
+                                        <Lock className="w-4 h-4" />
+                                        <span>1강. 오리엔테이션</span>
                                     </div>
-                                    <div className="flex items-center justify-between p-4 bg-background rounded-xl border border-border/50 opacity-60">
-                                        <div className="flex items-center gap-3">
-                                            <Lock className="w-4 h-4" />
-                                            <span>2강. 강의 시작하기</span>
-                                        </div>
-                                        <Badge variant="outline">잠김</Badge>
+                                    <Badge variant="outline">잠김</Badge>
+                                </div>
+                                <div className="flex items-center justify-between p-4 bg-background rounded-xl border border-border/50 opacity-60">
+                                    <div className="flex items-center gap-3">
+                                        <Lock className="w-4 h-4" />
+                                        <span>2강. 강의 시작하기</span>
                                     </div>
-                                    <div className="text-center text-sm text-muted-foreground pt-2">
-                                        수강 신청 후 전체 강의를 확인할 수 있습니다.
-                                    </div>
+                                    <Badge variant="outline">잠김</Badge>
+                                </div>
+                                <div className="text-center text-sm text-muted-foreground pt-2">
+                                    수강 신청 후 전체 강의를 확인할 수 있습니다.
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Right: Sticky Card */}
-                        <div className="lg:col-span-1">
-                            <div className="sticky top-24 rounded-2xl border border-border bg-card text-card-foreground shadow-xl overflow-hidden">
-                                <div className="bg-muted/50 p-6 flex items-center justify-center">
-                                    {/* Placeholder for Course Image if available */}
-                                    <MonitorPlay className="w-20 h-20 text-muted-foreground/30" />
+                    {/* Right: Sticky Card */}
+                    <div className="lg:col-span-1">
+                        <div className="sticky top-24 rounded-2xl border border-border bg-card text-card-foreground shadow-xl overflow-hidden">
+                            <div className="bg-muted/50 p-6 flex items-center justify-center">
+                                {/* Placeholder for Course Image if available */}
+                                <MonitorPlay className="w-20 h-20 text-muted-foreground/30" />
+                            </div>
+                            <div className="p-6 space-y-6">
+                                <div>
+                                    <div className="text-sm text-muted-foreground font-medium mb-1">수강료</div>
+                                    <div className="text-3xl font-black">{course.price?.toLocaleString()}원</div>
                                 </div>
-                                <div className="p-6 space-y-6">
-                                    <div>
-                                        <div className="text-sm text-muted-foreground font-medium mb-1">수강료</div>
-                                        <div className="text-3xl font-black">{course.price?.toLocaleString()}원</div>
-                                    </div>
 
-                                    {enrollmentStatus === 'COMPLETED' ? (
-                                        <div className="space-y-3">
-                                            <Button
-                                                size="lg"
-                                                className="w-full font-bold text-lg shadow-lg hover:shadow-primary/25 transition-all"
-                                                onClick={() => navigate(`/student/course/${courseId}/lectures`)}
-                                            >
-                                                수강완료
-                                            </Button>
-                                            <Button
-                                                size="lg"
-                                                variant="outline"
-                                                className="w-full font-bold text-lg"
-                                                onClick={() => navigate(`/student/course/${courseId}/certificate`)}
-                                            >
-                                                <Award className="w-5 h-5 mr-2" />
-                                                수료증 발급
-                                            </Button>
-                                        </div>
-                                    ) : enrollmentStatus === 'ENROLLED' ? (
+                                {enrollmentStatus === 'COMPLETED' ? (
+                                    <div className="space-y-3">
                                         <Button
                                             size="lg"
                                             className="w-full font-bold text-lg shadow-lg hover:shadow-primary/25 transition-all"
                                             onClick={() => navigate(`/student/course/${courseId}/lectures`)}
                                         >
-                                            강의 시청
+                                            수강완료
                                         </Button>
-                                    ) : (
                                         <Button
                                             size="lg"
-                                            className="w-full font-bold text-lg shadow-lg hover:shadow-primary/25 transition-all"
-                                            onClick={handleSubmit}
+                                            variant="outline"
+                                            className="w-full font-bold text-lg"
+                                            onClick={() => navigate(`/student/course/${courseId}/certificate`)}
                                         >
-                                            수강 신청하기
+                                            <Award className="w-5 h-5 mr-2" />
+                                            수료증 발급
                                         </Button>
-                                    )}
+                                    </div>
+                                ) : enrollmentStatus === 'ENROLLED' ? (
+                                    <Button
+                                        size="lg"
+                                        className="w-full font-bold text-lg shadow-lg hover:shadow-primary/25 transition-all"
+                                        onClick={() => navigate(`/student/course/${courseId}/lectures`)}
+                                    >
+                                        강의 시청
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        size="lg"
+                                        className="w-full font-bold text-lg shadow-lg hover:shadow-primary/25 transition-all"
+                                        onClick={handleSubmit}
+                                    >
+                                        수강 신청하기
+                                    </Button>
+                                )}
 
-                                    <div className="space-y-3 text-sm text-muted-foreground">
-                                        <div className="flex items-center gap-2">
-                                            <CheckCircle className="w-4 h-4 text-emerald-500" />
-                                            <span>무제한 수강 가능</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <CheckCircle className="w-4 h-4 text-emerald-500" />
-                                            <span>모바일/PC 지원</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <CheckCircle className="w-4 h-4 text-emerald-500" />
-                                            <span>수료증 발급</span>
-                                        </div>
+                                <div className="space-y-3 text-sm text-muted-foreground">
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                                        <span>무제한 수강 가능</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                                        <span>모바일/PC 지원</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                                        <span>수료증 발급</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </main>
+                </div>
+            </main>
 
             <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <AlertDialogContent>
@@ -377,6 +386,10 @@ function StudentCourseDetail() {
                     <AlertDialogFooter>
                         <AlertDialogAction onClick={() => {
                             setDialogOpen(false);
+                            if (loginRequired) {
+                                navigate('/auth/login');
+                                setLoginRequired(false);
+                            }
                             if (enrollmentStatus === 'ENROLLED') {
                                 // Optional: Redirect to classroom?
                             }
