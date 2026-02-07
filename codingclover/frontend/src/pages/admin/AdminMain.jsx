@@ -262,7 +262,8 @@ function AdminMain() {
                                 <TableRow>
                                     <TableHead className="text-center w-[60px]">No</TableHead>
                                     <TableHead className="text-center w-[80px]">순서</TableHead>
-                                    <TableHead className="text-center">강의 제목</TableHead>
+                                    <TableHead className="text-left">강의 제목</TableHead>
+                                    <TableHead className="text-center w-[120px]">강사명</TableHead>
                                     <TableHead className="text-center w-[150px]">업로드 일정</TableHead>
                                     <TableHead className="text-center w-[100px]">상태</TableHead>
                                 </TableRow>
@@ -280,6 +281,7 @@ function AdminMain() {
                                                         {item.title}
                                                     </Link>
                                                 </TableCell>
+                                                <TableCell className="text-center text-sm">{item.createdByName}</TableCell>
                                                 <TableCell className="text-center text-xs text-muted-foreground">{item.scheduledAt}</TableCell>
                                                 <TableCell className="text-center">
                                                     {item.approvalStatus === 'PENDING' ? (
@@ -295,7 +297,7 @@ function AdminMain() {
                                     })
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                                        <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                                             업로드된 강의가 없습니다.
                                         </TableCell>
                                     </TableRow>

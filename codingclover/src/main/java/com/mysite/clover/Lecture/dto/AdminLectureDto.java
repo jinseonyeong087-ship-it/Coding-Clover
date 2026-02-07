@@ -32,6 +32,7 @@ public class AdminLectureDto {
     private String createdByName; // 강사 이름
     private String approvedByName; // 승인한 관리자 이름
     private LocalDateTime approvedAt; // 승인 일시
+    private LocalDateTime scheduledAt; // 예약 공개 일시 (추가)
 
     // Lecture 엔티티 -> AdminLectureDto 변환 메서드
     public static AdminLectureDto fromEntity(Lecture lecture) {
@@ -47,6 +48,7 @@ public class AdminLectureDto {
                 lecture.getRejectReason(),
                 lecture.getCreatedBy() != null ? lecture.getCreatedBy().getName() : "Unknown",
                 lecture.getApprovedBy() != null ? lecture.getApprovedBy().getName() : null,
-                lecture.getApprovedAt());
+                lecture.getApprovedAt(),
+                lecture.getScheduledAt());
     }
 }
