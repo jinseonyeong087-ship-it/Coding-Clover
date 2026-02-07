@@ -3,6 +3,7 @@ package com.mysite.clover.StudentProfile;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import java.util.Map;
 
+import com.mysite.clover.Users.UsersService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +25,7 @@ public class StudentProfileController {
 
     //모든 비즈니스 로직은 Service로 위임
     private final StudentProfileService studentProfileService;
+    private final UsersService usersService;
 
     //로그인한 수강생의 마이페이지 정보 조회
     @GetMapping("/mypage")
@@ -59,6 +62,30 @@ public class StudentProfileController {
         studentProfileService.updateStudentProfileByLoginId(loginId, requestData);
 
         return ResponseEntity.ok("프로필 업데이트 성공");
+    }
+
+    // 학생 계정 탈퇴
+    @DeleteMapping("/withdraw")
+    public ResponseEntity<String> withdrawStudent(
+            @AuthenticationPrincipal User principal,
+            HttpServletRequest request) {
+        
+        try {
+            // 로그인 사용자 식별
+            String loginId = resolveLoginId(principal, request);
+            System.out.println("탈퇴 요청 - loginId: " + loginId);
+            
+            // UsersService의 deleteUser 메서드를 직접 사용
+            usersService.deleteUser(loginId);
+            
+            System.out.println("탈퇴 처리 완료: " + loginId);
+            return ResponseEntity.ok("계정이 성공적으로 탈퇴되었습니다.");
+            
+        } catch (Exception e) {
+            System.err.println("탈퇴 처리 중 에러 발생: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("탈퇴 처리 중 오류가 발생했습니다: " + e.getMessage());
+        }
     }
 
     //resolveLoginId()는 요청으로부터 로그인 사용자를 식별하기 위한 전용 유틸 메서드

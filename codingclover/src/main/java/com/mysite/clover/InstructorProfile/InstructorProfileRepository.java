@@ -14,4 +14,7 @@ public interface InstructorProfileRepository extends JpaRepository<InstructorPro
   
   // 이력서 파일 경로로 프로필 조회
   Optional<InstructorProfile> findByResumeFilePath(String resumeFilePath);
+  
+  // 강사 정보 삭제 (탈퇴용)
+  void deleteByUserId(Long userId);
 }

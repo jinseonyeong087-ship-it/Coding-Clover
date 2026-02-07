@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Badge } from "@/components/ui/badge";
-import { User, Edit, Coins, ChevronRight, BookOpen, MonitorPlay, Calendar, AlertCircle } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { User, Edit, Coins, ChevronRight, BookOpen, MonitorPlay, Calendar, AlertCircle, Trash2 } from "lucide-react";
 import axios from 'axios';
 import coinImg from '../../img/coin.png';
 
@@ -53,6 +54,7 @@ function MyPage() {
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [points, setPoints] = useState(0);
   const [pointsLoading, setPointsLoading] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   // 포인트 조회 함수
   const fetchUserPoints = async () => {
@@ -103,6 +105,47 @@ function MyPage() {
   // 환불 요청 함수
   const handleRefundRequest = () => {
     // 모달창에서 확인 버튼 클릭 시 실행될 로직은 AlertDialog 안에서 처리
+  };
+
+  // 계정 탈퇴 함수
+  const handleWithdraw = async () => {
+    try {
+      setIsWithdrawing(true);
+
+      const currentIdentifier = getUserIdentifier();
+      if (!currentIdentifier) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      const response = await fetch('/api/student/withdraw', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Login-Id': currentIdentifier
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('탈퇴 처리에 실패했습니다.');
+      }
+
+      // 로컬스토리지 데이터 삭제
+      localStorage.removeItem('users');
+      localStorage.clear();
+      
+      alert('계정이 성공적으로 탈퇴되었습니다.');
+      
+      // 로그인 페이지로 이동
+      navigate('/auth/login', { replace: true });
+      
+    } catch (error) {
+      console.error('계정 탈퇴 실패:', error);
+      alert(error.message || '탈퇴 처리 중 오류가 발생했습니다.');
+    } finally {
+      setIsWithdrawing(false);
+    }
   };
 
   // 데이터 가져오기 함수
@@ -340,7 +383,7 @@ function MyPage() {
             {/* Header & Stats */}
             <header>
               <h1 className="text-3xl font-extrabold tracking-tight mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
-                My Dashboard
+                My dashboard
               </h1>
               <p className="text-base text-muted-foreground">
                 안녕하세요, <span className="font-bold text-foreground">{user.name}</span>님. 오늘의 학습 현황입니다.
@@ -467,6 +510,90 @@ function MyPage() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Withdraw Button */}
+            <div className="flex justify-end">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 text-xs"
+                    disabled={isWithdrawing}
+                  >
+                    {isWithdrawing ? '처리중...' : '계정 탈퇴'}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="max-w-md mx-auto">
+                  <AlertDialogHeader className="space-y-4 pb-6">
+                    <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
+                      <AlertCircle className="w-8 h-8 text-destructive" />
+                    </div>
+                    <AlertDialogTitle className="text-xl font-bold text-center text-foreground">
+                      정말로 탈퇴하시겠습니까?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="text-center text-muted-foreground">
+                      계정을 탈퇴하면 모든 데이터가 영구적으로 삭제됩니다
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  
+                  <div className="py-6 border-y border-border/50">
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-sm text-foreground flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-destructive rounded-full"></span>
+                        삭제될 데이터
+                      </h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-muted/30 rounded-xl p-3 text-center">
+                          <div className="w-8 h-8 bg-primary/10 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                            <User className="w-4 h-4 text-primary" />
+                          </div>
+                          <p className="text-xs font-medium">개인정보</p>
+                        </div>
+                        <div className="bg-muted/30 rounded-xl p-3 text-center">
+                          <div className="w-8 h-8 bg-purple-500/10 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                            <BookOpen className="w-4 h-4 text-purple-500" />
+                          </div>
+                          <p className="text-xs font-medium">수강내역</p>
+                        </div>
+                        <div className="bg-muted/30 rounded-xl p-3 text-center">
+                          <div className="w-8 h-8 bg-amber-500/10 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                            <Coins className="w-4 h-4 text-amber-500" />
+                          </div>
+                          <p className="text-xs font-medium">포인트</p>
+                        </div>
+                        <div className="bg-muted/30 rounded-xl p-3 text-center">
+                          <div className="w-8 h-8 bg-slate-500/10 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                            <Calendar className="w-4 h-4 text-slate-500" />
+                          </div>
+                          <p className="text-xs font-medium">학습기록</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <AlertDialogFooter className="pt-6 gap-3">
+                    <AlertDialogCancel className="flex-1 rounded-xl font-medium h-11">
+                      취소
+                    </AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleWithdraw}
+                      className="flex-1 bg-destructive hover:bg-destructive/90 rounded-xl font-bold h-11 shadow-lg"
+                      disabled={isWithdrawing}
+                    >
+                      {isWithdrawing ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          탈퇴 처리중...
+                        </>
+                      ) : (
+                        '확인, 탈퇴합니다'
+                      )}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
 
             {/* Enrolled Courses */}

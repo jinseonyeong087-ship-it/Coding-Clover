@@ -12,4 +12,7 @@ public interface StudentProfileRepository extends JpaRepository<StudentProfile, 
   
   //수강생 정보 가져오기
   Optional<StudentProfile> findByUserId(Long userId);
+  
+  //수강생 정보 삭제 (탈퇴용)
+  void deleteByUserId(Long userId);
 }

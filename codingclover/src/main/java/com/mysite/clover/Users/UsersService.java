@@ -2,6 +2,7 @@ package com.mysite.clover.Users;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 
 import com.mysite.clover.InstructorProfile.InstructorProfileRepository;
 import com.mysite.clover.InstructorProfile.InstructorStatus;
+import com.mysite.clover.StudentProfile.StudentProfileRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @RequiredArgsConstructor
 @Service
@@ -17,6 +21,7 @@ public class UsersService {
     private final UsersRepository usersRepository;
     private final PasswordEncoder passwordEncoder;
     private final InstructorProfileRepository instructorProfileRepository;
+    private final StudentProfileRepository studentProfileRepository;
 
     public Users create(String loginId, String password, String name, String email, String role) {
         Users user = new Users();
@@ -181,5 +186,36 @@ public class UsersService {
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         user.setPassword(passwordEncoder.encode(newPassword));
         usersRepository.save(user);
+    }
+
+    // 사용자 계정 삭제 (탈퇴)
+    @Transactional
+    public void deleteUser(String identifier) {
+        // 사용자 조회 (loginId 또는 email)
+        Users user = usersRepository.findByLoginId(identifier)
+                .or(() -> usersRepository.findByEmail(identifier))
+                .orElseThrow(() -> new EntityNotFoundException("사용자 정보가 없습니다."));
+        
+        Long userId = user.getUserId();
+        
+        // 1. 관련 프로필 데이터 삭제 (외래키 제약 조건 때문에 먼저 삭제)
+        // StudentProfile 삭제
+        studentProfileRepository.deleteByUserId(userId);
+        
+        // InstructorProfile 삭제 (강사인 경우)
+        instructorProfileRepository.deleteByUserId(userId);
+        
+        // 2. TODO: 필요에 따라 다른 관련 테이블의 데이터도 삭제
+        // - 수강 정보 (Enrollment)
+        // - 포인트/지갑 정보 (UserWallet) 
+        // - 결제 내역 (Payment)
+        // - 강의 진도 (LectureProgress)
+        // - 알림 (Notification)
+        // - 커뮤니티 게시글/댓글 등
+        
+        // 3. Users 테이블에서 사용자 삭제 (마지막에 삭제)
+        usersRepository.delete(user);
+        
+        System.out.println("사용자 계정 삭제 완료: " + identifier);
     }
 }
