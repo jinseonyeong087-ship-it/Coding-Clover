@@ -26,8 +26,6 @@ function TestSearch() {
     const categories = [
         { id: 'COURSE', name: '강좌' },
         { id: 'LECTURE', name: '강의' },
-        { id: 'INSTRUCTOR', name: '강사' },
-        { id: 'STUDENT', name: '학생' },
         { id: 'CODING_TEST', name: '코딩테스트' },
         { id: 'COMMUNITY', name: '커뮤니티' },
         { id: 'QNA', name: 'Q&A' },
@@ -71,7 +69,6 @@ function TestSearch() {
                         <TableHead className="text-center w-20">번호</TableHead>
                         <TableHead className="text-center">강좌명</TableHead>
                         <TableHead className="text-center">강사명</TableHead>
-                        <TableHead className="text-center">상태</TableHead>
                     </TableRow>
                 );
             case 'COMMUNITY':
@@ -107,7 +104,7 @@ function TestSearch() {
     };
 
     // 테이블 행 데이터 설정
-    const renderRows = (item, categoryId) => {
+    const renderRows = (item, categoryId, index) => {
         const dateStr = (item.regDate || item.createdAt)?.split('T')[0] || '-';
         const linkPath = `/${categoryId.toLowerCase()}/${item.postId || item.qnaId || item.noticeId || item.id}`;
         const title = item.title || item.subject || "제목 없음";
@@ -117,18 +114,13 @@ function TestSearch() {
             case 'COURSE':
                 return (
                     <>
-                        <TableCell className="text-center">{item.courseId}</TableCell>
+                        <TableCell className="text-center">{index + 1}</TableCell>
                         <TableCell className="text-center font-medium text-blue-600">
                             <Link to={`/admin/course/${item.courseId}`} className="hover:underline">
                                 {item.title}
                             </Link>
                         </TableCell>
                         <TableCell className="text-center">{item.instructorName || "관리자"}</TableCell>
-                        <TableCell className="text-center">
-                            <Badge variant={item.proposalStatus === 'APPROVED' ? 'secondary' : 'destructive'}>
-                                {item.proposalStatus}
-                            </Badge>
-                        </TableCell>
                     </>
                 );
             case 'COMMUNITY':
@@ -237,7 +229,7 @@ function TestSearch() {
                                             <TableBody className="bg-white">
                                                 {catData.map((item, index) => (
                                                     <TableRow key={index} className="hover:bg-blue-50/30 transition-colors">
-                                                        {renderRows(item, cat.id)}
+                                                        {renderRows(item, cat.id, index)}
                                                     </TableRow>
                                                 ))}
                                             </TableBody>
