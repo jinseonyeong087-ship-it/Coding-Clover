@@ -55,8 +55,8 @@ function InstructorNav() {
                         <MenubarMenu>
                             <MenubarTrigger className="cursor-pointer font-medium text-muted-foreground hover:text-foreground transition-colors">시험 제출</MenubarTrigger>
                             <MenubarContent>
-                                <MenubarItem>시험 제출하기</MenubarItem>
-                                <MenubarItem>시험 결과</MenubarItem>
+                                <MenubarItem onClick={() => navigate('/instructor/exam/list')}>시험 목록</MenubarItem>
+                                <MenubarItem onClick={() => navigate('/instructor/exam/new')}>시험 제출하기</MenubarItem>
                             </MenubarContent>
                         </MenubarMenu>
                         <MenubarMenu>
