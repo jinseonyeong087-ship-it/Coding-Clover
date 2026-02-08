@@ -313,4 +313,9 @@ public class ExamService {
     public List<ScoreHistory> getAllScores() {
         return scoreHistoryRepository.findAll();
     }
+
+    // 관리자용: 시스템 전체 시험 목록 조회
+    public List<Exam> getAllExams() {
+        return examRepository.findAll();
+    }
 }

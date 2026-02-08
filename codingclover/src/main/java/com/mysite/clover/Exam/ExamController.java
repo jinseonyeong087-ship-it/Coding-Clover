@@ -222,4 +222,21 @@ public class ExamController {
                                 .map(ScoreHistoryDto::fromEntity)
                                 .toList());
         }
+
+        // 관리자 : 전체 시험 목록 조회 (시험 관리용)
+        @PreAuthorize("hasRole('ADMIN')")
+        @GetMapping("/admin/exams")
+        public ResponseEntity<List<com.mysite.clover.Exam.dto.AdminExamDto>> getAllExamsForAdmin() {
+                return ResponseEntity.ok(examService.getAllExams().stream()
+                                .map(com.mysite.clover.Exam.dto.AdminExamDto::fromEntity)
+                                .toList());
+        }
+
+        // 관리자 : 시험 삭제 (강제 삭제)
+        @PreAuthorize("hasRole('ADMIN')")
+        @DeleteMapping("/admin/exam/{examId}")
+        public ResponseEntity<String> deleteExamByAdmin(@PathVariable Long examId) {
+                examService.deleteExam(examId);
+                return ResponseEntity.ok("시험이 삭제되었습니다.");
+        }
 }

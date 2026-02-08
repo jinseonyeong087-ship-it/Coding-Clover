@@ -15,13 +15,18 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Play, Loader2, History, Trophy } from "lucide-react";
+import { Play, Loader2, History, Trophy, ChevronLeft, ChevronRight } from "lucide-react";
 
 const StudentExamList = () => {
     const navigate = useNavigate();
     const [availableExams, setAvailableExams] = useState([]);
     const [scoreHistory, setScoreHistory] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Pagination State
+    const [availablePage, setAvailablePage] = useState(1);
+    const [historyPage, setHistoryPage] = useState(1);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         fetchData();
@@ -56,6 +61,28 @@ const StudentExamList = () => {
     const handleStartExam = (examId) => {
         if (window.confirm("시험을 시작하시겠습니까?\n시험 도중 이탈하면 불이익이 있을 수 있습니다.")) {
             navigate(`/student/exam/${examId}`);
+        }
+    };
+
+    // Pagination Logic - Available Exams
+    const totalAvailablePages = Math.ceil(availableExams.length / itemsPerPage);
+    const availableStartIndex = (availablePage - 1) * itemsPerPage;
+    const currentAvailableExams = availableExams.slice(availableStartIndex, availableStartIndex + itemsPerPage);
+
+    const handleAvailablePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalAvailablePages) {
+            setAvailablePage(newPage);
+        }
+    };
+
+    // Pagination Logic - History
+    const totalHistoryPages = Math.ceil(scoreHistory.length / itemsPerPage);
+    const historyStartIndex = (historyPage - 1) * itemsPerPage;
+    const currentScoreHistory = scoreHistory.slice(historyStartIndex, historyStartIndex + itemsPerPage);
+
+    const handleHistoryPageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalHistoryPages) {
+            setHistoryPage(newPage);
         }
     };
 
@@ -98,38 +125,67 @@ const StudentExamList = () => {
                                         강좌 진도율을 80% 이상 달성해보세요!
                                     </div>
                                 ) : (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>강좌명</TableHead>
-                                                <TableHead>시험 제목</TableHead>
-                                                <TableHead>난이도</TableHead>
-                                                <TableHead>제한시간</TableHead>
-                                                <TableHead>합격기준</TableHead>
-                                                <TableHead className="text-right">응시</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {availableExams.map((exam) => (
-                                                <TableRow key={exam.examId}>
-                                                    <TableCell className="text-muted-foreground">{exam.courseTitle}</TableCell>
-                                                    <TableCell className="font-semibold">{exam.title}</TableCell>
-                                                    <TableCell>{getLevelBadge(exam.level)}</TableCell>
-                                                    <TableCell>{exam.timeLimit}분</TableCell>
-                                                    <TableCell>{exam.passScore}점</TableCell>
-                                                    <TableCell className="text-right">
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() => handleStartExam(exam.examId)}
-                                                            className="bg-primary hover:bg-primary/90"
-                                                        >
-                                                            시험 시작
-                                                        </Button>
-                                                    </TableCell>
+                                    <>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>강좌명</TableHead>
+                                                    <TableHead>시험 제목</TableHead>
+                                                    <TableHead>난이도</TableHead>
+                                                    <TableHead>제한시간</TableHead>
+                                                    <TableHead>합격기준</TableHead>
+                                                    <TableHead className="text-right">응시</TableHead>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {currentAvailableExams.map((exam) => (
+                                                    <TableRow key={exam.examId}>
+                                                        <TableCell className="text-muted-foreground">{exam.courseTitle}</TableCell>
+                                                        <TableCell className="font-semibold">{exam.title}</TableCell>
+                                                        <TableCell>{getLevelBadge(exam.level)}</TableCell>
+                                                        <TableCell>{exam.timeLimit}분</TableCell>
+                                                        <TableCell>{exam.passScore}점</TableCell>
+                                                        <TableCell className="text-right">
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() => handleStartExam(exam.examId)}
+                                                                className="bg-primary hover:bg-primary/90"
+                                                            >
+                                                                시험 시작
+                                                            </Button>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+
+                                        {/* Available Exams Pagination */}
+                                        {availableExams.length > itemsPerPage && (
+                                            <div className="flex justify-center items-center gap-4 mt-6 border-t pt-4">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleAvailablePageChange(availablePage - 1)}
+                                                    disabled={availablePage === 1}
+                                                >
+                                                    <ChevronLeft className="w-4 h-4" />
+                                                    이전
+                                                </Button>
+                                                <span className="text-sm text-muted-foreground">
+                                                    {availablePage} / {totalAvailablePages}
+                                                </span>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleAvailablePageChange(availablePage + 1)}
+                                                    disabled={availablePage === totalAvailablePages}
+                                                >
+                                                    다음
+                                                    <ChevronRight className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </CardContent>
                         </Card>
@@ -156,36 +212,65 @@ const StudentExamList = () => {
                                         아직 응시한 시험 기록이 없습니다.
                                     </div>
                                 ) : (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>시험 제목</TableHead>
-                                                <TableHead>응시 차수</TableHead>
-                                                <TableHead>점수</TableHead>
-                                                <TableHead>결과</TableHead>
-                                                <TableHead className="text-right">응시 일시</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {scoreHistory.map((history) => (
-                                                <TableRow key={history.historyId}>
-                                                    <TableCell className="font-medium">{history.examTitle}</TableCell>
-                                                    <TableCell>{history.attemptNo}회차</TableCell>
-                                                    <TableCell>{history.score}점</TableCell>
-                                                    <TableCell>
-                                                        {history.passed ? (
-                                                            <Badge className="bg-emerald-500 hover:bg-emerald-600">합격</Badge>
-                                                        ) : (
-                                                            <Badge variant="destructive">불합격</Badge>
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell className="text-right text-muted-foreground text-sm">
-                                                        {new Date(history.createdAt).toLocaleString()}
-                                                    </TableCell>
+                                    <>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>시험 제목</TableHead>
+                                                    <TableHead>응시 차수</TableHead>
+                                                    <TableHead>점수</TableHead>
+                                                    <TableHead>결과</TableHead>
+                                                    <TableHead className="text-right">응시 일시</TableHead>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {currentScoreHistory.map((history) => (
+                                                    <TableRow key={history.historyId}>
+                                                        <TableCell className="font-medium">{history.examTitle}</TableCell>
+                                                        <TableCell>{history.attemptNo}회차</TableCell>
+                                                        <TableCell>{history.score}점</TableCell>
+                                                        <TableCell>
+                                                            {history.passed ? (
+                                                                <Badge className="bg-emerald-500 hover:bg-emerald-600">합격</Badge>
+                                                            ) : (
+                                                                <Badge variant="destructive">불합격</Badge>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell className="text-right text-muted-foreground text-sm">
+                                                            {new Date(history.createdAt).toLocaleString()}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+
+                                        {/* History Pagination */}
+                                        {scoreHistory.length > itemsPerPage && (
+                                            <div className="flex justify-center items-center gap-4 mt-6 border-t pt-4">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleHistoryPageChange(historyPage - 1)}
+                                                    disabled={historyPage === 1}
+                                                >
+                                                    <ChevronLeft className="w-4 h-4" />
+                                                    이전
+                                                </Button>
+                                                <span className="text-sm text-muted-foreground">
+                                                    {historyPage} / {totalHistoryPages}
+                                                </span>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleHistoryPageChange(historyPage + 1)}
+                                                    disabled={historyPage === totalHistoryPages}
+                                                >
+                                                    다음
+                                                    <ChevronRight className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </CardContent>
                         </Card>
