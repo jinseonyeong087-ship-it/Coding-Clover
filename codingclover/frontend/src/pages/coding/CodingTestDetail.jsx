@@ -201,6 +201,15 @@ const CodingTestDetail = () => {
   // 코드 제출 (Submit)
   const handleSubmitCode = async () => {
     if (!selectedTask) return;
+
+    // 비로그인 사용자 체크
+    if (!user || !user.userId) {
+      if (window.confirm("코딩테스트 제출은 회원만 가능합니다.\n로그인 페이지로 이동하시겠습니까?")) {
+        navigate("/auth/login");
+      }
+      return;
+    }
+
     setIsRunning(true);
     setResult(null);
 
