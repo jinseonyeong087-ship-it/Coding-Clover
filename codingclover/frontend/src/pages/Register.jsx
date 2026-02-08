@@ -154,7 +154,7 @@ const Register = ({ onToLogin }) => {
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6" noValidate>
               {/* 전역 에러 메시지 */}
               {errors.global && (
                 <p className="text-sm text-destructive text-center">{errors.global}</p>

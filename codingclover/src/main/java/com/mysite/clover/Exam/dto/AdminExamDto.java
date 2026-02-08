@@ -1,34 +1,49 @@
 package com.mysite.clover.Exam.dto;
 
 import com.mysite.clover.Exam.Exam;
-
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.AllArgsConstructor;
+import java.util.List;
 
-// 관리자가 시험 정보를 조회(확인)할 때 사용하는 DTO
 @Getter
 @AllArgsConstructor
 public class AdminExamDto {
-    private Long examId; // 시험 ID
-    private Long courseId; // 소속 강좌 ID
-    private String courseName; // 소속 강좌 제목 (가독성을 위해 추가)
-    private String title; // 시험 제목
-    private Integer timeLimit; // 제한 시간(분)
-    private Integer level; // 난이도
-    private Integer passScore; // 합격 기준 점수
-    private String createdByName; // 출제한 강사 이름
+    private Long examId;
+    private Long courseId;
+    private String courseTitle;
+    private String instructorName; // 강사 이름 추가
+    private String title;
+    private Integer timeLimit;
+    private Integer level;
+    private Integer passScore;
+    private Boolean isPublished;
+    private List<ExamQuestionDto> questions;
 
-    // Exam 엔티티 -> AdminExamDto 변환 메서드
     public static AdminExamDto fromEntity(Exam exam) {
+        List<ExamQuestionDto> questionDtos = exam.getQuestions().stream()
+                .map(q -> {
+                    ExamQuestionDto dto = new ExamQuestionDto();
+                    dto.setQuestionText(q.getQuestionText());
+                    dto.setOption1(q.getOption1());
+                    dto.setOption2(q.getOption2());
+                    dto.setOption3(q.getOption3());
+                    dto.setOption4(q.getOption4());
+                    dto.setOption5(q.getOption5());
+                    dto.setCorrectAnswer(q.getCorrectAnswer());
+                    return dto;
+                })
+                .toList();
+
         return new AdminExamDto(
                 exam.getExamId(),
                 exam.getCourse().getCourseId(),
                 exam.getCourse().getTitle(),
+                exam.getCreatedBy().getName(), // 강사 이름
                 exam.getTitle(),
                 exam.getTimeLimit(),
                 exam.getLevel(),
                 exam.getPassScore(),
-                // 출제자가 삭제되었을 경우 "Unknown" 처리
-                exam.getCreatedBy() != null ? exam.getCreatedBy().getName() : "Unknown");
+                exam.getIsPublished(),
+                questionDtos);
     }
 }

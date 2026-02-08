@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import axios from 'axios';
+import { Toaster } from 'sonner';
 import { Routes, Route, BrowserRouter } from 'react-router-dom'
 import Home from './pages/Home'
 import MainLogin from './pages/MainLogin'
@@ -48,6 +49,12 @@ import InstructorCourseList from './pages/instructor/InstructorCourseList';
 import InstructorLecture from './pages/instructor/InstructorLecture';
 import InstructorQnaList from './pages/instructor/InstructorQnaList';
 import InstructorQnaDetail from './pages/instructor/InstructorQnaDetail';
+import ExamList from './pages/instructor/ExamList';
+import ExamCreate from './pages/instructor/ExamCreate';
+import ExamResult from './pages/instructor/ExamResult';
+import StudentExamList from './pages/student/StudentExamList';
+import StudentExamTaking from './pages/student/StudentExamTaking';
+import AdminExamList from './pages/admin/AdminExamList';
 
 
 
@@ -149,6 +156,8 @@ function App() {
           <Route path="mypage" element={<MyPage />} />
           <Route path="points" element={<PointsHistory />} />
           <Route path="course/:courseId/lectures" element={<StudentLectureDetail />} />
+          <Route path="exam" element={<StudentExamList />} />
+          <Route path="exam/:examId" element={<StudentExamTaking />} />
         </Route>
         {/* 강사페이지 */}
         <Route path="/instructor/*" element={
@@ -162,8 +171,11 @@ function App() {
           <Route path="lecture/upload" element={<InstructorLecture />} />
           <Route path="lecture/:lectureId" element={<InstructorCourseDetail />} />
           <Route path="mypage" element={<InstructorMypage />} />
-          <Route path="qna" element={<InstructorQnaList />} />
           <Route path="qna/:qnaId" element={<InstructorQnaDetail />} />
+          <Route path="exam/list" element={<ExamList />} />
+          <Route path="exam/new" element={<ExamCreate />} />
+          <Route path="exam/:examId" element={<ExamCreate />} />
+          <Route path="exam/:examId/results" element={<ExamResult />} />
         </Route>
         {/* 관리자 */}
         <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
@@ -173,12 +185,15 @@ function App() {
           <Route path="users/instructors/:userId" element={<AdminApproch />} />
           <Route path="course/:courseId/lectures" element={<AdminLectureDetail />} />
           <Route path="users/instructors" element={<AdminInstructorList />} />
+          <Route path="users/instructors" element={<AdminInstructorList />} />
           <Route path="payments" element={<PaymentManagement />} />
+          <Route path="exams" element={<AdminExamList />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
         {/*강사 프로필 <Route path="/api/instructor/profile" element={<InstructorProfile />} /> */}
         {/*수강생 프로필 <Route path="/api/student/profile" element={<StudentProfile />} /> */}
       </Routes>
+      <Toaster position="top-center" richColors />
     </BrowserRouter>
   );
 }

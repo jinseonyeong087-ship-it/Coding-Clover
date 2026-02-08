@@ -177,6 +177,9 @@ function StudentNav() {
                             <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/coding-test') }}>코딩테스트</MenubarTrigger>
                         </MenubarMenu>
                         <MenubarMenu>
+                            <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/student/exam') }}>시험 응시</MenubarTrigger>
+                        </MenubarMenu>
+                        <MenubarMenu>
                             <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/payment') }}>충전하기</MenubarTrigger>
                         </MenubarMenu>
                         <MenubarMenu>

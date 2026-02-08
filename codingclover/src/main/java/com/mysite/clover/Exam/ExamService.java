@@ -10,11 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.mysite.clover.Enrollment.Enrollment;
 import com.mysite.clover.Enrollment.EnrollmentRepository;
 import com.mysite.clover.Enrollment.EnrollmentStatus;
 import com.mysite.clover.Exam.dto.ExamCreateRequest;
+import com.mysite.clover.Exam.dto.ExamResultDto;
 import com.mysite.clover.ExamAttempt.ExamAttempt;
 import com.mysite.clover.ExamAttempt.ExamAttemptRepository;
 import com.mysite.clover.Lecture.LectureRepository;
@@ -30,9 +32,12 @@ import com.mysite.clover.ScoreHistory.ScoreHistoryRepository;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ExamService {
 
     private final ExamRepository examRepository;
+    private final ExamQuestionRepository examQuestionRepository;
+    private final ExamAnswerRepository examAnswerRepository;
     private final ExamAttemptRepository examAttemptRepository;
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
@@ -49,57 +54,124 @@ public class ExamService {
 
     // 신규 시험 생성 (강사가 강좌에 시험을 추가)
     @Transactional
-    public void createExam(Long courseId, String title, Integer timeLimit, Integer level, Integer passScore,
-            Boolean isPublished, Users instructor) {
+    public void createExam(ExamCreateRequest request, Users instructor) {
         // 1. 강좌 ID로 강좌 정보를 조회
-        Course course = courseRepository.findById(courseId)
+        Course course = courseRepository.findById(request.getCourseId())
                 .orElseThrow(() -> new IllegalArgumentException("강좌를 찾을 수 없습니다."));
 
-        // 2. 새로운 시험 엔티티 생성
-        Exam exam = new Exam();
+        // 2. 이미 해당 강좌에 시험이 있는지 확인 (강좌별 1개 제한 정책)
+        if (examRepository.findByCourse(course).size() > 0) {
+            throw new IllegalArgumentException("이미 해당 강좌에 등록된 시험이 있습니다.");
+        }
 
-        // 3. 필드 값 설정
+        // 3. 새로운 시험 엔티티 생성
+        Exam exam = new Exam();
         exam.setCourse(course); // 소속 강좌
-        exam.setTitle(title); // 시험 제목
-        exam.setTimeLimit(timeLimit); // 제한 시간
-        exam.setLevel(level); // 난이도
-        exam.setPassScore(passScore); // 합격 기준 점수
-        exam.setIsPublished(isPublished); // 공개 여부
+        exam.setTitle(request.getTitle()); // 시험 제목
+        exam.setTimeLimit(request.getTimeLimit()); // 제한 시간
+        exam.setLevel(request.getLevel()); // 난이도
+        exam.setPassScore(request.getPassScore()); // 합격 기준 점수
+        exam.setIsPublished(request.getIsPublished()); // 공개 여부
         exam.setCreatedBy(instructor); // 출제 강사
 
-        // 4. DB에 저장
-        examRepository.save(exam);
+        // 4. 시험 저장 (ID 생성)
+        Exam savedExam = examRepository.save(exam);
+
+        // 5. 문제 저장
+        if (request.getQuestions() != null) {
+            for (com.mysite.clover.Exam.dto.ExamQuestionDto qDto : request.getQuestions()) {
+                ExamQuestion question = new ExamQuestion();
+                question.setExam(savedExam);
+                question.setQuestionText(qDto.getQuestionText());
+                question.setOption1(qDto.getOption1());
+                question.setOption2(qDto.getOption2());
+                question.setOption3(qDto.getOption3());
+                question.setOption4(qDto.getOption4());
+                question.setOption5(qDto.getOption5());
+                question.setCorrectAnswer(qDto.getCorrectAnswer());
+                examQuestionRepository.save(question);
+            }
+        }
     }
 
-    // 시험 응시 결과 기록 (ScoreHistory 및 ExamAttempt에 저장)
-    // ScoreHistory(명세서 테이블)와 ExamAttempt(기존 테이블)를 동시에 저장합니다.
+    // 시험 응시 및 채점 (핵심 로직 - 대체 메서드)
     @Transactional
-    public void recordAttempt(Exam exam, Users user, Integer score, Boolean passed) {
-        // 1. 현재 사용자의 해당 시험 시도 횟수 계산 (기존 기록 중 가장 높은 시도 횟수 + 1)
-        Integer attemptNo = scoreHistoryRepository.findByUserAndExamOrderByAttemptNoDesc(user, exam)
+    public ExamResultDto submitExam(Long examId, Users student, Map<Long, Integer> answers) {
+        // 1. 시험 정보 조회
+        Exam exam = getExam(examId);
+
+        // 2. 전체 문제 조회
+        List<ExamQuestion> questions = examQuestionRepository.findByExam(exam);
+        int totalQuestions = questions.size();
+        int correctCount = 0;
+
+        // 3. ExamAttempt(응시 기록) 먼저 생성 (ID 생성을 위해 저장)
+        // 시도 횟수 계산
+        Integer attemptNo = scoreHistoryRepository.findByUserAndExamOrderByAttemptNoDesc(student, exam)
                 .stream().findFirst().map(ScoreHistory::getAttemptNo).orElse(0) + 1;
 
-        // 2. ScoreHistory 엔티티 생성 및 저장 (성적 이력 관리)
+        ExamAttempt attempt = new ExamAttempt();
+        attempt.setExam(exam);
+        attempt.setUser(student);
+        attempt.setAttemptNo(attemptNo);
+        // attempt.setAttemptedAt(LocalDateTime.now()); // Entity Listener 처리 가정
+        attempt.setScore(0); // 임시 저장
+        attempt.setPassed(false);
+        attempt.setAttemptedAt(LocalDateTime.now());
+        ExamAttempt savedAttempt = examAttemptRepository.save(attempt);
+
+        // 4. 답안 확인 및 저장
+        for (ExamQuestion q : questions) {
+            Integer selectedOption = answers.get(q.getQuestionId());
+            boolean isCorrect = false;
+
+            if (selectedOption != null) {
+                if (selectedOption.equals(q.getCorrectAnswer())) {
+                    isCorrect = true;
+                    correctCount++;
+                }
+            }
+
+            // 답안 엔티티 저장
+            ExamAnswer examAnswer = new ExamAnswer();
+            examAnswer.setAttempt(savedAttempt);
+            examAnswer.setQuestion(q);
+            examAnswer.setSelectedAnswer(selectedOption);
+            examAnswer.setIsCorrect(isCorrect);
+            examAnswerRepository.save(examAnswer);
+        }
+
+        // 5. 점수 계산 (100점 만점 환산)
+        int score = 0;
+        if (totalQuestions > 0) {
+            score = (int) (((double) correctCount / totalQuestions) * 100);
+        }
+        boolean passed = score >= exam.getPassScore();
+
+        // 6. ExamAttempt 업데이트
+        savedAttempt.setScore(score);
+        savedAttempt.setPassed(passed);
+        examAttemptRepository.save(savedAttempt);
+
+        // 7. ScoreHistory 저장 (이력 관리용)
         ScoreHistory history = new ScoreHistory();
         history.setExam(exam);
-        history.setUser(user);
+        history.setUser(student);
         history.setScore(score);
         history.setAttemptNo(attemptNo);
         history.setPassed(passed);
         history.setCreatedAt(LocalDateTime.now());
         scoreHistoryRepository.save(history);
 
-        // 3. ExamAttempt 엔티티 생성 및 저장 (응시 상세 기록)
-        ExamAttempt attempt = new ExamAttempt();
-        attempt.setExam(exam);
-        attempt.setUser(user);
-        attempt.setScore(score);
-        attempt.setAttemptNo(attemptNo);
-        attempt.setPassed(passed);
-        // attemptedAt은 @CreatedDate에 의해 자동 설정되거나 명시적 설정 필요 (여기선 엔티티 설정 따름)
-        // 만약 자동 설정이 안된다면 attempt.setAttemptedAt(LocalDateTime.now()) 필요
+        // 8. 결과 반환
+        String message = passed ? "축하합니다! 합격입니다." : "아쉽게도 불합격입니다.";
+        return new ExamResultDto(score, passed, correctCount, totalQuestions, message);
+    }
 
-        examAttemptRepository.save(attempt);
+    // 구버전 메서드 (필요시 삭제)
+    @Transactional
+    public void recordAttempt(Exam exam, Users user, Integer score, Boolean passed) {
+        // ... (deprecated)
     }
 
     // 시험 정보 수정 (제목, 시간제한, 난이도 등)
@@ -113,10 +185,48 @@ public class ExamService {
         exam.setTimeLimit(form.getTimeLimit());
         exam.setLevel(form.getLevel());
         exam.setPassScore(form.getPassScore());
-        exam.setIsPublished(form.getIsPublished());
+        exam.setPassScore(form.getPassScore());
+        // null 체크 및 기본값 설정
+        exam.setIsPublished(form.getIsPublished() != null ? form.getIsPublished() : false);
 
         // 3. 저장 (Dirty Checking으로 자동 반영 가능하지만 명시적 save 호출)
         examRepository.save(exam);
+
+        // 4. 문제 수정 로직
+        // 주의: 이미 응시 기록(ExamAttempt)이 있는 경우, 문제를 수정하면 기존 답안(ExamAnswer)과의 관계가 깨지거나 데이터
+        // 무결성 문제가 발생할 수 있음.
+        // 따라서 응시 기록이 없는 경우에만 문제를 수정(삭제 후 재생성)하도록 함.
+        boolean hasAttempts = examAttemptRepository.existsByExam(exam);
+
+        if (!hasAttempts && form.getQuestions() != null) {
+            // 4-1. 기존 문제 삭제 (OrphanRemoval 동작 유도)
+            exam.getQuestions().clear();
+
+            // 4-2. 새 문제 추가
+            for (com.mysite.clover.Exam.dto.ExamQuestionDto qDto : form.getQuestions()) {
+                ExamQuestion question = new ExamQuestion();
+                question.setExam(exam); // 양방향 연관관계 설정
+                question.setQuestionText(qDto.getQuestionText());
+                question.setOption1(qDto.getOption1());
+                question.setOption2(qDto.getOption2());
+                question.setOption3(qDto.getOption3());
+                question.setOption4(qDto.getOption4());
+                question.setOption5(qDto.getOption5());
+                question.setCorrectAnswer(qDto.getCorrectAnswer());
+
+                // 컬렉션에 추가 (CascadeType.ALL로 인해 자동 저장됨)
+                exam.getQuestions().add(question);
+            }
+            // 명시적 save 호출 (필수는 아니지만 확실한 반영을 위해)
+            examRepository.save(exam);
+        } else if (hasAttempts && form.getQuestions() != null) {
+            // 응시 기록이 있는데 문제 수정 요청이 온 경우
+            // 여기서는 조용히 무시하거나, 예외를 던질 수 있음.
+            // 현재 정책: 기본 정보는 수정되지만, 문제는 수정되지 않음을 로그로 남김 (또는 사용자에게 알림 필요)
+            System.out.println("Warning: Exam " + examId + " has attempts. Questions were not updated.");
+            // 만약 사용자에게 확실히 알리고 싶다면 예외를 던져서 프론트엔드에서 처리하게 할 수도 있음:
+            // throw new IllegalStateException("이미 응시 기록이 있어 문제는 수정할 수 없습니다.");
+        }
     }
 
     // 시험 삭제
@@ -202,5 +312,10 @@ public class ExamService {
     // 관리자용: 시스템 전체 성적 로그 조회
     public List<ScoreHistory> getAllScores() {
         return scoreHistoryRepository.findAll();
+    }
+
+    // 관리자용: 시스템 전체 시험 목록 조회
+    public List<Exam> getAllExams() {
+        return examRepository.findAll();
     }
 }

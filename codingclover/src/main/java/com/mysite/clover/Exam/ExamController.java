@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import com.mysite.clover.Exam.dto.ExamCreateRequest;
 import com.mysite.clover.Exam.dto.InstructorExamDto;
 import com.mysite.clover.Exam.dto.StudentExamDto;
+import com.mysite.clover.Exam.dto.ExamSubmissionRequest;
+import com.mysite.clover.Exam.dto.ExamResultDto;
 import com.mysite.clover.ExamAttempt.ExamAttempt;
 import com.mysite.clover.ExamAttempt.dto.ExamAttemptDto;
 import com.mysite.clover.ScoreHistory.dto.ScoreHistoryDto;
@@ -55,25 +57,20 @@ public class ExamController {
         // 수강생 : 시험 답안 제출 및 채점
         @PreAuthorize("hasRole('STUDENT')")
         @PostMapping("/student/exam/{examId}/submit")
-        public ResponseEntity<String> submitExam(
+        public ResponseEntity<ExamResultDto> submitExam(
                         @PathVariable Long examId,
-                        @RequestBody Integer score, // 프론트엔드에서 계산된 점수 (또는 서버에서 계산 가능)
+                        @RequestBody ExamSubmissionRequest request,
                         Principal principal) {
 
                 // 1. 응시자(학생) 조회
                 Users student = usersRepository.findByLoginId(principal.getName())
                                 .orElseThrow(() -> new RuntimeException("학생 없음"));
-                // 2. 시험 정보 조회
-                Exam exam = examService.getExam(examId);
 
-                // 3. 합격 여부 판단 (제출 점수 >= 합격 기준 점수)
-                boolean passed = score >= exam.getPassScore();
+                // 2. 서비스 호출 (채점 및 결과 반환)
+                ExamResultDto result = examService.submitExam(examId, student, request.getAnswers());
 
-                // 4. 응시 기록 저장 (서비스 호출)
-                examService.recordAttempt(exam, student, score, passed);
-
-                // 5. 결과 반환
-                return ResponseEntity.ok("시험 제출 완료. 결과: " + (passed ? "통과" : "과락"));
+                // 3. 결과 반환
+                return ResponseEntity.ok(result);
         }
 
         // 수강생 : 특정 시험에 대한 나의 과거 응시 기록 조회
@@ -126,33 +123,38 @@ public class ExamController {
         // 강사 : 신규 시험 생성
         @PreAuthorize("hasRole('INSTRUCTOR')")
         @PostMapping("/instructor/exam/new")
-        public ResponseEntity<String> createExam(@RequestBody @Valid ExamCreateRequest form, Principal principal) {
-                // 1. 강사 정보 조회
-                Users instructor = usersRepository.findByLoginId(principal.getName())
-                                .orElseThrow(() -> new RuntimeException("강사 없음"));
+        public ResponseEntity<?> createExam(@RequestBody @Valid ExamCreateRequest form, Principal principal) {
+                try {
+                        // 1. 강사 정보 조회
+                        Users instructor = usersRepository.findByLoginId(principal.getName())
+                                        .orElseThrow(() -> new RuntimeException("강사 없음"));
 
-                // 2. 시험 생성 서비스 호출
-                examService.createExam(
-                                form.getCourseId(),
-                                form.getTitle(),
-                                form.getTimeLimit(),
-                                form.getLevel(),
-                                form.getPassScore(),
-                                form.getIsPublished(),
-                                instructor);
+                        // 2. 시험 생성 서비스 호출
+                        examService.createExam(form, instructor);
 
-                // 3. 응답
-                return ResponseEntity.ok("시험 등록 성공");
+                        // 3. 응답
+                        return ResponseEntity.ok("시험 등록 성공");
+                } catch (Exception e) {
+                        e.printStackTrace(); // 서버 로그에 에러 출력
+                        return ResponseEntity.status(500).body("시험 등록 실패: " + e.getMessage());
+                }
         }
 
         // 강사 : 시험 정보 수정
         @PreAuthorize("hasRole('INSTRUCTOR')")
         @PutMapping("/instructor/exam/{examId}")
-        public ResponseEntity<String> updateExam(@PathVariable Long examId,
+        public ResponseEntity<?> updateExam(@PathVariable Long examId,
                         @RequestBody @Valid ExamCreateRequest form) {
-                // 수정 서비스 호출
-                examService.updateExam(examId, form);
-                return ResponseEntity.ok("시험 수정 성공");
+                try {
+                        // 수정 서비스 호출
+                        examService.updateExam(examId, form);
+                        return ResponseEntity.ok("시험 수정 성공");
+                } catch (IllegalArgumentException e) {
+                        return ResponseEntity.badRequest().body(e.getMessage());
+                } catch (Exception e) {
+                        e.printStackTrace();
+                        return ResponseEntity.status(500).body("시험 수정 실패: " + e.getMessage());
+                }
         }
 
         // 강사 : 시험 삭제
@@ -219,5 +221,22 @@ public class ExamController {
                 return ResponseEntity.ok(examService.getAllScores().stream()
                                 .map(ScoreHistoryDto::fromEntity)
                                 .toList());
+        }
+
+        // 관리자 : 전체 시험 목록 조회 (시험 관리용)
+        @PreAuthorize("hasRole('ADMIN')")
+        @GetMapping("/admin/exams")
+        public ResponseEntity<List<com.mysite.clover.Exam.dto.AdminExamDto>> getAllExamsForAdmin() {
+                return ResponseEntity.ok(examService.getAllExams().stream()
+                                .map(com.mysite.clover.Exam.dto.AdminExamDto::fromEntity)
+                                .toList());
+        }
+
+        // 관리자 : 시험 삭제 (강제 삭제)
+        @PreAuthorize("hasRole('ADMIN')")
+        @DeleteMapping("/admin/exam/{examId}")
+        public ResponseEntity<String> deleteExamByAdmin(@PathVariable Long examId) {
+                examService.deleteExam(examId);
+                return ResponseEntity.ok("시험이 삭제되었습니다.");
         }
 }
