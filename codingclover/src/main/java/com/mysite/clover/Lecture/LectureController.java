@@ -30,6 +30,7 @@ public class LectureController {
     private final CourseService courseService;
     private final UsersRepository usersRepository;
     private final LectureRepository lectureRepository;
+    private final YoutubeService youtubeService;
 
     // ==========================================
     // 🟩 수강생 영역
@@ -137,6 +138,13 @@ public class LectureController {
         lectureService.resubmitLecture(lectureId, form, principal.getName());
 
         return ResponseEntity.ok("강의 수정 및 재승인 요청 완료");
+    }
+
+    // 강사용: 유튜브 재생 시간 조회 (강의 업로드 시 자동 입력을 위해)
+    @GetMapping("/api/youtube/duration")
+    public ResponseEntity<Integer> getYoutubeDuration(@RequestParam("url") String url) {
+        int duration = youtubeService.fetchDuration(url);
+        return ResponseEntity.ok(duration);
     }
 
     // ==========================================
