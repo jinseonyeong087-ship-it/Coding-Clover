@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -11,6 +11,21 @@ function LectureUpload({ courseInfo, courseId: courseIdProp, nextOrderNo, onUplo
 //  onUploaded 콜백 → 업로드 성공 후 부모에게 알림 (없으면 기존처럼 navigate
 
     const navigate = useNavigate();
+    const [durationLoading, setDurationLoading] = useState(false);
+    const debounceTimer = useRef(null);
+    const [existingLectures, setExistingLectures] = useState([]); // 기존 강의 목록 (orderNo, title)
+    const MAX_ORDER = 20; // 드롭다운 최대 순서
+
+    // 컴포넌트 마운트 시 기존 강의 목록 조회
+    useEffect(() => {
+        if (!courseId) return;
+        fetch(`/instructor/course/${courseId}/lectures`, {
+            credentials: 'include'
+        })
+            .then(res => res.ok ? res.json() : [])
+            .then(data => setExistingLectures(data))
+            .catch(() => setExistingLectures([]));
+    }, [courseId]);
 
     // 신규 강의 추가용 폼 데이터
     const [formData, setFormData] = useState({
@@ -21,6 +36,43 @@ function LectureUpload({ courseInfo, courseId: courseIdProp, nextOrderNo, onUplo
         uploadType: 'IMMEDIATE',
         scheduledAt: '',
     });
+
+    // 유튜브 URL인지 확인
+    const isYoutubeUrl = (url) => {
+        return /(?:youtube\.com|youtu\.be)/.test(url);
+    };
+
+    // 유튜브 재생 시간 자동 조회
+    const fetchDuration = async (url) => {
+        if (!url || !isYoutubeUrl(url)) return;
+        setDurationLoading(true);
+        try {
+            const res = await fetch(`/api/youtube/duration?url=${encodeURIComponent(url)}`, {
+                credentials: 'include'
+            });
+            if (res.ok) {
+                const seconds = await res.json();
+                if (seconds > 0) {
+                    setFormData(prev => ({ ...prev, duration: seconds }));
+                }
+            }
+        } catch (err) {
+            console.error('재생 시간 자동 조회 실패', err);
+        } finally {
+            setDurationLoading(false);
+        }
+    };
+
+    // 영상 URL 변경 핸들러 (디바운스 적용)
+    const handleVideoUrlChange = (e) => {
+        const url = e.target.value;
+        setFormData(prev => ({ ...prev, videoUrl: url }));
+
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
+        debounceTimer.current = setTimeout(() => {
+            fetchDuration(url);
+        }, 800);
+    };
     
         // 새로운 강의 추가
         const handleAddLecture = async () => {
@@ -94,30 +146,41 @@ function LectureUpload({ courseInfo, courseId: courseIdProp, nextOrderNo, onUplo
                     </div>
                     <div>
                         <label className="block text-sm font-medium mb-1">강의 순서</label>
-                        <Input
-                            type="number"
+                        <select
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                             value={formData.orderNo}
                             onChange={(e) => setFormData({ ...formData, orderNo: e.target.value })}
-                            min={1}
-                            placeholder="강의 순서를 입력하세요"
-                        />
+                        >
+                            <option value="">순서를 선택하세요</option>
+                            {Array.from({ length: MAX_ORDER }, (_, i) => i + 1).map(num => {
+                                const existing = existingLectures.find(l => l.orderNo === num);
+                                return (
+                                    <option key={num} value={num} disabled={!!existing}>
+                                        {num}강 {existing ? `- ${existing.title} (등록됨)` : ''}
+                                    </option>
+                                );
+                            })}
+                        </select>
                     </div>
                     <div>
                         <label className="block text-sm font-medium mb-1">영상 URL</label>
                         <Input
                             value={formData.videoUrl}
-                            onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                            placeholder="영상 URL을 입력하세요"
+                            onChange={handleVideoUrlChange}
+                            placeholder="유튜브 영상 URL을 입력하세요"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium mb-1">재생 시간 (초)</label>
+                        <label className="block text-sm font-medium mb-1">
+                            재생 시간 (초) {durationLoading && <span className="text-blue-500 text-xs ml-1">불러오는 중...</span>}
+                        </label>
                         <Input
                             type="number"
                             value={formData.duration}
                             onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
                             min={0}
-                            placeholder="재생 시간을 입력하세요"
+                            placeholder={durationLoading ? "자동 조회 중..." : "재생 시간을 입력하세요"}
+                            readOnly={durationLoading}
                         />
                     </div>
                     {formData.uploadType === 'RESERVED' && (
