@@ -34,6 +34,12 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
             Course course,
             EnrollmentStatus status);
 
+    // 여러 상태로 수강 조회 (진도 조회 등에서 ENROLLED + COMPLETED 모두 허용)
+    Optional<Enrollment> findByUserAndCourseAndStatusIn(
+            Users user,
+            Course course,
+            List<EnrollmentStatus> statuses);
+
     // 내 수강 목록 조회 (N+1 방지 : Enrollment 목록 N개를 조회하더라도 user / course 접근 시 추가 쿼리가 발생하지
     // 않도록 미리 JOIN으로 다 가져온다)
     @Query("""

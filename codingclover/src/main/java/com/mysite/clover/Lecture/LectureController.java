@@ -141,6 +141,7 @@ public class LectureController {
     }
 
     // 강사용: 유튜브 재생 시간 조회 (강의 업로드 시 자동 입력을 위해)
+    @PreAuthorize("hasRole('INSTRUCTOR')")
     @GetMapping("/api/youtube/duration")
     public ResponseEntity<Integer> getYoutubeDuration(@RequestParam("url") String url) {
         int duration = youtubeService.fetchDuration(url);

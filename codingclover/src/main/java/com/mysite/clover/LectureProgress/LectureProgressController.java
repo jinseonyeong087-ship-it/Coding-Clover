@@ -1,5 +1,6 @@
 package com.mysite.clover.LectureProgress;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -7,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +22,7 @@ import com.mysite.clover.Enrollment.EnrollmentStatus;
 import com.mysite.clover.Lecture.Lecture;
 import com.mysite.clover.Lecture.LectureService;
 import com.mysite.clover.Users.Users;
+import com.mysite.clover.Users.UsersRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -37,19 +38,26 @@ public class LectureProgressController {
         private final LectureService lectureService;
         private final EnrollmentRepository enrollmentRepository;
         private final CourseRepository courseRepository;
+        private final UsersRepository usersRepository;
 
         // 강좌 내 강의 진도 목록
+        // ENROLLED(수강중) + COMPLETED(수강완료) 모두 진도 조회 가능
+        // → 수강 완료 후에도 마이페이지에서 진도율이 정상 반영됨
         @GetMapping("/course/{courseId}/progress")
         @PreAuthorize("hasRole('STUDENT')")
         public ResponseEntity<List<StudentLectureProgressDto>> getCourseProgress(
                 @PathVariable Long courseId,
-                @AuthenticationPrincipal Users user) {
+                Principal principal) {
+
+            Users user = usersRepository.findByLoginId(principal.getName())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
             Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("강좌 없음"));
 
             Enrollment enrollment = enrollmentRepository
-                .findByUserAndCourseAndStatus(user, course, EnrollmentStatus.ENROLLED)
+                .findByUserAndCourseAndStatusIn(user, course,
+                    List.of(EnrollmentStatus.ENROLLED, EnrollmentStatus.COMPLETED))
                 .orElseThrow(() -> new IllegalStateException("수강 아님"));
 
             List<StudentLectureProgressDto> result =
@@ -73,7 +81,10 @@ public class LectureProgressController {
         @PreAuthorize("hasRole('STUDENT')")
         public ResponseEntity<Void> completeLecture(
                 @PathVariable Long lectureId,
-                @AuthenticationPrincipal Users user) {
+                Principal principal) {
+
+            Users user = usersRepository.findByLoginId(principal.getName())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
             Lecture lecture = lectureService.findById(lectureId);
 
@@ -90,7 +101,10 @@ public class LectureProgressController {
         @PreAuthorize("hasRole('STUDENT')")
         public ResponseEntity<Void> watchLecture(
                 @PathVariable Long lectureId,
-                @AuthenticationPrincipal Users user) {
+                Principal principal) {
+
+            Users user = usersRepository.findByLoginId(principal.getName())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
             Lecture lecture = lectureService.findById(lectureId);
 
@@ -111,6 +125,7 @@ public class LectureProgressController {
 
         private final LectureProgressService lectureProgressService;
         private final LectureService lectureService;
+        private final UsersRepository usersRepository;
 
         // 특정 강의의 학생별 진도 조회
         @GetMapping("/lecture/{lectureId}/progress")
@@ -118,7 +133,10 @@ public class LectureProgressController {
         public ResponseEntity<Page<LectureProgress>> getLectureProgress(
                 @PathVariable Long lectureId,
                 Pageable pageable,
-                @AuthenticationPrincipal Users user) {
+                Principal principal) {
+
+            Users user = usersRepository.findByLoginId(principal.getName())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
             Lecture lecture = lectureService.findById(lectureId);
 

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { Play, Clock, Video, MonitorPlay, Users } from "lucide-react";
+import { Play, Clock, Video, MonitorPlay, Users, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import Nav from "@/components/Nav";
 import Tail from "@/components/Tail";
 
@@ -9,7 +10,13 @@ function StudentLectureDetail() {
     const { courseId } = useParams();
     const [lectures, setLectures] = useState([]);
     const [selectedLecture, setSelectedLecture] = useState(null);
+    const [progressMap, setProgressMap] = useState({}); // { lectureId: { completedYn, progressRate } }
+    const [completingId, setCompletingId] = useState(null); // 완료 처리 중인 강의 ID
+    const [videoEnded, setVideoEnded] = useState(false); // 영상 종료 감지
+    const playerRef = useRef(null);
+    const playerContainerRef = useRef(null);
 
+    // 강의 목록 조회
     useEffect(() => {
         fetch(`/student/lecture/${courseId}/lectures`, {
             method: 'GET',
@@ -23,7 +30,6 @@ function StudentLectureDetail() {
                 return response.json();
             })
             .then((data) => {
-                console.log("Lecture Detail Data:", data);
                 setLectures(data);
                 if (data.length > 0) {
                     setSelectedLecture(data[0]);
@@ -34,13 +40,111 @@ function StudentLectureDetail() {
             });
     }, [courseId]);
 
-    // YouTube URL → embed URL 변환
-    const toEmbedUrl = (url) => {
-        if (!url) return "";
-        if (url.includes("/embed/")) return url;
-        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?.*v=|v\/))([a-zA-Z0-9_-]{11})/);
-        return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+    // 진도 데이터 조회
+    useEffect(() => {
+        if (!courseId) return;
+        fetch(`/api/student/course/${courseId}/progress`, { credentials: 'include' })
+            .then(res => res.ok ? res.json() : [])
+            .then(data => {
+                const map = {};
+                data.forEach(p => {
+                    map[p.lectureId] = { completedYn: p.completedYn, lastWatchedAt: p.lastWatchedAt };
+                });
+                setProgressMap(map);
+            })
+            .catch(() => {});
+    }, [courseId]);
+
+    // 강의 선택 시 시청 기록 업데이트
+    const handleSelectLecture = (lec) => {
+        setSelectedLecture(lec);
+        fetch(`/api/student/lecture/${lec.lectureId}/watch`, {
+            method: 'POST',
+            credentials: 'include'
+        }).catch(() => {});
     };
+
+    // 강의 완료 처리
+    const handleComplete = async (lectureId) => {
+        setCompletingId(lectureId);
+        try {
+            const res = await fetch(`/api/student/lecture/${lectureId}/complete`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+            if (res.ok) {
+                window.location.reload();
+            }
+        } catch (err) {
+            console.error('완료 처리 실패', err);
+        } finally {
+            setCompletingId(null);
+        }
+    };
+
+    // YouTube URL에서 videoId 추출
+    const extractVideoId = (url) => {
+        if (!url) return null;
+        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?.*v=|v\/|embed\/))([a-zA-Z0-9_-]{11})/);
+        return match ? match[1] : null;
+    };
+
+    // YouTube IFrame API 로드 (최초 1회)
+    useEffect(() => {
+        if (window.YT) return;
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
+    }, []);
+
+    // 선택된 강의 변경 시 플레이어 생성/교체
+    useEffect(() => {
+        if (!selectedLecture?.videoUrl) return;
+        const videoId = extractVideoId(selectedLecture.videoUrl);
+        if (!videoId) return;
+
+        // 새 강의 선택 시 종료 상태 초기화
+        setVideoEnded(false);
+
+        const createPlayer = () => {
+            // 기존 플레이어 제거
+            if (playerRef.current) {
+                playerRef.current.destroy();
+                playerRef.current = null;
+            }
+
+            playerRef.current = new window.YT.Player(playerContainerRef.current, {
+                videoId,
+                width: '100%',
+                height: '100%',
+                playerVars: {
+                    rel: 0,
+                    modestbranding: 1,
+                },
+                events: {
+                    onStateChange: (event) => {
+                        // YT.PlayerState.ENDED === 0
+                        if (event.data === 0) {
+                            setVideoEnded(true);
+                        }
+                    }
+                }
+            });
+        };
+
+        if (window.YT && window.YT.Player) {
+            createPlayer();
+        } else {
+            window.onYouTubeIframeAPIReady = createPlayer;
+        }
+
+        return () => {
+            if (playerRef.current) {
+                playerRef.current.destroy();
+                playerRef.current = null;
+            }
+        };
+    }, [selectedLecture?.lectureId]);
 
     // 재생 시간 포맷
     const formatDuration = (seconds) => {
@@ -60,46 +164,66 @@ function StudentLectureDetail() {
                         <h2 className="font-bold text-lg text-slate-800">강의 목록</h2>
                         <div className="flex items-center justify-between mt-1">
                             <p className="text-sm text-slate-500">{lectures.length}개의 강의</p>
-                            <span className="flex items-center gap-1 text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                                <Users className="w-3 h-3" />
-                                24명 수강중
+                            <span className="text-xs text-indigo-600 font-semibold">
+                                {Object.values(progressMap).filter(p => p.completedYn).length}/{lectures.length} 완료
                             </span>
+                        </div>
+                        {/* 전체 진도율 바 */}
+                        <div className="mt-2 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+                                style={{
+                                    width: lectures.length > 0
+                                        ? `${Math.round((Object.values(progressMap).filter(p => p.completedYn).length / lectures.length) * 100)}%`
+                                        : '0%'
+                                }}
+                            />
                         </div>
                     </div>
                     <div className="flex flex-col">
-                        {lectures.map((lec) => (
-                            <button
-                                key={lec.lectureId}
-                                onClick={() => setSelectedLecture(lec)}
-                                className={`flex items-center gap-3 p-4 text-left transition-colors border-b border-slate-50 ${
-                                    selectedLecture?.lectureId === lec.lectureId
-                                        ? "bg-indigo-50 border-l-4 border-l-indigo-500"
-                                        : "hover:bg-slate-50 border-l-4 border-l-transparent"
-                                }`}
-                            >
-                                <span className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                                    selectedLecture?.lectureId === lec.lectureId
-                                        ? "bg-indigo-500 text-white"
-                                        : "bg-slate-100 text-slate-600"
-                                }`}>
-                                    {lec.orderNo}
-                                </span>
-                                <div className="min-w-0">
-                                    <p className={`text-sm font-medium truncate ${
+                        {lectures.map((lec) => {
+                            const isCompleted = progressMap[lec.lectureId]?.completedYn;
+                            return (
+                                <button
+                                    key={lec.lectureId}
+                                    onClick={() => handleSelectLecture(lec)}
+                                    className={`flex items-center gap-3 p-4 text-left transition-colors border-b border-slate-50 ${
                                         selectedLecture?.lectureId === lec.lectureId
-                                            ? "text-indigo-700"
-                                            : "text-slate-700"
+                                            ? "bg-indigo-50 border-l-4 border-l-indigo-500"
+                                            : "hover:bg-slate-50 border-l-4 border-l-transparent"
+                                    }`}
+                                >
+                                    <span className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                                        isCompleted
+                                            ? "bg-emerald-500 text-white"
+                                            : selectedLecture?.lectureId === lec.lectureId
+                                                ? "bg-indigo-500 text-white"
+                                                : "bg-slate-100 text-slate-600"
                                     }`}>
-                                        {lec.title}
-                                    </p>
-                                    {lec.duration && (
-                                        <p className="text-xs text-slate-400 mt-0.5">
-                                            {formatDuration(lec.duration)}
+                                        {isCompleted ? <CheckCircle className="w-4 h-4" /> : lec.orderNo}
+                                    </span>
+                                    <div className="min-w-0 flex-1">
+                                        <p className={`text-sm font-medium truncate ${
+                                            selectedLecture?.lectureId === lec.lectureId
+                                                ? "text-indigo-700"
+                                                : isCompleted ? "text-slate-500" : "text-slate-700"
+                                        }`}>
+                                            {lec.title}
                                         </p>
-                                    )}
-                                </div>
-                            </button>
-                        ))}
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            {lec.duration && (
+                                                <span className="text-xs text-slate-400">
+                                                    {formatDuration(lec.duration)}
+                                                </span>
+                                            )}
+                                            {isCompleted && (
+                                                <span className="text-xs text-emerald-500 font-semibold">완료</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </button>
+                            );
+                        })}
                         {lectures.length === 0 && (
                             <div className="p-8 text-center text-slate-400 text-sm">
                                 등록된 강의가 없습니다.
@@ -131,17 +255,12 @@ function StudentLectureDetail() {
                             </div>
 
                             <div className="rounded-2xl overflow-hidden shadow-2xl shadow-indigo-200 ring-4 ring-white">
-                                {selectedLecture.videoUrl ? (
+                                {selectedLecture.videoUrl && extractVideoId(selectedLecture.videoUrl) ? (
                                     <div className="relative pt-[56.25%] bg-black">
-                                        <iframe
+                                        <div
                                             key={selectedLecture.lectureId}
+                                            ref={playerContainerRef}
                                             className="absolute top-0 left-0 w-full h-full"
-                                            src={toEmbedUrl(selectedLecture.videoUrl)}
-                                            title="강의 영상"
-                                            frameBorder="0"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                            referrerPolicy="strict-origin-when-cross-origin"
-                                            allowFullScreen
                                         />
                                     </div>
                                 ) : (
@@ -152,6 +271,39 @@ function StudentLectureDetail() {
                                         <p className="font-medium">영상이 준비 중입니다</p>
                                     </div>
                                 )}
+                            </div>
+
+                            {/* 수강 완료 버튼 */}
+                            <div className="mt-4 flex items-center gap-4">
+                                {progressMap[selectedLecture.lectureId]?.completedYn ? (
+                                    <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 font-semibold">
+                                        <CheckCircle className="w-5 h-5" />
+                                        수강 완료
+                                    </div>
+                                ) : (
+                                    <Button
+                                        onClick={() => handleComplete(selectedLecture.lectureId)}
+                                        disabled={!videoEnded || completingId === selectedLecture.lectureId}
+                                        className={`font-bold px-6 py-3 rounded-xl shadow-lg ${
+                                            videoEnded
+                                                ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                                                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                                        }`}
+                                    >
+                                        {completingId === selectedLecture.lectureId ? '처리 중...' : '수강 완료'}
+                                    </Button>
+                                )}
+                                <span className={`text-sm ${
+                                    progressMap[selectedLecture.lectureId]?.completedYn
+                                        ? 'text-emerald-500 font-semibold'
+                                        : videoEnded ? 'text-indigo-500 font-semibold' : 'text-slate-400'
+                                }`}>
+                                    {progressMap[selectedLecture.lectureId]?.completedYn
+                                        ? '시청을 완료했습니다.'
+                                        : videoEnded
+                                            ? '영상 시청이 완료되었습니다. 수강 완료 버튼을 눌러주세요!'
+                                            : '영상을 끝까지 시청하면 완료 버튼이 활성화됩니다'}
+                                </span>
                             </div>
 
                             <div className="mt-4 p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">

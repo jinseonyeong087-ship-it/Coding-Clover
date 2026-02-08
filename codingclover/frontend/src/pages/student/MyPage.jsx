@@ -55,6 +55,46 @@ function MyPage() {
   const [points, setPoints] = useState(0);
   const [pointsLoading, setPointsLoading] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [courseProgress, setCourseProgress] = useState({}); // { courseId: { completed, total, percent } }
+
+  // 각 수강 강좌의 진도율 조회
+  const fetchCourseProgress = async (enrollmentList) => {
+    const enrolled = enrollmentList.filter(e => e.status === 'ENROLLED' || e.status === 'COMPLETED');
+    const progressMap = {};
+
+    await Promise.all(enrolled.map(async (enrollment) => {
+      try {
+        // 강의 목록 조회
+        const lecturesRes = await fetch(`/student/lecture/${enrollment.courseId}/lectures`, {
+          credentials: 'include'
+        });
+        const lectures = lecturesRes.ok ? await lecturesRes.json() : [];
+
+        // 진도 조회
+        const progressRes = await fetch(`/api/student/course/${enrollment.courseId}/progress`, {
+          credentials: 'include'
+        });
+
+        let progressData = [];
+        if (progressRes.ok) {
+          progressData = await progressRes.json();
+        } else {
+          console.warn(`진도 조회 실패 (courseId: ${enrollment.courseId}):`, progressRes.status);
+        }
+
+        const completedCount = progressData.filter(p => p.completedYn).length;
+        const totalCount = lectures.length;
+        const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+        progressMap[enrollment.courseId] = { completed: completedCount, total: totalCount, percent };
+      } catch (err) {
+        console.error(`진도율 조회 오류 (courseId: ${enrollment.courseId}):`, err);
+        progressMap[enrollment.courseId] = { completed: 0, total: 0, percent: 0 };
+      }
+    }));
+
+    setCourseProgress(progressMap);
+  };
 
   // 포인트 조회 함수
   const fetchUserPoints = async () => {
@@ -208,6 +248,7 @@ function MyPage() {
       if (enrollmentResponse.ok) {
         const enrollmentData = await enrollmentResponse.json();
         setEnrollments(enrollmentData);
+        fetchCourseProgress(enrollmentData);
       } else {
         setEnrollments([]);
       }
@@ -656,16 +697,26 @@ function MyPage() {
                         </div>
 
                         <div className="mt-auto pt-4 border-t border-border/50 space-y-4">
-                          {/* Progress Bar (Mockup - backend needs to provide progress) */}
+                          {/* Progress Bar */}
                           <div className="space-y-1.5">
                             <div className="flex justify-between text-xs font-semibold">
-                              <span className="text-muted-foreground">진도율</span>
-                              <span className="text-primary">{enrollment.status === 'COMPLETED' ? '100' : '0'}%</span>
+                              <span className="text-muted-foreground">
+                                진도율 {courseProgress[enrollment.courseId] && (
+                                  <span className="text-muted-foreground/70">
+                                    ({courseProgress[enrollment.courseId].completed}/{courseProgress[enrollment.courseId].total})
+                                  </span>
+                                )}
+                              </span>
+                              <span className="text-primary">
+                                {courseProgress[enrollment.courseId]?.percent ?? 0}%
+                              </span>
                             </div>
                             <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                               <div
-                                className={`h-full rounded-full transition-all duration-1000 ${enrollment.status === 'COMPLETED' ? 'bg-purple-500' : 'bg-primary'}`}
-                                style={{ width: enrollment.status === 'COMPLETED' ? '100%' : '5%' }}
+                                className={`h-full rounded-full transition-all duration-1000 ${
+                                  (courseProgress[enrollment.courseId]?.percent ?? 0) === 100 ? 'bg-purple-500' : 'bg-primary'
+                                }`}
+                                style={{ width: `${Math.max(courseProgress[enrollment.courseId]?.percent ?? 0, 2)}%` }}
                               />
                             </div>
                           </div>
@@ -674,10 +725,11 @@ function MyPage() {
                             className="w-full font-bold shadow-sm h-10"
                             disabled={enrollment.status === 'CANCELLED'}
                             variant={enrollment.status === 'COMPLETED' ? 'outline' : 'default'}
-                            onClick={() => navigate(`/course/${enrollment.courseId}`)}
+                            onClick={() => navigate(`/student/course/${enrollment.courseId}/lectures`)}
                           >
-                            {enrollment.status === 'ENROLLED' ? '이어듣기' :
-                              enrollment.status === 'COMPLETED' ? '다시보기' : '강의 보기'}
+                            {enrollment.status === 'ENROLLED' ? (
+                              (courseProgress[enrollment.courseId]?.percent ?? 0) > 0 ? '이어듣기' : '학습 시작'
+                            ) : enrollment.status === 'COMPLETED' ? '다시보기' : '강의 보기'}
                           </Button>
                         </div>
                       </div>
