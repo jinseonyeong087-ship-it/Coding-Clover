@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/Button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const NotificationDropdown = () => {
@@ -18,8 +17,10 @@ const NotificationDropdown = () => {
 
   const fetchNotifications = async () => {
     try {
-      const response = await axios.get('/api/notifications', { withCredentials: true });
-      setNotifications(response.data);
+      const response = await fetch('/api/notifications', { credentials: 'include' });
+      if (!response.ok) throw new Error(response.statusText);
+      const data = await response.json();
+      setNotifications(data);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
     }
@@ -27,8 +28,10 @@ const NotificationDropdown = () => {
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await axios.get('/api/notifications/unread-count', { withCredentials: true });
-      setUnreadCount(response.data);
+      const response = await fetch('/api/notifications/unread-count', { credentials: 'include' });
+      if (!response.ok) throw new Error(response.statusText);
+      const data = await response.json();
+      setUnreadCount(data);
     } catch (error) {
       console.error("Failed to fetch unread count:", error);
     }
@@ -51,7 +54,13 @@ const NotificationDropdown = () => {
   const handleNotificationClick = async (notification) => {
     try {
       if (!notification.read) {
-        await axios.put(`/api/notifications/${notification.id}/read`, {}, { withCredentials: true });
+        const res = await fetch(`/api/notifications/${notification.id}/read`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({}),
+        });
+        if (!res.ok) throw new Error(res.statusText);
         setUnreadCount((prev) => Math.max(0, prev - 1));
         setNotifications((prev) =>
           prev.map((n) =>
@@ -71,7 +80,11 @@ const NotificationDropdown = () => {
   const handleDelete = async (e, notificationId) => {
     e.stopPropagation(); // prevent triggering click event on the item
     try {
-      await axios.delete(`/api/notifications/${notificationId}`, { withCredentials: true });
+      const res = await fetch(`/api/notifications/${notificationId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error(res.statusText);
       setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
 
       // If deleting an unread notification, decrement count

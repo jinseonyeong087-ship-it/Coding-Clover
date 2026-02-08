@@ -21,14 +21,48 @@ import InstructorLecture from "./InstructorLecture";
 import LectureDetail from "./LectureDetail";
  
 function InstructorCourseDetail() {
-    const { courseId } = useParams();
+    const { courseId: courseIdParam, lectureId: lectureIdParam } = useParams();
+    const [courseId, setCourseId] = useState(courseIdParam || null);
     const [courseInfo, setCourseInfo] = useState(null);
     const [lectureList, setLectureList] = useState([]);
     const [selectedLecture, setSelectedLecture] = useState(null);
     const navigate = useNavigate();
 
+    // courseId 경로로 접근한 경우: 강의 선택 해제 + courseId 동기화
+    useEffect(() => {
+        if (courseIdParam) {
+            setCourseId(courseIdParam);
+            setSelectedLecture(null);
+        }
+    }, [courseIdParam]);
+
+    // lectureId로 접근한 경우: 목록에서 찾거나 API로 조회
+    useEffect(() => {
+        if (!lectureIdParam) return;
+
+        // lectureList가 이미 로드되어 있으면 API 호출 없이 바로 선택
+        const found = lectureList.find(l => String(l.lectureId) === lectureIdParam);
+        if (found) {
+            setSelectedLecture(found);
+            return;
+        }
+
+        // 최초 진입 시 (목록 미로드) API로 강의 조회 → courseId 획득
+        fetch(`/instructor/lecture/${lectureIdParam}`, { credentials: 'include' })
+            .then(res => {
+                if (!res.ok) throw new Error(res.statusText);
+                return res.json();
+            })
+            .then(data => {
+                if (!courseId) setCourseId(data.courseId);
+                setSelectedLecture(data);
+            })
+            .catch(err => console.error('강의 조회 실패:', err));
+    }, [lectureIdParam, lectureList]);
+
     // 강좌 정보 가져오기
     useEffect(() => {
+        if (!courseId) return;
         fetch(`/instructor/course/${courseId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
@@ -44,6 +78,7 @@ function InstructorCourseDetail() {
 
     // 강의 목록 가져오기
     const fetchLectures = () => {
+        if (!courseId) return;
         fetch(`/instructor/course/${courseId}/lectures`, {
             method: 'GET',
             credentials: 'include'
@@ -84,7 +119,7 @@ function InstructorCourseDetail() {
             <SidebarProvider className="bg-white">
                 <Sidebar dir="rtl" side="left" className="!top-16 !h-[calc(100svh-4rem)]">
                     <SidebarHeader
-                        onClick={() => setSelectedLecture(null)}
+                        onClick={() => navigate(`/instructor/course/${courseId}`)}
                         className="cursor-pointer hover:bg-accent"
                     >
                         강의 업로드 {courseInfo ? courseInfo.title : '강좌명'}
@@ -96,7 +131,7 @@ function InstructorCourseDetail() {
                                     {lectureList.length > 0 ? (
                                         lectureList.map((lecture) => (
                                             <SidebarMenuItem key={lecture.lectureId}>
-                                                <SidebarMenuButton onClick={() => setSelectedLecture(lecture)}>
+                                                <SidebarMenuButton onClick={() => navigate(`/instructor/lecture/${lecture.lectureId}`)}>
                                                     <span>{lecture.orderNo}강. {lecture.title}</span>
                                                     {getStatusBadge(lecture.approvalStatus)}
                                                 </SidebarMenuButton>

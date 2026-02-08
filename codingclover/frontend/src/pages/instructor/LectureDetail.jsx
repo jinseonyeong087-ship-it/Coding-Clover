@@ -1,4 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import Nav from '@/components/Nav';
+import Tail from "@/components/Tail";
 
 function getYoutubeEmbedUrl(url) {
     if (!url) return null;
@@ -22,12 +25,35 @@ function getStatusBadge(status) {
     }
 }
 
-function LectureDetail({ lecture }) {
+function LectureDetail({ lecture: lectureProp }) {
+    const { lectureId } = useParams();
+    const [lecture, setLecture] = useState(lectureProp || null);
+    const [loading, setLoading] = useState(!lectureProp && !!lectureId);
+    const isStandalone = !lectureProp && !!lectureId;
+
+    useEffect(() => {
+        if (isStandalone) {
+            fetch(`/instructor/lecture/${lectureId}`, { credentials: 'include' })
+                .then(res => {
+                    if (!res.ok) throw new Error(res.statusText);
+                    return res.json();
+                })
+                .then(data => setLecture(data))
+                .catch(err => console.error('강의 조회 실패:', err))
+                .finally(() => setLoading(false));
+        }
+    }, [lectureId, isStandalone]);
+
+    useEffect(() => {
+        if (lectureProp) setLecture(lectureProp);
+    }, [lectureProp]);
+
+    if (loading) return <p className="text-center py-20">로딩 중...</p>;
     if (!lecture) return null;
 
     const embedUrl = getYoutubeEmbedUrl(lecture.videoUrl);
 
-    return (
+    const content = (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-bold">{lecture.orderNo}강. {lecture.title}</h2>
@@ -57,6 +83,20 @@ function LectureDetail({ lecture }) {
             )}
         </div>
     );
+
+    if (isStandalone) {
+        return (
+            <>
+                <Nav />
+                <section className="container mx-auto px-16 py-24">
+                    {content}
+                </section>
+                <Tail />
+            </>
+        );
+    }
+
+    return content;
 }
 
 export default LectureDetail;

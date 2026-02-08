@@ -160,6 +160,7 @@ function App() {
           <Route path="course/:courseId" element={<InstructorCourseDetail />} />
           <Route path="course/:courseId/lectures" element={<StudentLectureDetail />} />
           <Route path="lecture/upload" element={<InstructorLecture />} />
+          <Route path="lecture/:lectureId" element={<InstructorCourseDetail />} />
           <Route path="mypage" element={<InstructorMypage />} />
           <Route path="qna" element={<InstructorQnaList />} />
           <Route path="qna/:qnaId" element={<InstructorQnaDetail />} />
