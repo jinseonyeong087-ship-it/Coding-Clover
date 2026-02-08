@@ -185,7 +185,9 @@ public class ExamService {
         exam.setTimeLimit(form.getTimeLimit());
         exam.setLevel(form.getLevel());
         exam.setPassScore(form.getPassScore());
-        exam.setIsPublished(form.getIsPublished());
+        exam.setPassScore(form.getPassScore());
+        // null 체크 및 기본값 설정
+        exam.setIsPublished(form.getIsPublished() != null ? form.getIsPublished() : false);
 
         // 3. 저장 (Dirty Checking으로 자동 반영 가능하지만 명시적 save 호출)
         examRepository.save(exam);

@@ -287,7 +287,7 @@ const ExamCreate = () => {
                                         <Label>제한 시간 (분)</Label>
                                         <Input
                                             type="number"
-                                            value={timeLimit}
+                                            value={timeLimit || ""}
                                             onChange={(e) => setTimeLimit(e.target.value)}
                                         />
                                     </div>
@@ -295,7 +295,7 @@ const ExamCreate = () => {
                                         <Label>난이도 (1:초급 ~ 3:고급)</Label>
                                         <select
                                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                            value={level}
+                                            value={level || 1}
                                             onChange={(e) => setLevel(e.target.value)}
                                         >
                                             <option value="1">초급</option>
@@ -307,7 +307,7 @@ const ExamCreate = () => {
                                         <Label>합격 기준 점수</Label>
                                         <Input
                                             type="number"
-                                            value={passScore}
+                                            value={passScore || ""}
                                             onChange={(e) => setPassScore(e.target.value)}
                                         />
                                     </div>
