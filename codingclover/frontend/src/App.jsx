@@ -56,6 +56,7 @@ import StudentExamList from './pages/student/StudentExamList';
 import StudentExamTaking from './pages/student/StudentExamTaking';
 import AdminExamList from './pages/admin/AdminExamList';
 import AdminPropsalDetail from './pages/admin/AdminPropsalDetail';
+import AdminLectureList from '@/pages/admin/AdminLectureList';
 
 
 
@@ -188,6 +189,7 @@ function App() {
           <Route path="users/instructors" element={<AdminInstructorList />} />
           <Route path="payments" element={<PaymentManagement />} />
           <Route path="exams" element={<AdminExamList />} />
+          <Route path="lectures" element={<AdminLectureList />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}
         {/*강사 프로필 <Route path="/api/instructor/profile" element={<InstructorProfile />} /> */}
