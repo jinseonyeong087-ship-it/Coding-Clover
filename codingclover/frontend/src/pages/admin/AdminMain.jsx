@@ -277,7 +277,7 @@ function AdminMain() {
                                                 <TableCell className="text-center font-mono text-xs text-muted-foreground">{item.lectureId}</TableCell>
                                                 <TableCell className="text-center font-bold text-muted-foreground">{item.orderNo}강</TableCell>
                                                 <TableCell>
-                                                    <Link to={`/admin/course/${item.courseId}/lectures`} className="font-medium hover:text-primary transition-colors block truncate max-w-[300px]">
+                                                    <Link to={`/admin/lectures/${item.lectureId}`} className="font-medium hover:text-primary transition-colors block truncate max-w-[300px]">
                                                         {item.title}
                                                     </Link>
                                                 </TableCell>

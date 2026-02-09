@@ -184,6 +184,7 @@ function App() {
           <Route path="course/:courseId" element={<ProposalDetail />} />
           <Route path="users/instructors/:userId" element={<AdminApproch />} />
           <Route path="course/:courseId/lectures" element={<AdminLectureDetail />} />
+          <Route path="lectures/:lectureId" element={<AdminLectureDetail />} />
           <Route path="users/instructors" element={<AdminInstructorList />} />
           <Route path="users/instructors" element={<AdminInstructorList />} />
           <Route path="payments" element={<PaymentManagement />} />

@@ -38,7 +38,8 @@ const toEmbedUrl = (url) => {
 };
 
 function AdminLectureDetail() {
-    const { courseId } = useParams();
+    const { courseId: courseIdParam, lectureId: lectureIdParam } = useParams();
+    const [courseId, setCourseId] = useState(courseIdParam || null);
     const [lectureList, setLectureList] = useState([]);
     const [selectedLecture, setSelectedLecture] = useState(null);
     const [rejectReason, setRejectReason] = useState("");
@@ -46,8 +47,40 @@ function AdminLectureDetail() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogMessage, setDialogMessage] = useState({ title: "", description: "" });
 
+    // lectureId로 접근한 경우: API로 강의 조회 → courseId 획득 + 선택
+    useEffect(() => {
+        if (!lectureIdParam) return;
+
+        // 목록이 이미 로드되어 있으면 바로 선택
+        const found = lectureList.find(l => String(l.lectureId) === lectureIdParam);
+        if (found) {
+            setSelectedLecture(found);
+            return;
+        }
+
+        // 최초 진입 시 API로 강의 단건 조회
+        fetch(`/admin/lectures/${lectureIdParam}`, { credentials: 'include' })
+            .then(res => {
+                if (!res.ok) throw new Error(res.statusText);
+                return res.json();
+            })
+            .then(data => {
+                if (!courseId) setCourseId(data.courseId);
+                setSelectedLecture(data);
+            })
+            .catch(err => console.error('강의 조회 실패:', err));
+    }, [lectureIdParam, lectureList]);
+
+    // courseId 경로로 접근한 경우 동기화
+    useEffect(() => {
+        if (courseIdParam) {
+            setCourseId(courseIdParam);
+        }
+    }, [courseIdParam]);
+
     // 강의 목록 가져오기
     const fetchLectures = () => {
+        if (!courseId) return;
         fetch(`/admin/course/${courseId}/lectures`, {
             method: "GET",
             credentials: "include",
@@ -58,8 +91,8 @@ function AdminLectureDetail() {
             })
             .then((data) => {
                 setLectureList(data);
-                // 첫 번째 강의 자동 선택
-                if (data.length > 0 && !selectedLecture) {
+                // lectureId 파라미터가 없을 때만 첫 번째 강의 자동 선택
+                if (data.length > 0 && !selectedLecture && !lectureIdParam) {
                     setSelectedLecture(data[0]);
                 }
             })
