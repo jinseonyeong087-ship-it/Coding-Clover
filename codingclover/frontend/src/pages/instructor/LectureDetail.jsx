@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import Nav from '@/components/Nav';
 import Tail from "@/components/Tail";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 
 function getYoutubeEmbedUrl(url) {
     if (!url) return null;
@@ -25,11 +27,17 @@ function getStatusBadge(status) {
     }
 }
 
-function LectureDetail({ lecture: lectureProp }) {
+function LectureDetail({ lecture: lectureProp, onLectureUpdated }) {
     const { lectureId } = useParams();
     const [lecture, setLecture] = useState(lectureProp || null);
     const [loading, setLoading] = useState(!lectureProp && !!lectureId);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState({ title: '', videoUrl: '', duration: '' });
+    const [durationLoading, setDurationLoading] = useState(false);
+    const debounceTimer = useRef(null);
     const isStandalone = !lectureProp && !!lectureId;
+
+    const isEditable = lecture && (lecture.approvalStatus === 'REJECTED' || lecture.approvalStatus === 'PENDING');
 
     useEffect(() => {
         if (isStandalone) {
@@ -48,6 +56,83 @@ function LectureDetail({ lecture: lectureProp }) {
         if (lectureProp) setLecture(lectureProp);
     }, [lectureProp]);
 
+    // 수정 모드 진입 시 현재 값으로 폼 초기화
+    const startEditing = () => {
+        setEditForm({
+            title: lecture.title || '',
+            videoUrl: lecture.videoUrl || '',
+            duration: lecture.duration || '',
+        });
+        setIsEditing(true);
+    };
+
+    // 유튜브 URL인지 확인
+    const isYoutubeUrl = (url) => /(?:youtube\.com|youtu\.be)/.test(url);
+
+    // 유튜브 재생 시간 자동 조회
+    const fetchDuration = async (url) => {
+        if (!url || !isYoutubeUrl(url)) return;
+        setDurationLoading(true);
+        try {
+            const res = await fetch(`/api/youtube/duration?url=${encodeURIComponent(url)}`, {
+                credentials: 'include'
+            });
+            if (res.ok) {
+                const seconds = await res.json();
+                if (seconds > 0) {
+                    setEditForm(prev => ({ ...prev, duration: seconds }));
+                }
+            }
+        } catch (err) {
+            console.error('재생 시간 자동 조회 실패', err);
+        } finally {
+            setDurationLoading(false);
+        }
+    };
+
+    // 영상 URL 변경 핸들러 (디바운스)
+    const handleVideoUrlChange = (e) => {
+        const url = e.target.value;
+        setEditForm(prev => ({ ...prev, videoUrl: url }));
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
+        debounceTimer.current = setTimeout(() => fetchDuration(url), 800);
+    };
+
+    // 수정 저장 (기존 resubmit 엔드포인트 활용)
+    const handleSave = async () => {
+        try {
+            const res = await fetch(`/instructor/lecture/${lecture.lectureId}/resubmit`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    courseId: lecture.courseId,
+                    title: editForm.title,
+                    orderNo: lecture.orderNo,
+                    videoUrl: editForm.videoUrl,
+                    duration: Number(editForm.duration),
+                    uploadType: lecture.uploadType || 'IMMEDIATE',
+                    scheduledAt: lecture.scheduledAt || null,
+                }),
+            });
+            if (!res.ok) throw new Error('강의 수정 실패');
+            // 수정된 데이터를 로컬 상태에 반영
+            setLecture(prev => ({
+                ...prev,
+                title: editForm.title,
+                videoUrl: editForm.videoUrl,
+                duration: Number(editForm.duration),
+                approvalStatus: 'PENDING',
+                rejectReason: null,
+            }));
+            setIsEditing(false);
+            alert('강의가 수정되었습니다.');
+            if (onLectureUpdated) onLectureUpdated();
+        } catch (err) {
+            alert(err.message || '강의 수정에 실패했습니다.');
+        }
+    };
+
     if (loading) return <p className="text-center py-20">로딩 중...</p>;
     if (!lecture) return null;
 
@@ -55,31 +140,83 @@ function LectureDetail({ lecture: lectureProp }) {
 
     const content = (
         <div className="space-y-6">
-            <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold">{lecture.orderNo}강. {lecture.title}</h2>
-                {getStatusBadge(lecture.approvalStatus)}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-bold">{lecture.orderNo}강. {lecture.title}</h2>
+                    {getStatusBadge(lecture.approvalStatus)}
+                </div>
+                {isEditable && !isEditing && (
+                    <Button size="sm" onClick={startEditing}>수정하기</Button>
+                )}
             </div>
 
-            {embedUrl ? (
-                <div className="aspect-video w-full">
-                    <iframe
-                        className="w-full h-full rounded-md"
-                        src={embedUrl}
-                        title={lecture.title}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                    />
+            {isEditing ? (
+                <div className="p-4 border rounded-md bg-slate-50 space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-1">강의 제목</label>
+                        <Input
+                            value={editForm.title}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                            placeholder="강의 제목을 입력하세요"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1">영상 URL</label>
+                        <Input
+                            value={editForm.videoUrl}
+                            onChange={handleVideoUrlChange}
+                            placeholder="유튜브 영상 URL을 입력하세요"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1">
+                            재생 시간 (초) {durationLoading && <span className="text-blue-500 text-xs ml-1">불러오는 중...</span>}
+                        </label>
+                        <Input
+                            type="number"
+                            value={editForm.duration}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, duration: e.target.value }))}
+                            min={0}
+                            placeholder={durationLoading ? "자동 조회 중..." : "재생 시간을 입력하세요"}
+                            readOnly={durationLoading}
+                        />
+                    </div>
+                    <div className="flex gap-2">
+                        <Button onClick={handleSave}>저장</Button>
+                        <Button variant="outline" onClick={() => setIsEditing(false)}>취소</Button>
+                    </div>
                 </div>
-            ) : lecture.videoUrl ? (
-                <p className="text-sm text-muted-foreground">영상 URL: {lecture.videoUrl}</p>
             ) : (
-                <p className="text-sm text-muted-foreground">등록된 영상이 없습니다.</p>
+                <>
+                    {embedUrl ? (
+                        <div className="aspect-video w-full">
+                            <iframe
+                                className="w-full h-full rounded-md"
+                                src={embedUrl}
+                                title={lecture.title}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+                        </div>
+                    ) : lecture.videoUrl ? (
+                        <p className="text-sm text-muted-foreground">영상 URL: {lecture.videoUrl}</p>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">등록된 영상이 없습니다.</p>
+                    )}
+                </>
             )}
 
             {lecture.approvalStatus === 'APPROVED' && (
                 <p className="text-green-600 font-medium bg-green-50 p-3 rounded-md border border-green-200">
                     이 강의는 승인되어 수강생 화면에서 볼 수 있습니다.
                 </p>
+            )}
+
+            {lecture.approvalStatus === 'REJECTED' && lecture.rejectReason && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+                    <h3 className="text-red-800 font-bold mb-2">반려 사유</h3>
+                    <p className="text-red-700 whitespace-pre-wrap">{lecture.rejectReason}</p>
+                </div>
             )}
         </div>
     );

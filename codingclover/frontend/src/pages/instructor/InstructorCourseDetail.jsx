@@ -157,7 +157,7 @@ function InstructorCourseDetail() {
                     <section className="container mx-auto px-16 py-24">
                     {selectedLecture ? (
                         /* 강의 상세 */
-                        <LectureDetail lecture={selectedLecture} />
+                        <LectureDetail lecture={selectedLecture} onLectureUpdated={fetchLectures} />
                     ) : (
                         <>
                             {/* 강좌 소개 */}
