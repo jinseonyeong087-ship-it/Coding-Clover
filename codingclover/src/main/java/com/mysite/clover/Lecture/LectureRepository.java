@@ -42,7 +42,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
     List<Integer> findOrderNosByCourseId(@Param("courseId") Long courseId);
 
     // 저장 전 중복 검사용 (안전장치)
-    
+
     boolean existsByCourseCourseIdAndOrderNo(Long courseId, Integer orderNo);
 
     // 특정 강좌(CourseId)에 속한 강의들을 순서(OrderNo)대로 조회
@@ -50,4 +50,12 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
 
     // 강의 제목(title)으로 검색하는 기능 추가
     Page<Lecture> findByTitleContaining(String title, Pageable pageable);
+
+    // 승인(APPROVED) 상태이며, 예약 시간이 현재 시간보다 이전(또는 즉시 공개)인 강의 개수 조회 (진도율 계산용)
+    // 수강생 화면과 동일한 기준으로 전체 강의 수를 계산하기 위해 사용
+    @Query("SELECT COUNT(l) FROM Lecture l " +
+            "WHERE l.course.courseId = :courseId " +
+            "AND l.approvalStatus = 'APPROVED' " +
+            "AND (l.uploadType = 'IMMEDIATE' OR l.scheduledAt <= CURRENT_TIMESTAMP)")
+    long countVisibleLecturesByCourseId(@Param("courseId") Long courseId);
 }

@@ -20,7 +20,7 @@ import com.mysite.clover.Exam.dto.ExamResultDto;
 import com.mysite.clover.ExamAttempt.ExamAttempt;
 import com.mysite.clover.ExamAttempt.ExamAttemptRepository;
 import com.mysite.clover.Lecture.LectureRepository;
-import com.mysite.clover.Lecture.LectureApprovalStatus;
+
 import com.mysite.clover.LectureProgress.LectureProgressRepository;
 import com.mysite.clover.ScoreHistory.ScoreHistory;
 import com.mysite.clover.ScoreHistory.ScoreHistoryRepository;
@@ -250,11 +250,13 @@ public class ExamService {
         for (Enrollment enrollment : enrollments) {
             Course course = enrollment.getCourse();
 
-            // 2. 해당 강좌의 승인된 전체 강의 수 조회
-            long totalLectures = lectureRepository.countByCourseAndApprovalStatus(course,
-                    LectureApprovalStatus.APPROVED);
+            // 2. 해당 강좌의 승인된 전체 강의 수 조회 (수강생에게 공개된 강의만 카운트 - 수정됨)
+            // 기존: long totalLectures =
+            // lectureRepository.countByCourseAndApprovalStatus(course,
+            // LectureApprovalStatus.APPROVED);
+            long totalLectures = lectureRepository.countVisibleLecturesByCourseId(course.getCourseId());
 
-            // 강의가 하나도 없으면 건너뜀
+            // 강의가 하나도 없으면 건너김
             if (totalLectures == 0)
                 continue;
 
