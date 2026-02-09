@@ -2,6 +2,8 @@ package com.mysite.clover.Course;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -59,24 +61,23 @@ public class CourseController {
         return ResponseEntity.ok(StudentCourseDto.fromEntity(courseService.getCourse(id)));
     }
 
-
     @PostMapping("/enroll")
-public ResponseEntity<?> enroll(@RequestParam("courseId") Long courseId, 
-                                @SessionAttribute(name = "user", required = false) Users user) {
-    
-    // 1. 비로그인 체크 -> 401 에러와 메시지 반환
-    if (user == null) {
-        return ResponseEntity.status(401).body("로그인이 필요합니다.");
-    }
+    public ResponseEntity<?> enroll(@RequestParam("courseId") Long courseId,
+            @SessionAttribute(name = "user", required = false) Users user) {
 
-    try {
-        // 2. 로그인된 경우 서비스 호출 (강좌ID, 로그인ID 전달)
-        courseService.enroll(courseId, user.getLoginId());
-        return ResponseEntity.ok("수강신청 완료");
-    } catch (Exception e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
+        // 1. 비로그인 체크 -> 401 에러와 메시지 반환
+        if (user == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        try {
+            // 2. 로그인된 경우 서비스 호출 (강좌ID, 로그인ID 전달)
+            courseService.enroll(courseId, user.getLoginId());
+            return ResponseEntity.ok("수강신청 완료");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
-}
 
     // ==========================================
     // 🟩 수강생 영역
@@ -137,10 +138,16 @@ public ResponseEntity<?> enroll(@RequestParam("courseId") Long courseId,
             Principal principal) {
 
         // 1. 입력값 유효성 검사 결과 확인
+        // 1. 입력값 유효성 검사 결과 확인
         if (bindingResult.hasErrors()) {
-            // 유효성 검증 실패 시, 400 Bad Request 에러와 첫 번째 에러 메시지 반환
-            return ResponseEntity.badRequest()
-                    .body(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+            // If no field errors but global errors exist, return the first global error
+            // message
+            if (errors.isEmpty() && bindingResult.hasGlobalErrors()) {
+                return ResponseEntity.badRequest().body(bindingResult.getGlobalError().getDefaultMessage());
+            }
+            return ResponseEntity.badRequest().body(errors);
         }
 
         // 2. 실제 로그인한 유저(강사) 정보를 DB에서 조회
@@ -215,9 +222,16 @@ public ResponseEntity<?> enroll(@RequestParam("courseId") Long courseId,
             Principal principal) {
 
         // 입력값 유효성 검사
+        // 입력값 유효성 검사
         if (bindingResult.hasErrors()) {
-            // 유효성 검증 실패 시, 400 Bad Request 에러와 첫 번째 에러 메시지 반환
-            return ResponseEntity.badRequest().body(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+            // If no field errors but global errors exist, return the first global error
+            // message
+            if (errors.isEmpty() && bindingResult.hasGlobalErrors()) {
+                return ResponseEntity.badRequest().body(bindingResult.getGlobalError().getDefaultMessage());
+            }
+            return ResponseEntity.badRequest().body(errors);
         }
 
         // 1. 수정하려는 강좌 엔티티 조회
@@ -282,9 +296,16 @@ public ResponseEntity<?> enroll(@RequestParam("courseId") Long courseId,
             Principal principal) {
 
         // 1. 입력값 유효성 검사
+        // 1. 입력값 유효성 검사
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest()
-                    .body(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+            // If no field errors but global errors exist, return the first global error
+            // message
+            if (errors.isEmpty() && bindingResult.hasGlobalErrors()) {
+                return ResponseEntity.badRequest().body(bindingResult.getGlobalError().getDefaultMessage());
+            }
+            return ResponseEntity.badRequest().body(errors);
         }
 
         // 2. 재심사 요청 처리

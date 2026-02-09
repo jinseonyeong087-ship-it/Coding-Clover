@@ -307,6 +307,7 @@ function CourseCreateRequest() {
                           value={course.price}
                           onChange={handleChange}
                           placeholder="0"
+                          min="0"
                           className="bg-white/50 border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 py-6 font-mono"
                         />
                         {errors.price && <p className="text-red-500 text-xs ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.price}</p>}
