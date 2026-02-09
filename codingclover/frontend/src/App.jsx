@@ -55,7 +55,7 @@ import ExamResult from './pages/instructor/ExamResult';
 import StudentExamList from './pages/student/StudentExamList';
 import StudentExamTaking from './pages/student/StudentExamTaking';
 import AdminExamList from './pages/admin/AdminExamList';
-
+import AdminPropsalDetail from './pages/admin/AdminPropsalDetail';
 
 
 
@@ -181,11 +181,10 @@ function App() {
         <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="dashboard" element={<AdminMain />} />
           <Route path="course" element={<AdminCourseList />} />
-          <Route path="course/:courseId" element={<ProposalDetail />} />
+          <Route path="course/:courseId" element={<AdminPropsalDetail />} />
           <Route path="users/instructors/:userId" element={<AdminApproch />} />
           <Route path="course/:courseId/lectures" element={<AdminLectureDetail />} />
           <Route path="lectures/:lectureId" element={<AdminLectureDetail />} />
-          <Route path="users/instructors" element={<AdminInstructorList />} />
           <Route path="users/instructors" element={<AdminInstructorList />} />
           <Route path="payments" element={<PaymentManagement />} />
           <Route path="exams" element={<AdminExamList />} />
