@@ -391,10 +391,33 @@ public class PaymentService {
 
         List<PaymentWithUserDto> result = payments.stream()
                 .map(payment -> {
-                    var user = usersRepository.findById(payment.getUserId());
-                    String studentName = user.isPresent() ? user.get().getName() : "Unknown";
-                    String studentLoginId = user.isPresent() ? user.get().getLoginId() : "Unknown";
-                    return new PaymentWithUserDto(payment, studentName, studentLoginId);
+                    try {
+                        String studentName;
+                        String studentLoginId;
+                        
+                        Long userId = payment.getUserId();
+                        
+                        if (userId != null) {
+                            var user = usersRepository.findById(userId);
+                            if (user.isPresent()) {
+                                studentName = user.get().getName();
+                                studentLoginId = user.get().getLoginId();
+                            } else {
+                                // 사용자가 삭제된 경우 (탈퇴처리)
+                                studentName = "탈퇴회원";
+                                studentLoginId = "deleted_user_" + userId;
+                            }
+                        } else {
+                            // userId가 null인 경우 (탈퇴회원)
+                            studentName = "탈퇴회원";
+                            studentLoginId = "deleted_user";
+                        }
+                        
+                        return new PaymentWithUserDto(payment, studentName, studentLoginId);
+                    } catch (Exception e) {
+                        System.err.println("PaymentWithUserDto 변환 중 에러: " + e.getMessage());
+                        return new PaymentWithUserDto(payment, "탈퇴회원", "error");
+                    }
                 })
                 .toList();
 
