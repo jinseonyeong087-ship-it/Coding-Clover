@@ -58,7 +58,7 @@ function AdminCourseList() {
 
     return (
         <>
-        <Nav />
+            <Nav />
             {/* Background Decoration */}
             <div className="fixed inset-0 z-[-1] bg-background">
                 <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]" />
@@ -98,15 +98,31 @@ function AdminCourseList() {
                                                 {item.courseId}
                                             </TableCell>
                                             <TableCell>
-                                                <Link
-                                                    to={`/admin/course/${item.courseId}`}
-                                                    className="font-medium hover:text-primary transition-colors flex items-center justify-center gap-2"
-                                                >
-                                                    {item.title}
-                                                    {isNewCourse(item.createdAt) && (
-                                                        <span className="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full shadow-sm">N</span>
-                                                    )}
-                                                </Link>
+                                                <div className="flex items-center gap-3">
+                                                    {/* 썸네일 추가 */}
+                                                    <div className="w-16 h-10 rounded overflow-hidden bg-muted flex-shrink-0">
+                                                        {item.thumbnailUrl ? (
+                                                            <img
+                                                                src={item.thumbnailUrl}
+                                                                alt=""
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-muted-foreground/30 bg-muted/50">
+                                                                <span className="text-[10px]">No Img</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <Link
+                                                        to={`/admin/course/${item.courseId}`}
+                                                        className="font-medium hover:text-primary transition-colors flex items-center gap-2"
+                                                    >
+                                                        {item.title}
+                                                        {isNewCourse(item.createdAt) && (
+                                                            <span className="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full shadow-sm">N</span>
+                                                        )}
+                                                    </Link>
+                                                </div>
                                             </TableCell>
                                             <TableCell className="text-center font-medium text-foreground/80">
                                                 {item.instructorName}

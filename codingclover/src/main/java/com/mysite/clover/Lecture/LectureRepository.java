@@ -54,4 +54,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
 
         // 승인(APPROVED) 상태이며, 예약 시간이 현재 시간보다 이전(또는 즉시 공개)인 강의 개수 조회 (진도율 계산용)
         // 수강생 화면과 동일한 기준으로 전체 강의 수를 계산하기 위해 사용
+
+        // 강좌 삭제 시 관련 강의 삭제
+        void deleteByCourse(Course course);
 }

@@ -24,10 +24,11 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final com.mysite.clover.Lecture.LectureRepository lectureRepository;
+    private final com.mysite.clover.Exam.ExamRepository examRepository;
     private final UsersRepository usersRepository;
     private final com.mysite.clover.Notification.NotificationService notificationService;
     private final com.mysite.clover.Payment.PaymentService paymentService;
-    
 
     // [조회 로직]
 
@@ -118,7 +119,16 @@ public class CourseService {
     // 강좌 삭제 (강사 본인 강좌 삭제)
     @Transactional
     public void delete(Course course) {
-        // 전달받은 강좌 엔티티를 DB에서 삭제
+        // 1. 수강 내역 삭제 (Enrollment)
+        enrollmentRepository.deleteByCourse(course);
+
+        // 2. 강의 삭제 (Lecture)
+        lectureRepository.deleteByCourse(course);
+
+        // 3. 시험 삭제 (Exam)
+        examRepository.deleteByCourse(course);
+
+        // 4. 강좌 삭제 (Course) - QnA는 Cascade REMOVE로 자동 삭제됨
         courseRepository.delete(course);
     }
 
@@ -352,9 +362,9 @@ public class CourseService {
                     "/admin/course/" + course.getCourseId());
         }
     }
-    
+
     // [추천 기능]
-    
+
     /**
      * 학습 수준에 따른 추천 강좌 목록 조회
      * 입문→초급, 초급→중급, 중급→고급 강좌 추천
@@ -362,15 +372,15 @@ public class CourseService {
     public List<Course> getRecommendedCourses(String educationLevel) {
         int targetLevel = getTargetLevelForRecommendation(educationLevel);
         List<Course> recommendedCourses = getPublicListByLevel(targetLevel);
-        
+
         // 해당 레벨에 강좌가 없으면 초급(1) 강좌 반환
         if (recommendedCourses.isEmpty() && targetLevel != 1) {
             recommendedCourses = getPublicListByLevel(1);
         }
-        
+
         return recommendedCourses;
     }
-    
+
     /**
      * 학습 수준에 따른 추천 타겟 레벨 결정
      * 입문: 1 (초급 강좌), 초급: 2 (중급 강좌), 중급: 3 (고급 강좌)
@@ -379,7 +389,7 @@ public class CourseService {
         if (educationLevel == null || educationLevel.isEmpty() || "미설정".equals(educationLevel)) {
             return 1; // 기본값: 초급 강좌
         }
-        
+
         switch (educationLevel.toLowerCase()) {
             case "입문":
             case "입문 (코딩 경험 없음)":

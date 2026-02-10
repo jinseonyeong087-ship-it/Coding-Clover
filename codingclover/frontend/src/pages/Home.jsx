@@ -36,7 +36,7 @@ function Home() {
     try {
       const storedUsers = localStorage.getItem("users");
       if (!storedUsers) return false;
-      
+
       const userData = JSON.parse(storedUsers);
       return userData.role === 'STUDENT';
     } catch {
@@ -47,14 +47,14 @@ function Home() {
   // 추천 강좌 가져오기
   const fetchRecommendedCourses = async () => {
     if (!isStudent) return;
-    
+
     try {
       const response = await fetch('/api/student/recommended-courses', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setRecommendedCourses(data.slice(0, 4)); // 최대 4개만 표시
@@ -68,7 +68,7 @@ function Home() {
     // 사용자 역할 확인
     const isStudentUser = checkUserRole();
     setIsStudent(isStudentUser);
-    
+
     // 모든 강좌 가져오기
     fetch('/course', { method: 'GET', headers: { 'Content-Type': 'application/json' } })
       .then((res) => res.json())
@@ -76,7 +76,7 @@ function Home() {
         setCourse(json);
         setLoading(false);
       }).catch((err) => console.error(err));
-      
+
     // 추천 강좌 가져오기
     if (isStudentUser) {
       fetchRecommendedCourses();
@@ -164,15 +164,23 @@ function Home() {
               <p className="text-muted-foreground">학습 수준에 맞춰 선별된 강좌들을 확인해보세요. 단계별 학습으로 실력을 체계적으로 향상시킬 수 있습니다.</p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {recommendedCourses.map((item) => (
               <Card key={item.courseId} className="group hover:shadow-xl transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm hover:-translate-y-1">
                 <div className="aspect-video w-full bg-muted/50 relative overflow-hidden rounded-t-xl group-hover:bg-muted/80 transition-colors">
-                  {/* Placeholder for course image */}
-                  <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30">
-                    <BookOpen size={48} />
-                  </div>
+                  {/* Course Image */}
+                  {item.thumbnailUrl ? (
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30">
+                      <BookOpen size={48} />
+                    </div>
+                  )}
                   <div className="absolute top-3 left-3">
                     {setNum(item.level)}
                   </div>
@@ -199,10 +207,10 @@ function Home() {
               </Card>
             ))}
           </div>
-          
+
           <div className="text-center mt-8">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="border-primary/30 hover:bg-primary/5"
               onClick={() => navigate('/student/mypage')}
             >
@@ -218,24 +226,7 @@ function Home() {
             <h2 className="text-3xl font-bold tracking-tight mb-2">인기 강좌</h2>
             <p className="text-muted-foreground">여러분의 실력을 향상시켜줄 최고의 강의들을 만나보세요.</p>
           </div>
-          <Tabs defaultValue={1} className="w-full md:w-auto">
-            <TabsList className="grid w-full md:w-[400px] grid-cols-3">
-              {tabs.map((tab) => (
-                <TabsTrigger key={tab.id} value={tab.id}>
-                  {tab.tablabel}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            {/* TabsContent need to be outside layout if we want them to switch cleanly, but originally they wrap the grid. keeping structure but styling better. */}
-          </Tabs>
         </div>
-
-        <Tabs defaultValue={1} value={undefined}>
-          {/* Note: In original code, Tabs wrap the whole section, but here I split the header. 
-              Ideally we should lift state or re-structure. 
-              To avoid logic change, I will revert to wrapping Tabs but use better styles. 
-          */}
-        </Tabs>
 
         {/* Re-implementing correctly to match original logic but better style */}
         <Tabs defaultValue={1} className="w-full">
@@ -261,10 +252,18 @@ function Home() {
                     .map((item) => (
                       <Card key={item.courseId} className="group hover:shadow-xl transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm hover:-translate-y-1">
                         <div className="aspect-video w-full bg-muted/50 relative overflow-hidden rounded-t-xl group-hover:bg-muted/80 transition-colors">
-                          {/* Placeholder for course image */}
-                          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30">
-                            <BookOpen size={48} />
-                          </div>
+                          {/* Course Image */}
+                          {item.thumbnailUrl ? (
+                            <img
+                              src={item.thumbnailUrl}
+                              alt={item.title}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30">
+                              <BookOpen size={48} />
+                            </div>
+                          )}
                           <div className="absolute top-3 left-3">
                             {setNum(item.level)}
                           </div>
@@ -273,7 +272,7 @@ function Home() {
                           <CardTitle className="text-lg font-bold line-clamp-1 group-hover:text-primary transition-colors">{item.title}</CardTitle>
                           <CardDescription className="flex items-center gap-2 mt-1">
                             <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                              {item.instructorName.charAt(0)}
+                              {item.instructorName?.charAt(0) || 'T'}
                             </div>
                             {item.instructorName}
                           </CardDescription>
@@ -311,6 +310,20 @@ function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {course.map((item) => (
             <Card key={item.courseId} className="group hover:shadow-xl transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm">
+              <div className="aspect-video w-full bg-muted/50 relative overflow-hidden rounded-t-xl group-hover:bg-muted/80 transition-colors">
+                {/* Course Image */}
+                {item.thumbnailUrl ? (
+                  <img
+                    src={item.thumbnailUrl}
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30">
+                    <BookOpen size={48} />
+                  </div>
+                )}
+              </div>
               <CardHeader className="p-5 pb-2">
                 <div className="flex justify-between items-start mb-2">
                   {setNum(item.level)}

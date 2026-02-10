@@ -148,23 +148,7 @@ function LectureCreate() {
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold">{formData.title}</h1>
                     <div>
-                        {formData.proposalStatus === 'APPROVED' ? (
-                            <Button variant="outline" onClick={() => navigate('/instructor/dashboard')}>목록으로</Button>
-                        ) : isEditing ? (
-                            <>
-                                <Button size="sm" onClick={handleEdit}>저장</Button>
-                                <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>취소</Button>
-                            </>
-                        ) : (
-                            <>
-                                <Button size="sm" variant="destructive" onClick={handleDelete}>삭제</Button>
-                                <Button size="sm" onClick={() => { setIsEditing(true); setSelectLevel(formData.level); }}>수정하기</Button>
-                                {formData.proposalStatus === 'REJECTED' && (
-                                    <Button size="sm" variant="default" onClick={handleResubmit}>재심사 요청</Button>
-                                )}
-                                <Button variant="outline" onClick={() => navigate('/instructor/dashboard')}>목록으로</Button>
-                            </>
-                        )}
+                        <Button variant="outline" onClick={() => navigate('/instructor/dashboard')}>목록으로</Button>
                     </div>
                 </div>
 

@@ -21,6 +21,7 @@ import CommunityPostList from './pages/student/CommunityPostList'
 import CommunityPostDetail from './pages/student/CommunityPostDetail'
 import ProposalDetail from '@/pages/public/ProposalDetail'
 import InstructorCourseDetail from '@/pages/instructor/InstructorCourseDetail'
+import InstructorCourseEdit from '@/pages/instructor/InstructorCourseEdit'
 import AdminApproch from '@/pages/admin/AdminApproch'
 import InstructorMypage from '@/pages/instructor/InstructorMypage'
 import Payment from './pages/Payment'
@@ -166,6 +167,7 @@ function App() {
           <Route path="dashboard" element={<InstructorMain />} />
           <Route path="course/new" element={<CourseCreateRequest />} />
           <Route path="course" element={<InstructorCourseList />} />
+          <Route path="course/edit/:courseId" element={<InstructorCourseEdit />} />
           <Route path="course/:courseId" element={<InstructorCourseDetail />} />
           <Route path="course/:courseId/lectures" element={<StudentLectureDetail />} />
           <Route path="lecture/upload" element={<InstructorLecture />} />

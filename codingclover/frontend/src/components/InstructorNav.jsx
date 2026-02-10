@@ -47,7 +47,7 @@ function InstructorNav() {
                             <MenubarContent>
                                 <MenubarGroup>
                                     <MenubarItem onClick={() => { navigate('/instructor/course/new') }}>강좌 개설</MenubarItem>
-                                    <MenubarItem onClick={() => { navigate('/instructor/course') }}>내 강의</MenubarItem>
+                                    <MenubarItem onClick={() => { navigate('/instructor/course') }}>내 강좌</MenubarItem>
                                     <MenubarItem onClick={() => { navigate('/instructor/lecture/upload') }}>강의 업로드</MenubarItem>
                                 </MenubarGroup>
                             </MenubarContent>
