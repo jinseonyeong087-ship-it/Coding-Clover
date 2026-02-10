@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MessageCircle, Edit, Trash2, Send, User, Calendar, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import { MessageCircle, Edit, Trash2, Send, User, Calendar, ArrowLeft, ChevronLeft, ChevronRight, EyeOff, Eye } from "lucide-react";
 
 const CommunityPostDetail = () => {
     const navigate = useNavigate();
@@ -134,6 +134,16 @@ const CommunityPostDetail = () => {
             .catch(err => alert("삭제 실패: " + (err.response?.data || err.message)));
     };
 
+    const handleTogglePostVisibility = () => {
+        const isHidden = selectedPost.status === 'HIDDEN';
+        const endpoint = isHidden
+            ? `/api/community/posts/${selectedPost.id}/unhide`
+            : `/api/community/posts/${selectedPost.id}/hide`;
+        axios.put(endpoint, {}, { withCredentials: true })
+            .then(() => fetchPostDetail(selectedPost.id))
+            .catch(err => alert("상태 변경 실패: " + (err.response?.data || err.message)));
+    };
+
     const handleCreateComment = () => {
         if (!currentUser) {
             alert('로그인이 필요합니다.');
@@ -164,6 +174,16 @@ const CommunityPostDetail = () => {
         axios.delete(`/api/community/comments/${commentId}`, { withCredentials: true })
             .then(() => fetchPostDetail(selectedPost.id))
             .catch(err => alert("댓글 삭제 실패: " + err.response?.data));
+    };
+
+    const handleToggleCommentVisibility = (commentId, status) => {
+        const isHidden = status === 'HIDDEN';
+        const endpoint = isHidden
+            ? `/api/community/comments/${commentId}/unhide`
+            : `/api/community/comments/${commentId}/hide`;
+        axios.put(endpoint, {}, { withCredentials: true })
+            .then(() => fetchPostDetail(selectedPost.id))
+            .catch(err => alert("댓글 상태 변경 실패: " + (err.response?.data || err.message)));
     };
 
     if (!selectedPost) {
@@ -298,7 +318,7 @@ const CommunityPostDetail = () => {
                                             </div>
 
                                             {/* 게시글 수정/삭제 권한 */}
-                                            {(canEdit(selectedPost.authorLoginId, selectedPost.authorName) || canDelete(selectedPost.authorLoginId, selectedPost.authorName)) && (
+                                            {(canEdit(selectedPost.authorLoginId, selectedPost.authorName) || canDelete(selectedPost.authorLoginId, selectedPost.authorName) || isAdmin()) && (
                                                 <div className="flex gap-2">
                                                     {canEdit(selectedPost.authorLoginId, selectedPost.authorName) && (
                                                         <Button
@@ -323,6 +343,26 @@ const CommunityPostDetail = () => {
                                                         >
                                                             <Trash2 className="h-3.5 w-3.5 mr-1" />
                                                             삭제
+                                                        </Button>
+                                                    )}
+                                                    {isAdmin() && (
+                                                        <Button
+                                                            variant={selectedPost.status === 'HIDDEN' ? "default" : "outline"}
+                                                            size="sm"
+                                                            onClick={handleTogglePostVisibility}
+                                                            className="h-8 shadow-sm"
+                                                        >
+                                                            {selectedPost.status === 'HIDDEN' ? (
+                                                                <>
+                                                                    <Eye className="h-3.5 w-3.5 mr-1" />
+                                                                    복구
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <EyeOff className="h-3.5 w-3.5 mr-1" />
+                                                                    숨김
+                                                                </>
+                                                            )}
                                                         </Button>
                                                     )}
                                                 </div>
@@ -422,6 +462,9 @@ const CommunityPostDetail = () => {
                                                                                     <div>
                                                                                         <div className="flex items-center gap-2">
                                                                                             <span className="font-semibold text-sm">{comment.authorName}</span>
+                                                                                            {comment.status === 'HIDDEN' && (
+                                                                                                <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-normal">숨김</Badge>
+                                                                                            )}
                                                                                             {isNewComment(comment.createdAt) && (
                                                                                                 <Badge className="h-4 w-4 rounded-full bg-red-500 border-none flex items-center justify-center p-0 text-[9px] font-bold">N</Badge>
                                                                                             )}
@@ -431,9 +474,9 @@ const CommunityPostDetail = () => {
                                                                                         </span>
                                                                                     </div>
                                                                                 </div>
-                                                                                {(canEdit(comment.authorLoginId, comment.authorName) || canDelete(comment.authorLoginId, comment.authorName)) && (
+                                                                                {(canEdit(comment.authorLoginId, comment.authorName) || canDelete(comment.authorLoginId, comment.authorName) || isAdmin()) && (
                                                                                     <div className="flex gap-1">
-                                                                                        {canEdit(comment.authorLoginId, comment.authorName) && (
+                                                                                        {canEdit(comment.authorLoginId, comment.authorName) && comment.status !== 'HIDDEN' && (
                                                                                             <Button
                                                                                                 size="sm"
                                                                                                 variant="ghost"
@@ -456,10 +499,26 @@ const CommunityPostDetail = () => {
                                                                                                 <Trash2 className="h-3.5 w-3.5" />
                                                                                             </Button>
                                                                                         )}
+                                                                                        {isAdmin() && (
+                                                                                            <Button
+                                                                                                size="sm"
+                                                                                                variant="ghost"
+                                                                                                onClick={() => handleToggleCommentVisibility(comment.id, comment.status)}
+                                                                                                className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
+                                                                                            >
+                                                                                                {comment.status === 'HIDDEN' ? (
+                                                                                                    <Eye className="h-3.5 w-3.5" />
+                                                                                                ) : (
+                                                                                                    <EyeOff className="h-3.5 w-3.5" />
+                                                                                                )}
+                                                                                            </Button>
+                                                                                        )}
                                                                                     </div>
                                                                                 )}
                                                                             </div>
-                                                                            <p className="text-sm pl-11 leading-relaxed whitespace-pre-wrap">{comment.content}</p>
+                                                                            <p className={`text-sm pl-11 leading-relaxed whitespace-pre-wrap ${comment.status === 'HIDDEN' ? 'text-muted-foreground italic' : ''}`}>
+                                                                                {comment.status === 'HIDDEN' ? '숨김 처리된 댓글입니다.' : comment.content}
+                                                                            </p>
                                                                         </div>
                                                                     )}
                                                                 </div>

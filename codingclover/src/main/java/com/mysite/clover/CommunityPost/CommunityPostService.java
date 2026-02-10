@@ -36,8 +36,8 @@ public class CommunityPostService {
 
     // 게시글 목록 조회 (검색 + 페이징 + 필터링)
     @Transactional(readOnly = true)
-    public Page<PostResponse> getVisiblePosts(int page, int size, String keyword, boolean myPostsOnly,
-            String currentUsername) {
+        public Page<PostResponse> getVisiblePosts(int page, int size, String keyword, boolean myPostsOnly,
+            String currentUsername, boolean isAdmin) {
         Pageable pageable = PageRequest.of(page, size);
         Page<CommunityPost> postPage;
 
@@ -57,9 +57,17 @@ public class CommunityPostService {
             // 아까 리포지토리 수정에서 findByUser(Long userId, ...)로 바꿨음.
             throw new UnsupportedOperationException("내 글 보기 기능은 컨트롤러에서 User 정보를 받아 처리해야 합니다.");
         } else if (keyword != null && !keyword.isBlank()) {
-            postPage = communityPostRepository.searchByKeyword(keyword, pageable);
+            if (isAdmin) {
+                postPage = communityPostRepository.searchByKeywordIncludingHidden(keyword, pageable);
+            } else {
+                postPage = communityPostRepository.searchByKeyword(keyword, pageable);
+            }
         } else {
-            postPage = communityPostRepository.findByStatusOrderByCreatedAtDesc(PostStatus.VISIBLE, pageable);
+            if (isAdmin) {
+                postPage = communityPostRepository.findAllByOrderByCreatedAtDesc(pageable);
+            } else {
+                postPage = communityPostRepository.findByStatusOrderByCreatedAtDesc(PostStatus.VISIBLE, pageable);
+            }
         }
 
         return postPage.map(post -> PostResponse.fromEntity(post, false));
@@ -67,12 +75,19 @@ public class CommunityPostService {
 
     // 게시글 상세 조회
     @Transactional
-    public PostResponse getPost(Long postId) {
+    public PostResponse getPost(Long postId, Users viewer) {
         CommunityPost post = communityPostRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
+        boolean isAdmin = viewer != null && viewer.getRole().name().equals("ADMIN");
+        boolean isOwner = viewer != null && post.getUser().getLoginId().equals(viewer.getLoginId());
+
+        if (post.getStatus() == PostStatus.HIDDEN && !isAdmin && !isOwner) {
+            throw new IllegalArgumentException("게시글을 찾을 수 없습니다.");
+        }
+
         // 상세 조회 시 댓글 포함
-        return PostResponse.fromEntity(post, true);
+        return PostResponse.fromEntity(post, true, isAdmin);
     }
 
     // 내부 조회용 (엔티티 반환 - 컨트롤러가 아닌 서비스 내부 로직용)
@@ -140,6 +155,7 @@ public class CommunityPostService {
         comment.setContent(content);
         comment.setPost(post);
         comment.setUser(user);
+        comment.setStatus(PostStatus.VISIBLE);
 
         // 3. DB 저장
         communityCommentRepository.save(comment);
@@ -187,5 +203,30 @@ public class CommunityPostService {
         } else {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
+    }
+
+    // 관리자 전용: 게시글 숨김/복구
+    @Transactional
+    public void setPostStatus(Long postId, Users user, PostStatus status) {
+        if (!user.getRole().name().equals("ADMIN")) {
+            throw new RuntimeException("관리자만 변경할 수 있습니다.");
+        }
+
+        CommunityPost post = getPostEntity(postId);
+        post.setStatus(status);
+        communityPostRepository.save(post);
+    }
+
+    // 관리자 전용: 댓글 숨김/복구
+    @Transactional
+    public void setCommentStatus(Long commentId, Users user, PostStatus status) {
+        if (!user.getRole().name().equals("ADMIN")) {
+            throw new RuntimeException("관리자만 변경할 수 있습니다.");
+        }
+
+        CommunityComment comment = communityCommentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("댓글이 존재하지 않습니다."));
+        comment.setStatus(status);
+        communityCommentRepository.save(comment);
     }
 }

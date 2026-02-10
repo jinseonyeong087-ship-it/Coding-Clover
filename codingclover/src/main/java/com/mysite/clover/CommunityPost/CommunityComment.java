@@ -25,6 +25,11 @@ public class CommunityComment {
   @Column(columnDefinition = "TEXT", nullable = false)
   private String content;
 
+  // 댓글 상태 (VISIBLE: 공개, HIDDEN: 숨김)
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private PostStatus status = PostStatus.VISIBLE;
+
   // 해당 댓글이 속한 게시글 정보 (다대일 관계, 필수)
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "post_id", nullable = false)

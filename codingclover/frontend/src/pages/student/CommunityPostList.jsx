@@ -11,14 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MessageCircle, Edit, Trash2, Send, User, Calendar, ArrowLeft, Search, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
+import { MessageCircle, Edit, Trash2, Send, User, Calendar, ArrowLeft, Search, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, EyeOff, Eye } from "lucide-react";
 
 const CommunityPostList = () => {
     const navigate = useNavigate();
 
     const [viewMode, setViewMode] = useState('list');
     const [posts, setPosts] = useState([]);
-    const [postForm, setPostForm] = useState({ title: '', content: '' });
 
     // 검색 및 페이징 상태
     const [searchTerm, setSearchTerm] = useState('');
@@ -110,7 +109,11 @@ const CommunityPostList = () => {
 
     const fetchPosts = () => {
         axios.get('/api/community/posts', { withCredentials: true })
-            .then(res => setPosts(res.data))
+            .then(res => {
+                const data = res.data;
+                const items = Array.isArray(data) ? data : (data?.content || []);
+                setPosts(items);
+            })
             .catch(err => console.error(err));
     };
 
@@ -153,6 +156,18 @@ const CommunityPostList = () => {
             })
             .catch(err => alert("등록 실패: " + (err.response?.data || err.message)));
     };
+
+    const handleTogglePostVisibility = (post, event) => {
+        event.stopPropagation();
+        const isHidden = post.status === 'HIDDEN';
+        const endpoint = isHidden ? `/api/community/posts/${post.id}/unhide` : `/api/community/posts/${post.id}/hide`;
+        axios.put(endpoint, {}, { withCredentials: true })
+            .then(() => fetchPosts())
+            .catch(err => alert("상태 변경 실패: " + (err.response?.data || err.message)));
+    };
+
+    const isAdmin = currentUser && currentUser.role === 'ADMIN';
+    const columnCount = isAdmin ? 5 : 4;
 
     return (
         <>
@@ -233,12 +248,15 @@ const CommunityPostList = () => {
                                                         }
                                                     </div>
                                                 </TableHead>
+                                                {isAdmin && (
+                                                    <TableHead className="w-28 text-center font-semibold">관리</TableHead>
+                                                )}
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {currentPosts.length === 0 ? (
                                                 <TableRow>
-                                                    <TableCell colSpan={4} className="h-48 text-center">
+                                                    <TableCell colSpan={columnCount} className="h-48 text-center">
                                                         <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                                                             <MessageCircle className="h-10 w-10 opacity-20" />
                                                             <p>{searchTerm ? '검색 결과가 없습니다.' : '아직 게시글이 없습니다.'}</p>
@@ -260,10 +278,13 @@ const CommunityPostList = () => {
                                                             <TableCell>
                                                                 <div className="flex items-center gap-2 py-1">
                                                                     <span className="font-medium text-base group-hover:text-primary transition-colors line-clamp-1">{post.title}</span>
-                                                                    {post.comments && post.comments.length > 0 && (
+                                                                    {post.commentCount > 0 && (
                                                                         <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-normal">
-                                                                            {post.comments.length}
+                                                                            {post.commentCount}
                                                                         </Badge>
+                                                                    )}
+                                                                    {post.status === 'HIDDEN' && (
+                                                                        <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-normal">숨김</Badge>
                                                                     )}
                                                                     {isNewPost(post.createdAt) && (
                                                                         <Badge className="h-4 w-4 rounded-full bg-red-500 border-none flex items-center justify-center p-0 text-[9px] font-bold">N</Badge>
@@ -285,6 +306,28 @@ const CommunityPostList = () => {
                                                                     day: '2-digit'
                                                                 })}
                                                             </TableCell>
+                                                            {isAdmin && (
+                                                                <TableCell className="text-center">
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant={post.status === 'HIDDEN' ? "default" : "outline"}
+                                                                        onClick={(event) => handleTogglePostVisibility(post, event)}
+                                                                        className="h-8"
+                                                                    >
+                                                                        {post.status === 'HIDDEN' ? (
+                                                                            <>
+                                                                                <Eye className="h-3.5 w-3.5 mr-1" />
+                                                                                복구
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <EyeOff className="h-3.5 w-3.5 mr-1" />
+                                                                                숨김
+                                                                            </>
+                                                                        )}
+                                                                    </Button>
+                                                                </TableCell>
+                                                            )}
                                                         </TableRow>
                                                     );
                                                 })

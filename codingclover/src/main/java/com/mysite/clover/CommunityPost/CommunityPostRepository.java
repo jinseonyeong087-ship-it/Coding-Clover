@@ -20,6 +20,15 @@ public interface CommunityPostRepository extends JpaRepository<CommunityPost, Lo
             "ORDER BY p.createdAt DESC")
     Page<CommunityPost> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
+        // 관리자용 검색 (숨김 포함)
+        @Query("SELECT p FROM CommunityPost p JOIN FETCH p.user WHERE " +
+            "(p.title LIKE %:keyword% OR p.content LIKE %:keyword% OR p.user.name LIKE %:keyword%) " +
+            "ORDER BY p.createdAt DESC")
+        Page<CommunityPost> searchByKeywordIncludingHidden(@Param("keyword") String keyword, Pageable pageable);
+
+        // 관리자용 전체 목록 (숨김 포함)
+        Page<CommunityPost> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
     // 특정 사용자 작성 글 조회 + 페이징
     @Query("SELECT p FROM CommunityPost p JOIN FETCH p.user WHERE p.user.id = :userId AND p.status = 'VISIBLE' ORDER BY p.createdAt DESC")
     Page<CommunityPost> findByUser(@Param("userId") Long userId, Pageable pageable);

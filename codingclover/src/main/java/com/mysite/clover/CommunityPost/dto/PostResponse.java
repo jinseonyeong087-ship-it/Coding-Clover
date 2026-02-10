@@ -45,7 +45,8 @@ public class PostResponse {
 
   // 엔티티(CommunityPost)를 DTO(PostResponse)로 변환하는 정적 메서드
   // includeComments: 댓글 목록 포함 여부
-  public static PostResponse fromEntity(CommunityPost post, boolean includeComments) {
+  // includeHiddenComments: 숨김 댓글 포함 여부 (관리자 전용)
+  public static PostResponse fromEntity(CommunityPost post, boolean includeComments, boolean includeHiddenComments) {
     // 응답 객체 생성
     PostResponse response = new PostResponse();
 
@@ -74,10 +75,16 @@ public class PostResponse {
     // 댓글 목록 변환 로직 (상세 조회 시에만 포함)
     if (includeComments && post.getComments() != null) {
       response.setComments(post.getComments().stream()
+          .filter(comment -> includeHiddenComments || comment.getStatus() == PostStatus.VISIBLE)
           .map(CommentResponse::fromEntity)
           .collect(Collectors.toList()));
     }
 
     return response;
+  }
+
+  // 기존 호출부 호환용 (숨김 댓글 제외)
+  public static PostResponse fromEntity(CommunityPost post, boolean includeComments) {
+    return fromEntity(post, includeComments, false);
   }
 }
