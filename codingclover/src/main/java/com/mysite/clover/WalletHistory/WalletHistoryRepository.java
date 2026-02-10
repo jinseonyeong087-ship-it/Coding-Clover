@@ -35,15 +35,4 @@ public interface WalletHistoryRepository extends JpaRepository<WalletHistory, Lo
      */
     List<WalletHistory> findByUserIdAndCreatedAtBetween(Long userId, LocalDateTime startDate, LocalDateTime endDate);
     
-    /**
-     * 사용자별 총 충전 금액
-     */
-    @Query("SELECT COALESCE(SUM(h.changeAmount), 0) FROM WalletHistory h WHERE h.userId = :userId AND h.reason = 'CHARGE'")
-    Integer getTotalChargeAmount(Long userId);
-    
-    /**
-     * 사용자별 총 사용 금액
-     */
-    @Query("SELECT COALESCE(SUM(ABS(h.changeAmount)), 0) FROM WalletHistory h WHERE h.userId = :userId AND h.reason = 'USE'")
-    Integer getTotalUseAmount(Long userId);
 }

@@ -91,18 +91,4 @@ public class WalletHistoryService {
         return walletHistoryRepository.findByUserIdAndCreatedAtBetween(userId, startDate, endDate);
     }
 
-    /**
-     * 사용자 통계 조회
-     */
-    public WalletStatistics getUserStatistics(Long userId) {
-        Integer totalCharge = walletHistoryRepository.getTotalChargeAmount(userId);
-        Integer totalUse = walletHistoryRepository.getTotalUseAmount(userId);
-        
-        WalletStatistics stats = new WalletStatistics();
-        stats.setUserId(userId);
-        stats.setTotalChargeAmount(totalCharge != null ? totalCharge : 0);
-        stats.setTotalUseAmount(totalUse != null ? totalUse : 0);
-        
-        return stats;
-    }
 }
