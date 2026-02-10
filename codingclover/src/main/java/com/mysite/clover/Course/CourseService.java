@@ -358,4 +358,53 @@ public class CourseService {
                     "/admin/course/" + course.getCourseId());
         }
     }
+    
+    // [추천 기능]
+    
+    /**
+     * 학습 수준에 따른 추천 강좌 목록 조회
+     * 입문→초급, 초급→중급, 중급→고급 강좌 추천
+     */
+    public List<Course> getRecommendedCourses(String educationLevel) {
+        int targetLevel = getTargetLevelForRecommendation(educationLevel);
+        List<Course> recommendedCourses = getPublicListByLevel(targetLevel);
+        
+        // 해당 레벨에 강좌가 없으면 초급(1) 강좌 반환
+        if (recommendedCourses.isEmpty() && targetLevel != 1) {
+            recommendedCourses = getPublicListByLevel(1);
+        }
+        
+        return recommendedCourses;
+    }
+    
+    /**
+     * 학습 수준에 따른 추천 타겟 레벨 결정
+     * 입문: 1 (초급 강좌), 초급: 2 (중급 강좌), 중급: 3 (고급 강좌)
+     */
+    private int getTargetLevelForRecommendation(String educationLevel) {
+        if (educationLevel == null || educationLevel.isEmpty() || "미설정".equals(educationLevel)) {
+            return 1; // 기본값: 초급 강좌
+        }
+        
+        switch (educationLevel.toLowerCase()) {
+            case "입문":
+            case "입문 (코딩 경험 없음)":
+            case "beginner":
+                return 1; // 초급 강좌 추천
+            case "초급":
+            case "초급 (기초 문법 이해)":
+            case "elementary":
+                return 2; // 중급 강좌 추천
+            case "중급":
+            case "중급 (프로젝트 경험 있음)":
+            case "intermediate":
+                return 3; // 고급 강좌 추천
+            case "고급":
+            case "advanced":
+            case "상급":
+                return 3; // 고급이 최고 레벨이므로 고급 강좌 유지
+            default:
+                return 1; // 알 수 없는 값일 경우 초급 강좌
+        }
+    }
 }

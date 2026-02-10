@@ -1,9 +1,12 @@
 package com.mysite.clover.StudentProfile;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.mysite.clover.Course.Course;
+import com.mysite.clover.Course.CourseService;
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.Users.UsersRepository;
 
@@ -18,6 +21,7 @@ public class StudentProfileService {
 
     private final StudentProfileRepository studentProfileRepository;
     private final UsersRepository usersRepository;
+    private final CourseService courseService;
 
     // loginId 혹은 email 기반 조회 (컨트롤러용)
     @Transactional(readOnly = true)
@@ -133,5 +137,24 @@ public class StudentProfileService {
         }
 
         return cleaned.isEmpty() ? "미설정" : cleaned;
+    }
+    
+    /**
+     * 로그인한 학생의 학습 수준에 따른 추천 강좌 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public List<Course> getRecommendedCourses(String identifier) {
+        Users user = usersRepository.findByLoginId(identifier)
+                .or(() -> usersRepository.findByEmail(identifier))
+                .orElseThrow(() -> new EntityNotFoundException("사용자 정보가 없습니다."));
+        
+        StudentProfile profile = studentProfileRepository.findByUserId(user.getUserId()).orElse(null);
+        
+        String educationLevel = "미설정";
+        if (profile != null && profile.getEducationLevel() != null) {
+            educationLevel = profile.getEducationLevel();
+        }
+        
+        return courseService.getRecommendedCourses(educationLevel);
     }
 }

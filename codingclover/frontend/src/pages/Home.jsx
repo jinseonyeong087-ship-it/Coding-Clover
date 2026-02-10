@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
-import { ArrowRight, BookOpen, PlayCircle } from "lucide-react";
+import { ArrowRight, BookOpen, PlayCircle, Star } from "lucide-react";
 import ChatBot from './student/ChatBot';
 
 function Home() {
@@ -13,7 +13,9 @@ function Home() {
   const navigate = useNavigate();
 
   const [course, setCourse] = useState([]);
+  const [recommendedCourses, setRecommendedCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isStudent, setIsStudent] = useState(false);
 
   const [tabs] = useState([
     { id: 1, tablabel: "초급" },
@@ -29,14 +31,63 @@ function Home() {
     }
   }
 
+  // 로그인한 사용자가 학생인지 확인하는 함수
+  const checkUserRole = () => {
+    try {
+      const storedUsers = localStorage.getItem("users");
+      if (!storedUsers) return false;
+      
+      const userData = JSON.parse(storedUsers);
+      return userData.role === 'STUDENT';
+    } catch {
+      return false;
+    }
+  };
+
+  // 추천 강좌 가져오기
+  const fetchRecommendedCourses = async () => {
+    if (!isStudent) return;
+    
+    try {
+      const response = await fetch('/api/student/recommended-courses', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setRecommendedCourses(data.slice(0, 4)); // 최대 4개만 표시
+      }
+    } catch (error) {
+      console.error('추천 강좌 조회 실패:', error);
+    }
+  };
+
   useEffect(() => {
+    // 사용자 역할 확인
+    const isStudentUser = checkUserRole();
+    setIsStudent(isStudentUser);
+    
+    // 모든 강좌 가져오기
     fetch('/course', { method: 'GET', headers: { 'Content-Type': 'application/json' } })
       .then((res) => res.json())
       .then((json) => {
         setCourse(json);
         setLoading(false);
-      }).catch((err) => console.error(err))
+      }).catch((err) => console.error(err));
+      
+    // 추천 강좌 가져오기
+    if (isStudentUser) {
+      fetchRecommendedCourses();
+    }
   }, []);
+
+  useEffect(() => {
+    if (isStudent) {
+      fetchRecommendedCourses();
+    }
+  }, [isStudent]);
 
   return (
     <>
@@ -103,6 +154,63 @@ function Home() {
           </div>
         </div>
       </section>
+
+      {/* Recommended Courses Section for Logged-in Students */}
+      {isStudent && recommendedCourses.length > 0 && (
+        <section className="container mx-auto px-6 py-24">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight mb-2">맞춤형 추천 강좌</h2>
+              <p className="text-muted-foreground">학습 수준에 맞춰 선별된 강좌들을 확인해보세요. 단계별 학습으로 실력을 체계적으로 향상시킬 수 있습니다.</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {recommendedCourses.map((item) => (
+              <Card key={item.courseId} className="group hover:shadow-xl transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm hover:-translate-y-1">
+                <div className="aspect-video w-full bg-muted/50 relative overflow-hidden rounded-t-xl group-hover:bg-muted/80 transition-colors">
+                  {/* Placeholder for course image */}
+                  <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30">
+                    <BookOpen size={48} />
+                  </div>
+                  <div className="absolute top-3 left-3">
+                    {setNum(item.level)}
+                  </div>
+                </div>
+                <CardHeader className="p-5">
+                  <CardTitle className="text-lg font-bold line-clamp-1 group-hover:text-primary transition-colors">{item.title}</CardTitle>
+                  <CardDescription className="flex items-center gap-2 mt-1">
+                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                      {item.createdBy?.name?.charAt(0) || 'T'}
+                    </div>
+                    {item.createdBy?.name || '강사'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-5 pt-0">
+                  <p className="text-sm text-muted-foreground line-clamp-2 h-10">{item.description}</p>
+                </CardContent>
+                <CardFooter className="p-5 pt-0">
+                  <Link to={`/course/${item.courseId}`} className="w-full">
+                    <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+                      자세히 보기 <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+          
+          <div className="text-center mt-8">
+            <Button 
+              variant="outline" 
+              className="border-primary/30 hover:bg-primary/5"
+              onClick={() => navigate('/student/mypage')}
+            >
+              학습 수준 변경하기 <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        </section>
+      )}
 
       <section className="container mx-auto px-6 py-24">
         <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">

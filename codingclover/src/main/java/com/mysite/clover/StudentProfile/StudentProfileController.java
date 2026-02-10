@@ -1,5 +1,6 @@
 package com.mysite.clover.StudentProfile;
 
+import java.util.List;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -14,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import java.util.Map;
 
+import com.mysite.clover.Course.Course;
 import com.mysite.clover.Users.UsersService;
 
 import lombok.RequiredArgsConstructor;
@@ -88,6 +90,27 @@ public class StudentProfileController {
         }
     }
 
+    // 추천 강좌 목록 조회
+    @GetMapping("/recommended-courses")
+    public ResponseEntity<List<Course>> getRecommendedCourses(
+            @AuthenticationPrincipal User principal,
+            HttpServletRequest request) {
+        
+        try {
+            String loginId = resolveLoginId(principal, request);
+            System.out.println("추천 강좌 요청 - loginId: " + loginId);
+            
+            List<Course> recommendedCourses = studentProfileService.getRecommendedCourses(loginId);
+            System.out.println("추천 강좌 조회 성공: " + recommendedCourses.size() + "개");
+            
+            return ResponseEntity.ok(recommendedCourses);
+        } catch (Exception e) {
+            System.err.println("추천 강좌 조회 중 에러 발생: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
     //resolveLoginId()는 요청으로부터 로그인 사용자를 식별하기 위한 전용 유틸 메서드
     private String resolveLoginId(User principal, HttpServletRequest request) {
 
@@ -108,4 +131,5 @@ public class StudentProfileController {
 
         throw new IllegalStateException("로그인 정보를 확인할 수 없습니다.");
     }
-}
+    }
+
