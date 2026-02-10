@@ -37,6 +37,7 @@ import NoticeDetail from './pages/admin/NoticeDetail';
 import AdminLectureDetail from '@/pages/admin/AdminLectureDetail'
 import AdminCourseList from '@/pages/admin/AdminCourseList'
 import AdminInstructorList from '@/pages/admin/AdminInstructorList'
+import AdminEnrollmentManagement from '@/pages/admin/AdminEnrollmentManagement'
 import StudentCourseDetail from '@/pages/student/StudentCourseDetail'
 import CodingTestDetail from './pages/coding/CodingTestDetail';
 import CodingTestList from './pages/coding/CodingTestList';
@@ -189,6 +190,7 @@ function App() {
           <Route path="lectures/:lectureId" element={<AdminLectureDetail />} />
           <Route path="users/instructors" element={<AdminInstructorList />} />
           <Route path="payments" element={<PaymentManagement />} />
+          <Route path="enrollment" element={<AdminEnrollmentManagement />} />
           <Route path="exams" element={<AdminExamList />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}

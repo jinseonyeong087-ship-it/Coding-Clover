@@ -58,6 +58,9 @@ function AdminNav() {
                         <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/admin/payments') }}>결제관리</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
+                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/admin/enrollment') }}>수강관리</MenubarTrigger>
+                    </MenubarMenu>
+                    <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
                         <MenubarContent>
                             <MenubarItem onClick={() => { navigate('/student/qna') }}>Q&A</MenubarItem>
