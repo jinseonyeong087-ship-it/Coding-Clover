@@ -1,15 +1,10 @@
 package com.mysite.clover.InstructorProfile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,9 +24,6 @@ public class InstructorProfileService {
     private final InstructorProfileRepository instructorProfileRepository;
     private final UsersRepository usersRepository;
     private final com.mysite.clover.Notification.NotificationService notificationService;
-
-    @Value("${file.upload.path:./uploads}")
-    private String uploadPath;
 
     // 강사 프로필 조회 (loginId 기반)
     @Transactional(readOnly = true)
@@ -141,32 +133,6 @@ public class InstructorProfileService {
                     "/admin/users/instructors");
         } catch (Exception e) {
             throw new RuntimeException("프로필 저장 중 오류가 발생했습니다: " + e.getMessage());
-        }
-    }
-
-    // 이력서 파일 저장
-    private String saveResumeFile(MultipartFile file, String loginId) {
-        try {
-            // 업로드 디렉토리 생성 (프로젝트 루트의 uploads 폴더)
-            Path uploadDir = Paths.get(uploadPath).toAbsolutePath();
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-                System.out.println("Created upload directory: " + uploadDir);
-            }
-
-            // 파일명 생성 (중복 방지)
-            String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String fileName = "resume_" + loginId + "_" + System.currentTimeMillis() + extension;
-
-            Path filePath = uploadDir.resolve(fileName);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            System.out.println("File saved to: " + filePath.toAbsolutePath());
-            return fileName; // 파일명만 저장 (전체 경로 아님)
-
-        } catch (IOException e) {
-            throw new RuntimeException("파일 저장에 실패했습니다: " + e.getMessage());
         }
     }
 
