@@ -77,7 +77,12 @@ export default defineConfig({
       '/ask': {
         target: 'http://localhost:3333',
         changeOrigin: true,
-      }
+      },
+
+      '/uploads': {
+        target: 'http://localhost:3333',
+        changeOrigin: true,
+      },
 
       // vite.config.js 역할
       // React Router가 처리하기 전에

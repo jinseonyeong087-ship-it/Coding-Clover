@@ -42,7 +42,9 @@ dependencies {
 	// 챗봇
 	implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter:1.0.0-M5'
 	// .env 불러오게 해주는거
-	implementation 'me.paulschwarz:spring-dotenv:4.0.0'	
+	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+	// 썸네일 생성
+	implementation 'net.coobird:thumbnailator:0.4.20'
 }
 
 tasks.named('test') {

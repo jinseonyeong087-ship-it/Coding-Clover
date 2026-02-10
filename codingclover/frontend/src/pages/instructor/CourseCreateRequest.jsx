@@ -20,9 +20,11 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 
+import ImageUpload from '@/components/common/ImageUpload';
+
 function CourseCreateRequest() {
   const DRAFT_KEY = 'courseDraft';
-  const [course, setCourse] = useState({ title: '', createdBy: '', level: 1, description: '', price: 0 });
+  const [course, setCourse] = useState({ title: '', createdBy: '', level: 1, description: '', price: 0, thumbnailUrl: '' });
   const [errors, setErrors] = useState({});
   const [selectLevel, setSelectLevel] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -91,6 +93,7 @@ function CourseCreateRequest() {
         title: parsed.title || '',
         description: parsed.description || '',
         price: parsed.price || 0,
+        thumbnailUrl: parsed.thumbnailUrl || '',
       }));
       setSelectLevel(parsed.selectLevel ?? null);
     }
@@ -109,6 +112,7 @@ function CourseCreateRequest() {
       title: course.title,
       description: course.description,
       price: course.price,
+      thumbnailUrl: course.thumbnailUrl,
       selectLevel,
       savedAt: new Date().toISOString(),
     };
@@ -134,6 +138,7 @@ function CourseCreateRequest() {
       level: selectLevel,
       description: course.description,
       price: Number(course.price),
+      thumbnailUrl: course.thumbnailUrl,
     }, { withCredentials: true })
       .then((response) => {
         localStorage.removeItem(DRAFT_KEY);
@@ -238,6 +243,19 @@ function CourseCreateRequest() {
                           value={course.createdBy}
                           readOnly
                           className="bg-slate-50/80 border-slate-200 text-slate-500 cursor-not-allowed py-6"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-slate-600 text-sm font-medium">썸네일 이미지</Label>
+                        <ImageUpload
+                          initialImage={course.thumbnailUrl}
+                          onUploadSuccess={(urls) => {
+                            setCourse(prev => ({
+                              ...prev,
+                              thumbnailUrl: urls ? urls.thumbnailUrl : ''
+                            }));
+                          }}
                         />
                       </div>
                     </div>
