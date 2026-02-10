@@ -18,6 +18,7 @@ const CommunityPostList = () => {
 
     const [viewMode, setViewMode] = useState('list');
     const [posts, setPosts] = useState([]);
+    const [postForm, setPostForm] = useState({ title: '', content: '' });
 
     // 검색 및 페이징 상태
     const [searchTerm, setSearchTerm] = useState('');
