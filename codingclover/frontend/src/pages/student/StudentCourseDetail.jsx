@@ -34,6 +34,8 @@ function StudentCourseDetail() {
     // 강의 목록 & 선택된 강의
     const [lectureList, setLectureList] = useState([]);
     const [selectedLecture, setSelectedLecture] = useState(null);
+    // 강의 미리보기 (비로그인용)
+    const [previewLectures, setPreviewLectures] = useState([]);
 
     // 강좌 정보 + 수강 상태 가져오기
     useEffect(() => {
@@ -49,6 +51,15 @@ function StudentCourseDetail() {
             })
             .then((data) => setCourse(data))
             .catch((error) => console.error(error.message));
+
+        // 강의 미리보기 조회 (비로그인도 가능)
+        fetch(`/course/${courseId}/lectures/preview`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then((res) => res.ok ? res.json() : [])
+            .then((data) => setPreviewLectures(data))
+            .catch(() => { });
 
         // 내 수강 목록에서 현재 강좌의 수강 상태 확인
         fetch('/student/enrollment', {
@@ -192,7 +203,7 @@ function StudentCourseDetail() {
                                 </div>
                                 <div>
                                     <div className="text-xs text-muted-foreground font-bold uppercase">Lectures</div>
-                                    <div className="font-bold">총 {lectureList.length || '?'}강</div>
+                                    <div className="font-bold">총 {lectureList.length || previewLectures.length || '?'}강</div>
                                 </div>
                             </div>
                         </div>
@@ -209,23 +220,26 @@ function StudentCourseDetail() {
                                     So we show a placeholder here. 
                                  */}
                             <div className="space-y-3">
-                                <div className="flex items-center justify-between p-4 bg-background rounded-xl border border-border/50 opacity-60">
-                                    <div className="flex items-center gap-3">
-                                        <Lock className="w-4 h-4" />
-                                        <span>1강. 오리엔테이션</span>
+                                {previewLectures.length > 0 ? (
+                                    <>
+                                        {previewLectures.map((lecture) => (
+                                            <div key={lecture.orderNo} className="flex items-center justify-between p-4 bg-background rounded-xl border border-border/50 opacity-60">
+                                                <div className="flex items-center gap-3">
+                                                    <Lock className="w-4 h-4" />
+                                                    <span>{lecture.orderNo}강. {lecture.title}</span>
+                                                </div>
+                                                <Badge variant="outline">잠김</Badge>
+                                            </div>
+                                        ))}
+                                        <div className="text-center text-sm text-muted-foreground pt-2">
+                                            수강 신청 후 전체 강의를 확인할 수 있습니다.
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="text-center text-sm text-muted-foreground py-8">
+                                        등록된 강의가 없습니다.
                                     </div>
-                                    <Badge variant="outline">잠김</Badge>
-                                </div>
-                                <div className="flex items-center justify-between p-4 bg-background rounded-xl border border-border/50 opacity-60">
-                                    <div className="flex items-center gap-3">
-                                        <Lock className="w-4 h-4" />
-                                        <span>2강. 강의 시작하기</span>
-                                    </div>
-                                    <Badge variant="outline">잠김</Badge>
-                                </div>
-                                <div className="text-center text-sm text-muted-foreground pt-2">
-                                    수강 신청 후 전체 강의를 확인할 수 있습니다.
-                                </div>
+                                )}
                             </div>
                         </div>
                     </div>

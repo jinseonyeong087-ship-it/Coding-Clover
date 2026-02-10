@@ -13,6 +13,7 @@ import com.mysite.clover.Lecture.dto.AdminLectureDto;
 import com.mysite.clover.Lecture.dto.BatchApprovalRequest;
 import com.mysite.clover.Lecture.dto.InstructorLectureDto;
 import com.mysite.clover.Lecture.dto.LectureCreateRequest;
+import com.mysite.clover.Lecture.dto.LecturePreviewDto;
 import com.mysite.clover.Lecture.dto.RejectRequest;
 import com.mysite.clover.Lecture.dto.StudentLectureDto;
 import com.mysite.clover.Users.Users;
@@ -31,6 +32,19 @@ public class LectureController {
     private final UsersRepository usersRepository;
     private final LectureRepository lectureRepository;
     private final YoutubeService youtubeService;
+
+    // ==========================================
+    // 비로그인 공개 영역
+    // ==========================================
+
+    // 강좌의 강의 미리보기 (비로그인도 접근 가능, 순서와 제목만 제공)
+    @GetMapping("/course/{courseId}/lectures/preview")
+    public ResponseEntity<List<LecturePreviewDto>> getLecturePreview(@PathVariable("courseId") Long courseId) {
+        Course course = courseService.getCourse(courseId);
+        return ResponseEntity.ok(lectureService.getPublicListByCourse(course).stream()
+                .map(LecturePreviewDto::fromEntity)
+                .toList());
+    }
 
     // ==========================================
     // 🟩 수강생 영역

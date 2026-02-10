@@ -55,7 +55,7 @@ function InstructorMain() {
                 if (!res.ok) throw new Error('인증 필요');
                 return res.json();
             })
-            .then((data) => setTotalStudents(data.length))
+            .then((data) => setTotalStudents(data.filter(e => e.status === 'ENROLLED').length))
             .catch((err) => console.error(err));
 
     }, []);
