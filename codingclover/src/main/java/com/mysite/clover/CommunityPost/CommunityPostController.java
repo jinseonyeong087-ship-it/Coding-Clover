@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
 
-import java.util.List;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import com.mysite.clover.Users.UsersRepository;
@@ -31,9 +33,18 @@ public class CommunityPostController {
 
     // 1. 게시글 목록 조회
     // 누구나 조회 가능 (로그인 여부 무관)
+    // 전체 게시글 조회
+    // GET /api/community/posts?page=0&size=10&keyword=...&myPostsOnly=true
     @GetMapping("/api/community/posts")
-    public ResponseEntity<List<PostResponse>> list() {
-        List<PostResponse> posts = communityPostService.getVisiblePosts();
+    public ResponseEntity<Page<PostResponse>> list(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "myPostsOnly", defaultValue = "false") boolean myPostsOnly,
+            Authentication authentication) {
+        String currentUsername = (authentication != null) ? authentication.getName() : null;
+        Page<PostResponse> posts = communityPostService.getVisiblePosts(page, size, keyword, myPostsOnly,
+                currentUsername);
         return ResponseEntity.ok(posts);
     }
 
