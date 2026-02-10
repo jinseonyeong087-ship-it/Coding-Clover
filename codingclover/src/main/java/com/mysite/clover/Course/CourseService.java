@@ -27,7 +27,7 @@ public class CourseService {
     private final UsersRepository usersRepository;
     private final com.mysite.clover.Notification.NotificationService notificationService;
     private final com.mysite.clover.Payment.PaymentService paymentService;
-    private final com.mysite.clover.WalletHistory.WalletHistoryService walletHistoryService;
+    
 
     // [조회 로직]
 

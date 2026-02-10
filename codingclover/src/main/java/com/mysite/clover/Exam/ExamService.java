@@ -19,9 +19,7 @@ import com.mysite.clover.Exam.dto.ExamCreateRequest;
 import com.mysite.clover.Exam.dto.ExamResultDto;
 import com.mysite.clover.ExamAttempt.ExamAttempt;
 import com.mysite.clover.ExamAttempt.ExamAttemptRepository;
-import com.mysite.clover.Lecture.LectureRepository;
 
-import com.mysite.clover.LectureProgress.LectureProgressRepository;
 import com.mysite.clover.ScoreHistory.ScoreHistory;
 import com.mysite.clover.ScoreHistory.ScoreHistoryRepository;
 
@@ -41,8 +39,7 @@ public class ExamService {
     private final ExamAttemptRepository examAttemptRepository;
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
-    private final LectureRepository lectureRepository;
-    private final LectureProgressRepository lectureProgressRepository;
+
     private final ScoreHistoryRepository scoreHistoryRepository;
 
     // 시험 단건 조회 (ID로 조회, 없으면 예외 발생)
@@ -250,24 +247,8 @@ public class ExamService {
         for (Enrollment enrollment : enrollments) {
             Course course = enrollment.getCourse();
 
-            // 2. 해당 강좌의 승인된 전체 강의 수 조회 (수강생에게 공개된 강의만 카운트 - 수정됨)
-            // 기존: long totalLectures =
-            // lectureRepository.countByCourseAndApprovalStatus(course,
-            // LectureApprovalStatus.APPROVED);
-            long totalLectures = lectureRepository.countVisibleLecturesByCourseId(course.getCourseId());
-
-            // 강의가 하나도 없으면 건너김
-            if (totalLectures == 0)
-                continue;
-
-            // 3. 학생이 완료한 강의 수 조회 (진도율 체크)
-            long completedLectures = lectureProgressRepository.findByEnrollmentAndCompletedYnTrue(enrollment).size();
-            double progress = (double) completedLectures / totalLectures;
-
-            // 4. 진도율이 80% 이상인 경우에만 해당 강좌의 공개된 시험 목록을 추가
-            if (progress >= 0.8) {
-                availableExams.addAll(examRepository.findByCourseAndIsPublishedTrue(course));
-            }
+            // 2. 진도율 체크 로직 제거 (수강생이면 무조건 시험 응시 가능)
+            availableExams.addAll(examRepository.findByCourseAndIsPublishedTrue(course));
         }
         return availableExams;
     }
