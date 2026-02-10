@@ -29,12 +29,12 @@ import {
     AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-// YouTube URL -> embed URL 변환
+// YouTube URL -> embed URL 변환 (YouTube URL이 아니면 null 반환)
 const toEmbedUrl = (url) => {
-    if (!url) return "";
+    if (!url) return null;
     if (url.includes("/embed/")) return url;
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?.*v=|v\/))([a-zA-Z0-9_-]{11})/);
-    return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+    return match ? `https://www.youtube.com/embed/${match[1]}` : null;
 };
 
 function AdminLectureDetail() {
@@ -260,7 +260,7 @@ function AdminLectureDetail() {
                                 {/* 영상 미리보기 */}
                                 <div>
                                     <h3 className="font-semibold mb-3">영상 미리보기</h3>
-                                    {selectedLecture.videoUrl ? (
+                                    {toEmbedUrl(selectedLecture.videoUrl) ? (
                                         <iframe
                                             key={selectedLecture.lectureId}
                                             width="100%"
@@ -274,7 +274,7 @@ function AdminLectureDetail() {
                                         />
                                     ) : (
                                         <div className="bg-slate-100 rounded-md flex items-center justify-center h-64 text-muted-foreground">
-                                            영상 URL이 없습니다
+                                            등록된 강좌가 없습니다
                                         </div>
                                     )}
                                     <div className="mt-2 text-xs text-muted-foreground break-all">
