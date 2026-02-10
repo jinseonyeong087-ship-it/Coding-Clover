@@ -43,8 +43,15 @@ function PointsHistory() {
     };
 
     // 트랜잭션 설명 생성
-    const getTransactionDescription = (reason, paymentId) => {
-        switch (reason) {
+    const getTransactionDescription = (type, orderId) => {
+        if (orderId && orderId.startsWith('COURSE_CANCEL_')) {
+            return '수강 취소';
+        }
+        if (orderId && orderId.startsWith('COURSE_')) {
+            return '수강 신청';
+        }
+
+        switch (type) {
             case 'CHARGE':
                 return '포인트 충전';
             case 'USE':
@@ -169,8 +176,10 @@ function PointsHistory() {
 
                 // 결제 내역을 기준으로 환불 여부 판단하기 위한 Map 생성
                 const refundPaymentMap = new Map();
+                const paymentMap = new Map();
                 if (Array.isArray(paymentData)) {
                     paymentData.forEach(payment => {
+                        paymentMap.set(payment.paymentId, payment);
                         if (payment.type === 'REFUND') {
                             refundPaymentMap.set(payment.paymentId, payment);
                         }
@@ -195,8 +204,8 @@ function PointsHistory() {
                         type = 'USE';
                     }
 
-                    // 최종 설명 생성
-                    const description = getTransactionDescription(type, item.paymentId);
+                    const relatedPayment = item.paymentId ? paymentMap.get(item.paymentId) : null;
+                    const description = getTransactionDescription(type, relatedPayment?.orderId);
 
                     console.log('매핑된 데이터:', { type, amount: item.changeAmount, description }); // 디버깅용
 

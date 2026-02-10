@@ -492,15 +492,11 @@ public class PaymentService {
         try {
             // 1. 환불 기록 생성 (즉시 승인 상태로)
             System.out.println("1. Payment 엔티티 생성 시작");
-            Payment refundPayment = new Payment();
-            refundPayment.setUserId(userId);
-            refundPayment.setType(PaymentType.REFUND);
-            refundPayment.setAmount(amount);
-            refundPayment.setPaymentMethod("AUTO_REFUND");
-            refundPayment.setStatus(PaymentStatus.REFUNDED); // 즉시 환불 완료 상태
-            refundPayment.setOrderId("COURSE_CANCEL_REFUND_" + userId + "_" + System.currentTimeMillis());
-            
-            Payment savedRefund = paymentRepository.save(refundPayment);
+            Payment savedRefund = createDirectRefundPayment(
+                userId,
+                amount,
+                "AUTO_REFUND",
+                "COURSE_CANCEL_REFUND_" + userId + "_" + System.currentTimeMillis());
             System.out.println("1. Payment 저장 완료. PaymentId: " + savedRefund.getPaymentId());
             
             // 2. WalletIntegrationService를 통해 즉시 포인트 추가
@@ -533,5 +529,62 @@ public class PaymentService {
             e.printStackTrace();
             throw new RuntimeException("즉시 환불 처리 실패: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * 관리자 수강취소 시 즉시 포인트 환불 (수강취소 전용 히스토리)
+     */
+    @Transactional
+    public Payment processCourseCancelRefund(Long userId, Integer amount, Long courseId, String courseTitle) {
+        String orderId = "COURSE_CANCEL_" + courseId + "_" + System.currentTimeMillis();
+        String reason = "취소 - 수강취소";
+
+        System.out.println("=== 수강취소 즉시환불 처리 시작 ===");
+        System.out.println("사용자 ID: " + userId + ", 강좌 ID: " + courseId + ", 금액: " + amount);
+
+        try {
+            Payment savedRefund = createCourseCancelChargePayment(userId, amount, orderId);
+
+            walletIntegrationService.chargePoints(userId, amount, savedRefund.getPaymentId());
+
+            usersRepository.findById(userId).ifPresent(user -> {
+                notificationService.createNotification(
+                        user,
+                        "REFUND_COMPLETED",
+                        reason + " (" + courseTitle + ") - 환불이 완료되었습니다. (+" + amount + "P)",
+                        "/student/points");
+            });
+
+            invalidateCache();
+            System.out.println("=== 수강취소 즉시환불 처리 성공 ===");
+            return savedRefund;
+        } catch (Exception e) {
+            System.err.println("=== 수강취소 즉시환불 처리 실패 ===");
+            System.err.println("실패 원인: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("수강취소 즉시 환불 처리 실패: " + e.getMessage(), e);
+        }
+    }
+
+    private Payment createCourseCancelChargePayment(Long userId, Integer amount, String orderId) {
+        Payment payment = new Payment();
+        payment.setUserId(userId);
+        payment.setType(PaymentType.CHARGE);
+        payment.setAmount(amount);
+        payment.setPaymentMethod("POINT");
+        payment.setStatus(PaymentStatus.PAID);
+        payment.setOrderId(orderId);
+        return paymentRepository.save(payment);
+    }
+
+    private Payment createDirectRefundPayment(Long userId, Integer amount, String paymentMethod, String orderId) {
+        Payment refundPayment = new Payment();
+        refundPayment.setUserId(userId);
+        refundPayment.setType(PaymentType.REFUND);
+        refundPayment.setAmount(amount);
+        refundPayment.setPaymentMethod(paymentMethod);
+        refundPayment.setStatus(PaymentStatus.REFUNDED);
+        refundPayment.setOrderId(orderId);
+        return paymentRepository.save(refundPayment);
     }
 }

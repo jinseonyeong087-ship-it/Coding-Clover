@@ -124,6 +124,9 @@ function PaymentManagement() {
 
     // 백엔드 데이터 변환 헬퍼 함수들
     const getTransactionDescription = (type, orderId) => {
+        if (orderId && orderId.startsWith('COURSE_CANCEL_')) {
+            return '취소 - 수강취소';
+        }
         // 수강신청인 경우 (orderId가 COURSE_로 시작)
         if (orderId && orderId.startsWith('COURSE_')) {
             return '포인트 사용';

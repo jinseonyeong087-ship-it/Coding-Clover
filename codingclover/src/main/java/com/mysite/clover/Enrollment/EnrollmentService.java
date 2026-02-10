@@ -202,6 +202,15 @@ public class EnrollmentService {
     }
     
     enrollment.cancel(admin);
+
+    Integer coursePrice = enrollment.getCourse().getPrice();
+    if (coursePrice != null && coursePrice > 0) {
+      paymentService.processCourseCancelRefund(
+          enrollment.getUser().getUserId(),
+          coursePrice,
+          enrollment.getCourse().getCourseId(),
+          enrollment.getCourse().getTitle());
+    }
   }
 
   // 관리자 - 특정 강좌의 수강생 조회
