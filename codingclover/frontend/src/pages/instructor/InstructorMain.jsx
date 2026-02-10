@@ -29,6 +29,7 @@ function InstructorMain() {
 
     const [courses, setCourses] = useState([]);
     const [instructorStatus, setInstructorStatus] = useState("");
+    const [totalStudents, setTotalStudents] = useState(0);
 
     useEffect(() => {
         const userData = getUserData();
@@ -46,6 +47,15 @@ function InstructorMain() {
                 return res.json();
             })
             .then((data) => setCourses(data))
+            .catch((err) => console.error(err));
+
+        // 수강생 현황 조회
+        fetch('/instructor/enrollment', { method: 'GET', headers: { 'Content-Type': 'application/json', 'X-Login-Id': loginId }, credentials: 'include' })
+            .then((res) => {
+                if (!res.ok) throw new Error('인증 필요');
+                return res.json();
+            })
+            .then((data) => setTotalStudents(data.length))
             .catch((err) => console.error(err));
 
     }, []);
@@ -99,7 +109,7 @@ function InstructorMain() {
                         </div>
                         <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                             <h3 className="text-sm font-medium text-muted-foreground mb-2">총 수강생</h3>
-                            <div className="text-3xl font-bold text-purple-500">128 <span className="text-sm font-normal text-muted-foreground">명</span></div>
+                            <div className="text-3xl font-bold text-purple-500">{totalStudents} <span className="text-sm font-normal text-muted-foreground">명</span></div>
                         </div>
                         <Link to="/instructor/course/new" className="bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/20 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex items-center justify-center">
                             <span className="text-primary font-bold">+ 강좌 개설 신청 →</span>

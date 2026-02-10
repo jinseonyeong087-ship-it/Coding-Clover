@@ -49,14 +49,6 @@ public class Enrollment {
   @Column(name = "status", nullable = false)
   private EnrollmentStatus status = EnrollmentStatus.ENROLLED;
 
-  // 수강 시작 시 진단/선택 레벨
-  @Column(name = "initial_level", nullable = false)
-  private Integer initialLevel;
-
-  // 현재 도달한 학습 레벨
-  @Column(name = "current_level", nullable = false)
-  private Integer currentLevel;
-
   // 수강취소자
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "cancelled_by")
@@ -70,14 +62,12 @@ public class Enrollment {
   public Enrollment() {
   }
 
-  // 수강 신청 시 사용하는 생성자(진단할 수 있는 시험 기능이 없어 일단 초급으로 설정)
+  // 수강 신청 시 사용하는 생성자
   public Enrollment(Users user, Course course) {
     this.user = user;
     this.course = course;
     this.enrolledAt = LocalDateTime.now();
     this.status = EnrollmentStatus.ENROLLED;
-    this.initialLevel = 1; // 초기 레벨 설정
-    this.currentLevel = 1; // 초기 레벨 설정
   }
 
   // 수강 취소 행위자

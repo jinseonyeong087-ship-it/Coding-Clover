@@ -50,15 +50,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
             """)
     List<Enrollment> findWithUserAndCourseByUser(@Param("user") Users user);
 
-    // 강사의 강좌별 수강생 조회
-    @Query("""
-            SELECT e FROM Enrollment e
-            JOIN FETCH e.user
-            JOIN FETCH e.course
-            WHERE e.course.createdBy = :instructor AND e.course = :course
-            """)
-    List<Enrollment> findByInstructorAndCourse(@Param("instructor") Users instructor, @Param("course") Course course);
-
     // 강사의 모든 강좌 수강생 조회
     @Query("""
             SELECT e FROM Enrollment e

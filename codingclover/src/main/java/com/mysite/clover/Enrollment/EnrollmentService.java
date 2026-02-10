@@ -90,21 +90,6 @@ public class EnrollmentService {
 
   // === 강사용 메소드 ===
 
-  // 강사 - 특정 강좌의 수강생 조회
-  @Transactional(readOnly = true)
-  public List<InstructorEnrollmentDto> getCourseStudents(Users instructor, Course course) {
-    List<Enrollment> enrollments = enrollmentRepository.findByInstructorAndCourse(instructor, course);
-    return enrollments.stream()
-        .map(e -> new InstructorEnrollmentDto(
-            e.getEnrollmentId(),
-            e.getUser().getUserId(),
-            e.getUser().getName(),
-            e.getEnrolledAt(),
-            e.getStatus()
-        ))
-        .collect(Collectors.toList());
-  }
-
   // 강사 - 내 모든 강좌의 수강생 조회
   @Transactional(readOnly = true)
   public List<InstructorEnrollmentDto> getMyAllCourseStudents(Users instructor) {
