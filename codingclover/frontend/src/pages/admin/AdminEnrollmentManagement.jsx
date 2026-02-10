@@ -21,6 +21,8 @@ function AdminEnrollmentManagement() {
     const [loading, setLoading] = useState(true);
     const [searchKeyword, setSearchKeyword] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 15;
 
     // 전체 수강내역 조회
     const fetchAllEnrollments = async () => {
@@ -98,7 +100,16 @@ function AdminEnrollmentManagement() {
             filtered = filtered.filter(item => item.status === statusFilter);
         }
 
+        // 최신순(역순) 정렬
+        filtered = [...filtered].sort((a, b) => {
+            const timeA = a.enrolledAt ? new Date(a.enrolledAt).getTime() : 0;
+            const timeB = b.enrolledAt ? new Date(b.enrolledAt).getTime() : 0;
+            if (timeA !== timeB) return timeB - timeA;
+            return (b.enrollmentId || 0) - (a.enrollmentId || 0);
+        });
+
         setFilteredEnrollments(filtered);
+        setCurrentPage(1);
     };
 
     useEffect(() => {
@@ -108,6 +119,15 @@ function AdminEnrollmentManagement() {
     useEffect(() => {
         applyFilters();
     }, [searchKeyword, statusFilter, enrollments]);
+
+    const totalPages = Math.ceil(filteredEnrollments.length / itemsPerPage);
+    const indexOfLast = currentPage * itemsPerPage;
+    const indexOfFirst = indexOfLast - itemsPerPage;
+    const currentEnrollments = filteredEnrollments.slice(indexOfFirst, indexOfLast);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
 
     // 상태 뱃지 렌더링
     const renderStatusBadge = (status) => {
@@ -205,8 +225,8 @@ function AdminEnrollmentManagement() {
                                         로딩중...
                                     </TableCell>
                                 </TableRow>
-                            ) : filteredEnrollments && filteredEnrollments.length > 0 ? (
-                                filteredEnrollments.map((item, index) => {
+                            ) : currentEnrollments && currentEnrollments.length > 0 ? (
+                                currentEnrollments.map((item, index) => {
                                     const uniqueKey = item.enrollmentId || `enrollment-idx-${index}`;
                                     return (
                                         <TableRow key={uniqueKey} className="hover:bg-muted/30 transition-colors">
@@ -260,6 +280,44 @@ function AdminEnrollmentManagement() {
                         </TableBody>
                     </Table>
                 </Card>
+
+                {totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-2 pt-6">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="h-9 w-9"
+                        >
+                            이전
+                        </Button>
+
+                        <div className="flex gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <Button
+                                    key={page}
+                                    variant={currentPage === page ? "default" : "ghost"}
+                                    size="sm"
+                                    onClick={() => handlePageChange(page)}
+                                    className={`w-9 h-9 font-medium ${currentPage === page ? 'shadow-md' : 'text-muted-foreground'}`}
+                                >
+                                    {page}
+                                </Button>
+                            ))}
+                        </div>
+
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="h-9 w-9"
+                        >
+                            다음
+                        </Button>
+                    </div>
+                )}
 
                 {/* 통계 정보 */}
                 {filteredEnrollments.length > 0 && (
