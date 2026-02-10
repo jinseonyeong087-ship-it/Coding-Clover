@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Nav from '@/components/Nav';
 import Tail from '@/components/Tail';
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom"; // useParams 추가
 import axios from 'axios';
 import { BookOpen, CheckCircle2, ChevronRight, AlertCircle, Sparkles } from 'lucide-react';
 import {
@@ -22,13 +23,12 @@ import {
 
 import ImageUpload from '@/components/common/ImageUpload';
 
-function CourseCreateRequest() {
-  const DRAFT_KEY = 'courseDraft';
+function InstructorCourseEdit() {
+  const { courseId } = useParams(); // URL에서 courseId 추출
   const [course, setCourse] = useState({ title: '', createdBy: '', level: 1, description: '', price: 0, thumbnailUrl: '' });
   const [errors, setErrors] = useState({});
   const [selectLevel, setSelectLevel] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showDraftDialog, setShowDraftDialog] = useState(false);
   const navigate = useNavigate();
 
   const levelMapping = [
@@ -37,88 +37,36 @@ function CourseCreateRequest() {
     { id: 3, level: 3, name: "고급", description: "전문가를 위한 마스터 과정" }
   ];
 
-  // 사용자 정보 로드
+  // 기존 강좌 정보 로드
   useEffect(() => {
-    const storedUser = localStorage.getItem('users');
-    if (storedUser) {
-      try {
-        const userData = JSON.parse(storedUser);
-        const loginId = userData.loginId;
-
-        fetch('/api/instructor/mypage', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Login-Id': loginId
-          },
-          credentials: 'include'
-        })
-          .then((res) => {
-            if (res.ok) return res.json();
-            throw new Error('프로필 조회 실패');
-          })
-          .then((data) => {
-            setCourse(prev => ({ ...prev, createdBy: userData.name || loginId }));
-            setLoading(false);
-          })
-          .catch((err) => {
-            console.error('사용자 정보 조회 오류:', err);
-            setCourse(prev => ({ ...prev, createdBy: userData.name || userData.loginId || '강사명 없음' }));
-            setLoading(false);
-          });
-      } catch (error) {
-        console.error('localStorage 파싱 오류:', error);
+    // 1. 강좌 상세 정보 가져오기
+    fetch(`/instructor/course/${courseId}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("강좌 정보를 불러오는데 실패했습니다.");
+        return res.json();
+      })
+      .then(data => {
+        setCourse({
+          title: data.title,
+          createdBy: data.instructorName, // or data.createdBy.name if structure differs
+          level: data.level,
+          description: data.description,
+          price: data.price,
+          thumbnailUrl: data.thumbnailUrl || ''
+        });
+        setSelectLevel(data.level);
         setLoading(false);
-      }
-    } else {
-      setLoading(false);
-    }
-  }, []);
-
-  // 페이지 진입 시 임시저장 데이터 존재 여부 확인
-  useEffect(() => {
-    const draft = localStorage.getItem(DRAFT_KEY);
-    if (draft) {
-      setShowDraftDialog(true);
-    }
-  }, []);
-
-  // 임시저장 데이터 불러오기
-  const handleLoadDraft = () => {
-    const draft = localStorage.getItem(DRAFT_KEY);
-    if (draft) {
-      const parsed = JSON.parse(draft);
-      setCourse(prev => ({
-        ...prev,
-        title: parsed.title || '',
-        description: parsed.description || '',
-        price: parsed.price || 0,
-        thumbnailUrl: parsed.thumbnailUrl || '',
-      }));
-      setSelectLevel(parsed.selectLevel ?? null);
-    }
-    setShowDraftDialog(false);
-  };
-
-  // 임시저장 데이터 삭제
-  const handleDiscardDraft = () => {
-    localStorage.removeItem(DRAFT_KEY);
-    setShowDraftDialog(false);
-  };
-
-  // 임시저장
-  const handleTempSave = () => {
-    const draft = {
-      title: course.title,
-      description: course.description,
-      price: course.price,
-      thumbnailUrl: course.thumbnailUrl,
-      selectLevel,
-      savedAt: new Date().toISOString(),
-    };
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    alert('임시 저장되었습니다.');
-  };
+      })
+      .catch(err => {
+        console.error(err);
+        alert("강좌 정보를 불러올 수 없습니다.");
+        navigate('/instructor/course');
+      });
+  }, [courseId, navigate]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -133,7 +81,7 @@ function CourseCreateRequest() {
   const handleClick = () => {
     setErrors({});
 
-    axios.post('/instructor/course/new', {
+    axios.put(`/instructor/course/${courseId}/edit`, {
       title: course.title,
       level: selectLevel,
       description: course.description,
@@ -141,9 +89,8 @@ function CourseCreateRequest() {
       thumbnailUrl: course.thumbnailUrl,
     }, { withCredentials: true })
       .then((response) => {
-        localStorage.removeItem(DRAFT_KEY);
-        alert("개설 신청이 완료되었습니다.");
-        navigate('/instructor/dashboard')
+        alert("강좌 수정이 완료되었습니다.");
+        navigate('/instructor/course'); // 목록으로 이동
       })
       .catch((err) => {
         if (err.response && err.response.status === 400) {
@@ -153,10 +100,13 @@ function CourseCreateRequest() {
           } else {
             setErrors(errorData);
           }
+        } else if (err.response?.status === 403) {
+          alert("본인의 강좌만 수정할 수 있습니다.");
         } else if (err.response?.status === 401) {
           alert("세션이 만료되었습니다.");
         } else {
           console.error('실패', err);
+          alert("수정 중 오류가 발생했습니다.");
         }
       });
   };
@@ -169,24 +119,6 @@ function CourseCreateRequest() {
         <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
       </div>
 
-      <AlertDialog open={showDraftDialog} onOpenChange={setShowDraftDialog}>
-        <AlertDialogContent className="bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-indigo-900">
-              <Sparkles className="w-5 h-5 text-indigo-500" />
-              임시 저장된 데이터 발견
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-600">
-              이전에 작성하던 강좌 정보가 있습니다. 불러오시겠습니까?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleDiscardDraft} className="border-slate-200 hover:bg-slate-50">새로 작성</AlertDialogCancel>
-            <AlertDialogAction onClick={handleLoadDraft} className="bg-indigo-600 hover:bg-indigo-700">불러오기</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       <Nav />
 
       <section className="relative container mx-auto px-4 py-24">
@@ -194,10 +126,10 @@ function CourseCreateRequest() {
           {/* Header Section */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600 mb-4">
-              새로운 강좌 개설
+              강좌 정보 수정
             </h1>
             <p className="text-slate-600 text-lg">
-              여러분의 지식을 공유하고 새로운 가치를 창출하세요.
+              강좌 내용을 최신 상태로 업데이트하세요.
             </p>
           </div>
 
@@ -205,7 +137,7 @@ function CourseCreateRequest() {
             {loading ? (
               <CardContent className="flex flex-col items-center justify-center py-20 text-slate-500">
                 <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-                <p>사용자 정보를 불러오는 중...</p>
+                <p>강좌 정보를 불러오는 중...</p>
               </CardContent>
             ) : (
               <div className="p-8">
@@ -237,17 +169,11 @@ function CourseCreateRequest() {
                         {errors.title && <p className="text-red-500 text-xs ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.title}</p>}
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-slate-600 text-sm font-medium">강사명</Label>
-                        <Input
-                          value={course.createdBy}
-                          readOnly
-                          className="bg-slate-50/80 border-slate-200 text-slate-500 cursor-not-allowed py-6"
-                        />
-                      </div>
+
 
                       <div className="space-y-2">
                         <Label className="text-slate-600 text-sm font-medium">썸네일 이미지</Label>
+                        {/* 이미지 업로드 컴포넌트 재사용 */}
                         <ImageUpload
                           initialImage={course.thumbnailUrl}
                           onUploadSuccess={(urls) => {
@@ -337,16 +263,16 @@ function CourseCreateRequest() {
                 <div className="mt-12 flex justify-end gap-3 pt-6 border-t border-slate-100">
                   <Button
                     variant="outline"
-                    onClick={handleTempSave}
+                    onClick={() => navigate('/instructor/course')}
                     className="px-6 py-6 text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
                   >
-                    임시 저장
+                    취소
                   </Button>
                   <Button
                     onClick={handleClick}
                     className="px-8 py-6 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg hover:shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5"
                   >
-                    <span className="mr-2">개설 신청하기</span>
+                    <span className="mr-2">수정 완료</span>
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
@@ -361,4 +287,4 @@ function CourseCreateRequest() {
   );
 }
 
-export default CourseCreateRequest;
+export default InstructorCourseEdit;

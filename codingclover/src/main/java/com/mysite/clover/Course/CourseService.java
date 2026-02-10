@@ -24,16 +24,11 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final com.mysite.clover.Lecture.LectureRepository lectureRepository;
+    private final com.mysite.clover.Exam.ExamRepository examRepository;
     private final UsersRepository usersRepository;
     private final com.mysite.clover.Notification.NotificationService notificationService;
     private final com.mysite.clover.Payment.PaymentService paymentService;
-    private final com.mysite.clover.WalletHistory.WalletHistoryService walletHistoryService;
-
-    // [수강 신청 로직]
-    public void enroll(Long courseId, long userId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'enroll'");
-    }
 
     // [조회 로직]
 
@@ -124,7 +119,16 @@ public class CourseService {
     // 강좌 삭제 (강사 본인 강좌 삭제)
     @Transactional
     public void delete(Course course) {
-        // 전달받은 강좌 엔티티를 DB에서 삭제
+        // 1. 수강 내역 삭제 (Enrollment)
+        enrollmentRepository.deleteByCourse(course);
+
+        // 2. 강의 삭제 (Lecture)
+        lectureRepository.deleteByCourse(course);
+
+        // 3. 시험 삭제 (Exam)
+        examRepository.deleteByCourse(course);
+
+        // 4. 강좌 삭제 (Course) - QnA는 Cascade REMOVE로 자동 삭제됨
         courseRepository.delete(course);
     }
 
@@ -143,6 +147,9 @@ public class CourseService {
     // 수강 신청 처리 (학생이 강좌를 수강 신청함)
     @Transactional
     public void enroll(Long courseId, String loginId) {
+        System.out.println("=== CourseService.enroll 시작 ===");
+        System.out.println("강좌 ID: " + courseId + ", 로그인 ID: " + loginId);
+        
         // 1. 로그인 ID로 사용자 조회
         Users user = usersRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
@@ -156,7 +163,11 @@ public class CourseService {
             throw new RuntimeException("이미 수강 중인 강좌입니다.");
         }
 
-        // 4. 수강료 확인 및 포인트 차감
+        // 4. 기존 레코드가 있는지 확인 (취소된 수강 재활성화)
+        boolean recordExists = enrollmentRepository.existsByUserAndCourse(user, course);
+        System.out.println("기존 레코드 존재 여부: " + recordExists);
+
+        // 5. 수강료 확인 및 포인트 차감
         int price = course.getPrice();
         System.out.println("수강료: " + price + "원, 강좌: " + course.getTitle());
 
@@ -174,11 +185,33 @@ public class CourseService {
             }
         }
 
-        // 5. 새로운 Enrollment(수강) 엔티티 생성 및 설정
-        Enrollment enrollment = new Enrollment(user, course); // 매개변수 생성자 사용
+        if (recordExists) {
+            System.out.println("기존 레코드가 존재함 - UPDATE 시도");
+            // 기존 레코드가 있으면 취소된 수강을 재활성화 시도
+            int updatedRows = enrollmentRepository.reactivateEnrollment(
+                user, 
+                course, 
+                EnrollmentStatus.CANCELLED, 
+                EnrollmentStatus.ENROLLED, 
+                LocalDateTime.now()
+            );
+            
+            System.out.println("UPDATE된 행 수: " + updatedRows);
+            if (updatedRows == 0) {
+                // UPDATE가 실패했다면 이미 다른 상태(완료 등)인 레코드가 존재
+                throw new RuntimeException("해당 강좌의 수강 내역이 이미 처리되었습니다.");
+            } else {
+                System.out.println("=== 수강신청 완료 (재활성화) ===");
+            }
+        } else {
+            System.out.println("기존 레코드가 없음 - INSERT 시도");
+            // 6. 새로운 Enrollment(수강) 엔티티 생성 및 설정
+            Enrollment enrollment = new Enrollment(user, course); // 매개변수 생성자 사용
 
-        // 5. DB에 저장
-        enrollmentRepository.save(enrollment); // 6. DB에 저장
+            // 7. DB에 저장
+            enrollmentRepository.save(enrollment); // 6. DB에 저장
+            System.out.println("=== 수강신청 완료 (신규) ===");
+        }
 
         // 7. 강사에게 알림 전송 (수강생 등록)
         notificationService.createNotification(
@@ -356,6 +389,55 @@ public class CourseService {
                     "NEW_COURSE_REQUEST",
                     "강사 " + course.getCreatedBy().getName() + "님의 신규 강좌 승인 요청: '" + course.getTitle() + "'",
                     "/admin/course/" + course.getCourseId());
+        }
+    }
+
+    // [추천 기능]
+
+    /**
+     * 학습 수준에 따른 추천 강좌 목록 조회
+     * 입문→초급, 초급→중급, 중급→고급 강좌 추천
+     */
+    public List<Course> getRecommendedCourses(String educationLevel) {
+        int targetLevel = getTargetLevelForRecommendation(educationLevel);
+        List<Course> recommendedCourses = getPublicListByLevel(targetLevel);
+
+        // 해당 레벨에 강좌가 없으면 초급(1) 강좌 반환
+        if (recommendedCourses.isEmpty() && targetLevel != 1) {
+            recommendedCourses = getPublicListByLevel(1);
+        }
+
+        return recommendedCourses;
+    }
+
+    /**
+     * 학습 수준에 따른 추천 타겟 레벨 결정
+     * 입문: 1 (초급 강좌), 초급: 2 (중급 강좌), 중급: 3 (고급 강좌)
+     */
+    private int getTargetLevelForRecommendation(String educationLevel) {
+        if (educationLevel == null || educationLevel.isEmpty() || "미설정".equals(educationLevel)) {
+            return 1; // 기본값: 초급 강좌
+        }
+
+        switch (educationLevel.toLowerCase()) {
+            case "입문":
+            case "입문 (코딩 경험 없음)":
+            case "beginner":
+                return 1; // 초급 강좌 추천
+            case "초급":
+            case "초급 (기초 문법 이해)":
+            case "elementary":
+                return 2; // 중급 강좌 추천
+            case "중급":
+            case "중급 (프로젝트 경험 있음)":
+            case "intermediate":
+                return 3; // 고급 강좌 추천
+            case "고급":
+            case "advanced":
+            case "상급":
+                return 3; // 고급이 최고 레벨이므로 고급 강좌 유지
+            default:
+                return 1; // 알 수 없는 값일 경우 초급 강좌
         }
     }
 }

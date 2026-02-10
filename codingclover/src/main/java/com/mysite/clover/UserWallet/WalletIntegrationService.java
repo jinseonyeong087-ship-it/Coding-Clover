@@ -2,8 +2,6 @@ package com.mysite.clover.UserWallet;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.mysite.clover.WalletHistory.WalletChangeReason;
-import com.mysite.clover.WalletHistory.WalletHistory;
 import com.mysite.clover.WalletHistory.WalletHistoryService;
 
 import lombok.RequiredArgsConstructor;

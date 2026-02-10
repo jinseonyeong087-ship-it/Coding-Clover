@@ -93,7 +93,7 @@ const StudentExamList = () => {
                 <div className="flex flex-col gap-2 mb-8">
                     <h1 className="text-3xl font-bold tracking-tight">시험 응시 센터</h1>
                     <p className="text-muted-foreground">
-                        수강 진도율 80% 이상 달성한 강좌의 시험에 응시할 수 있습니다.
+                        수강 중인 강좌의 시험에 응시할 수 있습니다.
                     </p>
                 </div>
 
@@ -121,8 +121,7 @@ const StudentExamList = () => {
                                     </div>
                                 ) : availableExams.length === 0 ? (
                                     <div className="text-center py-20 text-muted-foreground">
-                                        현재 응시 가능한 시험이 없습니다.<br />
-                                        강좌 진도율을 80% 이상 달성해보세요!
+                                        현재 응시 가능한 시험이 없습니다.
                                     </div>
                                 ) : (
                                     <>

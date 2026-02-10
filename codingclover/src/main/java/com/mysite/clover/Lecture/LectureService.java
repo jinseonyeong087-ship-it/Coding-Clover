@@ -12,8 +12,6 @@ import com.mysite.clover.Users.UsersRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import com.mysite.clover.Course.CourseRepository;
-import com.mysite.clover.DataNotFoundException;
 
 @RequiredArgsConstructor
 @Service
@@ -24,8 +22,6 @@ public class LectureService {
     private final com.mysite.clover.Notification.NotificationService notificationService;
     private final com.mysite.clover.Enrollment.EnrollmentRepository enrollmentRepository;
     private final YoutubeService youtubeService;
-    private final CourseRepository courseRepository;
-
     // 해당 강좌에 속한 모든 강의를 순서대로 조회 (강사용/관리자용, 상태 불문)
     public List<Lecture> getListByCourse(Course course) {
         return lectureRepository.findByCourseOrderByOrderNoAsc(course);

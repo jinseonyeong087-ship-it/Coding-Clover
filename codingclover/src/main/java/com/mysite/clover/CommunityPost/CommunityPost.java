@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 
 // 커뮤니티 게시글 정보를 저장하는 엔티티
 @Entity
@@ -43,6 +44,5 @@ public class CommunityPost {
 
     // 댓글 목록 (일대다 관계, 게시글 삭제 시 댓글도 함께 삭제)
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("createdAt ASC")
-    private java.util.List<CommunityComment> comments;
+    private List<CommunityComment> comments;
 }

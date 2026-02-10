@@ -476,4 +476,62 @@ public class PaymentService {
             throw new RuntimeException("Payment confirmation failed: " + e.getMessage());
         }
     }
+
+    /**
+     * 수강취소 시 즉시 포인트 환불 (관리자 승인 없이)
+     * @param userId 사용자 ID
+     * @param amount 환불 금액
+     * @param reason 환불 사유
+     * @return 환불 처리된 Payment 엔티티
+     */
+    @Transactional
+    public Payment processDirectRefund(Long userId, Integer amount, String reason) {
+        System.out.println("=== 즉시환불 처리 시작 ===");
+        System.out.println("사용자 ID: " + userId + ", 금액: " + amount + ", 사유: " + reason);
+        
+        try {
+            // 1. 환불 기록 생성 (즉시 승인 상태로)
+            System.out.println("1. Payment 엔티티 생성 시작");
+            Payment refundPayment = new Payment();
+            refundPayment.setUserId(userId);
+            refundPayment.setType(PaymentType.REFUND);
+            refundPayment.setAmount(amount);
+            refundPayment.setPaymentMethod("AUTO_REFUND");
+            refundPayment.setStatus(PaymentStatus.REFUNDED); // 즉시 환불 완료 상태
+            refundPayment.setOrderId("COURSE_CANCEL_REFUND_" + userId + "_" + System.currentTimeMillis());
+            
+            Payment savedRefund = paymentRepository.save(refundPayment);
+            System.out.println("1. Payment 저장 완료. PaymentId: " + savedRefund.getPaymentId());
+            
+            // 2. WalletIntegrationService를 통해 즉시 포인트 추가
+            System.out.println("2. 포인트 환불 시작");
+            walletIntegrationService.refundPoints(userId, amount, savedRefund.getPaymentId());
+            System.out.println("2. 포인트 환불 완료");
+            
+            // 3. 사용자에게 환불 완료 알림
+            System.out.println("3. 알림 전송 시작");
+            usersRepository.findById(userId).ifPresent(user -> {
+                notificationService.createNotification(
+                        user,
+                        "REFUND_COMPLETED",
+                        reason + " - 환불이 완료되었습니다. (+" + amount + "P)",
+                        "/student/points");
+            });
+            System.out.println("3. 알림 전송 완료");
+            
+            // 4. 캐시 무효화
+            System.out.println("4. 캐시 무효화 시작");
+            invalidateCache();
+            System.out.println("4. 캐시 무효화 완료");
+            
+            System.out.println("=== 즉시환불 처리 성공 ===");
+            return savedRefund;
+            
+        } catch (Exception e) {
+            System.err.println("=== 즉시환불 처리 실패 ===");
+            System.err.println("실패 원인: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("즉시 환불 처리 실패: " + e.getMessage(), e);
+        }
+    }
 }

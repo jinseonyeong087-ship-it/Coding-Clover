@@ -36,11 +36,17 @@ public class PostResponse {
   // 작성일시
   private LocalDateTime createdAt;
 
-  // 게시글에 달린 댓글 목록 (CommentResponse 리스트)
+  // 조회수
+  // 댓글 수 (목록 조회 시 사용)
+  private long commentCount;
+
+  // 게시글에 달린 댓글 목록 (CommentResponse 리스트, 목록 조회 시 null)
   private List<CommentResponse> comments;
 
   // 엔티티(CommunityPost)를 DTO(PostResponse)로 변환하는 정적 메서드
-  public static PostResponse fromEntity(CommunityPost post) {
+  // includeComments: 댓글 목록 포함 여부
+  // includeHiddenComments: 숨김 댓글 포함 여부 (관리자 전용)
+  public static PostResponse fromEntity(CommunityPost post, boolean includeComments, boolean includeHiddenComments) {
     // 응답 객체 생성
     PostResponse response = new PostResponse();
 
@@ -59,17 +65,26 @@ public class PostResponse {
     response.setStatus(post.getStatus());
     response.setCreatedAt(post.getCreatedAt());
 
-    // 댓글 목록 변환 로직
+    // 댓글 수 설정 (지연 로딩 주의: BatchSize 혹은 Fetch Join 필요하지만, 일단 리스트 사이즈로)
+    // 리스트 조회 시에는 size() 호출이 쿼리를 유발할 수 있으므로 주의해야 함.
+    // 하지만 현재 구조상 comments 필드 접근 시 proxy 초기화됨.
     if (post.getComments() != null) {
-      // 댓글 엔티티 리스트를 스트림으로 변환하여 순회
+      response.setCommentCount(post.getComments().size());
+    }
+
+    // 댓글 목록 변환 로직 (상세 조회 시에만 포함)
+    if (includeComments && post.getComments() != null) {
       response.setComments(post.getComments().stream()
-          // 각 댓글 엔티티(CommunityComment)를 DTO(CommentResponse)로 변환
+          .filter(comment -> includeHiddenComments || comment.getStatus() == PostStatus.VISIBLE)
           .map(CommentResponse::fromEntity)
-          // 변환된 DTO들을 리스트로 수집하여 설정
           .collect(Collectors.toList()));
     }
 
-    // 완성된 DTO 반환
     return response;
+  }
+
+  // 기존 호출부 호환용 (숨김 댓글 제외)
+  public static PostResponse fromEntity(CommunityPost post, boolean includeComments) {
+    return fromEntity(post, includeComments, false);
   }
 }

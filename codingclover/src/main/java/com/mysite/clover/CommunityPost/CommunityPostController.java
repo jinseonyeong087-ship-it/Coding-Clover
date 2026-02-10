@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
 
-import java.util.List;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import com.mysite.clover.Users.UsersRepository;
@@ -18,6 +20,7 @@ import com.mysite.clover.Users.Users;
 import com.mysite.clover.CommunityPost.dto.PostCreateRequest;
 import com.mysite.clover.CommunityPost.dto.PostResponse;
 import com.mysite.clover.CommunityPost.dto.CommentRequest;
+import com.mysite.clover.CommunityPost.PostStatus;
 
 import jakarta.validation.Valid;
 
@@ -31,17 +34,38 @@ public class CommunityPostController {
 
     // 1. 게시글 목록 조회
     // 누구나 조회 가능 (로그인 여부 무관)
+    // 전체 게시글 조회
+    // GET /api/community/posts?page=0&size=10&keyword=...&myPostsOnly=true
     @GetMapping("/api/community/posts")
-    public ResponseEntity<List<PostResponse>> list() {
-        List<PostResponse> posts = communityPostService.getVisiblePosts();
+    public ResponseEntity<Page<PostResponse>> list(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "myPostsOnly", defaultValue = "false") boolean myPostsOnly,
+            Authentication authentication) {
+        String currentUsername = (authentication != null) ? authentication.getName() : null;
+        Users currentUser = null;
+        boolean isAdmin = false;
+        if (currentUsername != null) {
+            currentUser = usersRepository.findByLoginId(currentUsername).orElse(null);
+            isAdmin = currentUser != null && "ADMIN".equals(currentUser.getRole().name());
+        }
+
+        Page<PostResponse> posts = communityPostService.getVisiblePosts(page, size, keyword, myPostsOnly,
+            currentUsername, isAdmin);
         return ResponseEntity.ok(posts);
     }
 
     // 2. 게시글 상세 조회
     // 로그인 체크 : 수동
     @GetMapping("/api/community/posts/{id}")
-    public ResponseEntity<PostResponse> detail(@PathVariable Long id) {
-        PostResponse post = communityPostService.getPost(id);
+    public ResponseEntity<PostResponse> detail(@PathVariable Long id, Authentication authentication) {
+        Users currentUser = null;
+        if (authentication != null) {
+            currentUser = usersRepository.findByLoginId(authentication.getName()).orElse(null);
+        }
+
+        PostResponse post = communityPostService.getPost(id, currentUser);
         return ResponseEntity.ok(post);
     }
 
@@ -151,5 +175,49 @@ public class CommunityPostController {
         Users user = usersRepository.findByLoginId(principal.getName()).orElseThrow();
         communityPostService.deleteComment(commentId, user);
         return ResponseEntity.ok("댓글 삭제 성공");
+    }
+
+    // 관리자 전용: 게시글 숨김
+    @PutMapping("/api/community/posts/{id}/hide")
+    public ResponseEntity<String> hidePost(@PathVariable Long id, Principal principal) {
+        if (principal == null)
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+
+        Users user = usersRepository.findByLoginId(principal.getName()).orElseThrow();
+        communityPostService.setPostStatus(id, user, PostStatus.HIDDEN);
+        return ResponseEntity.ok("숨김 처리 완료");
+    }
+
+    // 관리자 전용: 게시글 복구
+    @PutMapping("/api/community/posts/{id}/unhide")
+    public ResponseEntity<String> unhidePost(@PathVariable Long id, Principal principal) {
+        if (principal == null)
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+
+        Users user = usersRepository.findByLoginId(principal.getName()).orElseThrow();
+        communityPostService.setPostStatus(id, user, PostStatus.VISIBLE);
+        return ResponseEntity.ok("복구 완료");
+    }
+
+    // 관리자 전용: 댓글 숨김
+    @PutMapping("/api/community/comments/{commentId}/hide")
+    public ResponseEntity<String> hideComment(@PathVariable Long commentId, Principal principal) {
+        if (principal == null)
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+
+        Users user = usersRepository.findByLoginId(principal.getName()).orElseThrow();
+        communityPostService.setCommentStatus(commentId, user, PostStatus.HIDDEN);
+        return ResponseEntity.ok("댓글 숨김 처리 완료");
+    }
+
+    // 관리자 전용: 댓글 복구
+    @PutMapping("/api/community/comments/{commentId}/unhide")
+    public ResponseEntity<String> unhideComment(@PathVariable Long commentId, Principal principal) {
+        if (principal == null)
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+
+        Users user = usersRepository.findByLoginId(principal.getName()).orElseThrow();
+        communityPostService.setCommentStatus(commentId, user, PostStatus.VISIBLE);
+        return ResponseEntity.ok("댓글 복구 완료");
     }
 }

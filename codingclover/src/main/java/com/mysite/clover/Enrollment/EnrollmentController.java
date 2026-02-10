@@ -75,9 +75,6 @@ public class EnrollmentController {
             Users student = usersRepository.findByLoginId(principal.getName())
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-            Course course = courseRepository.findById(courseId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
-
             // CourseService의 enroll 메서드 사용 (포인트 차감 포함)
             courseService.enroll(courseId, student.getLoginId());
             
@@ -119,20 +116,6 @@ public class EnrollmentController {
         Users instructor = usersRepository.findByLoginId(principal.getName())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         List<InstructorEnrollmentDto> students = enrollmentService.getMyAllCourseStudents(instructor);
-        return ResponseEntity.ok(students);
-    }
-
-    // 특정 강좌의 수강생 목록
-    @PreAuthorize("hasRole('INSTRUCTOR')")
-    @GetMapping("/instructor/course/{courseId}/enrollment")
-    public ResponseEntity<List<InstructorEnrollmentDto>> getCourseStudents(
-            @PathVariable("courseId") Long courseId,
-            Principal principal) {
-        Users instructor = usersRepository.findByLoginId(principal.getName())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
-        List<InstructorEnrollmentDto> students = enrollmentService.getCourseStudents(instructor, course);
         return ResponseEntity.ok(students);
     }
 

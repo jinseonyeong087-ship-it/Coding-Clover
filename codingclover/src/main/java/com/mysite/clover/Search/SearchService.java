@@ -159,11 +159,4 @@ public class SearchService {
 
         return Page.empty();
     }
-
-    // 관리자 검색
-    public Page<?> searchByAdmin(String category, String keyword, Pageable pageable) {
-
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'searchByAdmin'");
-    }
 }

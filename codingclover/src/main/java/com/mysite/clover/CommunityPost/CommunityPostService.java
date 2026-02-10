@@ -3,9 +3,10 @@ package com.mysite.clover.CommunityPost;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import com.mysite.clover.Users.Users;
-import java.util.stream.Collectors;
 import com.mysite.clover.CommunityPost.dto.PostResponse;
 
 // 커뮤니티 게시글 관련 비즈니스 로직 처리 서비스
@@ -33,23 +34,60 @@ public class CommunityPostService {
         communityPostRepository.save(post);
     }
 
-    // 공통(수강생/관리자): 전체 공개 게시글 목록 조회
+    // 게시글 목록 조회 (검색 + 페이징 + 필터링)
     @Transactional(readOnly = true)
-    public List<PostResponse> getVisiblePosts() {
-        // 상태가 VISIBLE(공개)인 게시글만 최신순(작성일 내림차순)으로 조회하여 DTO로 변환
-        return communityPostRepository.findByStatusOrderByCreatedAtDesc(PostStatus.VISIBLE).stream()
-                .map(PostResponse::fromEntity)
-                .collect(Collectors.toList());
+        public Page<PostResponse> getVisiblePosts(int page, int size, String keyword, boolean myPostsOnly,
+            String currentUsername, boolean isAdmin) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<CommunityPost> postPage;
+
+        if (myPostsOnly && currentUsername != null) {
+            // 내 글 보기: 사용자 ID로 조회 (로그인 ID -> User Entity -> ID)
+            // 여기서는 편의상 currentUsername(loginId)으로 User를 찾거나, 리포지토리에 loginId 기반 검색 추가 필요.
+            // 현재 리포지토리는 userId(PK)를 받으므로, userService 등을 통해 PK를 알아내거나,
+            // 리포지토리에 findByUserLoginId 메서드를 추가하는 것이 좋음.
+            // 일단 기존 findByUserUserLoginId 가 없으므로, User를 먼저 조회한다고 가정하거나 리포지토리 수정.
+            // 성능을 위해 리포지토리에 JOIN FETCH p.user WHERE p.user.loginId = :loginId 추가 권장.
+            // 임시로 User 조회 로직 생략하고 리포지토리 수정 없이 가려면 userService 필요.
+            // 하지만 Service 간 순환 참조 방지를 위해 Repository에 메서드 추가가 깔끔함.
+            // 여기서는 일단 단순화를 위해 userId 검색 로직 유지 (호출부에서 처리 필요할 수도 있음)
+            // -> Controller에서 Principal로 User 조회 후 ID 넘기는 게 정석.
+            // 하지만 메서드 시그니처가 String currentUsername이므로, 레포지토리에 메서드 추가.
+            // 기존 findByUser(SiteUser user, ...) 메서드가 있었으니 그걸 활용?
+            // 아까 리포지토리 수정에서 findByUser(Long userId, ...)로 바꿨음.
+            throw new UnsupportedOperationException("내 글 보기 기능은 컨트롤러에서 User 정보를 받아 처리해야 합니다.");
+        } else if (keyword != null && !keyword.isBlank()) {
+            if (isAdmin) {
+                postPage = communityPostRepository.searchByKeywordIncludingHidden(keyword, pageable);
+            } else {
+                postPage = communityPostRepository.searchByKeyword(keyword, pageable);
+            }
+        } else {
+            if (isAdmin) {
+                postPage = communityPostRepository.findAllByOrderByCreatedAtDesc(pageable);
+            } else {
+                postPage = communityPostRepository.findByStatusOrderByCreatedAtDesc(PostStatus.VISIBLE, pageable);
+            }
+        }
+
+        return postPage.map(post -> PostResponse.fromEntity(post, false));
     }
 
-    // 공통(수강생/관리자): 게시글 상세 조회
-    @Transactional(readOnly = true)
-    public PostResponse getPost(Long id) {
-        // ID로 게시글 조회, 없으면 예외 발생
-        CommunityPost post = communityPostRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
-        // 조회된 엔티티를 응답용 DTO로 변환하여 반환
-        return PostResponse.fromEntity(post);
+    // 게시글 상세 조회
+    @Transactional
+    public PostResponse getPost(Long postId, Users viewer) {
+        CommunityPost post = communityPostRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+
+        boolean isAdmin = viewer != null && viewer.getRole().name().equals("ADMIN");
+        boolean isOwner = viewer != null && post.getUser().getLoginId().equals(viewer.getLoginId());
+
+        if (post.getStatus() == PostStatus.HIDDEN && !isAdmin && !isOwner) {
+            throw new IllegalArgumentException("게시글을 찾을 수 없습니다.");
+        }
+
+        // 상세 조회 시 댓글 포함
+        return PostResponse.fromEntity(post, true, isAdmin);
     }
 
     // 내부 조회용 (엔티티 반환 - 컨트롤러가 아닌 서비스 내부 로직용)
@@ -117,6 +155,7 @@ public class CommunityPostService {
         comment.setContent(content);
         comment.setPost(post);
         comment.setUser(user);
+        comment.setStatus(PostStatus.VISIBLE);
 
         // 3. DB 저장
         communityCommentRepository.save(comment);
@@ -164,5 +203,30 @@ public class CommunityPostService {
         } else {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
+    }
+
+    // 관리자 전용: 게시글 숨김/복구
+    @Transactional
+    public void setPostStatus(Long postId, Users user, PostStatus status) {
+        if (!user.getRole().name().equals("ADMIN")) {
+            throw new RuntimeException("관리자만 변경할 수 있습니다.");
+        }
+
+        CommunityPost post = getPostEntity(postId);
+        post.setStatus(status);
+        communityPostRepository.save(post);
+    }
+
+    // 관리자 전용: 댓글 숨김/복구
+    @Transactional
+    public void setCommentStatus(Long commentId, Users user, PostStatus status) {
+        if (!user.getRole().name().equals("ADMIN")) {
+            throw new RuntimeException("관리자만 변경할 수 있습니다.");
+        }
+
+        CommunityComment comment = communityCommentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("댓글이 존재하지 않습니다."));
+        comment.setStatus(status);
+        communityCommentRepository.save(comment);
     }
 }

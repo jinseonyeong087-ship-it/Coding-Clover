@@ -272,11 +272,11 @@ function AdminPropsalDetail() {
                                                 {lecture.approvalStatus && (
                                                     <Badge variant="outline" className={
                                                         lecture.approvalStatus === 'APPROVED' ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
-                                                        lecture.approvalStatus === 'REJECTED' ? "bg-red-50 text-red-700 border-red-200" :
-                                                        "bg-yellow-50 text-yellow-700 border-yellow-200"
+                                                            lecture.approvalStatus === 'REJECTED' ? "bg-red-50 text-red-700 border-red-200" :
+                                                                "bg-yellow-50 text-yellow-700 border-yellow-200"
                                                     }>
                                                         {lecture.approvalStatus === 'APPROVED' ? '승인' :
-                                                         lecture.approvalStatus === 'REJECTED' ? '반려' : '대기'}
+                                                            lecture.approvalStatus === 'REJECTED' ? '반려' : '대기'}
                                                     </Badge>
                                                 )}
                                                 {lecture.duration && (
@@ -300,8 +300,18 @@ function AdminPropsalDetail() {
                     {/* Right: Sticky Card */}
                     <div className="lg:col-span-1">
                         <div className="sticky top-24 rounded-2xl border border-border bg-card text-card-foreground shadow-xl overflow-hidden">
-                            <div className="bg-muted/50 p-6 flex items-center justify-center">
-                                <MonitorPlay className="w-20 h-20 text-muted-foreground/30" />
+                            <div className="bg-muted/50 p-6 flex items-center justify-center relative overflow-hidden group">
+                                {course.thumbnailUrl ? (
+                                    <div className="w-full aspect-video rounded-lg overflow-hidden shadow-sm">
+                                        <img
+                                            src={course.thumbnailUrl}
+                                            alt={course.title}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                    </div>
+                                ) : (
+                                    <MonitorPlay className="w-20 h-20 text-muted-foreground/30" />
+                                )}
                             </div>
                             <div className="p-6 space-y-6">
                                 {selectedIds.length > 0 && (
