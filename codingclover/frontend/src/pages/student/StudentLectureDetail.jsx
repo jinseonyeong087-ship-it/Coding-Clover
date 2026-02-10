@@ -242,14 +242,14 @@ function StudentLectureDetail() {
                                             ? "bg-indigo-500 text-white"
                                             : "bg-slate-100 text-slate-600"
                                         }`}>
-                                        {isCompleted ? <CheckCircle className="w-4 h-4" /> : index + 1}
+                                        {isCompleted ? <CheckCircle className="w-4 h-4" /> : lec.orderNo ?? (index + 1)}
                                     </span>
                                     <div className="min-w-0 flex-1">
                                         <p className={`text-sm font-medium truncate ${selectedLecture?.lectureId === lec.lectureId
                                             ? "text-indigo-700"
                                             : isCompleted ? "text-slate-500" : "text-slate-700"
                                             }`}>
-                                            {lec.title}
+                                            {lec.orderNo ?? (index + 1)}강. {lec.title}
                                         </p>
                                         <div className="flex items-center gap-2 mt-0.5">
                                             {lec.duration && (
@@ -281,7 +281,7 @@ function StudentLectureDetail() {
                                 <div className="flex items-center gap-2 mb-3">
                                     <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
                                         <Play className="w-3 h-3 fill-current" />
-                                        {lectures.findIndex(l => l.lectureId === selectedLecture.lectureId) + 1}강
+                                        {selectedLecture.orderNo ?? (lectures.findIndex(l => l.lectureId === selectedLecture.lectureId) + 1)}강
                                     </span>
                                 </div>
                                 <h3 className="font-bold text-2xl md:text-3xl text-slate-800 leading-tight">

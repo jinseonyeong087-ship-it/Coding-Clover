@@ -146,7 +146,9 @@ function LectureDetail({ lecture: lectureProp, onLectureUpdated }) {
                     {getStatusBadge(lecture.approvalStatus)}
                 </div>
                 {isEditable && !isEditing && (
-                    <Button size="sm" onClick={startEditing}>수정하기</Button>
+                    <Button size="sm" onClick={startEditing}>
+                        {lecture.approvalStatus === 'REJECTED' ? '재심사 요청' : '수정하기'}
+                    </Button>
                 )}
             </div>
 

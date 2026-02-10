@@ -117,7 +117,40 @@ function LectureUpload({ courseInfo, courseId: courseIdProp, nextOrderNo, onUplo
         };
     
     
-        // 강의 등록 예약 토글
+        // 임시 저장 (POST /instructor/lecture/draft)
+        const handleSaveDraft = async () => {
+            if (!formData.title && !formData.videoUrl) {
+                alert('최소한 강의 제목 또는 영상 URL을 입력해주세요.');
+                return;
+            }
+            const draftData = {
+                courseId: Number(courseId),
+                title: formData.title || '',
+                orderNo: formData.orderNo ? Number(formData.orderNo) : 0,
+                videoUrl: formData.videoUrl || null,
+                duration: formData.duration ? Number(formData.duration) : null,
+                uploadType: formData.uploadType || 'IMMEDIATE',
+                scheduledAt: formData.uploadType === 'RESERVED' ? formData.scheduledAt : null
+            };
+            try {
+                const res = await fetch('/instructor/lecture/draft', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(draftData)
+                });
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    throw new Error(errorText || '임시 저장 실패');
+                }
+                alert('임시 저장되었습니다.');
+                if (onUploaded) onUploaded();
+            } catch (err) {
+                alert(err.message || '임시 저장에 실패했습니다.');
+            }
+        };
+
+    // 강의 등록 예약 토글
         const handleBookLecture = () => {
             if (formData.uploadType === 'RESERVED') {
                 setFormData({ ...formData, uploadType: 'IMMEDIATE', scheduledAt: '' });
@@ -195,6 +228,9 @@ function LectureUpload({ courseInfo, courseId: courseIdProp, nextOrderNo, onUplo
                     )}
                     <div className="flex gap-2">
                         <Button onClick={handleAddLecture}>승인 요청</Button>
+                        <Button variant="secondary" onClick={handleSaveDraft}>
+                            임시 저장
+                        </Button>
                         <Button
                             variant={formData.uploadType === 'RESERVED' ? 'destructive' : 'outline'}
                             onClick={handleBookLecture}
