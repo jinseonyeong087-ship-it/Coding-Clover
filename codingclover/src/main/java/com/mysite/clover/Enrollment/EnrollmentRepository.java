@@ -1,9 +1,11 @@
 package com.mysite.clover.Enrollment;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,6 +20,19 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
                         Users user,
                         Course course,
                         EnrollmentStatus status);
+
+        // 사용자와 강좌 조합 존재 여부 확인 (모든 상태)
+        boolean existsByUserAndCourse(Users user, Course course);
+
+        // 취소된 수강을 다시 활성화 (UPDATE)
+        @Modifying
+        @Query("UPDATE Enrollment e SET e.status = :newStatus, e.enrolledAt = :enrolledAt, e.cancelledAt = null, e.cancelledBy = null " +
+               "WHERE e.user = :user AND e.course = :course AND e.status = :oldStatus")
+        int reactivateEnrollment(@Param("user") Users user, 
+                                 @Param("course") Course course,
+                                 @Param("oldStatus") EnrollmentStatus oldStatus,
+                                 @Param("newStatus") EnrollmentStatus newStatus,
+                                 @Param("enrolledAt") LocalDateTime enrolledAt);
 
         // 사용자 수강 목록 조회
         List<Enrollment> findByUser(Users user);

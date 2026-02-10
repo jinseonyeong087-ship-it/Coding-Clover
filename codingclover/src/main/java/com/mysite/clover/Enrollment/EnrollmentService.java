@@ -1,6 +1,8 @@
 package com.mysite.clover.Enrollment;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -22,19 +24,49 @@ public class EnrollmentService {
 
   @Transactional
   public void enroll(Users user, Course course) {
+    System.out.println("=== 수강신청 시작 ===");
+    System.out.println("사용자 ID: " + user.getUserId() + ", 강좌 ID: " + course.getCourseId());
 
-    // 중복강좌 검증
+    // 이미 수강중인지 확인
     boolean alreadyEnrolled = enrollmentRepository.existsByUserAndCourseAndStatus(
         user,
         course,
         EnrollmentStatus.ENROLLED);
-    // 수강중이라면 익셉션
+    
+    System.out.println("이미 수강중 여부: " + alreadyEnrolled);
     if (alreadyEnrolled) {
       throw new IllegalStateException("이미 수강 중인 강좌입니다.");
     }
 
-    Enrollment enrollment = new Enrollment(user, course);
-    enrollmentRepository.save(enrollment);
+    // 해당 사용자-강좌 레코드가 존재하는지 확인
+    boolean recordExists = enrollmentRepository.existsByUserAndCourse(user, course);
+    System.out.println("기존 레코드 존재 여부: " + recordExists);
+    
+    if (recordExists) {
+      System.out.println("기존 레코드가 존재함 - UPDATE 시도");
+      // 기존 레코드가 있으면 취소된 수강을 재활성화 시도
+      int updatedRows = enrollmentRepository.reactivateEnrollment(
+          user, 
+          course, 
+          EnrollmentStatus.CANCELLED, 
+          EnrollmentStatus.ENROLLED, 
+          LocalDateTime.now()
+      );
+      
+      System.out.println("UPDATE된 행 수: " + updatedRows);
+      if (updatedRows == 0) {
+        // UPDATE가 실패했다면 이미 다른 상태(완료 등)인 레코드가 존재
+        throw new IllegalStateException("해당 강좌의 수강 내역이 이미 처리되었습니다.");
+      } else {
+        System.out.println("=== 수강신청 완료 (재활성화) ===");
+      }
+    } else {
+      System.out.println("기존 레코드가 없음 - INSERT 시도");
+      // 레코드가 없으면 새로운 수강 등록
+      Enrollment enrollment = new Enrollment(user, course);
+      enrollmentRepository.save(enrollment);
+      System.out.println("=== 수강신청 완료 (신규) ===");
+    }
   }
 
   // 수강 취소(actor가 수강 취소 행위자)

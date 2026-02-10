@@ -147,6 +147,9 @@ public class CourseService {
     // 수강 신청 처리 (학생이 강좌를 수강 신청함)
     @Transactional
     public void enroll(Long courseId, String loginId) {
+        System.out.println("=== CourseService.enroll 시작 ===");
+        System.out.println("강좌 ID: " + courseId + ", 로그인 ID: " + loginId);
+        
         // 1. 로그인 ID로 사용자 조회
         Users user = usersRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
@@ -160,7 +163,11 @@ public class CourseService {
             throw new RuntimeException("이미 수강 중인 강좌입니다.");
         }
 
-        // 4. 수강료 확인 및 포인트 차감
+        // 4. 기존 레코드가 있는지 확인 (취소된 수강 재활성화)
+        boolean recordExists = enrollmentRepository.existsByUserAndCourse(user, course);
+        System.out.println("기존 레코드 존재 여부: " + recordExists);
+
+        // 5. 수강료 확인 및 포인트 차감
         int price = course.getPrice();
         System.out.println("수강료: " + price + "원, 강좌: " + course.getTitle());
 
@@ -178,11 +185,33 @@ public class CourseService {
             }
         }
 
-        // 5. 새로운 Enrollment(수강) 엔티티 생성 및 설정
-        Enrollment enrollment = new Enrollment(user, course); // 매개변수 생성자 사용
+        if (recordExists) {
+            System.out.println("기존 레코드가 존재함 - UPDATE 시도");
+            // 기존 레코드가 있으면 취소된 수강을 재활성화 시도
+            int updatedRows = enrollmentRepository.reactivateEnrollment(
+                user, 
+                course, 
+                EnrollmentStatus.CANCELLED, 
+                EnrollmentStatus.ENROLLED, 
+                LocalDateTime.now()
+            );
+            
+            System.out.println("UPDATE된 행 수: " + updatedRows);
+            if (updatedRows == 0) {
+                // UPDATE가 실패했다면 이미 다른 상태(완료 등)인 레코드가 존재
+                throw new RuntimeException("해당 강좌의 수강 내역이 이미 처리되었습니다.");
+            } else {
+                System.out.println("=== 수강신청 완료 (재활성화) ===");
+            }
+        } else {
+            System.out.println("기존 레코드가 없음 - INSERT 시도");
+            // 6. 새로운 Enrollment(수강) 엔티티 생성 및 설정
+            Enrollment enrollment = new Enrollment(user, course); // 매개변수 생성자 사용
 
-        // 5. DB에 저장
-        enrollmentRepository.save(enrollment); // 6. DB에 저장
+            // 7. DB에 저장
+            enrollmentRepository.save(enrollment); // 6. DB에 저장
+            System.out.println("=== 수강신청 완료 (신규) ===");
+        }
 
         // 7. 강사에게 알림 전송 (수강생 등록)
         notificationService.createNotification(
