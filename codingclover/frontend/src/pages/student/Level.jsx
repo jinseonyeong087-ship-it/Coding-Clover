@@ -14,6 +14,7 @@ function Level() {
   const navigate = useNavigate();
 
   const [tabs] = useState([
+    { id: "0", tablabel: "전체보기" },
     { id: "1", tablabel: "초급" },
     { id: "2", tablabel: "중급" },
     { id: "3", tablabel: "고급" }
@@ -23,7 +24,8 @@ function Level() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/course/level/${level}`)
+    const url = level === "0" ? '/course' : `/course/level/${level}`;
+    fetch(url)
       .then((res) => res.json())
       .then((data) => {
         setCourse(data);
@@ -105,13 +107,22 @@ function Level() {
                       <Card key={item.courseId} className="group border-0 shadow-lg bg-white/80 backdrop-blur-xl ring-1 ring-white/50 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden">
                         <div className="bg-gradient-to-br from-indigo-500/5 to-purple-500/5 p-6 h-full flex flex-col">
                           <CardHeader className="p-0 mb-4">
+                            {/* 등급 배지 - DB에 등급명이 없으므로 프론트에서 설정 */}
                             <div className="mb-3">
-                              <span className={`inline-block px-2.5 py-1 rounded-md text-xs font-medium 
-                                        ${tab.id === '1' ? 'bg-emerald-100 text-emerald-700' :
-                                  tab.id === '2' ? 'bg-blue-100 text-blue-700' :
-                                    'bg-purple-100 text-purple-700'}`}>
-                                {tab.tablabel}
-                              </span>
+                              {(() => {
+                                const lvl = tab.id === '0' ? String(item.level) : tab.id;
+                                const labels = { '1': '초급', '2': '중급', '3': '고급' };
+                                const colors = {
+                                  '1': 'bg-emerald-100 text-emerald-700',
+                                  '2': 'bg-blue-100 text-blue-700',
+                                  '3': 'bg-purple-100 text-purple-700'
+                                };
+                                return (
+                                  <span className={`inline-block px-2.5 py-1 rounded-md text-xs font-medium ${colors[lvl] || 'bg-slate-100 text-slate-700'}`}>
+                                    {labels[lvl] || '기타'}
+                                  </span>
+                                );
+                              })()}
                             </div>
                             <CardTitle className="text-lg font-bold text-slate-800 line-clamp-2 mb-2 group-hover:text-indigo-600 transition-colors">
                               {item.title}

@@ -22,6 +22,7 @@ function Home() {
     { id: 2, tablabel: "중급" },
     { id: 3, tablabel: "고급" }
   ]);
+  const [activeTab, setActiveTab] = useState(1);
 
   const setNum = (level) => {
     switch (level) {
@@ -119,10 +120,7 @@ function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 animate-in fade-in slide-in-from-bottom-7 duration-700 delay-200">
-            <Button size="lg" className="h-12 px-8 text-lg shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 transition-all" variant="default">
-              <BookOpen className="mr-2 h-5 w-5" />
-              수강신청하기
-            </Button>
+
             <Button onClick={() => navigate('/course/level/1')} size="lg" variant="outline" className="h-12 px-8 text-lg border-primary/20 hover:bg-primary/5 hover:-translate-y-0.5 transition-all">
               <PlayCircle className="mr-2 h-5 w-5" />
               강좌 둘러보기
@@ -300,49 +298,66 @@ function Home() {
         </Tabs>
       </section>
       <section className="container mx-auto px-6 pb-24">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-6">
           <h2 className="text-3xl font-bold tracking-tight">전체 강좌 둘러보기</h2>
-          <Button variant="ghost" className="text-primary hover:bg-primary/5">
-            전체보기 <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+          <div className="flex gap-2 p-1 bg-secondary/50 backdrop-blur-sm rounded-lg">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-5 py-2 rounded-md text-sm font-medium transition-all ${activeTab === tab.id ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                {tab.tablabel}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {course.map((item) => (
-            <Card key={item.courseId} className="group hover:shadow-xl transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm">
-              <div className="aspect-video w-full bg-muted/50 relative overflow-hidden rounded-t-xl group-hover:bg-muted/80 transition-colors">
-                {/* Course Image */}
-                {item.thumbnailUrl ? (
-                  <img
-                    src={item.thumbnailUrl}
-                    alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30">
-                    <BookOpen size={48} />
-                  </div>
-                )}
-              </div>
-              <CardHeader className="p-5 pb-2">
-                <div className="flex justify-between items-start mb-2">
-                  {setNum(item.level)}
+          {course.filter((item) => item.level === activeTab).length > 0 ? (
+            course.filter((item) => item.level === activeTab).map((item) => (
+              <Card key={item.courseId} className="group hover:shadow-xl transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm">
+                <div className="aspect-video w-full bg-muted/50 relative overflow-hidden rounded-t-xl group-hover:bg-muted/80 transition-colors">
+                  {item.thumbnailUrl ? (
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30">
+                      <BookOpen size={48} />
+                    </div>
+                  )}
                 </div>
-                <CardTitle className="text-lg font-bold line-clamp-1 group-hover:text-primary transition-colors">{item.title}</CardTitle>
-                <CardDescription className="text-xs">{item.instructorName}님의 강좌</CardDescription>
-              </CardHeader>
-              <CardContent className="p-5 py-2">
-                <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
-              </CardContent>
-              <CardFooter className="p-5 pt-4">
-                <Link to={`/course/${item.courseId}`} className="w-full">
-                  <Button variant="secondary" className="w-full bg-secondary/80 hover:bg-primary hover:text-primary-foreground transition-all duration-300">
-                    수강신청하기 <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </CardFooter>
-            </Card>))}
+                <CardHeader className="p-5 pb-2">
+                  <div className="flex justify-between items-start mb-2">
+                    {setNum(item.level)}
+                  </div>
+                  <CardTitle className="text-lg font-bold line-clamp-1 group-hover:text-primary transition-colors">{item.title}</CardTitle>
+                  <CardDescription className="text-xs">{item.instructorName}님의 강좌</CardDescription>
+                </CardHeader>
+                <CardContent className="p-5 py-2">
+                  <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
+                </CardContent>
+                <CardFooter className="p-5 pt-4">
+                  <Link to={`/course/${item.courseId}`} className="w-full">
+                    <Button variant="secondary" className="w-full bg-secondary/80 hover:bg-primary hover:text-primary-foreground transition-all duration-300">
+                      수강신청하기 <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            ))
+          ) : (
+            <div className="col-span-full py-20 text-center text-muted-foreground bg-muted/30 rounded-2xl border border-dashed border-border">
+              <p>등록된 강좌가 없습니다.</p>
+            </div>
+          )}
         </div>
+        <Button variant="ghost" className="text-primary hover:bg-primary/5" onClick={() => navigate('/course/level/0')}>
+          전체보기 <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
       </section>
 
       <ChatBot className="fixed bottom-8 right-8" />

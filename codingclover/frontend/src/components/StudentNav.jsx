@@ -146,12 +146,13 @@ function StudentNav() {
 
                     <Menubar className="border-none shadow-none bg-transparent">
                         <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer">전체 강좌</MenubarTrigger>
+                            <MenubarTrigger className="cursor-pointer"
+                             onClick={() => { navigate('/course/level/0') }}>전체 강좌</MenubarTrigger>
                             <MenubarContent>
                                 <MenubarGroup>
-                                    <Link to="/course/level/1"><MenubarItem>초급</MenubarItem></Link>
-                                    <Link to="/course/level/2"><MenubarItem>중급</MenubarItem></Link>
-                                    <Link to="/course/level/3"><MenubarItem>고급</MenubarItem></Link>
+                                    <MenubarItem onClick={() => { navigate('/course/level/1') }}>초급</MenubarItem>
+                                    <MenubarItem onClick={() => { navigate('/course/level/2') }}>중급</MenubarItem>
+                                    <MenubarItem onClick={() => { navigate('/course/level/3') }}>고급</MenubarItem>
                                 </MenubarGroup>
                             </MenubarContent>
                         </MenubarMenu>
