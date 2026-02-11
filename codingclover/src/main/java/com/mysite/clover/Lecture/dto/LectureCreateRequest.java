@@ -38,5 +38,6 @@ public class LectureCreateRequest {
     private LectureUploadType uploadType; // IMMEDIATE 또는 RESERVED
 
     // 예약 업로드 시간 (예약 모드일 때만 사용)
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime scheduledAt;
 }
