@@ -98,4 +98,10 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
         // 강좌 삭제 시 관련 수강 내역 삭제
         void deleteByCourse(Course course);
+
+        // 사용자별 수강 신청 수 계산 (user.userId로 접근)
+        int countByUserUserId(Long userId);
+
+        // 사용자의 최근 수강 신청 내역 조회 (최근 활동일 계산용, user.userId로 접근)
+        Optional<Enrollment> findTopByUserUserIdOrderByEnrolledAtDesc(Long userId);
 }

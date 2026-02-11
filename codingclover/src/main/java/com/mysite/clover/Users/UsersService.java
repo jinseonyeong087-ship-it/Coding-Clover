@@ -11,7 +11,9 @@ import lombok.RequiredArgsConstructor;
 
 import com.mysite.clover.InstructorProfile.InstructorProfileRepository;
 import com.mysite.clover.InstructorProfile.InstructorStatus;
+import com.mysite.clover.StudentProfile.StudentProfile;
 import com.mysite.clover.StudentProfile.StudentProfileRepository;
+import com.mysite.clover.Enrollment.EnrollmentRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -22,6 +24,7 @@ public class UsersService {
     private final PasswordEncoder passwordEncoder;
     private final InstructorProfileRepository instructorProfileRepository;
     private final StudentProfileRepository studentProfileRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     public Users create(String loginId, String password, String name, String email, String role) {
         Users user = new Users();
@@ -159,6 +162,20 @@ public class UsersService {
         });
     }
 
+    // 강사 삭제 (강사 프로필 및 계정 삭제)
+    @Transactional
+    public void deleteInstructor(Long userId) {
+        // 1. 유저 조회
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // 2. 강사 프로필 삭제
+        instructorProfileRepository.deleteById(userId);
+
+        // 3. 사용자 계정 삭제
+        usersRepository.delete(user);
+    }
+
     public Users getUserByLoginId(String loginId) {
         return usersRepository.findByLoginId(loginId).orElse(null);
     }
@@ -217,5 +234,84 @@ public class UsersService {
         usersRepository.delete(user);
         
         System.out.println("사용자 계정 삭제 완료: " + identifier);
+    }
+
+    // 관리자 - 학생 목록 조회
+    public List<StudentDTO> getStudentList() {
+        List<Users> students = usersRepository.findByRole(UsersRole.STUDENT);
+
+        return students.stream().map(user -> {
+            // StudentProfile 정보 조회
+            String educationLevel = null;
+            String interestCategory = null;
+            var profileOpt = studentProfileRepository.findById(user.getUserId());
+            if (profileOpt.isPresent()) {
+                StudentProfile profile = profileOpt.get();
+                educationLevel = profile.getEducationLevel();
+                interestCategory = profile.getInterestCategory();
+            }
+
+            // 수강 신청 수 계산
+            int enrollmentCount = enrollmentRepository.countByUserUserId(user.getUserId());
+
+            // 최근 활동일 조회 (수강 신청 중 가장 최근 것)
+            java.time.LocalDateTime lastActiveAt = enrollmentRepository.findTopByUserUserIdOrderByEnrolledAtDesc(user.getUserId())
+                .map(enrollment -> enrollment.getEnrolledAt())
+                .orElse(user.getUpdatedAt()); // 수강 신청이 없으면 계정 수정일
+
+            return new StudentDTO(
+                    user.getUserId(),
+                    user.getName(),
+                    user.getEmail(),
+                    user.getLoginId(),
+                    user.getRole().name(),
+                    user.getStatus().name(),
+                    educationLevel,
+                    interestCategory,
+                    enrollmentCount,
+                    user.getCreatedAt(),
+                    user.getUpdatedAt(),
+                    lastActiveAt
+            );
+        }).collect(Collectors.toList());
+    }
+
+    // 관리자 - 학생 상세 조회
+    public StudentDTO getStudentDetail(Long userId) {
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("학생을 찾을 수 없습니다."));
+
+        // StudentProfile 정보 조회
+        String educationLevel = null;
+        String interestCategory = null;
+        var profileOpt = studentProfileRepository.findById(userId);
+        if (profileOpt.isPresent()) {
+            StudentProfile profile = profileOpt.get();
+            educationLevel = profile.getEducationLevel();
+            interestCategory = profile.getInterestCategory();
+        }
+
+        // 수강 신청 수 계산
+        int enrollmentCount = enrollmentRepository.countByUserUserId(userId);
+
+        // 최근 활동일 조회
+        java.time.LocalDateTime lastActiveAt = enrollmentRepository.findTopByUserUserIdOrderByEnrolledAtDesc(userId)
+            .map(enrollment -> enrollment.getEnrolledAt())
+            .orElse(user.getUpdatedAt());
+
+        return new StudentDTO(
+                user.getUserId(),
+                user.getName(),
+                user.getEmail(),
+                user.getLoginId(),
+                user.getRole().name(),
+                user.getStatus().name(),
+                educationLevel,
+                interestCategory,
+                enrollmentCount,
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
+                lastActiveAt
+        );
     }
 }

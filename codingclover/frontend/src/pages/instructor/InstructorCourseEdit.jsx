@@ -56,7 +56,9 @@ function InstructorCourseEdit() {
           level: data.level,
           description: data.description,
           price: data.price,
-          thumbnailUrl: data.thumbnailUrl || ''
+          thumbnailUrl: data.thumbnailUrl || '',
+          proposalStatus: data.proposalStatus,
+          proposalRejectReason: data.proposalRejectReason
         });
         setSelectLevel(data.level);
         setLoading(false);
@@ -111,6 +113,27 @@ function InstructorCourseEdit() {
       });
   };
 
+  // 재심사 요청 핸들러
+  const handleResubmit = () => {
+    if (!window.confirm("수정된 내용으로 재심사를 요청하시겠습니까?")) return;
+
+    axios.post(`/instructor/course/${courseId}/resubmit`, {
+      title: course.title,
+      level: selectLevel,
+      description: course.description,
+      price: Number(course.price),
+      thumbnailUrl: course.thumbnailUrl,
+    }, { withCredentials: true })
+      .then((response) => {
+        alert("재심사 요청이 완료되었습니다.");
+        navigate('/instructor/course');
+      })
+      .catch((err) => {
+        console.error("재심사 요청 실패", err);
+        alert("재심사 요청 중 오류가 발생했습니다.");
+      });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden">
       {/* Background Decorations */}
@@ -148,6 +171,25 @@ function InstructorCourseEdit() {
                   </div>
                 )}
 
+                {/* 반려 사유 표시 (REJECTED 상태일 때만) */}
+                {course.proposalStatus === 'REJECTED' && (
+                  <div className="mb-8 p-6 bg-orange-50/80 border border-orange-200 rounded-xl">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-6 h-6 text-orange-600 mt-0.5" />
+                      <div>
+                        <h3 className="text-lg font-semibold text-orange-800 mb-2">반려된 강좌입니다</h3>
+                        <p className="text-orange-700 font-medium mb-1">반려 사유:</p>
+                        <p className="text-slate-700 bg-white/50 p-3 rounded-lg border border-orange-100">
+                          {course.proposalRejectReason || "사유가 명시되지 않았습니다."}
+                        </p>
+                        <p className="text-sm text-orange-600 mt-3">
+                          내용을 수정한 후 하단의 '재신청' 버튼을 눌러 다시 심사를 요청해주세요.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-8">
                   {/* Basic Info Section */}
                   <div className="space-y-6">
@@ -168,8 +210,6 @@ function InstructorCourseEdit() {
                         />
                         {errors.title && <p className="text-red-500 text-xs ml-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.title}</p>}
                       </div>
-
-
 
                       <div className="space-y-2">
                         <Label className="text-slate-600 text-sm font-medium">썸네일 이미지</Label>
@@ -268,6 +308,18 @@ function InstructorCourseEdit() {
                   >
                     취소
                   </Button>
+
+                  {/* 재신청 버튼 (REJECTED 상태일 때만 표시) */}
+                  {course.proposalStatus === 'REJECTED' && (
+                    <Button
+                      onClick={handleResubmit}
+                      className="px-8 py-6 bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5"
+                    >
+                      <span className="mr-2">재신청</span>
+                      <Sparkles className="w-4 h-4" />
+                    </Button>
+                  )}
+
                   <Button
                     onClick={handleClick}
                     className="px-8 py-6 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg hover:shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5"

@@ -56,6 +56,8 @@ function MyPage() {
   const [pointsLoading, setPointsLoading] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [courseProgress, setCourseProgress] = useState({}); // { courseId: { completed, total, percent } }
+  const [cancelRequests, setCancelRequests] = useState({});
+  const [cancelRequestLoadingId, setCancelRequestLoadingId] = useState(null);
 
   // 각 수강 강좌의 진도율 조회
   const fetchCourseProgress = async (enrollmentList) => {
@@ -94,6 +96,44 @@ function MyPage() {
     }));
 
     setCourseProgress(progressMap);
+  };
+
+  // 수강 취소 요청 목록 조회
+  const fetchCancelRequests = async () => {
+    try {
+      // 임시: 백엔드 개발 전까지는 빈 배열 반환
+      setCancelRequests({});
+      return;
+      
+      /* 백엔드 준비 후 주석 해제
+      const response = await fetch('/student/cancel-requests', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        setCancelRequests({});
+        return;
+      }
+
+      const data = await response.json();
+      const requestMap = {};
+      const requestList = Array.isArray(data) ? data : [];
+
+      requestList.forEach((request) => {
+        const key = request.enrollmentId ?? request.courseId;
+        if (key !== undefined && key !== null) {
+          requestMap[key] = request;
+        }
+      });
+
+      setCancelRequests(requestMap);
+      */
+    } catch (error) {
+      console.error('수강 취소 요청 조회 실패:', error);
+      setCancelRequests({});
+    }
   };
 
   // 포인트 조회 함수
@@ -249,6 +289,7 @@ function MyPage() {
         const enrollmentData = await enrollmentResponse.json();
         setEnrollments(enrollmentData);
         fetchCourseProgress(enrollmentData);
+        fetchCancelRequests();
       } else {
         setEnrollments([]);
       }
@@ -275,6 +316,62 @@ function MyPage() {
     fetchData();
     fetchUserPoints();
   }, []);
+
+  const handleCancelRequest = async (enrollment) => {
+    const requestKey = enrollment.enrollmentId ?? enrollment.courseId;
+    if (!requestKey) {
+      alert('수강 취소 요청 대상이 올바르지 않습니다.');
+      return;
+    }
+
+    if (!confirm('수강 취소 요청을 제출하시겠습니까?')) {
+      return;
+    }
+
+    // 임시: 백엔드 개발 전까지는 클라이언트 상태만 업데이트
+    alert('취소 요청이 접수되었습니다. (임시: 백엔드 연결 대기중)');
+    setCancelRequests((prev) => ({
+      ...prev,
+      [requestKey]: {
+        enrollmentId: enrollment.enrollmentId,
+        courseId: enrollment.courseId,
+        requestedAt: new Date().toISOString()
+      }
+    }));
+    return;
+
+    /* 백엔드 준비 후 주석 해제
+    try {
+      setCancelRequestLoadingId(requestKey);
+      const response = await fetch(`/student/enrollment/${requestKey}/cancel-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ courseId: enrollment.courseId })
+      });
+
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || '수강 취소 요청에 실패했습니다.');
+      }
+
+      alert('취소 요청이 접수되었습니다.');
+      setCancelRequests((prev) => ({
+        ...prev,
+        [requestKey]: {
+          enrollmentId: enrollment.enrollmentId,
+          courseId: enrollment.courseId,
+          requestedAt: new Date().toISOString()
+        }
+      }));
+    } catch (error) {
+      console.error('수강 취소 요청 실패:', error);
+      alert(error.message || '수강 취소 요청 중 오류가 발생했습니다.');
+    } finally {
+      setCancelRequestLoadingId(null);
+    }
+    */
+  };
 
   //수정모드 전환
   const handleEditToggle = () => {
@@ -662,11 +759,16 @@ function MyPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {enrollments.map((enrollment) => (
-                    <div
-                      key={enrollment.enrollmentId}
-                      className="group flex flex-col bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300"
-                    >
+                  {enrollments.map((enrollment) => {
+                    const isCanceled = enrollment.status === 'CANCELED' || enrollment.status === 'CANCELLED';
+                    const requestKey = enrollment.enrollmentId ?? enrollment.courseId;
+                    const isRequested = Boolean(cancelRequests[requestKey]);
+
+                    return (
+                      <div
+                        key={requestKey}
+                        className="group flex flex-col bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300"
+                      >
                       <div className="h-40 bg-muted relative overflow-hidden">
                         {/* Placeholder Pattern/Gradient */}
                         {/* In a real app, use enrollment.courseThumbnail */}
@@ -723,7 +825,7 @@ function MyPage() {
 
                           <Button
                             className="w-full font-bold shadow-sm h-10"
-                            disabled={enrollment.status === 'CANCELLED'}
+                            disabled={isCanceled}
                             variant={enrollment.status === 'COMPLETED' ? 'outline' : 'default'}
                             onClick={() => navigate(`/student/course/${enrollment.courseId}/lectures`)}
                           >
@@ -731,10 +833,26 @@ function MyPage() {
                               (courseProgress[enrollment.courseId]?.percent ?? 0) > 0 ? '이어듣기' : '학습 시작'
                             ) : enrollment.status === 'COMPLETED' ? '다시보기' : '강의 보기'}
                           </Button>
+
+                          {enrollment.status === 'ENROLLED' && (
+                            <Button
+                              className="w-full font-semibold h-9"
+                              variant="outline"
+                              disabled={isRequested || cancelRequestLoadingId === requestKey}
+                              onClick={() => handleCancelRequest(enrollment)}
+                            >
+                              {isRequested
+                                ? '취소 요청 완료'
+                                : cancelRequestLoadingId === requestKey
+                                  ? '요청 처리중...'
+                                  : '수강 취소 요청'}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

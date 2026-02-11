@@ -399,4 +399,20 @@ public class CourseController {
         // 3. 성공 메시지 반환
         return ResponseEntity.ok("반려 완료");
     }
+
+    // 관리자 : 특정 강사의 강좌 목록 조회
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/course/instructor/{instructorId}")
+    public ResponseEntity<List<AdminCourseDto>> getInstructorCourses(@PathVariable("instructorId") Long instructorId) {
+        // 1. 강사 정보 조회
+        Users instructor = usersRepository.findById(instructorId)
+                .orElseThrow(() -> new RuntimeException("강사를 찾을 수 없습니다."));
+
+        // 2. 해당 강사의 강좌 목록을 서비스에서 조회
+        return ResponseEntity.ok(courseService.getInstructorList(instructor).stream()
+                // 3. 관리자용 DTO로 변환
+                .map(AdminCourseDto::fromEntity)
+                // 4. 리스트로 반환
+                .toList());
+    }
 }

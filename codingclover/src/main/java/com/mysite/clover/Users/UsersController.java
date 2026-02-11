@@ -74,6 +74,23 @@ public class UsersController {
         return ResponseEntity.ok(instructorList);
     }
 
+    // 관리자: 학생 목록 조회
+    @GetMapping("/admin/users/students") 
+    @ResponseBody
+    public ResponseEntity<List<StudentDTO>> getStudents() {
+        List<StudentDTO> studentList = usersService.getStudentList();
+        return ResponseEntity.ok(studentList);
+    }
+
+    // 관리자: 학생 상세 조회
+    @GetMapping("/admin/users/students/{userId}")
+    @ResponseBody
+    public ResponseEntity<StudentDTO> getStudentDetail(
+            @org.springframework.web.bind.annotation.PathVariable("userId") Long userId) {
+        StudentDTO student = usersService.getStudentDetail(userId);
+        return ResponseEntity.ok(student);
+    }
+
     // 관리자: 강사 승인
     @PostMapping("/admin/users/instructors/{userId}/approve")
     @ResponseBody
@@ -92,6 +109,15 @@ public class UsersController {
         String reason = body.get("reason");
         usersService.rejectInstructor(userId, reason);
         return ResponseEntity.ok("강사 반려가 처리되었습니다.");
+    }
+
+    // 관리자: 강사 삭제 (계정 자체 삭제)
+    @org.springframework.web.bind.annotation.DeleteMapping("/admin/users/instructors/{userId}/delete")
+    @ResponseBody
+    public ResponseEntity<String> deleteInstructor(
+            @org.springframework.web.bind.annotation.PathVariable("userId") Long userId) {
+        usersService.deleteInstructor(userId);
+        return ResponseEntity.ok("강사가 성공적으로 삭제되었습니다.");
     }
 
     // 강사 상세 조회 (AdminMain 및 AdminApproch에서 사용)
