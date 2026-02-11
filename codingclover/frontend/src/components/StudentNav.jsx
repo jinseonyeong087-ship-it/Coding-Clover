@@ -156,14 +156,9 @@ function StudentNav() {
                                 </MenubarGroup>
                             </MenubarContent>
                         </MenubarMenu>
-                        {/* <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer">내 강의실</MenubarTrigger>
-                        <MenubarContent>
-                            <MenubarItem>수강 중인 강좌</MenubarItem>
-                            <MenubarItem>완료한 강좌</MenubarItem>
-                            <MenubarItem>학습 기록</MenubarItem>
-                        </MenubarContent>
-                    </MenubarMenu> */}
+                        <MenubarMenu>
+                            <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/coding-test') }}>코딩테스트</MenubarTrigger>
+                        </MenubarMenu>
                         <MenubarMenu>
                             <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
                             <MenubarContent>
@@ -175,13 +170,7 @@ function StudentNav() {
                             <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/notice') }}>공지사항</MenubarTrigger>
                         </MenubarMenu>
                         <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/coding-test') }}>코딩테스트</MenubarTrigger>
-                        </MenubarMenu>
-                        <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/student/exam') }}>시험 응시</MenubarTrigger>
-                        </MenubarMenu>
-                        <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/payment') }}>충전하기</MenubarTrigger>
+                            <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/payment') }}>포인트충전</MenubarTrigger>
                         </MenubarMenu>
                         <MenubarMenu>
                             <Link

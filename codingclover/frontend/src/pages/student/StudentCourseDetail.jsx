@@ -41,6 +41,50 @@ function StudentCourseDetail() {
     // 강의별 진도 상태 { lectureId: { completedYn, lastWatchedAt } }
     const [progressMap, setProgressMap] = useState({});
 
+    // 시험 응시 처리
+    const handleExamAttempt = async () => {
+        try {
+            // 시험 존재 여부 확인
+            const response = await fetch(`/api/exam/course/${courseId}/check`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const examExists = await response.json();
+                if (examExists) {
+                    // 시험이 존재하면 시험 페이지로 이동
+                    navigate(`/student/exam/${courseId}`);
+                } else {
+                    // 시험이 없으면 알림 다이얼로그 표시
+                    setDialogMessage({
+                        title: '시험 미출제',
+                        description: '해당 강좌의 시험이 아직 출제되지 않았습니다. 강사가 시험을 출제할 때까지 기다려주세요.'
+                    });
+                    setDialogOpen(true);
+                }
+            } else if (response.status === 404) {
+                // 404는 시험이 아직 출제되지 않았음을 의미
+                setDialogMessage({
+                    title: '시험 미출제',
+                    description: '해당 강좌의 시험이 아직 출제되지 않았습니다. 강사가 시험을 출제할 때까지 기다려주세요.'
+                });
+                setDialogOpen(true);
+            } else {
+                throw new Error('시험 정보 조회 실패');
+            }
+        } catch (error) {
+            console.error('시험 응시 오류:', error);
+            // 네트워크 오류 등의 경우에만 에러 메시지 표시
+            setDialogMessage({
+                title: '오류 발생',
+                description: '시험 정보를 확인하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+            });
+            setDialogOpen(true);
+        }
+    };
+
     // 강좌 정보 + 수강 상태 가져오기
     useEffect(() => {
         // 강좌 정보
@@ -224,14 +268,26 @@ function StudentCourseDetail() {
                                 </div>
                             </div>
                             <div className="w-px h-10 bg-border/50" />
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                                    <FileText className="w-6 h-6 text-muted-foreground" />
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                                        <FileText className="w-6 h-6 text-muted-foreground" />
+                                    </div>
+                                    <div>
+                                        <div className="text-xs text-muted-foreground font-bold uppercase">Lectures</div>
+                                        <div className="font-bold">총 {lectureList.length || previewLectures.length || '?'}강</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div className="text-xs text-muted-foreground font-bold uppercase">Lectures</div>
-                                    <div className="font-bold">총 {lectureList.length || previewLectures.length || '?'}강</div>
-                                </div>
+                                {/* 시험 응시 버튼 - 수강 중일 때만 표시 */}
+                                {(enrollmentStatus === 'ENROLLED' || enrollmentStatus === 'COMPLETED') && (
+                                    <Button
+                                        size="sm"
+                                        className="font-medium shadow-lg hover:shadow-primary/25 transition-all"
+                                        onClick={handleExamAttempt}
+                                    >
+                                        시험 응시
+                                    </Button>
+                                )}
                             </div>
                         </div>
 
