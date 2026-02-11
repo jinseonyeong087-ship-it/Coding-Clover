@@ -19,14 +19,15 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowCredentials(true);
     }
 
-    @Value("${file.upload.path}")
-    private String uploadPath;
+    // @Value("${file.upload.path}")
+    // private String uploadPath;
 
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 절대 경로 URI로 변환하여 리소스 핸들러 등록
-        String absPath = Paths.get(uploadPath).toAbsolutePath().normalize().toUri().toString();
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations(absPath);
-    }
+    // @Override
+    // public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    // // 절대 경로 URI로 변환하여 리소스 핸들러 등록
+    // String absPath =
+    // Paths.get(uploadPath).toAbsolutePath().normalize().toUri().toString();
+    // registry.addResourceHandler("/uploads/**")
+    // .addResourceLocations(absPath);
+    // }
 }

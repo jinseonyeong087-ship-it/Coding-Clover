@@ -45,6 +45,8 @@ dependencies {
 	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 	// 썸네일 생성
 	implementation 'net.coobird:thumbnailator:0.4.20'
+	// AWS S3
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.2.1'
 }
 
 tasks.named('test') {
