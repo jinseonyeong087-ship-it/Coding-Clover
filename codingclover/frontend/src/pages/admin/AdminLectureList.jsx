@@ -13,28 +13,14 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+// Checkbox import removed
+// AlertDialog imports removed
 import axios from 'axios';
+
 
 function AdminLectureList() {
 
     const [lectures, setLectures] = useState([]);
-    const [selectedIds, setSelectedIds] = useState([]);
-    const [batchRejectReason, setBatchRejectReason] = useState("");
-    const [isBatchRejectDialogOpen, setIsBatchRejectDialogOpen] = useState(false);
-    const [warningMessage, setWarningMessage] = useState("");
-    const [isWarningDialogOpen, setIsWarningDialogOpen] = useState(false);
 
     const fetchLectures = () => {
         fetch('/admin/lectures', {
@@ -66,94 +52,6 @@ function AdminLectureList() {
         fetchLectures();
     }, []);
 
-    // 체크박스 선택/해제
-    const handleCheck = (id) => {
-        setSelectedIds(prev =>
-            prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-        );
-    };
-
-    // 전체 선택/해제
-    const handleSelectAll = () => {
-        if (selectedIds.length === lectures.length) {
-            setSelectedIds([]);
-        } else {
-            setSelectedIds(lectures.map(item => item.lectureId));
-        }
-    };
-
-    // 선택된 강의 중 일괄 처리 가능한 항목 검증 (승인 대기 + URL 있음)
-    const validateSelected = () => {
-        const selected = lectures.filter(l => selectedIds.includes(l.lectureId));
-        const invalid = selected.filter(l => l.approvalStatus !== 'PENDING' || !l.videoUrl);
-        return { selected, invalid };
-    };
-
-    // 일괄 승인
-    const handleBatchApprove = async () => {
-        if (selectedIds.length === 0) return;
-        const { invalid } = validateSelected();
-        if (invalid.length > 0) {
-            const reasons = [];
-            const notPending = invalid.filter(l => l.approvalStatus !== 'PENDING');
-            const noUrl = invalid.filter(l => !l.videoUrl);
-            if (notPending.length > 0) reasons.push(`승인 대기 상태가 아닌 강의 ${notPending.length}건`);
-            if (noUrl.length > 0) reasons.push(`URL이 없는 강의 ${noUrl.length}건`);
-            setWarningMessage(`일괄 승인할 수 없는 강의가 포함되어 있습니다.\n(${reasons.join(', ')})\n\n승인 대기 상태이며 URL이 있는 강의만 일괄 승인이 가능합니다.`);
-            setIsWarningDialogOpen(true);
-            return;
-        }
-        try {
-            const response = await axios.post('/admin/lectures/batch-approve', {
-                lectureIds: selectedIds
-            });
-            alert(response.data);
-            setSelectedIds([]);
-            fetchLectures();
-        } catch (error) {
-            alert("승인 처리 중 오류 발생");
-        }
-    };
-
-    // 일괄 반려 다이얼로그 열기 전 검증 (승인 대기 + URL 없는 강의만 반려 가능)
-    const openBatchRejectDialog = () => {
-        if (selectedIds.length === 0) return;
-        const selected = lectures.filter(l => selectedIds.includes(l.lectureId));
-        const invalid = selected.filter(l => l.approvalStatus !== 'PENDING' || l.videoUrl);
-        if (invalid.length > 0) {
-            const reasons = [];
-            const notPending = invalid.filter(l => l.approvalStatus !== 'PENDING');
-            const hasUrl = invalid.filter(l => l.videoUrl);
-            if (notPending.length > 0) reasons.push(`승인 대기 상태가 아닌 강의 ${notPending.length}건`);
-            if (hasUrl.length > 0) reasons.push(`URL이 있는 강의 ${hasUrl.length}건`);
-            setWarningMessage(`일괄 반려할 수 없는 강의가 포함되어 있습니다.\n(${reasons.join(', ')})\n\n승인 대기 상태이며 URL이 없는 강의만 일괄 반려가 가능합니다.`);
-            setIsWarningDialogOpen(true);
-            return;
-        }
-        setIsBatchRejectDialogOpen(true);
-    };
-
-    // 일괄 반려
-    const handleBatchReject = async () => {
-        if (!batchRejectReason.trim()) {
-            alert("반려 사유를 입력해주세요.");
-            return;
-        }
-        try {
-            const response = await axios.post('/admin/lectures/batch-reject', {
-                lectureIds: selectedIds,
-                rejectReason: batchRejectReason
-            });
-            alert(response.data);
-            setSelectedIds([]);
-            setBatchRejectReason("");
-            setIsBatchRejectDialogOpen(false);
-            fetchLectures();
-        } catch (error) {
-            alert("반려 처리 중 오류 발생");
-        }
-    };
-
     const getApprovalBadge = (status) => {
         switch (status) {
             case 'PENDING':
@@ -167,11 +65,7 @@ function AdminLectureList() {
         }
     };
 
-    const getUrlBadge = (videoUrl) => {
-        return videoUrl
-            ? <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">있음</Badge>
-            : <Badge variant="outline" className="text-muted-foreground border-muted-foreground/30">없음</Badge>;
-    };
+
 
     const formatDuration = (seconds) => {
         if (!seconds) return '-';
@@ -199,63 +93,64 @@ function AdminLectureList() {
                             전체 강의 목록을 관리하고 승인 상태를 변경할 수 있습니다.
                         </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                        {selectedIds.length > 0 && (
-                            <span className="text-sm text-muted-foreground mr-2">
-                                {selectedIds.length}건 선택
-                            </span>
-                        )}
-                        <Button
-                            onClick={handleBatchApprove}
-                            disabled={selectedIds.length === 0}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                        >
-                            일괄 승인
-                        </Button>
-                        <Button
-                            onClick={openBatchRejectDialog}
-                            disabled={selectedIds.length === 0}
-                            variant="destructive"
-                        >
-                            일괄 반려
-                        </Button>
-                    </div>
                 </div>
 
                 <Card className="bg-background/60 backdrop-blur-xl border-border/50 shadow-xl overflow-hidden">
                     <Table>
                         <TableHeader className="bg-muted/50">
                             <TableRow>
-                                <TableHead className="text-center w-[50px]">
-                                    <Checkbox
-                                        checked={lectures.length > 0 && selectedIds.length === lectures.length}
-                                        onCheckedChange={handleSelectAll}
-                                    />
-                                </TableHead>
-                                <TableHead className="text-center w-[80px]">ID</TableHead>
+                                {/* Checkbox column removed */}
+                                {/* Checkbox column removed */}
+                                <TableHead className="text-center w-[50px]">No.</TableHead>
+                                <TableHead className="text-center">강좌명</TableHead>
                                 <TableHead className="text-center">강의명</TableHead>
-                                <TableHead className="text-center w-[80px]">강좌 ID</TableHead>
+                                <TableHead className="text-center w-[120px]">강사명</TableHead>
                                 <TableHead className="text-center w-[80px]">순서</TableHead>
-                                <TableHead className="text-center w-[80px]">예약유무</TableHead>
-                                <TableHead className="text-center w-[100px]">URL</TableHead>
+                                <TableHead className="text-center w-[150px]">예약유무</TableHead>
+
                                 <TableHead className="text-center w-[100px]">재생시간</TableHead>
                                 <TableHead className="text-center w-[100px]">상태</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {lectures && lectures.length > 0 ? (
-                                lectures.map((item, index) => {
+                                // 최신순 정렬 (ID 기준 내림차순)
+                                [...lectures].sort((a, b) => b.lectureId - a.lectureId).map((item, index) => {
                                     const uniqueKey = item.lectureId || `lecture-idx-${index}`;
+
+                                    // 예약 시간 처리 로직
+                                    let reservationDisplay = '-';
+                                    if (item.scheduledAt) {
+                                        const scheduledDate = new Date(item.scheduledAt);
+                                        const now = new Date();
+                                        if (scheduledDate > now) {
+                                            const datePart = scheduledDate.toLocaleDateString('ko-KR', {
+                                                year: 'numeric',
+                                                month: 'numeric',
+                                                day: 'numeric'
+                                            });
+                                            const timePart = scheduledDate.toLocaleTimeString('ko-KR', {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                hour12: true
+                                            });
+                                            reservationDisplay = (
+                                                <div className="flex flex-col items-center leading-tight">
+                                                    <span>{datePart}</span>
+                                                    <span>{timePart}</span>
+                                                </div>
+                                            );
+                                        }
+                                    }
+
                                     return (
-                                        <TableRow key={uniqueKey} className="hover:bg-muted/30 transition-colors">
-                                            <TableCell className="text-center">
-                                                <Checkbox
-                                                    checked={selectedIds.includes(item.lectureId)}
-                                                    onCheckedChange={() => handleCheck(item.lectureId)}
-                                                />
+                                        <TableRow key={uniqueKey} className="h-16 hover:bg-muted/30 transition-colors">
+                                            {/* Checkbox cell removed */}
+                                            <TableCell className="text-center text-muted-foreground w-[50px]">
+                                                {lectures.length - index}
                                             </TableCell>
-                                            <TableCell className="text-center font-mono text-xs text-muted-foreground">
-                                                {item.lectureId}
+                                            <TableCell className="text-center font-medium">
+                                                {item.courseTitle || '-'}
                                             </TableCell>
                                             <TableCell>
                                                 <Link
@@ -265,18 +160,16 @@ function AdminLectureList() {
                                                     {item.title}
                                                 </Link>
                                             </TableCell>
-                                            <TableCell className="text-center font-mono text-xs text-muted-foreground">
-                                                {item.courseId || '-'}
+                                            <TableCell className="text-center">
+                                                {item.instructorName || '-'}
                                             </TableCell>
                                             <TableCell className="text-center font-medium text-foreground/80">
                                                 {item.orderNo != null ? item.orderNo : '-'}
                                             </TableCell>
-                                            <TableCell className="text-center">
-                                                {item.reservationDate ? new Date(item.reservationDate).toLocaleString('ko-KR') : '-'}
+                                            <TableCell className="text-center text-sm">
+                                                {reservationDisplay}
                                             </TableCell>
-                                            <TableCell className="text-center">
-                                                {getUrlBadge(item.videoUrl)}
-                                            </TableCell>
+
                                             <TableCell className="text-center text-sm text-muted-foreground">
                                                 {formatDuration(item.duration)}
                                             </TableCell>
@@ -288,7 +181,7 @@ function AdminLectureList() {
                                 })
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={9} className="text-center py-16 text-muted-foreground">
+                                    <TableCell colSpan={8} className="text-center py-16 text-muted-foreground">
                                         등록된 강의가 없습니다.
                                     </TableCell>
                                 </TableRow>
@@ -297,53 +190,6 @@ function AdminLectureList() {
                     </Table>
                 </Card>
             </div>
-
-            {/* 일괄 반려 다이얼로그 */}
-            <AlertDialog open={isBatchRejectDialogOpen} onOpenChange={setIsBatchRejectDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>일괄 반려</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            선택한 {selectedIds.length}건의 강의를 반려합니다. 반려 사유를 입력해주세요.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <Textarea
-                        placeholder="반려 사유를 입력하세요."
-                        value={batchRejectReason}
-                        onChange={(e) => setBatchRejectReason(e.target.value)}
-                        className="min-h-[100px]"
-                    />
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setBatchRejectReason("")}>
-                            취소
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={handleBatchReject}
-                            className="bg-red-600 hover:bg-red-700 text-white"
-                        >
-                            반려
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            {/* 경고 다이얼로그 */}
-            <AlertDialog open={isWarningDialogOpen} onOpenChange={setIsWarningDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>처리 불가</AlertDialogTitle>
-                        <AlertDialogDescription className="whitespace-pre-line">
-                            {warningMessage}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogAction onClick={() => setIsWarningDialogOpen(false)}>
-                            확인
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
             <Tail />
         </>
     );
