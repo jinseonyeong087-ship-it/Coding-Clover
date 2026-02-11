@@ -22,6 +22,7 @@ public class LectureService {
     private final com.mysite.clover.Notification.NotificationService notificationService;
     private final com.mysite.clover.Enrollment.EnrollmentRepository enrollmentRepository;
     private final YoutubeService youtubeService;
+
     // 해당 강좌에 속한 모든 강의를 순서대로 조회 (강사용/관리자용, 상태 불문)
     public List<Lecture> getListByCourse(Course course) {
         return lectureRepository.findByCourseOrderByOrderNoAsc(course);
@@ -196,7 +197,7 @@ public class LectureService {
                     enrollment.getUser(),
                     "NEW_LECTURE_UPLOADED",
                     "'" + lecture.getCourse().getTitle() + "' 강좌에 새 강의가 업로드되었습니다: " + lecture.getTitle(),
-                    "/lecture/" + lecture.getLectureId());
+                    "/student/lecture/" + lecture.getLectureId());
         }
     }
 

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import axios from 'axios';
 import { Toaster } from 'sonner';
-import { Routes, Route, BrowserRouter } from 'react-router-dom'
+import { Routes, Route, BrowserRouter, Navigate, useParams } from 'react-router-dom'
 import Home from './pages/Home'
 import MainLogin from './pages/MainLogin'
 import Register from './pages/Register'
@@ -68,6 +68,12 @@ import AdminInstructorCourses from '@/pages/admin/AdminInstructorCourses';
 // 서버와의 통신에서 쿠키(세션)를 포함하도록 설정
 axios.defaults.withCredentials = true;
 
+
+// 잘못된 알림 링크(/lecture/:lectureId)를 올바른 경로(/student/lecture/:lectureId)로 리다이렉트
+const RedirectToStudentLecture = () => {
+  const { lectureId } = useParams();
+  return <Navigate to={`/student/lecture/${lectureId}`} replace />;
+};
 
 function App() {
 
@@ -147,6 +153,7 @@ function App() {
 
         {/* 디비 연동하고 /student/course/{courseId}/enroll로 경로수정 */}
         {/* 럭쳐 링크 수정 필요함 */}
+        <Route path="/lecture/:lectureId" element={<RedirectToStudentLecture />} />
         {/* 수강생 페이지 */}
         {/* 커뮤니티 (전체 공개, 로그인 불필요) */}
         <Route path="/student/community" element={<CommunityPostList />} />
