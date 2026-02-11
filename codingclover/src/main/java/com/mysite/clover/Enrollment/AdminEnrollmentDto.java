@@ -23,4 +23,9 @@ public class AdminEnrollmentDto {
     private LocalDateTime enrolledAt; // 수강 신청 일시
     private EnrollmentStatus status; // 수강 상태 (수강중/취소됨)
     private Long cancelledBy; // 수강 취소한 사용자 ID (취소된 경우)
+    
+    // 진도율 정보
+    private Integer completedLectures; // 완료된 강의 수
+    private Integer totalLectures; // 전체 강의 수
+    private Double progressRate; // 진도율 (퍼센트)
 }

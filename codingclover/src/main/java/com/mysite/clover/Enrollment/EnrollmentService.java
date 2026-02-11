@@ -210,21 +210,45 @@ public class EnrollmentService {
 
   // 관리자 - 전체 수강 내역 조회
   @Transactional(readOnly = true)
-  //Enrollment + User + Course를 한 번에 조회
+  //Enrollment + User + Course를 한 번에 조회하고 진도율 계산 (취소된 수강 제외)
   public List<AdminEnrollmentDto> getAllEnrollments() {
     List<Enrollment> enrollments = enrollmentRepository.findAllWithUserAndCourse();
-    //Enrollment 리스트 → AdminEnrollmentDto 리스트로 변환
+    //Enrollment 리스트 → AdminEnrollmentDto 리스트로 변환 (CANCELLED 제외, 진도율 계산 포함)
     return enrollments.stream()
-        .map(e -> new AdminEnrollmentDto(
-            e.getEnrollmentId(),
-            e.getUser().getUserId(),
-            e.getUser().getName(),
-            e.getCourse().getCourseId(),
-            e.getCourse().getTitle(),
-            e.getEnrolledAt(),
-            e.getStatus(),
-            e.getCancelledBy() != null ? e.getCancelledBy().getUserId() : null
-        ))
+        .filter(e -> e.getStatus() != EnrollmentStatus.CANCELLED) // 취소된 수강 제외
+        .map(e -> {
+            // 진도율 계산
+            int completedLectures = 0;
+            int totalLectures = 0;
+            double progressRate = 0.0;
+            
+            try {
+                completedLectures = lectureProgressRepository
+                    .findByEnrollmentAndCompletedYnTrue(e)
+                    .size();
+                totalLectures = lectureService.getLecturesForStudent(e.getCourse()).size();
+                progressRate = totalLectures > 0 
+                    ? Math.round((double) completedLectures * 100.0 / totalLectures)
+                    : 0.0;
+            } catch (Exception ex) {
+                // 진도율 계산 실패 시 기본값 사용
+                System.err.println("진도율 계산 실패 (enrollmentId: " + e.getEnrollmentId() + "): " + ex.getMessage());
+            }
+            
+            return new AdminEnrollmentDto(
+                e.getEnrollmentId(),
+                e.getUser().getUserId(),
+                e.getUser().getName(),
+                e.getCourse().getCourseId(),
+                e.getCourse().getTitle(),
+                e.getEnrolledAt(),
+                e.getStatus(),
+                e.getCancelledBy() != null ? e.getCancelledBy().getUserId() : null,
+                completedLectures,
+                totalLectures,
+                progressRate
+            );
+        })
         .collect(Collectors.toList());
   }
 
@@ -344,16 +368,40 @@ public class EnrollmentService {
   public List<AdminEnrollmentDto> getAdminCourseStudents(Course course) {
     List<Enrollment> enrollments = enrollmentRepository.findAdminByCourse(course);
     return enrollments.stream()
-        .map(e -> new AdminEnrollmentDto(
-            e.getEnrollmentId(),
-            e.getUser().getUserId(),
-            e.getUser().getName(),
-            e.getCourse().getCourseId(),
-            e.getCourse().getTitle(),
-            e.getEnrolledAt(),
-            e.getStatus(),
-            e.getCancelledBy() != null ? e.getCancelledBy().getUserId() : null
-        ))
+        .filter(e -> e.getStatus() != EnrollmentStatus.CANCELLED) // 취소된 수강 제외
+        .map(e -> {
+            // 진도율 계산
+            int completedLectures = 0;
+            int totalLectures = 0;
+            double progressRate = 0.0;
+            
+            try {
+                completedLectures = lectureProgressRepository
+                    .findByEnrollmentAndCompletedYnTrue(e)
+                    .size();
+                totalLectures = lectureService.getLecturesForStudent(e.getCourse()).size();
+                progressRate = totalLectures > 0 
+                    ? Math.round((double) completedLectures * 100.0 / totalLectures)
+                    : 0.0;
+            } catch (Exception ex) {
+                // 진도율 계산 실패 시 기본값 사용
+                System.err.println("진도율 계산 실패 (enrollmentId: " + e.getEnrollmentId() + "): " + ex.getMessage());
+            }
+            
+            return new AdminEnrollmentDto(
+                e.getEnrollmentId(),
+                e.getUser().getUserId(),
+                e.getUser().getName(),
+                e.getCourse().getCourseId(),
+                e.getCourse().getTitle(),
+                e.getEnrolledAt(),
+                e.getStatus(),
+                e.getCancelledBy() != null ? e.getCancelledBy().getUserId() : null,
+                completedLectures,
+                totalLectures,
+                progressRate
+            );
+        })
         .collect(Collectors.toList());
   }
 }

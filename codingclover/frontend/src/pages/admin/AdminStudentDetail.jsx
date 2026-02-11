@@ -208,35 +208,36 @@ function AdminStudentDetail() {
     }
   };
 
-  const fetchLectureProgress = async () => {
+  const fetchLectureProgressForEnrollments = async (enrollmentList) => {
     try {
-      const response = await fetch(`/api/admin/progress/student/${studentId}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include"
-      });
-      
-      if (response.ok) {
-        const progressData = await response.json();
-        
-        // API로부터 받은 데이터를 UI에 맞는 형태로 변환
-        const progressList = progressData.map(progress => ({
-          courseId: progress.courseId,
-          courseName: progress.courseTitle,
-          lectureId: progress.lectureId,
-          lectureName: progress.lectureTitle,
-          completedYn: progress.completedYn,
-          lastWatchedAt: progress.lastWatchedAt,
-          progressRate: progress.completedYn ? 100 : 0, // 완료 여부로 진도율 표시
-          enrollmentStatus: progress.enrollmentStatus
-        }));
-        
-        setLectureProgress(progressList);
-        console.log("✅ 강의 진도 조회 성공:", progressList);
-      } else {
-        console.warn("강의 진도 조회 실패, 빈 배열로 설정");
+      if (!enrollmentList || enrollmentList.length === 0) {
         setLectureProgress([]);
+        return;
       }
+
+      // 취소된 수강 내역 제외하고 진도율 계산
+      const activeEnrollments = enrollmentList.filter(enrollment => 
+        enrollment.status === 'ENROLLED' || enrollment.status === 'COMPLETED'
+      );
+
+      if (activeEnrollments.length === 0) {
+        setLectureProgress([]);
+        return;
+      }
+
+      // 관리자 API에서 진도율 정보가 포함된 수강 내역을 가져오므로
+      // 별도 계산 없이 바로 사용
+      const progressList = activeEnrollments.map(enrollment => ({
+        courseId: enrollment.courseId,
+        courseName: enrollment.courseTitle,
+        progressRate: enrollment.progressRate || 0,
+        completedLectures: enrollment.completedLectures || 0,
+        totalLectures: enrollment.totalLectures || 0,
+        enrollmentStatus: enrollment.status
+      }));
+      
+      setLectureProgress(progressList);
+      console.log("✅ 강좌별 진도율 조회 성공:", progressList);
     } catch (error) {
       console.error("강의 진도 조회 실패:", error);
       setLectureProgress([]);
@@ -282,12 +283,13 @@ function AdminStudentDetail() {
         });
         
         setEnrollments(studentEnrollments);
+        
+        // 수강 내역이 설정된 후 강의 진도 조회
+        await fetchLectureProgressForEnrollments(studentEnrollments);
       } else {
         setEnrollments([]);
+        setLectureProgress([]);
       }
-      
-      // 강의 진도 조회
-      await fetchLectureProgress();
     } catch (error) {
       console.error("수강 내역 조회 실패:", error);
       setEnrollments([]);
@@ -325,23 +327,15 @@ function AdminStudentDetail() {
   }, [summary, enrollments]);
 
   const groupedProgress = useMemo(() => {
-    const map = new Map();
-    lectureProgress.forEach((item) => {
-      const courseId = item.courseId || item.course?.id;
-      const courseTitle = item.courseTitle || item.course?.title || "강좌";
-      const lectureTitle = item.lectureTitle || item.lecture?.title || "강의";
-      const key = courseId ?? courseTitle;
-      if (!map.has(key)) {
-        map.set(key, { courseId, courseTitle, lectures: [] });
-      }
-      map.get(key).lectures.push({
-        lectureId: item.lectureId || item.lecture?.id,
-        lectureTitle,
-        progressRate: item.progressRate ?? item.progressPercent ?? item.progress ?? 0,
-        lastWatchedAt: item.lastWatchedAt
-      });
-    });
-    return Array.from(map.values());
+    // 이미 강좌별로 진도율이 계산되어 있는 상태이므로 그대로 사용
+    return lectureProgress.map(course => ({
+      courseId: course.courseId,
+      courseTitle: course.courseName,
+      progressRate: course.progressRate,
+      completedLectures: course.completedLectures,
+      totalLectures: course.totalLectures,
+      enrollmentStatus: course.enrollmentStatus
+    }));
   }, [lectureProgress]);
 
   const updateReason = (requestId, value) => {
@@ -526,22 +520,25 @@ function AdminStudentDetail() {
                   강의 진도 데이터가 없습니다.
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {groupedProgress.map((course) => (
-                    <div key={course.courseId || course.courseTitle} className="border border-border/50 rounded-2xl overflow-hidden">
-                      <div className="px-5 py-4 bg-muted/30 font-semibold">
-                        {course.courseTitle}
-                      </div>
-                      <div className="divide-y divide-border/50">
-                        {course.lectures.map((lecture) => (
-                          <div key={lecture.lectureId || lecture.lectureTitle} className="px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                            <div className="font-medium">{lecture.lectureTitle}</div>
-                            <div className="flex flex-col md:flex-row gap-3 md:items-center text-sm text-muted-foreground">
-                              <span>진도율: {lecture.progressRate}%</span>
-                              <span>마지막 시청: {formatDateTime(lecture.lastWatchedAt)}</span>
-                            </div>
+                    <div key={course.courseId} className="border border-border/50 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-lg">{course.courseTitle}</h3>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-primary">{course.progressRate}%</div>
+                          <div className="text-sm text-muted-foreground">
+                            {course.completedLectures}/{course.totalLectures} 강의 완료
                           </div>
-                        ))}
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div 
+                            className="bg-primary h-2 rounded-full transition-all duration-300" 
+                            style={{ width: `${course.progressRate}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}
