@@ -129,30 +129,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Stats Section (New) */}
-      <section className="border-y border-border/50 bg-background/50 backdrop-blur-sm">
-        <div className="container mx-auto px-6 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div className="space-y-2">
-              <h3 className="text-4xl font-bold text-foreground">100+</h3>
-              <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Active Courses</p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-4xl font-bold text-foreground">50+</h3>
-              <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Expert Instructors</p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-4xl font-bold text-foreground">10k+</h3>
-              <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Students</p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-4xl font-bold text-foreground">4.9</h3>
-              <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Average Rating</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Recommended Courses Section for Logged-in Students */}
       {isStudent && recommendedCourses.length > 0 && (
         <section className="container mx-auto px-6 py-24">

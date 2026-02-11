@@ -37,6 +37,17 @@ function LectureUpload({ courseInfo, courseId: courseIdProp, nextOrderNo, onUplo
         scheduledAt: '',
     });
 
+    // 초 → "n분 n초" 포맷
+    const formatDuration = (totalSeconds) => {
+        const sec = Number(totalSeconds);
+        if (!sec || sec <= 0) return '';
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        if (m > 0 && s > 0) return `${m}분 ${s}초`;
+        if (m > 0) return `${m}분`;
+        return `${s}초`;
+    };
+
     // 유튜브 URL인지 확인
     const isYoutubeUrl = (url) => {
         return /(?:youtube\.com|youtu\.be)/.test(url);
@@ -205,7 +216,11 @@ function LectureUpload({ courseInfo, courseId: courseIdProp, nextOrderNo, onUplo
                 </div>
                 <div>
                     <label className="block text-sm font-medium mb-1">
-                        재생 시간 (초) {durationLoading && <span className="text-blue-500 text-xs ml-1">불러오는 중...</span>}
+                        재생 시간 (초)
+                        {durationLoading && <span className="text-blue-500 text-xs ml-1">불러오는 중...</span>}
+                        {!durationLoading && formData.duration > 0 && (
+                            <span className="text-green-600 text-xs ml-1">({formatDuration(formData.duration)})</span>
+                        )}
                     </label>
                     <Input
                         type="number"

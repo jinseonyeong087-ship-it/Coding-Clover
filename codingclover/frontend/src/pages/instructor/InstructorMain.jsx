@@ -34,12 +34,30 @@ function InstructorMain() {
     useEffect(() => {
         const userData = getUserData();
         const loginId = userData?.loginId;
-        console.log('userData:', userData);
 
-        // localStorage에서 강사 상태 설정
-        if (userData?.status) {
-            setInstructorStatus(userData.status);
-        }
+        // 서버에서 최신 status를 가져와 instructorStatus state를 설정
+        // localStorage도 함께 동기화하여 다른 페이지에서도 일관성 유지
+        // API 실패 시에만 fallback으로 localStorage 값 사용
+        fetch('/api/instructor/mypage', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json', 'X-Login-Id': loginId },
+            credentials: 'include'
+        })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (data?.status) {
+                    setInstructorStatus(data.status);
+                    const stored = getUserData();
+                    if (stored) {
+                        stored.status = data.status;
+                        localStorage.setItem('users', JSON.stringify(stored));
+                    }
+                }
+            })
+            .catch(() => {
+                if (userData?.status) setInstructorStatus(userData.status);
+            });
+
         // 강좌 목록 조회
         fetch('/instructor/course', { method: 'GET', headers: { 'Content-Type': 'application/json', 'X-Login-Id': loginId }, credentials: 'include' })
             .then((res) => {
@@ -85,7 +103,7 @@ function InstructorMain() {
             <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
             <div className="fixed bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
-            {instructorStatus == 'ACTIVE' ? (
+            {instructorStatus == 'APPROVED' ? (
                 <main className="container mx-auto px-6 py-24 flex-1 max-w-7xl">
                     {/* 헤더 */}
                     <div className="mb-10">
@@ -146,7 +164,7 @@ function InstructorMain() {
                                         courses.map((course) => (
                                             <TableRow key={course.courseId} className="hover:bg-muted/30 transition-colors">
                                                 <TableCell className="font-medium">
-                                                    <Link to={`/instructor/course/${course.courseId}`} className="hover:text-primary transition-colors flex items-center gap-2">
+                                                    <Link className="hover:text-primary transition-colors flex items-center gap-2" to={`/instructor/course/${course.courseId}`} >
                                                         {course.title}
                                                     </Link>
                                                 </TableCell>
