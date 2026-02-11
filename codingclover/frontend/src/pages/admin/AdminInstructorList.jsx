@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { BookOpen } from "lucide-react";
 
 function AdminInstructorList() {
 
@@ -48,12 +50,13 @@ function AdminInstructorList() {
             <Nav />
             <section className="container mx-auto px-16 py-24">
                 <Table>
-                    <TableCaption className="text-left text-foreground font-semibold text-lg caption-top px-4">신규강사</TableCaption>
+                    <TableCaption className="text-left text-foreground font-semibold text-lg caption-top px-4">강사관리</TableCaption>
                     <TableHeader>
                         <TableRow>
                             <TableHead className="px-4 py-3 text-center">가입번호</TableHead>
                             <TableHead className="px-4 py-3 text-center">강사명</TableHead>
                             <TableHead className="px-4 py-3 text-center">승인상태</TableHead>
+                            <TableHead className="px-4 py-3 text-center">관리</TableHead>
                         </TableRow>
                     </TableHeader>
                     {/* id, 강사명, 승인상태  */}
@@ -75,6 +78,14 @@ function AdminInstructorList() {
                                             ) : users.status === 'SUSPENDED' ? (
                                                 <Badge variant="destructive">승인 필요</Badge>
                                             ) : null}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-center">
+                                            <Link to={`/admin/users/instructors/${users.userId}/courses`}>
+                                                <Button variant="outline" size="sm" className="h-8">
+                                                    <BookOpen className="w-4 h-4 mr-1.5" />
+                                                    강좌 목록
+                                                </Button>
+                                            </Link>
                                         </TableCell>
                                     </TableRow>
                                 );

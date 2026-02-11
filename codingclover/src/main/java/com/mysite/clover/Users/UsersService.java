@@ -162,6 +162,20 @@ public class UsersService {
         });
     }
 
+    // 강사 삭제 (강사 프로필 및 계정 삭제)
+    @Transactional
+    public void deleteInstructor(Long userId) {
+        // 1. 유저 조회
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // 2. 강사 프로필 삭제
+        instructorProfileRepository.deleteById(userId);
+
+        // 3. 사용자 계정 삭제
+        usersRepository.delete(user);
+    }
+
     public Users getUserByLoginId(String loginId) {
         return usersRepository.findByLoginId(loginId).orElse(null);
     }

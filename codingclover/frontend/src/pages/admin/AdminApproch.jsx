@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Calendar, Briefcase, FileText, Mail, User, CheckCircle, ArrowLeft, Download, ShieldCheck, Clock } from "lucide-react";
+import { Calendar, Briefcase, FileText, Mail, User, CheckCircle, ArrowLeft, Download, ShieldCheck, Clock, Trash2 } from "lucide-react";
 
 function AdminApproch() {
     const { userId } = useParams();
@@ -51,6 +51,7 @@ function AdminApproch() {
     // 강사 상세 정보 불러오기
     const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
     const [rejectReason, setRejectReason] = useState('');
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     useEffect(() => {
         if (!userId) {
@@ -116,11 +117,34 @@ function AdminApproch() {
                 }));
                 alert('강사 반려 처리가 완료되었습니다.');
                 setIsRejectDialogOpen(false);
-                navigate('/admin/dashboard');
+                // navigate('/admin/dashboard'); // 반려 후 목록으로 이동하지 않고 현재 페이지 유지 (상태 변경 확인)
             })
             .catch((error) => {
                 console.error('강사 반려 실패', error);
                 alert('반려 처리에 실패했습니다.');
+            });
+    };
+
+    // 강사 삭제 처리
+    const handleDeleteInstructor = () => {
+        fetch(`/admin/users/instructors/${userId}/delete`, {
+            method: 'DELETE',
+            credentials: 'include'
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(() => {
+                alert('강사가 삭제되었습니다.');
+                setIsDeleteDialogOpen(false);
+                navigate('/admin/users/instructors'); // 목록으로 이동
+            })
+            .catch((error) => {
+                console.error('강사 삭제 실패', error);
+                alert('삭제에 실패했습니다.');
             });
     };
 
@@ -151,7 +175,7 @@ function AdminApproch() {
                     status: 'ACTIVE'
                 }));
                 alert('강사 승인이 완료되었습니다.');
-                navigate('/admin/dashboard');
+                navigate('/admin/users/instructors');
             })
             .catch((error) => {
                 console.error('강사 승인 실패', error);
@@ -328,24 +352,51 @@ function AdminApproch() {
                                     </div>
                                 </div>
                             </CardContent>
-                            <CardFooter className="p-8 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-3 md:gap-4">
+                            <CardFooter className="p-8 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-3 md:gap-4 flex-wrap">
+                                <Button
+                                    variant="destructive"
+                                    onClick={() => setIsDeleteDialogOpen(true)}
+                                    className="mr-auto h-12 px-6 bg-red-100 text-red-700 hover:bg-red-200 border-red-200"
+                                >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    강사 삭제
+                                </Button>
+
                                 {instructor.status === 'ACTIVE' ? (
-                                    <Button
-                                        variant="outline"
-                                        disabled
-                                        className="h-12 px-8 bg-emerald-50 text-emerald-600 border-emerald-200 opacity-100"
-                                    >
-                                        <CheckCircle className="w-4 h-4 mr-2" />
-                                        이미 승인된 강사입니다
-                                    </Button>
+                                    <>
+                                        <Button
+                                            variant="outline"
+                                            disabled
+                                            className="h-12 px-8 bg-emerald-50 text-emerald-600 border-emerald-200 opacity-100"
+                                        >
+                                            <CheckCircle className="w-4 h-4 mr-2" />
+                                            승인된 강사
+                                        </Button>
+                                        <Button
+                                            onClick={handleRejectClick}
+                                            variant="outline"
+                                            className="h-12 px-8 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition-all text-base font-semibold"
+                                        >
+                                            승인 취소 (반려)
+                                        </Button>
+                                    </>
                                 ) : instructor.profileStatus === 'REJECTED' ? (
-                                    <Button
-                                        variant="outline"
-                                        disabled
-                                        className="h-12 px-8 bg-red-50 text-red-600 border-red-200 opacity-100"
-                                    >
-                                        반려 처리된 강사입니다
-                                    </Button>
+                                    <>
+                                        <Button
+                                            variant="outline"
+                                            disabled
+                                            className="h-12 px-8 bg-red-50 text-red-600 border-red-200 opacity-100"
+                                        >
+                                            반려된 강사
+                                        </Button>
+                                        <Button
+                                            onClick={approveInstructor}
+                                            className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-indigo-500/30 transition-all text-base font-semibold"
+                                        >
+                                            <CheckCircle className="w-5 h-5 mr-2" />
+                                            재승인 처리
+                                        </Button>
+                                    </>
                                 ) : (
                                     <>
                                         <Button
@@ -395,6 +446,23 @@ function AdminApproch() {
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>취소</Button>
                         <Button variant="destructive" onClick={submitReject}>반려 확정</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-red-600 flex items-center gap-2">
+                            <Trash2 className="w-5 h-5" /> 강사 삭제
+                        </DialogTitle>
+                        <DialogDescription>
+                            정말로 이 강사를 삭제하시겠습니까? 이 작업은 되돌릴 수 없으며, 모든 관련 데이터(프로필, 계정 등)가 영구적으로 삭제됩니다.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>취소</Button>
+                        <Button variant="destructive" onClick={handleDeleteInstructor}>삭제 확정</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
