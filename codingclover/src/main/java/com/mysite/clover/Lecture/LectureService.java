@@ -104,7 +104,7 @@ public class LectureService {
     public void saveDraft(
             Course course,
             String title,
-            int orderNo,
+            Integer orderNo,
             String videoUrl,
             Integer duration,
             Users instructor,
@@ -114,7 +114,7 @@ public class LectureService {
         Lecture lecture = new Lecture();
         lecture.setCourse(course);
         lecture.setTitle(title);
-        lecture.setOrderNo(orderNo);
+        lecture.setOrderNo(orderNo != null ? orderNo : 0);
         lecture.setVideoUrl(videoUrl);
         lecture.setDuration(duration);
         lecture.setCreatedBy(instructor);

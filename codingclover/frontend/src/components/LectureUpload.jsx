@@ -87,6 +87,11 @@ function LectureUpload({ courseInfo, courseId: courseIdProp, nextOrderNo, onUplo
 
     // 새로운 강의 추가
     const handleAddLecture = async () => {
+        if (!formData.title.trim()) { alert('강의 제목을 입력해주세요.'); return; }
+        if (!formData.orderNo) { alert('강의 순서를 선택해주세요.'); return; }
+        if (!formData.videoUrl.trim()) { alert('영상 URL을 입력해주세요.'); return; }
+        if (formData.uploadType === 'RESERVED' && !formData.scheduledAt) { alert('공개 예정일을 입력해주세요.'); return; }
+
         const addData = {
             courseId: Number(courseId),
             title: formData.title,
@@ -111,9 +116,8 @@ function LectureUpload({ courseInfo, courseId: courseIdProp, nextOrderNo, onUplo
             alert('강의 정보를 제출하였습니다. 승인 요청을 기다려주세요.');
             if (onUploaded) {
                 onUploaded();
-            } else {
-                navigate(`/instructor/course/${courseId}`);
             }
+            window.location.reload();
             setFormData({
                 title: '',
                 orderNo: '',
@@ -216,8 +220,7 @@ function LectureUpload({ courseInfo, courseId: courseIdProp, nextOrderNo, onUplo
                 </div>
                 <div>
                     <label className="block text-sm font-medium mb-1">
-                        재생 시간 (초)
-                        {durationLoading && <span className="text-blue-500 text-xs ml-1">불러오는 중...</span>}
+                        재생 시간
                         {!durationLoading && formData.duration > 0 && (
                             <span className="text-green-600 text-xs ml-1">({formatDuration(formData.duration)})</span>
                         )}
