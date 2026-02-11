@@ -89,7 +89,7 @@ public class LectureProgressController {
             Lecture lecture = lectureService.findById(lectureId);
 
             Enrollment enrollment = enrollmentRepository
-                .findByUserAndCourseAndStatus(user, lecture.getCourse(), EnrollmentStatus.ENROLLED)
+                .findByUserAndCourseAndStatusIn(user, lecture.getCourse(), List.of(EnrollmentStatus.ENROLLED, EnrollmentStatus.COMPLETED))
                 .orElseThrow(() -> new IllegalStateException("수강 아님"));
 
             lectureProgressService.completeLecture(enrollment, lecture);
@@ -109,7 +109,7 @@ public class LectureProgressController {
             Lecture lecture = lectureService.findById(lectureId);
 
             Enrollment enrollment = enrollmentRepository
-                .findByUserAndCourseAndStatus(user, lecture.getCourse(), EnrollmentStatus.ENROLLED)
+                .findByUserAndCourseAndStatusIn(user, lecture.getCourse(), List.of(EnrollmentStatus.ENROLLED, EnrollmentStatus.COMPLETED))
                 .orElseThrow(() -> new IllegalStateException("수강 아님"));
 
             lectureProgressService.updateLastWatched(enrollment, lecture);

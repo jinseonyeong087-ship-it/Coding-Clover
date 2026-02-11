@@ -38,6 +38,8 @@ function StudentCourseDetail() {
     const [previewLectures, setPreviewLectures] = useState([]);
     // 가장 최근 시청한 강의 ID
     const [lastWatchedLectureId, setLastWatchedLectureId] = useState(null);
+    // 강의별 진도 상태 { lectureId: { completedYn, lastWatchedAt } }
+    const [progressMap, setProgressMap] = useState({});
 
     // 강좌 정보 + 수강 상태 가져오기
     useEffect(() => {
@@ -104,6 +106,14 @@ function StudentCourseDetail() {
                 .then(res => res.ok ? res.json() : [])
                 .then(data => {
                     if (data.length > 0) {
+                        // progressMap 저장
+                        const map = {};
+                        data.forEach(p => {
+                            map[p.lectureId] = { completedYn: p.completedYn, lastWatchedAt: p.lastWatchedAt };
+                        });
+                        setProgressMap(map);
+
+                        // 가장 최근 시청 강의 찾기
                         const lastWatched = data
                             .filter(p => p.lastWatchedAt)
                             .sort((a, b) => new Date(b.lastWatchedAt) - new Date(a.lastWatchedAt))[0];
@@ -230,12 +240,6 @@ function StudentCourseDetail() {
                                 <MonitorPlay className="w-5 h-5 text-primary" />
                                 커리큘럼 미리보기
                             </h3>
-                            {/* Assuming we can fetch lectures even if not enrolled? 
-                                    Usually we can't or only titles. 
-                                    If backend blocks it, we might show placeholder or "Enroll to view" 
-                                    The current code fetches lectrues ONLY if enrolled. 
-                                    So we show a placeholder here. 
-                                 */}
                             <div className="space-y-3">
                                 {enrollmentStatus === 'ENROLLED' || enrollmentStatus === 'COMPLETED' ? (
                                     lectureList.length > 0 ? (
@@ -249,7 +253,12 @@ function StudentCourseDetail() {
                                                     <PlayCircle className="w-4 h-4 text-primary" />
                                                     <span>{lecture.orderNo}강. {lecture.title}</span>
                                                 </div>
-                                                <Badge variant="secondary">수강 가능</Badge>
+                                                {(() => {
+                                                    const p = progressMap[lecture.lectureId];
+                                                    if (p?.completedYn) return <span className="text-emerald-600 font-bold" title="완료">●</span>;
+                                                    if (p?.lastWatchedAt) return <span className="text-indigo-500 font-bold" title="시청 중">◎</span>;
+                                                    return <span className="text-muted-foreground" title="미시청">○</span>;
+                                                })()}
                                             </div>
                                         ))
                                     ) : (
