@@ -186,6 +186,7 @@ function App() {
           <Route path="lecture/upload" element={<InstructorLecture />} />
           <Route path="lecture/:lectureId" element={<InstructorCourseDetail />} />
           <Route path="mypage" element={<InstructorMypage />} />
+          <Route path="qna" element={<InstructorQnaList />} />
           <Route path="qna/:qnaId" element={<InstructorQnaDetail />} />
           <Route path="exam/list" element={<ExamList />} />
           <Route path="exam/new" element={<ExamCreate />} />
