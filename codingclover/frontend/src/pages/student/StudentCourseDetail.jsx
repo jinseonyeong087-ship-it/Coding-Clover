@@ -255,9 +255,9 @@ function StudentCourseDetail() {
                                                 </div>
                                                 {(() => {
                                                     const p = progressMap[lecture.lectureId];
-                                                    if (p?.completedYn) return <span className="text-emerald-600 font-bold" title="완료">●</span>;
+                                                    if (p?.completedYn) return <span className="text-indigo-500 font-bold" title="완료">●</span>;
                                                     if (p?.lastWatchedAt) return <span className="text-indigo-500 font-bold" title="시청 중">◎</span>;
-                                                    return <span className="text-muted-foreground" title="미시청">○</span>;
+                                                    return <span className="text-indigo-500 font-bold" title="미시청">○</span>;
                                                 })()}
                                             </div>
                                         ))
