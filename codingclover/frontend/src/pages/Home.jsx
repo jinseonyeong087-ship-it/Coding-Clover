@@ -219,18 +219,12 @@ function Home() {
       )}
 
       <section className="container mx-auto px-6 py-24">
-        <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight mb-2">인기 강좌</h2>
-            <p className="text-muted-foreground">여러분의 실력을 향상시켜줄 최고의 강의들을 만나보세요.</p>
-          </div>
-        </div>
 
         {/* Re-implementing correctly to match original logic but better style */}
         <Tabs defaultValue={1} className="w-full">
           <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight mb-2">분야별 강좌</h2>
+              <h2 className="text-3xl font-bold tracking-tight mb-2">수준별 강좌</h2>
               <p className="text-muted-foreground">나에게 딱 맞는 난이도의 강의를 찾아보세요.</p>
             </div>
             <TabsList className="h-11 p-1 bg-secondary/50 backdrop-blur-sm">
@@ -296,70 +290,15 @@ function Home() {
             </TabsContent>
           ))}
         </Tabs>
-      </section>
-      <section className="container mx-auto px-6 pb-24">
-        <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-6">
-          <h2 className="text-3xl font-bold tracking-tight">전체 강좌 둘러보기</h2>
-          <div className="flex gap-2 p-1 bg-secondary/50 backdrop-blur-sm rounded-lg">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-5 py-2 rounded-md text-sm font-medium transition-all ${activeTab === tab.id ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              >
-                {tab.tablabel}
-              </button>
-            ))}
-          </div>
+        <div className="flex justify-end mt-8">
+          <Button className="bg-primary text-primary-foreground hover:-translate-y-1 transition-transform duration-300" onClick={() => navigate('/course/level/0')}>
+            전체보기 <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {course.filter((item) => item.level === activeTab).length > 0 ? (
-            course.filter((item) => item.level === activeTab).map((item) => (
-              <Card key={item.courseId} className="group hover:shadow-xl transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm">
-                <div className="aspect-video w-full bg-muted/50 relative overflow-hidden rounded-t-xl group-hover:bg-muted/80 transition-colors">
-                  {item.thumbnailUrl ? (
-                    <img
-                      src={item.thumbnailUrl}
-                      alt={item.title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30">
-                      <BookOpen size={48} />
-                    </div>
-                  )}
-                </div>
-                <CardHeader className="p-5 pb-2">
-                  <div className="flex justify-between items-start mb-2">
-                    {setNum(item.level)}
-                  </div>
-                  <CardTitle className="text-lg font-bold line-clamp-1 group-hover:text-primary transition-colors">{item.title}</CardTitle>
-                  <CardDescription className="text-xs">{item.instructorName}님의 강좌</CardDescription>
-                </CardHeader>
-                <CardContent className="p-5 py-2">
-                  <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
-                </CardContent>
-                <CardFooter className="p-5 pt-4">
-                  <Link to={`/course/${item.courseId}`} className="w-full">
-                    <Button variant="secondary" className="w-full bg-secondary/80 hover:bg-primary hover:text-primary-foreground transition-all duration-300">
-                      수강신청하기 <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-            ))
-          ) : (
-            <div className="col-span-full py-20 text-center text-muted-foreground bg-muted/30 rounded-2xl border border-dashed border-border">
-              <p>등록된 강좌가 없습니다.</p>
-            </div>
-          )}
-        </div>
-        <Button variant="ghost" className="text-primary hover:bg-primary/5" onClick={() => navigate('/course/level/0')}>
-          전체보기 <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
       </section>
 
+      {/* 챗봇 컴포넌트 */}
       <ChatBot className="fixed bottom-8 right-8" />
       <Tail />
     </>
