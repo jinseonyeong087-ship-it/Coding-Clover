@@ -77,6 +77,23 @@ public class Enrollment {
     this.cancelledAt = LocalDateTime.now();
   }
 
+  // 취소 요청
+  public void requestCancel() {
+    this.cancelledAt = LocalDateTime.now();
+    // cancelledBy는 null로 유지 (학생 요청)
+  }
+
+  // 취소 요청 거절
+  public void rejectCancelRequest() {
+    this.cancelledAt = null;
+    this.cancelledBy = null;
+  }
+
+  // 취소 요청 여부 확인 (cancelledAt이 있으면서 status가 ENROLLED)
+  public boolean isCancelRequested() {
+    return this.cancelledAt != null && this.status == EnrollmentStatus.ENROLLED;
+  }
+
   // 수강 완료 처리
   public void complete() {
     this.status = EnrollmentStatus.COMPLETED;

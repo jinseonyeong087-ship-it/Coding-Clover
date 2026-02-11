@@ -101,11 +101,6 @@ function MyPage() {
   // 수강 취소 요청 목록 조회
   const fetchCancelRequests = async () => {
     try {
-      // 임시: 백엔드 개발 전까지는 빈 배열 반환
-      setCancelRequests({});
-      return;
-      
-      /* 백엔드 준비 후 주석 해제
       const response = await fetch('/student/cancel-requests', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
@@ -121,7 +116,9 @@ function MyPage() {
       const requestMap = {};
       const requestList = Array.isArray(data) ? data : [];
 
-      requestList.forEach((request) => {
+      requestList
+        .filter((request) => request.status === 'CANCEL_REQUESTED')
+        .forEach((request) => {
         const key = request.enrollmentId ?? request.courseId;
         if (key !== undefined && key !== null) {
           requestMap[key] = request;
@@ -129,7 +126,6 @@ function MyPage() {
       });
 
       setCancelRequests(requestMap);
-      */
     } catch (error) {
       console.error('수강 취소 요청 조회 실패:', error);
       setCancelRequests({});
@@ -328,26 +324,13 @@ function MyPage() {
       return;
     }
 
-    // 임시: 백엔드 개발 전까지는 클라이언트 상태만 업데이트
-    alert('취소 요청이 접수되었습니다. (임시: 백엔드 연결 대기중)');
-    setCancelRequests((prev) => ({
-      ...prev,
-      [requestKey]: {
-        enrollmentId: enrollment.enrollmentId,
-        courseId: enrollment.courseId,
-        requestedAt: new Date().toISOString()
-      }
-    }));
-    return;
-
-    /* 백엔드 준비 후 주석 해제
     try {
       setCancelRequestLoadingId(requestKey);
       const response = await fetch(`/student/enrollment/${requestKey}/cancel-request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ courseId: enrollment.courseId })
+        body: JSON.stringify({ reason: '' })
       });
 
       if (!response.ok) {
@@ -370,7 +353,6 @@ function MyPage() {
     } finally {
       setCancelRequestLoadingId(null);
     }
-    */
   };
 
   //수정모드 전환
@@ -780,10 +762,12 @@ function MyPage() {
                           <Badge className={`
                                             ${enrollment.status === 'ENROLLED' ? 'bg-emerald-500 hover:bg-emerald-500 text-white border-none' :
                               enrollment.status === 'COMPLETED' ? 'bg-purple-500 hover:bg-purple-500 text-white border-none' :
+                              enrollment.status === 'CANCEL_REQUESTED' ? 'bg-amber-500 hover:bg-amber-500 text-white border-none' :
                                 'bg-slate-500 hover:bg-slate-500 text-white border-none'}
                                         `}>
                             {enrollment.status === 'ENROLLED' ? '수강중' :
-                              enrollment.status === 'COMPLETED' ? '수강완료' : '수강취소'}
+                              enrollment.status === 'COMPLETED' ? '수강완료' :
+                                enrollment.status === 'CANCEL_REQUESTED' ? '취소요청' : '수강취소'}
                           </Badge>
                         </div>
                       </div>

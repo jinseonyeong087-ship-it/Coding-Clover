@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mysite.clover.Course.Course;
@@ -24,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
+    private final EnrollmentRepository enrollmentRepository;
     private final CourseRepository courseRepository;
     private final UsersRepository usersRepository;
     private final CourseService courseService;
@@ -104,6 +107,35 @@ public class EnrollmentController {
         }
     }
 
+    // 수강 취소 요청
+    @PreAuthorize("hasRole('STUDENT')")
+    @PostMapping("/student/enrollment/{enrollmentId}/cancel-request")
+    public ResponseEntity<?> requestCancel(
+            @PathVariable("enrollmentId") Long enrollmentId,
+            Principal principal) {
+        try {
+            Users student = usersRepository.findByLoginId(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                    .orElseThrow(() -> new IllegalArgumentException("수강 정보를 찾을 수 없습니다."));
+
+            CancelRequestDto result = enrollmentService.requestCancel(student, enrollment);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // 내 취소 요청 목록 조회
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/student/cancel-requests")
+    public ResponseEntity<List<CancelRequestDto>> getMyCancelRequests(Principal principal) {
+        Users student = usersRepository.findByLoginId(principal.getName())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        return ResponseEntity.ok(enrollmentService.getMyCancelRequests(student));
+    }
+
     // ==========================================
     // 강사 영역
     // ==========================================
@@ -153,6 +185,59 @@ public class EnrollmentController {
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
             enrollmentService.adminCancelEnrollment(admin, enrollmentId);
             return ResponseEntity.ok("수강이 취소되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // 취소 요청 목록 조회 (관리자)
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/cancel-requests")
+    public ResponseEntity<List<CancelRequestDto>> getCancelRequests(
+            @RequestParam(value = "studentId", required = false) Long studentId) {
+        Users student = null;
+        if (studentId != null) {
+            student = usersRepository.findById(studentId)
+                    .orElseThrow(() -> new RuntimeException("학생을 찾을 수 없습니다."));
+        }
+
+        return ResponseEntity.ok(enrollmentService.getCancelRequestsForAdmin(student));
+    }
+
+    // 취소 요청 승인 (관리자)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/cancel-requests/{enrollmentId}/approve")
+    public ResponseEntity<?> approveCancelRequest(
+            @PathVariable("enrollmentId") Long enrollmentId,
+            Principal principal) {
+        try {
+            Users admin = usersRepository.findByLoginId(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            enrollmentService.approveCancelRequest(admin, enrollmentId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // 취소 요청 반려 (관리자)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/cancel-requests/{enrollmentId}/reject")
+    public ResponseEntity<?> rejectCancelRequest(
+            @PathVariable("enrollmentId") Long enrollmentId,
+            @RequestBody(required = false) java.util.Map<String, Object> request,
+            Principal principal) {
+        try {
+            Users admin = usersRepository.findByLoginId(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            
+            String reason = "";
+            if (request != null && request.containsKey("reason")) {
+                reason = (String) request.get("reason");
+            }
+            
+            enrollmentService.rejectCancelRequest(admin, enrollmentId, reason);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

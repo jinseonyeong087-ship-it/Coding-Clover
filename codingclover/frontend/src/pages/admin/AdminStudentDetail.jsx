@@ -40,6 +40,8 @@ function AdminStudentDetail() {
         return "수강중";
       case "COMPLETED":
         return "완료";
+      case "CANCEL_REQUESTED":
+        return "취소요청";
       case "CANCELED":
         return "취소";
       default:
@@ -53,6 +55,8 @@ function AdminStudentDetail() {
         return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
       case "COMPLETED":
         return "bg-purple-500/10 text-purple-600 border-purple-500/20";
+      case "CANCEL_REQUESTED":
+        return "bg-amber-500/10 text-amber-600 border-amber-500/20";
       case "CANCELED":
         return "bg-rose-500/10 text-rose-600 border-rose-500/20";
       default:
@@ -115,12 +119,9 @@ function AdminStudentDetail() {
       
       // enrollment 목록 조회
       await fetchEnrollments();
-      
-      // 취소 요청 목록 조회 (추후 실제 API로 대체)
-      setCancelRequests([
-        { id: 1, courseId: 101, courseName: "자바 기초", requestDate: "2024-11-01", status: "대기중", reason: "시간이 맞지 않아서" },
-        { id: 2, courseId: 102, courseName: "스프링부트", requestDate: "2024-10-15", status: "승인", reason: "강의 변경 요청" }
-      ]);
+
+      // 취소 요청 목록 조회
+      await fetchCancelRequests();
     } catch (error) {
       console.error("학생 정보 조회 실패:", error);
     } finally {
@@ -242,6 +243,26 @@ function AdminStudentDetail() {
     }
   };
 
+  const fetchCancelRequests = async () => {
+    try {
+      const response = await fetch(`/admin/cancel-requests?studentId=${studentId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCancelRequests(Array.isArray(data) ? data : []);
+      } else {
+        setCancelRequests([]);
+      }
+    } catch (error) {
+      console.error("취소 요청 조회 실패:", error);
+      setCancelRequests([]);
+    }
+  };
+
   const fetchEnrollments = async () => {
     try {
       const enrollmentResponse = await fetch('/admin/enrollment', {
@@ -333,12 +354,7 @@ function AdminStudentDetail() {
   const handleApprove = async (request) => {
     const requestId = request.requestId || request.id;
     if (!requestId) return;
-    
-    // 임시 알림 (백엔드 개발 전)
-    alert('임시: 취소 승인 기능이 아직 백엔드에 구현되지 않았습니다.');
-    return;
-    
-    /* 백엔드 준비 후 주석 해제
+
     try {
       setProcessingRequestId(requestId);
       const response = await fetch(`/admin/cancel-requests/${requestId}/approve`, {
@@ -360,18 +376,12 @@ function AdminStudentDetail() {
     } finally {
       setProcessingRequestId(null);
     }
-    */
   };
 
   const handleReject = async (request) => {
     const requestId = request.requestId || request.id;
     if (!requestId) return;
-    
-    // 임시 알림 (백엔드 개발 전)
-    alert('임시: 취소 반려 기능이 아직 백엔드에 구현되지 않았습니다.');
-    return;
-    
-    /* 백엔드 준비 후 주석 해제
+
     try {
       setProcessingRequestId(requestId);
       const response = await fetch(`/admin/cancel-requests/${requestId}/reject`, {
@@ -393,7 +403,6 @@ function AdminStudentDetail() {
     } finally {
       setProcessingRequestId(null);
     }
-    */
   };
 
   return (

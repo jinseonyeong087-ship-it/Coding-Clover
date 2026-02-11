@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.mysite.clover.Course.Course;
+import com.mysite.clover.Lecture.LectureService;
+import com.mysite.clover.LectureProgress.LectureProgressRepository;
+import com.mysite.clover.Notification.NotificationService;
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.Payment.PaymentService;
 
@@ -21,6 +24,9 @@ public class EnrollmentService {
 
   private final EnrollmentRepository enrollmentRepository;
   private final PaymentService paymentService;
+  private final LectureProgressRepository lectureProgressRepository;
+  private final LectureService lectureService;
+  private final NotificationService notificationService;
 
   @Transactional
   public void enroll(Users user, Course course) {
@@ -152,6 +158,37 @@ public class EnrollmentService {
     System.out.println("=== 수강취소 완료 ===");
   }
 
+  // 학생 - 수강 취소 요청
+  @Transactional
+  public CancelRequestDto requestCancel(Users student, Enrollment enrollment) {
+    if (enrollment.getUser().getUserId() != student.getUserId()) {
+      throw new IllegalStateException("요청 권한이 없습니다.");
+    }
+
+    if (enrollment.isCancelRequested()) {
+      throw new IllegalStateException("이미 처리 대기중인 취소 요청이 있습니다.");
+    }
+
+    if (enrollment.getStatus() != EnrollmentStatus.ENROLLED) {
+      throw new IllegalStateException("수강 중인 강좌만 취소 요청이 가능합니다.");
+    }
+
+    enrollment.requestCancel();
+    enrollmentRepository.save(enrollment);
+
+    return toCancelRequestDto(enrollment);
+  }
+
+  // 학생 - 내 취소 요청 목록 조회
+  @Transactional(readOnly = true)
+  public List<CancelRequestDto> getMyCancelRequests(Users student) {
+    return enrollmentRepository.findUserPendingCancelRequestsOrderByCancelledAtDesc(student, EnrollmentStatus.ENROLLED)
+        .stream()
+        .map(this::toCancelRequestDto)
+        .collect(Collectors.toList());
+  }
+
+
   // === 강사용 메소드 ===
 
   // 강사 - 내 모든 강좌의 수강생 조회
@@ -197,8 +234,9 @@ public class EnrollmentService {
     Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 수강 정보입니다."));
     
-    if (enrollment.getStatus() != EnrollmentStatus.ENROLLED) {
-      throw new IllegalStateException("수강 중인 상태가 아닙니다.");
+    if (enrollment.getStatus() != EnrollmentStatus.ENROLLED
+        || !enrollment.isCancelRequested()) {
+      throw new IllegalStateException("수강 중이며 취소 요청 상태가 아닙니다.");
     }
     
     enrollment.cancel(admin);
@@ -211,6 +249,94 @@ public class EnrollmentService {
           enrollment.getCourse().getCourseId(),
           enrollment.getCourse().getTitle());
     }
+  }
+
+  // 관리자 - 취소 요청 승인
+  @Transactional
+  public void approveCancelRequest(Users admin, Long enrollmentId) {
+    Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 수강 정보입니다."));
+
+    if (!enrollment.isCancelRequested()) {
+      throw new IllegalStateException("처리 대기중인 요청이 아닙니다.");
+    }
+
+    adminCancelEnrollment(admin, enrollmentId);
+  }
+
+  // 관리자 - 취소 요청 반려
+  @Transactional
+  public void rejectCancelRequest(Users admin, Long enrollmentId, String reason) {
+    Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 수강 정보입니다."));
+
+    if (!enrollment.isCancelRequested()) {
+      throw new IllegalStateException("처리 대기중인 요청이 아닙니다.");
+    }
+
+    enrollment.rejectCancelRequest();
+    enrollmentRepository.save(enrollment);
+    
+    // 학생에게 반려 알림 전송
+    String notificationTitle = "수강 취소 요청이 반려되었습니다";
+    if (reason != null && !reason.trim().isEmpty()) {
+      notificationTitle += " - " + reason.trim();
+    }
+    
+    notificationService.createNotification(
+        enrollment.getUser(),
+        "CANCEL_REJECT",
+        notificationTitle,
+        "/student/my-courses"
+    );
+    
+    System.out.println("=== 수강취소 요청 반려 완료 ===");
+  }
+
+  // 관리자 - 취소 요청 목록 조회
+  @Transactional(readOnly = true)
+  public List<CancelRequestDto> getCancelRequestsForAdmin(Users student) {
+    List<Enrollment> enrollments;
+    if (student == null) {
+      enrollments = enrollmentRepository.findPendingCancelRequestsOrderByCancelledAtDesc(EnrollmentStatus.ENROLLED);
+    } else {
+      enrollments = enrollmentRepository.findUserPendingCancelRequestsOrderByCancelledAtDesc(student, EnrollmentStatus.ENROLLED);
+    }
+
+    return enrollments.stream()
+        .map(this::toCancelRequestDto)
+        .collect(Collectors.toList());
+  }
+
+  private CancelRequestDto toCancelRequestDto(Enrollment enrollment) {
+    int completedLectures = lectureProgressRepository
+        .findByEnrollmentAndCompletedYnTrue(enrollment)
+        .size();
+    int totalLectures = lectureService.getLecturesForStudent(enrollment.getCourse()).size();
+    double progressPercent = totalLectures > 0
+        ? Math.round((double) completedLectures * 100.0 / totalLectures)
+        : 0.0;
+
+    CancelRequestDto dto = new CancelRequestDto();
+    dto.setEnrollmentId(enrollment.getEnrollmentId());
+    dto.setRequestId(enrollment.getEnrollmentId()); // 프론트엔드 호환
+    dto.setId(enrollment.getEnrollmentId()); // 프론트엔드 호환
+    dto.setCourseId(enrollment.getCourse().getCourseId());
+    dto.setCourseTitle(enrollment.getCourse().getTitle());
+    dto.setStudentName(enrollment.getUser().getName());
+    dto.setStudentEmail(enrollment.getUser().getEmail());
+    dto.setEnrollmentDate(enrollment.getEnrolledAt());
+    dto.setCancelRequestDate(enrollment.getCancelledAt());
+    dto.setRequestedAt(enrollment.getCancelledAt()); // 프론트엔드 호환
+    dto.setCreatedAt(enrollment.getCancelledAt()); // 프론트엔드 호환
+    dto.setProgress(progressPercent);
+    dto.setCurrentProgress(progressPercent); // 프론트엔드 호환
+    dto.setProgressRate(progressPercent); // 프론트엔드 호환
+    dto.setCompletedLectures(completedLectures);
+    dto.setTotalLectures(totalLectures);
+    dto.setStatus(enrollment.getStatus());
+    
+    return dto;
   }
 
   // 관리자 - 특정 강좌의 수강생 조회

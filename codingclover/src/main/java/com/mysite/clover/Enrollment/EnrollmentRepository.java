@@ -104,4 +104,17 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
         // 사용자의 최근 수강 신청 내역 조회 (최근 활동일 계산용, user.userId로 접근)
         Optional<Enrollment> findTopByUserUserIdOrderByEnrolledAtDesc(Long userId);
+
+        // 취소 요청 목록 조회 (전체) - cancelledAt이 있으면서 status가 ENROLLED
+        @Query("SELECT e FROM Enrollment e WHERE e.cancelledAt IS NOT NULL AND e.status = :status ORDER BY e.cancelledAt DESC")
+        List<Enrollment> findPendingCancelRequestsOrderByCancelledAtDesc(@Param("status") EnrollmentStatus status);
+
+        // 사용자별 취소 요청 목록 조회
+        @Query("SELECT e FROM Enrollment e WHERE e.user = :user AND e.cancelledAt IS NOT NULL AND e.status = :status ORDER BY e.cancelledAt DESC")
+        List<Enrollment> findUserPendingCancelRequestsOrderByCancelledAtDesc(@Param("user") Users user, @Param("status") EnrollmentStatus status);
+
+
+        // 기존 status 기반 조회 메서드들 (하위 호환성 유지)
+        List<Enrollment> findByStatusOrderByCancelledAtDesc(EnrollmentStatus status);
+        List<Enrollment> findByUserAndStatusOrderByCancelledAtDesc(Users user, EnrollmentStatus status);
 }
