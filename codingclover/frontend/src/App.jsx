@@ -159,6 +159,7 @@ function App() {
           <Route path="mypage" element={<MyPage />} />
           <Route path="points" element={<PointsHistory />} />
           <Route path="course/:courseId/lectures" element={<StudentLectureDetail />} />
+          <Route path="lecture/:lectureId" element={<StudentLectureDetail />} />
           <Route path="exam" element={<StudentExamList />} />
           <Route path="exam/:examId" element={<StudentExamTaking />} />
         </Route>

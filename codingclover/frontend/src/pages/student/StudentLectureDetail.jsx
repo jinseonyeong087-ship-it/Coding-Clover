@@ -101,16 +101,36 @@ const YouTubePlayer = React.memo(({ videoId, onEnded }) => {
 
 function StudentLectureDetail() {
 
-    const { courseId } = useParams();
+    const { courseId: courseIdParam, lectureId: lectureIdParam } = useParams();
+    const [resolvedCourseId, setResolvedCourseId] = useState(courseIdParam || null);
     const [lectures, setLectures] = useState([]);
     const [selectedLecture, setSelectedLecture] = useState(null);
     const [progressMap, setProgressMap] = useState({}); // { lectureId: { completedYn, progressRate } }
     const [completingId, setCompletingId] = useState(null); // 완료 처리 중인 강의 ID
     const [videoEnded, setVideoEnded] = useState(false); // 영상 종료 감지
 
-    // 강의 목록 조회
+    // lectureId로 진입 시: 강의 상세에서 courseId를 먼저 조회
     useEffect(() => {
-        fetch(`/student/lecture/${courseId}/lectures`, {
+        if (courseIdParam || !lectureIdParam) return;
+        fetch(`/student/lecture/${lectureIdParam}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        })
+            .then(res => {
+                if (!res.ok) throw new Error('강의 조회 실패');
+                return res.json();
+            })
+            .then(data => {
+                setResolvedCourseId(data.courseId);
+            })
+            .catch(err => console.error('lectureId로 courseId 조회 실패:', err));
+    }, [lectureIdParam, courseIdParam]);
+
+    // 강의 목록 조회 (courseId 또는 lectureId에서 얻은 courseId 사용)
+    useEffect(() => {
+        if (!resolvedCourseId) return;
+        fetch(`/student/lecture/${resolvedCourseId}/lectures`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
@@ -123,19 +143,20 @@ function StudentLectureDetail() {
             })
             .then((data) => {
                 setLectures(data);
-                if (data.length > 0) {
-                    setSelectedLecture(data[0]);
-                }
+                // lectureId로 진입한 경우 해당 강의를 선택, 아니면 첫 번째 강의
+                const targetId = lectureIdParam ? Number(lectureIdParam) : null;
+                const target = targetId ? data.find(l => l.lectureId === targetId) : null;
+                setSelectedLecture(target || (data.length > 0 ? data[0] : null));
             })
             .catch((error) => {
                 console.error("Error fetching lecture detail:", error);
             });
-    }, [courseId]);
+    }, [resolvedCourseId]);
 
-    // 진도 데이터 조회
+    // 진도 데이터 조회 (resolvedCourseId = courseIdParam과 동일한 실제 courseId)
     useEffect(() => {
-        if (!courseId) return;
-        fetch(`/api/student/course/${courseId}/progress`, { credentials: 'include' })
+        if (!resolvedCourseId) return;
+        fetch(`/api/student/course/${resolvedCourseId}/progress`, { credentials: 'include' })
             .then(res => res.ok ? res.json() : [])
             .then(data => {
                 const map = {};
@@ -145,12 +166,13 @@ function StudentLectureDetail() {
                 setProgressMap(map);
             })
             .catch(() => { });
-    }, [courseId]);
+    }, [resolvedCourseId]);
 
-    // 강의 선택 시 시청 기록 업데이트
+    // 강의 선택 시 시청 기록 업데이트 + URL만 변경 (페이지 리렌더 없이)
     const handleSelectLecture = (lec) => {
         setSelectedLecture(lec);
-        setVideoEnded(false); // 강의 변경 시 종료 상태 초기화
+        setVideoEnded(false);
+        window.history.pushState(null, '', `/student/lecture/${lec.lectureId}`);
         fetch(`/api/student/lecture/${lec.lectureId}/watch`, {
             method: 'POST',
             credentials: 'include'

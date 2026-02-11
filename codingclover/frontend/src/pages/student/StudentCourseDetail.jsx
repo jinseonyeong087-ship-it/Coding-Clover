@@ -36,6 +36,8 @@ function StudentCourseDetail() {
     const [selectedLecture, setSelectedLecture] = useState(null);
     // 강의 미리보기 (비로그인용)
     const [previewLectures, setPreviewLectures] = useState([]);
+    // 가장 최근 시청한 강의 ID
+    const [lastWatchedLectureId, setLastWatchedLectureId] = useState(null);
 
     // 강좌 정보 + 수강 상태 가져오기
     useEffect(() => {
@@ -96,6 +98,21 @@ function StudentCourseDetail() {
                     }
                 })
                 .catch((err) => console.error('강의 목록 조회 실패:', err));
+
+            // 진도 데이터 조회 → 가장 최근 시청 강의 찾기
+            fetch(`/api/student/course/${courseId}/progress`, { credentials: 'include' })
+                .then(res => res.ok ? res.json() : [])
+                .then(data => {
+                    if (data.length > 0) {
+                        const lastWatched = data
+                            .filter(p => p.lastWatchedAt)
+                            .sort((a, b) => new Date(b.lastWatchedAt) - new Date(a.lastWatchedAt))[0];
+                        if (lastWatched) {
+                            setLastWatchedLectureId(lastWatched.lectureId);
+                        }
+                    }
+                })
+                .catch(() => { });
         }
     }, [courseId, enrollmentStatus]);
 
@@ -220,7 +237,27 @@ function StudentCourseDetail() {
                                     So we show a placeholder here. 
                                  */}
                             <div className="space-y-3">
-                                {previewLectures.length > 0 ? (
+                                {enrollmentStatus === 'ENROLLED' || enrollmentStatus === 'COMPLETED' ? (
+                                    lectureList.length > 0 ? (
+                                        lectureList.map((lecture) => (
+                                            <div
+                                                key={lecture.lectureId}
+                                                className="flex items-center justify-between p-4 bg-background rounded-xl border border-border/50 hover:bg-primary/5 hover:border-primary/30 cursor-pointer transition-all"
+                                                onClick={() => navigate(`/student/lecture/${lecture.lectureId}`)}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <PlayCircle className="w-4 h-4 text-primary" />
+                                                    <span>{lecture.orderNo}강. {lecture.title}</span>
+                                                </div>
+                                                <Badge variant="secondary">수강 가능</Badge>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-center text-sm text-muted-foreground py-8">
+                                            등록된 강의가 없습니다.
+                                        </div>
+                                    )
+                                ) : previewLectures.length > 0 ? (
                                     <>
                                         {previewLectures.map((lecture) => (
                                             <div key={lecture.orderNo} className="flex items-center justify-between p-4 bg-background rounded-xl border border-border/50 opacity-60">
@@ -289,9 +326,9 @@ function StudentCourseDetail() {
                                     <Button
                                         size="lg"
                                         className="w-full font-bold text-lg shadow-lg hover:shadow-primary/25 transition-all"
-                                        onClick={() => navigate(`/student/course/${courseId}/lectures`)}
+                                        onClick={() => navigate(`/student/lecture/${lastWatchedLectureId || lectureList[0]?.lectureId}`)}
                                     >
-                                        강의 시청
+                                        강의 시청 
                                     </Button>
                                 ) : (
                                     <Button
