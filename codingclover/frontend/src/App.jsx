@@ -32,8 +32,8 @@ import TestInstructorCourseEdit from './test/TestInstructorCourseEdit';
 import TestInstructorLectureEdit from './test/TestInstructorLectureEdit';
 import FindAccountTest from './test/FindAccountTest';
 import TestSearch from './test/TestSearch';
-import Notice from './pages/admin/Notice';
-import NoticeDetail from './pages/admin/NoticeDetail';
+import Notice from './pages/public/Notice';
+import NoticeDetail from './pages/public/NoticeDetail';
 import AdminLectureDetail from '@/pages/admin/AdminLectureDetail'
 import AdminCourseList from '@/pages/admin/AdminCourseList'
 import AdminInstructorList from '@/pages/admin/AdminInstructorList'
