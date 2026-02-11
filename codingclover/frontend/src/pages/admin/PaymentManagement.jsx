@@ -51,6 +51,22 @@ function PaymentManagement() {
     // 탭
     const [activeTab, setActiveTab] = useState('all');
 
+    // 탭 변경 처리 (환불요청 탭 클릭시 필터 초기화)
+    const handleTabChange = (tabValue) => {
+        setActiveTab(tabValue);
+        if (tabValue === 'refund') {
+            setFilters({
+                contentType: 'ALL',
+                status: 'ALL',
+                period: '7',
+                startDate: '',
+                endDate: '',
+                searchKeyword: '',
+                searchType: 'student'
+            });
+        }
+    };
+
     // 데이터 로드
     useEffect(() => {
         fetchPayments();
@@ -125,7 +141,7 @@ function PaymentManagement() {
     // 백엔드 데이터 변환 헬퍼 함수들
     const getTransactionDescription = (type, orderId) => {
         if (orderId && orderId.startsWith('COURSE_CANCEL_')) {
-            return '취소 - 수강취소';
+            return '포인트 환불';
         }
         // 수강신청인 경우 (orderId가 COURSE_로 시작)
         if (orderId && orderId.startsWith('COURSE_')) {
@@ -167,21 +183,27 @@ function PaymentManagement() {
             filtered = filtered.filter(p => p.type === filters.contentType);
         }
 
-        // 상태 필터 (결제완료, 수강신청, 환불완료, 환불거절)
+        // 상태 필터 (결제완료, 수강신청, 환불완료, 환불거절, 수강취소)
         if (filters.status !== 'ALL') {
             filtered = filtered.filter(p => {
                 if (filters.status === 'ENROLLMENT') {
-                    // 수강신청: orderId가 COURSE_로 시작하는 경우
-                    return p.orderId && p.orderId.startsWith('COURSE_');
+                    // 수강신청: orderId가 COURSE_로 시작하고 paymentStatus가 PAID인 경우
+                    return p.orderId && p.orderId.startsWith('COURSE_') && p.paymentStatus === 'PAID' && !p.orderId.includes('CANCEL');
                 } else if (filters.status === 'PAID') {
-                    // 결제완료: 일반적인 결제 완료 상태
-                    return p.paymentStatus === 'PAID' && !(p.orderId && p.orderId.startsWith('COURSE_'));
+                    // 결제완료: paymentStatus가 PAID이면서 수강신청, 수강취소, 환불거절이 아닌 경우 (포인트 충전)
+                    return p.paymentStatus === 'PAID' && 
+                           !(p.orderId && p.orderId.startsWith('COURSE_')) &&
+                           !(p.orderId && p.orderId.startsWith('COURSE_CANCEL_')) &&
+                           p.refundStatus !== 'REJECTED';
                 } else if (filters.status === 'REFUNDED') {
                     // 환불완료: 환불 상태가 APPROVED
                     return p.refundStatus === 'APPROVED';
                 } else if (filters.status === 'REJECTED') {
                     // 환불거절: 환불 상태가 REJECTED
                     return p.refundStatus === 'REJECTED';
+                } else if (filters.status === 'CANCELLED') {
+                    // 수강취소: orderId가 COURSE_CANCEL_로 시작하는 경우만
+                    return p.orderId && p.orderId.startsWith('COURSE_CANCEL_');
                 }
                 return false;
             });
@@ -293,6 +315,9 @@ function PaymentManagement() {
         if (statusLabel === '수강신청') {
             return 'bg-amber-100 text-amber-700 border-amber-200';
         }
+        if (statusLabel === '수강취소') {
+            return 'bg-orange-100 text-orange-700 border-orange-200';
+        }
         if (statusLabel === '환불완료') {
             return 'bg-indigo-100 text-indigo-700 border-indigo-200';
         }
@@ -316,6 +341,10 @@ function PaymentManagement() {
     };
 
     const getPaymentStatusLabel = (status, type, orderId) => {
+        // 수강취소인 경우 (orderId가 COURSE_CANCEL_로 시작)
+        if (orderId && orderId.startsWith('COURSE_CANCEL_')) {
+            return '수강취소';
+        }
         // 수강신청인 경우 (orderId가 COURSE_로 시작)
         if (orderId && orderId.startsWith('COURSE_')) {
             return '수강신청';
@@ -496,7 +525,7 @@ function PaymentManagement() {
                         </div>
 
                         {/* 탭 */}
-                        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+                        <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-8">
                             <TabsList className="bg-white/50 backdrop-blur-sm border border-white/40 p-1 rounded-xl shadow-sm">
                                 <TabsTrigger
                                     value="all"
@@ -570,6 +599,7 @@ function PaymentManagement() {
                                                 <option value="ENROLLMENT">수강신청</option>
                                                 <option value="REFUNDED">환불완료</option>
                                                 <option value="REJECTED">환불거절</option>
+                                                <option value="CANCELLED">수강취소</option>
                                             </select>
                                         </div>
                                     </div>
@@ -709,10 +739,7 @@ function PaymentManagement() {
                                                 {currentItems.map((payment) => (
                                                     <TableRow
                                                         key={payment.id}
-                                                        className={`
-                                                            border-b-slate-50 transition-colors hover:bg-indigo-50/30
-                                                            ${payment.refundStatus === 'REQUESTED' ? 'bg-rose-50/50 hover:bg-rose-50' : ''}
-                                                        `}
+                                                        className="border-b-slate-50 transition-colors hover:bg-indigo-50/30"
                                                     >
                                                         <TableCell className="text-center py-4">
                                                             <span className="inline-flex items-center px-2 py-1 rounded bg-slate-100 text-slate-600 font-mono text-xs">
@@ -729,7 +756,7 @@ function PaymentManagement() {
                                                             <span className="font-bold text-slate-800">
                                                                 {payment.amount.toLocaleString()}
                                                             </span>
-                                                            <span className="text-xs text-slate-500 ml-1">원</span>
+                                                            <span className="text-xs text-slate-500 ml-1">P</span>
                                                         </TableCell>
                                                         <TableCell className="text-center py-4">
                                                             {payment.refundStatus !== 'NONE' ? (

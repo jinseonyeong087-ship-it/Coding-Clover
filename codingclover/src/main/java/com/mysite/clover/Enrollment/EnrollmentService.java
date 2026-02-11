@@ -165,17 +165,32 @@ public class EnrollmentService {
       throw new IllegalStateException("요청 권한이 없습니다.");
     }
 
+    // 요청 전 상태 로깅
+    System.out.println("=== 취소 요청 전 상태 ===");
+    System.out.println("Enrollment ID: " + enrollment.getEnrollmentId());
+    System.out.println("Before request - cancelledAt: " + enrollment.getCancelledAt());
+    System.out.println("Before request - isCancelRequested: " + enrollment.isCancelRequested());
+    System.out.println("Before request - status: " + enrollment.getStatus());
+
     if (enrollment.isCancelRequested()) {
+      System.out.println("ERROR: 이미 처리 대기중인 취소 요청이 있습니다.");
       throw new IllegalStateException("이미 처리 대기중인 취소 요청이 있습니다.");
     }
 
     if (enrollment.getStatus() != EnrollmentStatus.ENROLLED) {
+      System.out.println("ERROR: 수강 중인 강좌만 취소 요청이 가능합니다. 현재 상태: " + enrollment.getStatus());
       throw new IllegalStateException("수강 중인 강좌만 취소 요청이 가능합니다.");
     }
 
     enrollment.requestCancel();
+    
+    // 요청 후 상태 로깅
+    System.out.println("After request - cancelledAt: " + enrollment.getCancelledAt());
+    System.out.println("After request - isCancelRequested: " + enrollment.isCancelRequested());
+    
     enrollmentRepository.save(enrollment);
-
+    
+    System.out.println("=== 취소 요청 완료 ===");
     return toCancelRequestDto(enrollment);
   }
 
@@ -298,8 +313,26 @@ public class EnrollmentService {
       throw new IllegalStateException("처리 대기중인 요청이 아닙니다.");
     }
 
+    // 거절 전 상태 로깅
+    System.out.println("=== 취소 요청 거절 전 상태 ===");
+    System.out.println("Enrollment ID: " + enrollment.getEnrollmentId());
+    System.out.println("Before reject - cancelledAt: " + enrollment.getCancelledAt());
+    System.out.println("Before reject - isCancelRequested: " + enrollment.isCancelRequested());
+
     enrollment.rejectCancelRequest();
+    
+    // 거절 후 상태 로깅
+    System.out.println("After reject - cancelledAt: " + enrollment.getCancelledAt()); 
+    System.out.println("After reject - isCancelRequested: " + enrollment.isCancelRequested());
+    
     enrollmentRepository.save(enrollment);
+    
+    // 저장 후 상태 재확인
+    Enrollment savedEnrollment = enrollmentRepository.findById(enrollmentId).orElse(null);
+    if (savedEnrollment != null) {
+      System.out.println("After save - cancelledAt: " + savedEnrollment.getCancelledAt());
+      System.out.println("After save - isCancelRequested: " + savedEnrollment.isCancelRequested());
+    }
     
     // 학생에게 반려 알림 전송
     String notificationTitle = "수강 취소 요청이 반려되었습니다";
