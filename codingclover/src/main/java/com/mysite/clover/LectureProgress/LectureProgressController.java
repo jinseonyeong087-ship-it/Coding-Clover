@@ -157,6 +157,8 @@ public class LectureProgressController {
     static class AdminLectureProgressController {
 
         private final LectureProgressRepository lectureProgressRepository;
+        private final EnrollmentRepository enrollmentRepository;
+        private final UsersRepository usersRepository;
 
         // 전체 진도 현황 (시스템 관리용)
         @GetMapping("/progress")
@@ -223,6 +225,44 @@ public class LectureProgressController {
                 .collect(Collectors.toList());
             
             return ResponseEntity.ok(issueDtoList);
+        }
+        
+        // 특정 학생의 강의 진도 조회 (관리자용)
+        @GetMapping("/progress/student/{studentId}")
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<List<AdminLectureProgressDto>> getStudentProgress(
+                @PathVariable Long studentId) {
+            
+            Users student = usersRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("학생을 찾을 수 없습니다."));
+                
+            // 해당 학생의 모든 수강 정보 조회
+            List<Enrollment> enrollments = enrollmentRepository.findByUser(student);
+            
+            List<AdminLectureProgressDto> progressDtoList = enrollments.stream()
+                .flatMap(enrollment -> {
+                    List<LectureProgress> progressList = lectureProgressRepository.findByEnrollment(enrollment);
+                    return progressList.stream().map(progress -> {
+                        Lecture lecture = progress.getLecture();
+                        Course course = lecture.getCourse();
+                        
+                        return new AdminLectureProgressDto(
+                            progress.getProgressId(),
+                            course.getCourseId(),
+                            course.getTitle(),
+                            lecture.getLectureId(),
+                            lecture.getTitle(),
+                            student.getUserId(),
+                            student.getName(),
+                            progress.getCompletedYn(),
+                            progress.getLastWatchedAt(),
+                            enrollment.getStatus()
+                        );
+                    });
+                })
+                .collect(Collectors.toList());
+            
+            return ResponseEntity.ok(progressDtoList);
         }
     }
 }

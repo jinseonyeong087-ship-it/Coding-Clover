@@ -207,6 +207,41 @@ function AdminStudentDetail() {
     }
   };
 
+  const fetchLectureProgress = async () => {
+    try {
+      const response = await fetch(`/api/admin/progress/student/${studentId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
+      });
+      
+      if (response.ok) {
+        const progressData = await response.json();
+        
+        // API로부터 받은 데이터를 UI에 맞는 형태로 변환
+        const progressList = progressData.map(progress => ({
+          courseId: progress.courseId,
+          courseName: progress.courseTitle,
+          lectureId: progress.lectureId,
+          lectureName: progress.lectureTitle,
+          completedYn: progress.completedYn,
+          lastWatchedAt: progress.lastWatchedAt,
+          progressRate: progress.completedYn ? 100 : 0, // 완료 여부로 진도율 표시
+          enrollmentStatus: progress.enrollmentStatus
+        }));
+        
+        setLectureProgress(progressList);
+        console.log("✅ 강의 진도 조회 성공:", progressList);
+      } else {
+        console.warn("강의 진도 조회 실패, 빈 배열로 설정");
+        setLectureProgress([]);
+      }
+    } catch (error) {
+      console.error("강의 진도 조회 실패:", error);
+      setLectureProgress([]);
+    }
+  };
+
   const fetchEnrollments = async () => {
     try {
       const enrollmentResponse = await fetch('/admin/enrollment', {
@@ -230,8 +265,8 @@ function AdminStudentDetail() {
         setEnrollments([]);
       }
       
-      // 강의 진도는 임시로 빈 배열 (추후 API 구현 시 연결)
-      setLectureProgress([]);
+      // 강의 진도 조회
+      await fetchLectureProgress();
     } catch (error) {
       console.error("수강 내역 조회 실패:", error);
       setEnrollments([]);
