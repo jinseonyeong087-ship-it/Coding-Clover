@@ -22,94 +22,83 @@ import jakarta.persistence.PreUpdate;
 import lombok.Getter;
 import lombok.Setter;
 
-// 강좌(강의들의 묶음) 정보를 저장하는 엔티티
-// (제목, 설명, 가격, 강사 정보, 승인 상태 등을 관리)
+// 강좌 정보 엔티티
 @Getter
 @Setter
 @Entity
 public class Course {
 
-    // 강좌 고유 식별자 (PK)
+    // 강좌 ID
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long courseId;
 
-    // 강좌 제목 (필수값)
+    // 제목
     private String title;
 
-    // 강좌 상세 설명 (TEXT 타입으로 지정하여 긴 내용 허용)
+    // 상세 설명
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    // 강좌 난이도 (1:초급, 2:중급, 3:고급 등)
+    // 난이도
     private int level;
 
-    // 수강료 (원 단위)
+    // 수강료
     private int price;
 
-    // 강좌 썸네일 이미지의 URL 주소
+    // 썸네일 URL
     private String thumbnailUrl;
 
-    // 강좌 승인 상태 (대기, 승인, 반려 등)
+    // 승인 상태
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CourseProposalStatus proposalStatus = CourseProposalStatus.PENDING;
 
-    // 관리자가 반려했을 경우, 그 사유를 저장하는 필드
+    // 반려 사유
     private String proposalRejectReason;
 
-    // 이 강좌를 승인한 관리자 정보 (Users 엔티티와 다대일 관계)
+    // 승인 관리자
     @ManyToOne
     @JoinColumn(name = "approved_by")
     private Users approvedBy;
 
-    // 강좌 승인 일시
+    // 승인 일시
     private LocalDateTime approvedAt;
 
-    // 이 강좌를 개설한 강사 정보 (Users 엔티티와 다대일 관계, 필수값)
+    // 개설 강사
     @ManyToOne
     @JoinColumn(name = "created_by", nullable = false)
     private Users createdBy;
 
-    // 강좌 생성 일시
+    // 생성 일시
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // 강좌 정보 수정 일시
+    // 수정 일시
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    // 이 강좌에 달린 Q&A 목록 (강좌 삭제 시 Q&A도 함께 삭제됨)
+    // Q&A 목록
     @OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE)
     private List<Qna> qnaList;
 
-    // ============================
-    // 📌 엔티티 생명주기 콜백
-    // ============================
-
-    // 강좌 최초 생성 시 자동 실행
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
-    // 강좌 수정 시 자동 실행
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // ============================
-    // 📌 편의 메서드
-    // ============================
-
-    // 강좌를 생성한 강사 정보를 반환하는 편의 메서드
+    // 강사 정보 편의 메서드
     public Users getInstructor() {
         return this.createdBy;
     }
 
-    // 강사 이름을 반환하는 편의 메서드
+    // 강사 이름
     public String getInstructorName() {
         return this.createdBy != null ? this.createdBy.getName() : null;
     }
