@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LayoutGrid, BookCheck, ClipboardList, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutGrid, BookCheck, ClipboardList } from "lucide-react";
 import {
     Pagination,
     PaginationContent,
@@ -21,7 +21,6 @@ import {
     PaginationLink,
     PaginationPrevious,
     PaginationNext,
-    PaginationEllipsis
 } from "@/components/ui/pagination";
 
 function AdminCourseList() {

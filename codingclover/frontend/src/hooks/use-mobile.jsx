@@ -17,3 +17,4 @@ export function useIsMobile() {
 
   return !!isMobile
 }
+// shadcn css, 이 파일 없으면 다른 css파일에 있는 연관로직에 에러

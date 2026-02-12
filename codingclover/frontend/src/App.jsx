@@ -118,6 +118,7 @@ function App() {
         {/* <Route path="/auth/oauth" element={<FindAccount />} /> 소셜 로그인 아이콘도 없음 */}
         {/* 권한 없음 페이지 */}
         <Route path="/noroll" element={<Noroll />} />
+        {/* <Route path="/course" element={<Level />} /> */}
         <Route path="/course/level/:level" element={<Level />} />
         <Route path="/course/:courseId" element={<StudentCourseDetail />} />
 

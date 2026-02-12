@@ -8,17 +8,17 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
 import { ArrowRight, Sparkles } from "lucide-react";
 
+const TABS = [
+  { id: "0", tablabel: "전체보기" },
+  { id: "1", tablabel: "초급" },
+  { id: "2", tablabel: "중급" },
+  { id: "3", tablabel: "고급" }
+];
+
 function Level() {
 
   const { level } = useParams();
   const navigate = useNavigate();
-
-  const [tabs] = useState([
-    { id: "0", tablabel: "전체보기" },
-    { id: "1", tablabel: "초급" },
-    { id: "2", tablabel: "중급" },
-    { id: "3", tablabel: "고급" }
-  ]);
 
   const [course, setCourse] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,12 +26,18 @@ function Level() {
   useEffect(() => {
     const url = level === "0" ? '/course' : `/course/level/${level}`;
     fetch(url)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(res.status);
+        return res.json();
+      })
       .then((data) => {
         setCourse(data);
         setLoading(false);
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
   }, [level]);
 
   // [level]의 배열이 바꼈을 때 = 초급에서 중급강좌로 이동했을 때
@@ -82,7 +88,7 @@ function Level() {
               </p>
 
               <TabsList className="bg-white/50 backdrop-blur-sm border border-white/40 p-1 rounded-full shadow-sm inline-flex">
-                {tabs.map((tab) => (
+                {TABS.map((tab) => (
                   <TabsTrigger
                     key={tab.id}
                     value={String(tab.id)}
@@ -94,7 +100,7 @@ function Level() {
               </TabsList>
             </div>
 
-            {tabs.map((tab) => (
+            {TABS.map((tab) => (
               <TabsContent key={tab.id} value={tab.id} className="mt-8">
                 {course.length === 0 ? (
                   <div className="text-center py-20 bg-white/50 backdrop-blur-sm rounded-3xl border border-white/60">
@@ -106,19 +112,16 @@ function Level() {
                       <Card key={item.courseId} className="group border-0 shadow-lg bg-white ring-1 ring-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden">
                         <div className="p-6 h-full flex flex-col">
                           <CardHeader className="p-0 mb-4">
-                            {/* 등급 배지 - DB에 등급명이 없으므로 프론트에서 설정 */}
                             <div className="mb-3">
                               {(() => {
-                                const lvl = tab.id === '0' ? String(item.level) : tab.id;
-                                const labels = { '1': '초급', '2': '중급', '3': '고급' };
                                 const colors = {
-                                  '1': 'bg-emerald-100 text-emerald-700',
-                                  '2': 'bg-blue-100 text-blue-700',
-                                  '3': 'bg-slate-100 text-slate-700'
+                                  '초급': 'bg-emerald-100 text-emerald-700',
+                                  '중급': 'bg-blue-100 text-blue-700',
+                                  '고급': 'bg-slate-100 text-slate-700'
                                 };
                                 return (
-                                  <span className={`inline-block px-2.5 py-1 rounded-md text-xs font-medium ${colors[lvl] || 'bg-slate-100 text-slate-700'}`}>
-                                    {labels[lvl] || '기타'}
+                                  <span className={`inline-block px-2.5 py-1 rounded-md text-xs font-medium ${colors[item.levelName] || 'bg-slate-100 text-slate-700'}`}>
+                                    {item.levelName}
                                   </span>
                                 );
                               })()}

@@ -13,9 +13,20 @@ public class StudentCourseDto {
     private String title;
     private String description;
     private Integer level;
+    private String levelName;
     private Integer price;
     private String thumbnailUrl;
     private String instructorName;
+
+    private static String toLevelName(Integer level) {
+        if (level == null) return "기타";
+        return switch (level) {
+            case 1 -> "초급";
+            case 2 -> "중급";
+            case 3 -> "고급";
+            default -> "기타";
+        };
+    }
 
     public static StudentCourseDto fromEntity(Course course) {
         return new StudentCourseDto(
@@ -23,6 +34,7 @@ public class StudentCourseDto {
                 course.getTitle(),
                 course.getDescription(),
                 course.getLevel(),
+                toLevelName(course.getLevel()),
                 course.getPrice(),
                 course.getThumbnailUrl(),
                 course.getCreatedBy() != null ? course.getCreatedBy().getName() : "Unknown");
