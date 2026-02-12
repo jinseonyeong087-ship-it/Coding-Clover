@@ -45,48 +45,11 @@ function InstructorMypage() {
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [formData, setFormData] = useState({
     bio: '',
     careerYears: '',
     resumeFile: null
   });
-
-  // 계정 탈퇴 함수
-  const handleWithdraw = async () => {
-    try {
-      setIsWithdrawing(true);
-      const loginId = getLoginId();
-      if (!loginId) {
-        alert('로그인이 필요합니다.');
-        return;
-      }
-
-      const response = await fetch('/api/student/withdraw', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Login-Id': loginId
-        },
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error('탈퇴 처리에 실패했습니다.');
-      }
-
-      localStorage.removeItem('users');
-      localStorage.clear();
-      alert('계정이 성공적으로 탈퇴되었습니다.');
-      navigate('/auth/login', { replace: true });
-
-    } catch (error) {
-      console.error('계정 탈퇴 실패:', error);
-      alert(error.message || '탈퇴 처리 중 오류가 발생했습니다.');
-    } finally {
-      setIsWithdrawing(false);
-    }
-  };
 
   // 프로필 데이터 로드
   useEffect(() => {
@@ -559,91 +522,6 @@ function InstructorMypage() {
                   )}
                 </div>
               )}
-
-              {/* Withdraw Button */}
-              <div className="flex justify-end pt-8">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-gray-400 hover:text-red-600 hover:bg-red-50 text-xs"
-                      disabled={isWithdrawing}
-                    >
-                      <Trash2 className="w-3 h-3 mr-1" />
-                      {isWithdrawing ? '처리중...' : '계정 탈퇴'}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="max-w-md mx-auto">
-                    <AlertDialogHeader className="space-y-4 pb-6">
-                      <div className="mx-auto w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
-                        <AlertCircle className="w-8 h-8 text-red-600" />
-                      </div>
-                      <AlertDialogTitle className="text-xl font-bold text-center text-gray-900">
-                        정말로 탈퇴하시겠습니까?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="text-center text-gray-500">
-                        계정을 탈퇴하면 모든 데이터가 영구적으로 삭제됩니다
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-
-                    <div className="py-6 border-y border-gray-100">
-                      <div className="space-y-4">
-                        <h4 className="font-semibold text-sm text-gray-900 flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 bg-red-600 rounded-full"></span>
-                          삭제될 데이터
-                        </h4>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-gray-50 rounded-xl p-3 text-center">
-                            <div className="w-8 h-8 bg-gray-200 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                              <User className="w-4 h-4 text-gray-600" />
-                            </div>
-                            <p className="text-xs font-medium text-gray-600">개인정보</p>
-                          </div>
-                          <div className="bg-gray-50 rounded-xl p-3 text-center">
-                            <div className="w-8 h-8 bg-purple-50 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                              <BookOpen className="w-4 h-4 text-purple-600" />
-                            </div>
-                            <p className="text-xs font-medium text-gray-600">강의내역</p>
-                          </div>
-                          <div className="bg-gray-50 rounded-xl p-3 text-center">
-                            <div className="w-8 h-8 bg-amber-50 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                              <FileText className="w-4 h-4 text-amber-600" />
-                            </div>
-                            <p className="text-xs font-medium text-gray-600">강사신청</p>
-                          </div>
-                          <div className="bg-gray-50 rounded-xl p-3 text-center">
-                            <div className="w-8 h-8 bg-slate-100 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                              <Calendar className="w-4 h-4 text-slate-600" />
-                            </div>
-                            <p className="text-xs font-medium text-gray-600">활동기록</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <AlertDialogFooter className="pt-6 gap-3">
-                      <AlertDialogCancel className="flex-1 rounded-xl font-medium h-11">
-                        취소
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleWithdraw}
-                        className="flex-1 bg-red-600 hover:bg-red-700 rounded-xl font-bold h-11 shadow-lg"
-                        disabled={isWithdrawing}
-                      >
-                        {isWithdrawing ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            탈퇴 처리중...
-                          </>
-                        ) : (
-                          '확인, 탈퇴합니다'
-                        )}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
             </div>
           </main>
         </div>
