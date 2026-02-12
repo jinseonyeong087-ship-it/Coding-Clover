@@ -12,6 +12,8 @@ import com.mysite.clover.Lecture.LectureService;
 import com.mysite.clover.LectureProgress.LectureProgressRepository;
 import com.mysite.clover.Notification.NotificationService;
 import com.mysite.clover.Users.Users;
+import com.mysite.clover.Users.UsersRole;
+import com.mysite.clover.Users.UsersRepository;
 import com.mysite.clover.Payment.PaymentService;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,7 @@ public class EnrollmentService {
   private final LectureProgressRepository lectureProgressRepository;
   private final LectureService lectureService;
   private final NotificationService notificationService;
+  private final UsersRepository usersRepository;
 
   @Transactional
   public void enroll(Users user, Course course) {
@@ -38,7 +41,7 @@ public class EnrollmentService {
         user,
         course,
         EnrollmentStatus.ENROLLED);
-    
+
     System.out.println("이미 수강중 여부: " + alreadyEnrolled);
     if (alreadyEnrolled) {
       throw new IllegalStateException("이미 수강 중인 강좌입니다.");
@@ -47,18 +50,17 @@ public class EnrollmentService {
     // 해당 사용자-강좌 레코드가 존재하는지 확인
     boolean recordExists = enrollmentRepository.existsByUserAndCourse(user, course);
     System.out.println("기존 레코드 존재 여부: " + recordExists);
-    
+
     if (recordExists) {
       System.out.println("기존 레코드가 존재함 - UPDATE 시도");
       // 기존 레코드가 있으면 취소된 수강을 재활성화 시도
       int updatedRows = enrollmentRepository.reactivateEnrollment(
-          user, 
-          course, 
-          EnrollmentStatus.CANCELLED, 
-          EnrollmentStatus.ENROLLED, 
-          LocalDateTime.now()
-      );
-      
+          user,
+          course,
+          EnrollmentStatus.CANCELLED,
+          EnrollmentStatus.ENROLLED,
+          LocalDateTime.now());
+
       System.out.println("UPDATE된 행 수: " + updatedRows);
       if (updatedRows == 0) {
         // UPDATE가 실패했다면 이미 다른 상태(완료 등)인 레코드가 존재
@@ -118,8 +120,7 @@ public class EnrollmentService {
             e.getCourse().getCourseId(),
             e.getCourse().getTitle(),
             e.getEnrolledAt(),
-            e.getStatus()
-        ))
+            e.getStatus()))
         .collect(Collectors.toList());
   }
 
@@ -127,34 +128,34 @@ public class EnrollmentService {
   @Transactional
   public void cancelMyEnrollment(Users student, Course course) {
     System.out.println("=== 수강취소 시작 ===");
-    System.out.println("학생 ID: " + student.getUserId() + ", 강좌 ID: " + course.getCourseId() + ", 가격: " + course.getPrice());
-    
+    System.out
+        .println("학생 ID: " + student.getUserId() + ", 강좌 ID: " + course.getCourseId() + ", 가격: " + course.getPrice());
+
     // 1. 수강 상태를 취소로 변경
     cancel(student, student, course);
     System.out.println("수강 상태 취소 완료");
-    
+
     // 2. 해당 수강 신청 시 사용한 결제내역을 찾아서 자동 환불 처리
     try {
       System.out.println("환불 처리 시작...");
-      
-      // 강좌 가격만큼 즉시 포인트 환불 (강좌에서 가격 가져오기) 
+
+      // 강좌 가격만큼 즉시 포인트 환불 (강좌에서 가격 가져오기)
       paymentService.processDirectRefund(
-          student.getUserId(), 
-          course.getPrice(), 
-          "수강취소 - " + course.getTitle()
-      );
-      
+          student.getUserId(),
+          course.getPrice(),
+          "수강취소 - " + course.getTitle());
+
       System.out.println("환불 처리 성공: " + course.getPrice() + "P");
-      
+
     } catch (Exception e) {
       // 환불 처리 실패 시에도 수강 취소는 유지 (로그만 남김)
       System.err.println("수강취소 환불 처리 실패: " + e.getMessage());
       e.printStackTrace(); // 전체 에러 스택 출력
-      
+
       // 환불 실패 시 예외를 다시 던져서 전체 트랜잭션 롤백
       throw new RuntimeException("환불 처리 실패: " + e.getMessage(), e);
     }
-    
+
     System.out.println("=== 수강취소 완료 ===");
   }
 
@@ -183,13 +184,32 @@ public class EnrollmentService {
     }
 
     enrollment.requestCancel();
-    
+
     // 요청 후 상태 로깅
     System.out.println("After request - cancelledAt: " + enrollment.getCancelledAt());
     System.out.println("After request - isCancelRequested: " + enrollment.isCancelRequested());
-    
+
     enrollmentRepository.save(enrollment);
-    
+
+    // 관리자에게 알림 전송
+    try {
+      List<Users> admins = usersRepository.findByRole(UsersRole.ADMIN);
+      String notificationMessage = String.format("%s 님이 %s 강좌의 수강 취소를 요청했습니다.",
+          student.getName(), enrollment.getCourse().getTitle());
+
+      for (Users admin : admins) {
+        notificationService.createNotification(
+            admin,
+            "CANCEL_REQUEST",
+            notificationMessage,
+            "/admin/students/" + student.getUserId() // 관리자 학생 상세 페이지로 이동
+        );
+      }
+    } catch (Exception e) {
+      System.err.println("관리자 알림 전송 실패: " + e.getMessage());
+      // 알림 전송 실패가 로직 실패로 이어지지는 않도록 함
+    }
+
     System.out.println("=== 취소 요청 완료 ===");
     return toCancelRequestDto(enrollment);
   }
@@ -203,7 +223,6 @@ public class EnrollmentService {
         .collect(Collectors.toList());
   }
 
-
   // === 강사용 메소드 ===
 
   // 강사 - 내 모든 강좌의 수강생 조회
@@ -216,8 +235,7 @@ public class EnrollmentService {
             e.getUser().getUserId(),
             e.getUser().getName(),
             e.getEnrolledAt(),
-            e.getStatus()
-        ))
+            e.getStatus()))
         .collect(Collectors.toList());
   }
 
@@ -225,44 +243,43 @@ public class EnrollmentService {
 
   // 관리자 - 전체 수강 내역 조회
   @Transactional(readOnly = true)
-  //Enrollment + User + Course를 한 번에 조회하고 진도율 계산 (취소된 수강 제외)
+  // Enrollment + User + Course를 한 번에 조회하고 진도율 계산 (취소된 수강 제외)
   public List<AdminEnrollmentDto> getAllEnrollments() {
     List<Enrollment> enrollments = enrollmentRepository.findAllWithUserAndCourse();
-    //Enrollment 리스트 → AdminEnrollmentDto 리스트로 변환 (CANCELLED 제외, 진도율 계산 포함)
+    // Enrollment 리스트 → AdminEnrollmentDto 리스트로 변환 (CANCELLED 제외, 진도율 계산 포함)
     return enrollments.stream()
         .filter(e -> e.getStatus() != EnrollmentStatus.CANCELLED) // 취소된 수강 제외
         .map(e -> {
-            // 진도율 계산
-            int completedLectures = 0;
-            int totalLectures = 0;
-            double progressRate = 0.0;
-            
-            try {
-                completedLectures = lectureProgressRepository
-                    .findByEnrollmentAndCompletedYnTrue(e)
-                    .size();
-                totalLectures = lectureService.getLecturesForStudent(e.getCourse()).size();
-                progressRate = totalLectures > 0 
-                    ? Math.round((double) completedLectures * 100.0 / totalLectures)
-                    : 0.0;
-            } catch (Exception ex) {
-                // 진도율 계산 실패 시 기본값 사용
-                System.err.println("진도율 계산 실패 (enrollmentId: " + e.getEnrollmentId() + "): " + ex.getMessage());
-            }
-            
-            return new AdminEnrollmentDto(
-                e.getEnrollmentId(),
-                e.getUser().getUserId(),
-                e.getUser().getName(),
-                e.getCourse().getCourseId(),
-                e.getCourse().getTitle(),
-                e.getEnrolledAt(),
-                e.getStatus(),
-                e.getCancelledBy() != null ? e.getCancelledBy().getUserId() : null,
-                completedLectures,
-                totalLectures,
-                progressRate
-            );
+          // 진도율 계산
+          int completedLectures = 0;
+          int totalLectures = 0;
+          double progressRate = 0.0;
+
+          try {
+            completedLectures = lectureProgressRepository
+                .findByEnrollmentAndCompletedYnTrue(e)
+                .size();
+            totalLectures = lectureService.getLecturesForStudent(e.getCourse()).size();
+            progressRate = totalLectures > 0
+                ? Math.round((double) completedLectures * 100.0 / totalLectures)
+                : 0.0;
+          } catch (Exception ex) {
+            // 진도율 계산 실패 시 기본값 사용
+            System.err.println("진도율 계산 실패 (enrollmentId: " + e.getEnrollmentId() + "): " + ex.getMessage());
+          }
+
+          return new AdminEnrollmentDto(
+              e.getEnrollmentId(),
+              e.getUser().getUserId(),
+              e.getUser().getName(),
+              e.getCourse().getCourseId(),
+              e.getCourse().getTitle(),
+              e.getEnrolledAt(),
+              e.getStatus(),
+              e.getCancelledBy() != null ? e.getCancelledBy().getUserId() : null,
+              completedLectures,
+              totalLectures,
+              progressRate);
         })
         .collect(Collectors.toList());
   }
@@ -272,12 +289,12 @@ public class EnrollmentService {
   public void adminCancelEnrollment(Users admin, Long enrollmentId) {
     Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 수강 정보입니다."));
-    
+
     if (enrollment.getStatus() != EnrollmentStatus.ENROLLED
         || !enrollment.isCancelRequested()) {
       throw new IllegalStateException("수강 중이며 취소 요청 상태가 아닙니다.");
     }
-    
+
     enrollment.cancel(admin);
 
     Integer coursePrice = enrollment.getCourse().getPrice();
@@ -320,33 +337,33 @@ public class EnrollmentService {
     System.out.println("Before reject - isCancelRequested: " + enrollment.isCancelRequested());
 
     enrollment.rejectCancelRequest();
-    
+
     // 거절 후 상태 로깅
-    System.out.println("After reject - cancelledAt: " + enrollment.getCancelledAt()); 
+    System.out.println("After reject - cancelledAt: " + enrollment.getCancelledAt());
     System.out.println("After reject - isCancelRequested: " + enrollment.isCancelRequested());
-    
+
     enrollmentRepository.save(enrollment);
-    
+
     // 저장 후 상태 재확인
     Enrollment savedEnrollment = enrollmentRepository.findById(enrollmentId).orElse(null);
     if (savedEnrollment != null) {
       System.out.println("After save - cancelledAt: " + savedEnrollment.getCancelledAt());
       System.out.println("After save - isCancelRequested: " + savedEnrollment.isCancelRequested());
     }
-    
+
     // 학생에게 반려 알림 전송
     String notificationTitle = "수강 취소 요청이 반려되었습니다";
     if (reason != null && !reason.trim().isEmpty()) {
       notificationTitle += " - " + reason.trim();
     }
-    
+
     notificationService.createNotification(
         enrollment.getUser(),
         "CANCEL_REJECT",
         notificationTitle,
-        "/student/my-courses"
+        "/student/mypage" // 반려 시 마이페이지로 이동하도록 수정
     );
-    
+
     System.out.println("=== 수강취소 요청 반려 완료 ===");
   }
 
@@ -357,7 +374,8 @@ public class EnrollmentService {
     if (student == null) {
       enrollments = enrollmentRepository.findPendingCancelRequestsOrderByCancelledAtDesc(EnrollmentStatus.ENROLLED);
     } else {
-      enrollments = enrollmentRepository.findUserPendingCancelRequestsOrderByCancelledAtDesc(student, EnrollmentStatus.ENROLLED);
+      enrollments = enrollmentRepository.findUserPendingCancelRequestsOrderByCancelledAtDesc(student,
+          EnrollmentStatus.ENROLLED);
     }
 
     return enrollments.stream()
@@ -392,7 +410,7 @@ public class EnrollmentService {
     dto.setCompletedLectures(completedLectures);
     dto.setTotalLectures(totalLectures);
     dto.setStatus(enrollment.getStatus());
-    
+
     return dto;
   }
 
@@ -403,37 +421,36 @@ public class EnrollmentService {
     return enrollments.stream()
         .filter(e -> e.getStatus() != EnrollmentStatus.CANCELLED) // 취소된 수강 제외
         .map(e -> {
-            // 진도율 계산
-            int completedLectures = 0;
-            int totalLectures = 0;
-            double progressRate = 0.0;
-            
-            try {
-                completedLectures = lectureProgressRepository
-                    .findByEnrollmentAndCompletedYnTrue(e)
-                    .size();
-                totalLectures = lectureService.getLecturesForStudent(e.getCourse()).size();
-                progressRate = totalLectures > 0 
-                    ? Math.round((double) completedLectures * 100.0 / totalLectures)
-                    : 0.0;
-            } catch (Exception ex) {
-                // 진도율 계산 실패 시 기본값 사용
-                System.err.println("진도율 계산 실패 (enrollmentId: " + e.getEnrollmentId() + "): " + ex.getMessage());
-            }
-            
-            return new AdminEnrollmentDto(
-                e.getEnrollmentId(),
-                e.getUser().getUserId(),
-                e.getUser().getName(),
-                e.getCourse().getCourseId(),
-                e.getCourse().getTitle(),
-                e.getEnrolledAt(),
-                e.getStatus(),
-                e.getCancelledBy() != null ? e.getCancelledBy().getUserId() : null,
-                completedLectures,
-                totalLectures,
-                progressRate
-            );
+          // 진도율 계산
+          int completedLectures = 0;
+          int totalLectures = 0;
+          double progressRate = 0.0;
+
+          try {
+            completedLectures = lectureProgressRepository
+                .findByEnrollmentAndCompletedYnTrue(e)
+                .size();
+            totalLectures = lectureService.getLecturesForStudent(e.getCourse()).size();
+            progressRate = totalLectures > 0
+                ? Math.round((double) completedLectures * 100.0 / totalLectures)
+                : 0.0;
+          } catch (Exception ex) {
+            // 진도율 계산 실패 시 기본값 사용
+            System.err.println("진도율 계산 실패 (enrollmentId: " + e.getEnrollmentId() + "): " + ex.getMessage());
+          }
+
+          return new AdminEnrollmentDto(
+              e.getEnrollmentId(),
+              e.getUser().getUserId(),
+              e.getUser().getName(),
+              e.getCourse().getCourseId(),
+              e.getCourse().getTitle(),
+              e.getEnrolledAt(),
+              e.getStatus(),
+              e.getCancelledBy() != null ? e.getCancelledBy().getUserId() : null,
+              completedLectures,
+              totalLectures,
+              progressRate);
         })
         .collect(Collectors.toList());
   }

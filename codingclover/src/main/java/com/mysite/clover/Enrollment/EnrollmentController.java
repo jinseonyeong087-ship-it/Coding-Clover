@@ -41,21 +41,21 @@ public class EnrollmentController {
     public ResponseEntity<List<StudentEnrollmentDto>> getMyEnrollments(Principal principal) {
 
         try {
-            //로그인(인증) 여부 확인
+            // 로그인(인증) 여부 확인
             if (principal == null) {
                 return ResponseEntity.ok(new java.util.ArrayList<>());
             }
 
-            //로그인 ID로 사용자 조회
+            // 로그인 ID로 사용자 조회
             Users student = usersRepository.findByLoginId(principal.getName())
                     .orElse(null);
 
-            //DB에 사용자 정보가 없는 경우(성공 응답(200)을 주되, 데이터는 비어 있다고 처리)
+            // DB에 사용자 정보가 없는 경우(성공 응답(200)을 주되, 데이터는 비어 있다고 처리)
             if (student == null) {
                 return ResponseEntity.ok(new java.util.ArrayList<>());
             }
 
-            //학생의 수강 목록 조회
+            // 학생의 수강 목록 조회
             List<StudentEnrollmentDto> enrollments = enrollmentService.getMyEnrollmentsForStudent(student);
 
             return ResponseEntity.ok(enrollments);
@@ -80,7 +80,7 @@ public class EnrollmentController {
 
             // CourseService의 enroll 메서드 사용 (포인트 차감 포함)
             courseService.enroll(courseId, student.getLoginId());
-            
+
             return ResponseEntity.ok("수강 신청이 완료되었습니다.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -113,6 +113,10 @@ public class EnrollmentController {
     public ResponseEntity<?> requestCancel(
             @PathVariable("enrollmentId") Long enrollmentId,
             Principal principal) {
+        System.out.println("=== 수강 취소 요청 수신 ===");
+        System.out.println("요청된 enrollmentId: " + enrollmentId);
+        System.out.println("요청자: " + (principal != null ? principal.getName() : "null"));
+
         try {
             Users student = usersRepository.findByLoginId(principal.getName())
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
@@ -120,9 +124,21 @@ public class EnrollmentController {
             Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                     .orElseThrow(() -> new IllegalArgumentException("수강 정보를 찾을 수 없습니다."));
 
+            System.out.println("조회된 Enrollment ID: " + enrollment.getEnrollmentId());
+            System.out.println("조회된 Enrollment User: " + enrollment.getUser().getUserId());
+
             CancelRequestDto result = enrollmentService.requestCancel(student, enrollment);
             return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            System.out.println("수강 취소 요청 실패 (잘못된 요청): " + e.getMessage());
+            // 수강 정보를 찾을 수 없는 경우 명확하게 404로 응답 (또는 사용자 정의 에러 메시지 포함 400)
+            if ("수강 정보를 찾을 수 없습니다.".equals(e.getMessage())) {
+                return ResponseEntity.status(404).body(e.getMessage());
+            }
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
+            System.out.println("수강 취소 요청 실패 (기타 에러): " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -230,12 +246,12 @@ public class EnrollmentController {
         try {
             Users admin = usersRepository.findByLoginId(principal.getName())
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-            
+
             String reason = "";
             if (request != null && request.containsKey("reason")) {
                 reason = (String) request.get("reason");
             }
-            
+
             enrollmentService.rejectCancelRequest(admin, enrollmentId, reason);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
