@@ -57,7 +57,7 @@ public class QnaService {
         "NEW_QNA_QUESTION",
         "'" + course.getTitle() + "' 강좌에 새로운 질문이 등록되었습니다: " + title,
         // 강사 QnA 관리 페이지 (가정)
-        "/instructor/course/" + course.getCourseId() + "/qna/" + q.getQnaId());
+        "/instructor/qna/" + q.getQnaId());
   }
   // 학생
   // ------------------------------------------------------------------------------------------

@@ -230,7 +230,7 @@ public class PaymentService {
         notificationService.notifyAdmins(
                 "REFUND_REQUEST",
                 "사용자(ID:" + userId + ")로부터 전액 환불 요청이 접수되었습니다. (금액: " + refundAmount + "P)",
-                "/admin/payment/refunds");
+                "/admin/payment");
 
         return savedPayment;
     }

@@ -162,25 +162,25 @@ const NotificationDropdown = () => {
 // Helper function to format notification types
 const formatType = (type) => {
   const typeMap = {
-    'NEW_LECTURE_UPLOADED': '새 강의',
-    'NEW_QNA_QUESTION': '새 질문',
-    'QNA_ANSWERED': '답변 완료',
-    'REFUND_REQUEST': '환불 요청',
-    'REFUND_APPROVED': '환불 완료',
-    'REFUND_REJECTED': '환불 거절',
-    'INSTRUCTOR_APPLICATION': '강사 신청',
-    'INSTRUCTOR_APPROVED': '강사 승인',
+    'NEW_LECTURE_UPLOADED': '새 강의',//0
+    'NEW_QNA_QUESTION': '새 질문',//-변경
+    'QNA_ANSWERED': '답변 완료',//-변경
+    'REFUND_REQUEST': '환불 요청',//-변경
+    'REFUND_APPROVED': '환불 완료',//0 알림
+    'REFUND_REJECTED': '환불 거절',//0 알림
+    'INSTRUCTOR_APPLICATION': '강사 신청',//-변경
+    'INSTRUCTOR_APPROVED': '강사 승인',//0
     'INSTRUCTOR_REJECTED': '강사 반려',
-    'NEW_LECTURE_REQUEST': '강의 승인 요청',
-    'LECTURE_APPROVED': '강의 승인',
-    'LECTURE_REJECTED': '강의 반려',
-    'NEW_COURSE_REQUEST': '강좌 승인 요청',
-    'COURSE_APPROVED': '강좌 승인',
-    'COURSE_REJECTED': '강좌 반려',
-    'COURSE_RESUBMITTED': '강좌 재요청',
-    'LECTURE_RESUBMITTED': '강의 재요청'
+    'NEW_LECTURE_REQUEST': '강의 승인 요청',//0
+    'LECTURE_APPROVED': '강의 승인',//0
+    'LECTURE_REJECTED': '강의 반려',//0 
+    'NEW_COURSE_REQUEST': '강좌 승인 요청',//0
+    'COURSE_APPROVED': '강좌 승인',//0
+    'COURSE_REJECTED': '강좌 반려',//0
+    'COURSE_RESUBMITTED': '강좌 재요청',//
+    'LECTURE_RESUBMITTED': '강의 재요청'//0
   };
-  return typeMap[type] || '알림';
+  return typeMap[type] || '알림';//수강취소0, 수강신청0,
 };
 
 // Helper function to format date

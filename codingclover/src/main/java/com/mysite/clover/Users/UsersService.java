@@ -28,6 +28,7 @@ public class UsersService {
     private final InstructorProfileRepository instructorProfileRepository;
     private final StudentProfileRepository studentProfileRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final com.mysite.clover.Notification.NotificationService notificationService;
 
     public Users create(String loginId, String password, String name, String email, String role) {
         Users user = new Users();
@@ -162,6 +163,15 @@ public class UsersService {
             profile.setStatus(InstructorStatus.REJECTED);
             profile.setRejectReason(reason);
             instructorProfileRepository.save(profile);
+        });
+
+        // 사용자에게 반려 알림 전송
+        usersRepository.findById(userId).ifPresent(user -> {
+            notificationService.createNotification(
+                    user,
+                    "INSTRUCTOR_REJECTED",
+                    "강사 신청이 반려되었습니다.",
+                    "/mypage");
         });
     }
 

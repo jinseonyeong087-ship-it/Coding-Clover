@@ -130,7 +130,7 @@ public class InstructorProfileService {
             notificationService.notifyAdmins(
                     "INSTRUCTOR_APPLICATION",
                     "사용자 " + user.getName() + "님의 강사 신청이 접수되었습니다.",
-                    "/admin/users/instructors");
+                    "/admin/users/instructors/" + user.getUserId());
         } catch (Exception e) {
             throw new RuntimeException("프로필 저장 중 오류가 발생했습니다: " + e.getMessage());
         }

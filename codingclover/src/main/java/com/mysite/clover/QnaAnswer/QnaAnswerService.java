@@ -46,7 +46,7 @@ public class QnaAnswerService {
         qna.getUsers(),
         "QNA_ANSWERED",
         "작성하신 질문 '" + qna.getTitle() + "'에 답변이 달렸습니다.",
-        "/course/" + qna.getCourse().getCourseId() + "/qna/" + qna.getQnaId());
+        "/student/qna/" + qna.getQnaId());
   }
 
   public void update(QnaAnswer answer, String content) {

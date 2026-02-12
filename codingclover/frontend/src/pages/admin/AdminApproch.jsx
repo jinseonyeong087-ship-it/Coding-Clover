@@ -1,3 +1,5 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import Nav from "@/components/Nav";
 import AdminSidebar from "@/components/AdminSidebar";
 import Tail from "@/components/Tail";
@@ -8,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Calendar, Briefcase, FileText, Mail, User, CheckCircle, ArrowLeft, Download, ShieldCheck, Clock, Trash2 } from "lucide-react";
+import { Calendar, Briefcase, FileText, Mail, User, CheckCircle, ArrowLeft, Download, ShieldCheck, Clock, Trash2, AlertCircle } from "lucide-react";
 
 function AdminApproch() {
     const { userId } = useParams();

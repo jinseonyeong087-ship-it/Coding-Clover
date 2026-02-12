@@ -193,7 +193,7 @@ function InstructorCourseDetail() {
                     <section className="px-8 py-8 w-full max-w-[1800px] mx-auto">
                         {selectedLecture ? (
                             /* 강의 상세 */
-                            resolveLectureDetail()
+                            <LectureDetail lecture={selectedLecture} onLectureUpdated={fetchLectures} />
                         ) : (
                             <>
                                 {/* 강좌 소개 */}
