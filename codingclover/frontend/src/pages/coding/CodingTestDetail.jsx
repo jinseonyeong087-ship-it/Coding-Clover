@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 import ChatBot from '../student/ChatBot';
 
 // --- Components ---
@@ -281,7 +281,7 @@ const CodingTestDetail = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-white font-sans text-gray-900">
-      <Toaster position="top-right" richColors />
+
       <Nav />
       {/* Nav fixed height compensation */}
       <div className="h-[70px] shrink-0"></div>
