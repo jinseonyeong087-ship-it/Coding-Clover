@@ -279,7 +279,7 @@ const ExamCreate = () => {
                                         onChange={(e) => setTitle(e.target.value)}
                                     />
                                 </div>
-                                <div className="grid grid-cols-3 gap-4 col-span-2">
+                                <div className="grid grid-cols-2 gap-6 col-span-2">
                                     <div className="space-y-2">
                                         <Label>제한 시간 (분)</Label>
                                         <Input
@@ -287,18 +287,6 @@ const ExamCreate = () => {
                                             value={timeLimit || ""}
                                             onChange={(e) => setTimeLimit(e.target.value)}
                                         />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>난이도 (1:초급 ~ 3:고급)</Label>
-                                        <select
-                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                            value={level || 1}
-                                            onChange={(e) => setLevel(e.target.value)}
-                                        >
-                                            <option value="1">초급</option>
-                                            <option value="2">중급</option>
-                                            <option value="3">고급</option>
-                                        </select>
                                     </div>
                                     <div className="space-y-2">
                                         <Label>합격 기준 점수</Label>

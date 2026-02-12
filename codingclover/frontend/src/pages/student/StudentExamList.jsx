@@ -155,7 +155,7 @@ const StudentExamList = () => {
                                                     <TableRow key={exam.examId}>
                                                         <TableCell className="text-muted-foreground">{exam.courseTitle}</TableCell>
                                                         <TableCell className="font-semibold">{exam.title}</TableCell>
-                                                        <TableCell>{getLevelBadge(exam.level)}</TableCell>
+                                                        <TableCell>{getLevelBadge(exam.courseLevel || exam.level)}</TableCell>
                                                         <TableCell>{exam.timeLimit}분</TableCell>
                                                         <TableCell>{exam.passScore}점</TableCell>
                                                         <TableCell className="text-right">
