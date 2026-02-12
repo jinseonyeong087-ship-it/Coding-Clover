@@ -363,10 +363,6 @@ function StudentCourseDetail() {
                                 )}
                             </div>
                             <div className="p-6 space-y-6">
-                                <div>
-                                    <div className="text-sm text-muted-foreground font-medium mb-1">수강료</div>
-                                    <div className="text-3xl font-black">{course.price?.toLocaleString()}P</div>
-                                </div>
 
                                 {enrollmentStatus === 'COMPLETED' ? (
                                     <div className="space-y-3">
@@ -376,15 +372,6 @@ function StudentCourseDetail() {
                                             onClick={() => navigate(`/student/course/${courseId}/lectures`)}
                                         >
                                             수강완료
-                                        </Button>
-                                        <Button
-                                            size="lg"
-                                            variant="outline"
-                                            className="w-full font-bold text-lg"
-                                            onClick={() => navigate(`/student/course/${courseId}/certificate`)}
-                                        >
-                                            <Award className="w-5 h-5 mr-2" />
-                                            수료증 발급
                                         </Button>
                                     </div>
                                 ) : enrollmentStatus === 'ENROLLED' ? (
@@ -406,18 +393,14 @@ function StudentCourseDetail() {
                                 )}
 
                                 <div className="space-y-3 text-sm text-muted-foreground">
-                                    <div className="flex items-center gap-2">
-                                        <CheckCircle className="w-4 h-4 text-emerald-500" />
-                                        <span>무제한 수강 가능</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <CheckCircle className="w-4 h-4 text-emerald-500" />
-                                        <span>모바일/PC 지원</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <CheckCircle className="w-4 h-4 text-emerald-500" />
-                                        <span>수료증 발급</span>
-                                    </div>
+                                    {enrollmentStatus !== 'ENROLLED' && enrollmentStatus !== 'COMPLETED' && (
+                                        <div className="flex items-center gap-2">
+                                            <Award className="w-4 h-4 text-blue-600" />
+                                            <span>수강 포인트 : {course?.price?.toLocaleString()}P</span>
+                                        </div>
+                                    )}
+                                    
+                                    
                                 </div>
                             </div>
                         </div>
