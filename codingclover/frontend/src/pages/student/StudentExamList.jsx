@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import StudentNav from '../../components/StudentNav';
 import { Button } from "@/components/ui/button";
@@ -20,9 +20,11 @@ import { Play, Loader2, History, Trophy, ChevronLeft, ChevronRight } from "lucid
 const StudentExamList = () => {
     const navigate = useNavigate();
     const { courseId } = useParams(); // courseId가 있으면 특정 강좌의 시험, 없으면 전체 시험
+    const [searchParams] = useSearchParams();
     const [availableExams, setAvailableExams] = useState([]);
     const [scoreHistory, setScoreHistory] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState(searchParams.get('tab') === 'history' ? 'history' : 'available');
 
     // Pagination State
     const [availablePage, setAvailablePage] = useState(1);
@@ -109,7 +111,7 @@ const StudentExamList = () => {
                     </p>
                 </div>
 
-                <Tabs defaultValue="available" className="w-full">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-2 mb-8">
                         <TabsTrigger value="available">응시 가능한 시험</TabsTrigger>
                         <TabsTrigger value="history">나의 시험 결과</TabsTrigger>

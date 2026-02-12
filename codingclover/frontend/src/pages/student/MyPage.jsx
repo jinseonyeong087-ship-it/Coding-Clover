@@ -526,11 +526,21 @@ function MyPage() {
                       <h2 className="text-xl font-bold">{user.name}</h2>
                       <p className="text-sm text-muted-foreground">{user.email}</p>
                     </div>
-                    {!isEditing && (
-                      <Button variant="ghost" size="sm" onClick={handleEditToggle} className="hover:bg-primary/10 hover:text-primary transition-colors h-8">
-                        <Edit className="w-3.5 h-3.5 mr-2" /> 정보 수정
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate('/student/exam?tab=history')}
+                        className="hover:bg-blue-50 hover:text-blue-600 transition-colors h-8"
+                      >
+                        <MonitorPlay className="w-3.5 h-3.5 mr-2" /> 시험점수보기
                       </Button>
-                    )}
+                      {!isEditing && (
+                        <Button variant="ghost" size="sm" onClick={handleEditToggle} className="hover:bg-primary/10 hover:text-primary transition-colors h-8">
+                          <Edit className="w-3.5 h-3.5 mr-2" /> 정보 수정
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   {isEditing ? (
