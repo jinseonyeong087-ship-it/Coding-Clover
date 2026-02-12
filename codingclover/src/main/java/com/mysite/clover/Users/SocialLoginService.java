@@ -33,13 +33,12 @@ public class SocialLoginService extends DefaultOAuth2UserService {
 
         // 구글일때
         if ("google".equals(registrationId)) {
-            providerId = (String) attributes.get("sub"); // 구글 ID는 문자열
+            providerId = (String) attributes.get("sub");
             email = (String) attributes.get("email");
             name = (String) attributes.get("name");
         }
         // 카카오일때
         else if ("kakao".equals(registrationId)) {
-            // 카카오 id는 숫자여서 문자열로 바꾼다는데.. 왜지?
             providerId = String.valueOf(attributes.get("id"));
             Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
             if (kakaoAccount != null) {

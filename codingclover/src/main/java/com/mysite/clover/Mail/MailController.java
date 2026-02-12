@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.servlet.http.HttpSession; // javax가 아니라 jakarta일 가능성이 높음 (Spring Boot 3.x)
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/member") // 원본 코드 요청 경로 유지
+@RequestMapping("/member")
 @RequiredArgsConstructor
 @Slf4j
 public class MailController {
@@ -31,9 +31,7 @@ public class MailController {
       // 이메일 전송 후 인증번호 받기
       int number = mailService.sendMail(mail);
 
-      // 핵심 수정: 인증번호를 전역 변수가 아닌 '세션'에 저장
-      // 세션 유지 시간 설정 (예: 3분 = 180초) - 필요 시 설정
-      // session.setMaxInactiveInterval(180);
+      // 인증번호를 세션에 저장
       session.setAttribute("emailAuthNumber", number);
 
       map.put("success", Boolean.TRUE);

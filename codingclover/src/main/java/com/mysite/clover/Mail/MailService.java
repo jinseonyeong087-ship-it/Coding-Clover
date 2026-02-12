@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MailService {
 
   private final JavaMailSender javaMailSender;
-  private static final String SENDER_EMAIL = "wnstj99999@gmail.com"; // application.properties의 username과 동일해야 함
+  private static final String SENDER_EMAIL = "wnstj99999@gmail.com";
 
   public int sendMail(String mail) {
     // 랜덤 인증번호 생성
