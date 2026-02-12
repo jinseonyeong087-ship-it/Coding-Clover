@@ -191,7 +191,7 @@ const CodingTestList = () => {
 
                   <CardFooter className="pt-0 pb-6">
                     <Button className="w-full bg-gray-50 text-gray-900 hover:bg-black hover:text-white font-bold h-11 rounded-xl transition-all group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-primary/20 border border-gray-100 group-hover:border-transparent">
-                      문제 풀기 <ChevronRight className="w-4 h-4 ml-2" />
+                      {userRole === 'ADMIN' ? '문제 보기' : '문제 풀기'} <ChevronRight className="w-4 h-4 ml-2" />
                     </Button>
                   </CardFooter>
                 </Card>

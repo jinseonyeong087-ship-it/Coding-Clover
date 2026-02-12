@@ -15,6 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.AccessLevel;
 
 @Getter
 @Setter
@@ -44,7 +45,7 @@ public class Submission {
     return this.sourceCode;
   }
 
-  // Setter for backward compatibility
+  // Setter for backward compatibility  
   public void setCode(String code) {
     this.sourceCode = code;
   }

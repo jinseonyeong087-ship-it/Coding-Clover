@@ -21,7 +21,7 @@ public class SubmissionService {
     Submission submission = new Submission();
     submission.setUsers(user);
     submission.setProblem(problem);
-    submission.setCode(code);
+    submission.setSourceCode(code);  // 직접 sourceCode 설정
     submission.setStatus(status);
     submission.setExecutionTime(executionTime);
     submission.setCreatedAt(java.time.LocalDateTime.now());
