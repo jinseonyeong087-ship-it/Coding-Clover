@@ -230,14 +230,14 @@ function StudentLectureDetail() {
                         <h2 className="font-bold text-lg text-slate-800">강의 목록</h2>
                         <div className="flex items-center justify-between mt-1">
                             <p className="text-sm text-slate-500">{lectures.length}개의 강의</p>
-                            <span className="text-xs text-indigo-600 font-semibold">
+                            <span className="text-xs text-primary font-semibold">
                                 {Object.values(progressMap).filter(p => p.completedYn).length}/{lectures.length} 완료
                             </span>
                         </div>
                         {/* 전체 진도율 바 */}
                         <div className="mt-2 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+                                className="h-full bg-primary rounded-full transition-all duration-500"
                                 style={{
                                     width: lectures.length > 0
                                         ? `${Math.round((Object.values(progressMap).filter(p => p.completedYn).length / lectures.length) * 100)}%`
@@ -254,21 +254,21 @@ function StudentLectureDetail() {
                                     key={lec.lectureId}
                                     onClick={() => handleSelectLecture(lec)}
                                     className={`flex items-center gap-3 p-4 text-left transition-colors border-b border-slate-50 ${selectedLecture?.lectureId === lec.lectureId
-                                        ? "bg-indigo-50 border-l-4 border-l-indigo-500"
+                                        ? "bg-blue-50 border-l-4 border-l-blue-500"
                                         : "hover:bg-slate-50 border-l-4 border-l-transparent"
                                         }`}
                                 >
                                     <span className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${isCompleted
                                         ? "bg-emerald-500 text-white"
                                         : selectedLecture?.lectureId === lec.lectureId
-                                            ? "bg-indigo-500 text-white"
+                                            ? "bg-blue-500 text-white"
                                             : "bg-slate-100 text-slate-600"
                                         }`}>
                                         {isCompleted ? <CheckCircle className="w-4 h-4" /> : lec.orderNo ?? (index + 1)}
                                     </span>
                                     <div className="min-w-0 flex-1">
                                         <p className={`text-sm font-medium truncate ${selectedLecture?.lectureId === lec.lectureId
-                                            ? "text-indigo-700"
+                                            ? "text-blue-700"
                                             : isCompleted ? "text-slate-500" : "text-slate-700"
                                             }`}>
                                             {lec.orderNo ?? (index + 1)}강. {lec.title}
@@ -299,9 +299,9 @@ function StudentLectureDetail() {
                 <div className="flex-1 overflow-y-auto">
                     {selectedLecture ? (
                         <div className="flex flex-col gap-6 p-6 md:p-8">
-                            <div className="border-b border-indigo-100/50 pb-6">
+                            <div className="border-b border-slate-200 pb-6">
                                 <div className="flex items-center gap-2 mb-3">
-                                    <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                                    <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
                                         <Play className="w-3 h-3 fill-current" />
                                         {selectedLecture.orderNo ?? (lectures.findIndex(l => l.lectureId === selectedLecture.lectureId) + 1)}강
                                     </span>
@@ -311,13 +311,13 @@ function StudentLectureDetail() {
                                 </h3>
                                 {selectedLecture.duration && (
                                     <div className="flex items-center gap-2 mt-4 text-slate-500 text-sm font-medium">
-                                        <Clock className="w-4 h-4 text-indigo-400" />
+                                        <Clock className="w-4 h-4 text-slate-400" />
                                         <span>재생 시간: <span className="text-slate-700">{formatDuration(selectedLecture.duration)}</span></span>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="rounded-2xl overflow-hidden shadow-2xl shadow-indigo-200 ring-4 ring-white">
+                            <div className="rounded-2xl overflow-hidden shadow-2xl shadow-slate-200 ring-4 ring-white">
                                 {selectedLecture.videoUrl && extractVideoId(selectedLecture.videoUrl) ? (
                                     <div className="relative pt-[56.25%] bg-black">
                                         <YouTubePlayer
@@ -347,7 +347,7 @@ function StudentLectureDetail() {
                                         onClick={() => handleComplete(selectedLecture.lectureId)}
                                         disabled={!videoEnded || completingId === selectedLecture.lectureId}
                                         className={`font-bold px-6 py-3 rounded-xl shadow-lg ${videoEnded
-                                            ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                                            ? 'bg-blue-600 hover:bg-blue-700 text-white'
                                             : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                                             }`}
                                     >
@@ -356,7 +356,7 @@ function StudentLectureDetail() {
                                 )}
                                 <span className={`text-sm ${progressMap[selectedLecture.lectureId]?.completedYn
                                     ? 'text-emerald-500 font-semibold'
-                                    : videoEnded ? 'text-indigo-500 font-semibold' : 'text-slate-400'
+                                    : videoEnded ? 'text-blue-500 font-semibold' : 'text-slate-400'
                                     }`}>
                                     {progressMap[selectedLecture.lectureId]?.completedYn
                                         ? '시청을 완료했습니다.'
@@ -366,8 +366,8 @@ function StudentLectureDetail() {
                                 </span>
                             </div>
 
-                            <div className="mt-4 p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
-                                <h4 className="font-semibold text-indigo-900 mb-2 flex items-center gap-2">
+                            <div className="mt-4 p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                                <h4 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
                                     <MonitorPlay className="w-5 h-5" />
                                     학습 포인트
                                 </h4>
@@ -378,8 +378,8 @@ function StudentLectureDetail() {
                         </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full py-32 text-center">
-                            <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mb-6">
-                                <Play className="w-10 h-10 text-indigo-300 ml-1" />
+                            <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+                                <Play className="w-10 h-10 text-slate-300 ml-1" />
                             </div>
                             <h3 className="text-xl font-bold text-slate-700 mb-2">강의를 선택해주세요</h3>
                             <p className="text-slate-500 max-w-xs mx-auto">

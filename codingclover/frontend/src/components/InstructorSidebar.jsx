@@ -106,9 +106,9 @@ const InstructorSidebar = () => {
   return (
     <div className="w-64 flex-shrink-0">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden sticky top-24">
-        <div className="p-6 border-b border-gray-100 bg-purple-50">
-          <h2 className="font-bold text-xl text-purple-900">강사 페이지</h2>
-          <p className="text-xs text-purple-600 mt-1">Instructor Center</p>
+        <div className="p-6 border-b border-gray-100">
+          <h2 className="font-bold text-xl text-gray-900">강사 페이지</h2>
+          <p className="text-xs text-gray-500 mt-1">Instructor Center</p>
         </div>
 
         <div className="p-4 space-y-6">
@@ -122,10 +122,10 @@ const InstructorSidebar = () => {
                     onClick={() => navigate(item.path)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors
                       ${isActive(item.path)
-                        ? 'bg-purple-50 text-purple-700'
+                        ? 'bg-primary/5 text-primary'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                   >
-                    <item.icon className={`w-4 h-4 ${isActive(item.path) ? 'text-purple-600' : 'text-gray-400'}`} />
+                    <item.icon className={`w-4 h-4 ${isActive(item.path) ? 'text-primary' : 'text-gray-400'}`} />
                     {item.label}
                   </button>
                 ))}
@@ -158,7 +158,7 @@ const InstructorSidebar = () => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>취소</AlertDialogCancel>
-              <AlertDialogAction 
+              <AlertDialogAction
                 onClick={handleWithdraw}
                 disabled={isWithdrawing}
                 className="bg-red-600 hover:bg-red-700"

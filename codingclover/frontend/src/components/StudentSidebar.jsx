@@ -88,24 +88,16 @@ const StudentSidebar = () => {
       category: "나의 학습",
       items: [
         { icon: MonitorPlay, label: "수강중인 강좌", path: "/student/mypage" },
-        { icon: FileText, label: "수강 신청 내역", path: "/student/enrollment" } // TODO: 경로 확인 필요
       ]
     },
     {
       category: "나의 활동",
       items: [
         { icon: BookOpen, label: "시험 응시 내역", path: "/student/exam?tab=history" },
-        { icon: Coins, label: "포인트 현황", path: "/student/points" },
-        { icon: MessageCircle, label: "문의 내역", path: "/student/qna/list" }
+        { icon: Coins, label: "포인트 현황", path: "/student/points" }
       ]
     },
-    {
-      category: "나의 정보",
-      items: [
-        { icon: Edit, label: "회원정보 수정", path: "/student/profile/edit" }, // TODO: 실제 경로에 맞게 수정 필요, 현재 MyPage 내 모달이라면 로직 조정 필요
-        // { icon: LogOut, label: "회원 탈퇴", path: "#", action: "withdraw" } // 탈퇴는 별도 처리
-      ]
-    }
+
   ];
 
   return (
@@ -163,7 +155,7 @@ const StudentSidebar = () => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>취소</AlertDialogCancel>
-              <AlertDialogAction 
+              <AlertDialogAction
                 onClick={handleWithdraw}
                 disabled={isWithdrawing}
                 className="bg-red-600 hover:bg-red-700"

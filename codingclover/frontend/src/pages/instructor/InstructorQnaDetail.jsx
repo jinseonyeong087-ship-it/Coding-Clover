@@ -115,14 +115,14 @@ const InstructorQnaDetail = () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">로딩 중...</div>;
-  if (!qna) return <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">질문을 찾을 수 없습니다.</div>;
+  if (loading) return <div className="min-h-screen bg-white flex items-center justify-center">로딩 중...</div>;
+  if (!qna) return <div className="min-h-screen bg-white flex items-center justify-center">질문을 찾을 수 없습니다.</div>;
 
   const isSolved = qna.status === 'ANSWERED' || (qna.answers && qna.answers.length > 0);
   const myUserId = currentUser ? (currentUser.userId || currentUser.id) : null;
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] font-sans">
+    <div className="min-h-screen bg-white font-sans">
       <Nav />
       <div className="h-16"></div>
 

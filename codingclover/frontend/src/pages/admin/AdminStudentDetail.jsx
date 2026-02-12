@@ -55,7 +55,7 @@ function AdminStudentDetail() {
       case "ENROLLED":
         return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
       case "COMPLETED":
-        return "bg-purple-500/10 text-purple-600 border-purple-500/20";
+        return "bg-gray-500/10 text-gray-600 border-gray-500/20";
       case "CANCEL_REQUESTED":
         return "bg-amber-500/10 text-amber-600 border-amber-500/20";
       case "CANCELED":

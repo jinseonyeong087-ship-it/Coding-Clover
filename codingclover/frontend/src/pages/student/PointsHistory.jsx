@@ -14,7 +14,7 @@ import {
     TableRow
 } from "@/components/ui/Table";
 import { Coins, RefreshCw, AlertTriangle } from 'lucide-react';
-import StudentSidebar from '@/components/StudentSidebar';
+
 
 function PointsHistory() {
     const navigate = useNavigate();
@@ -23,7 +23,7 @@ function PointsHistory() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const [itemsPerPage] = useState(15);
     const [refundStatus, setRefundStatus] = useState(null); // null, 'REQUESTED', 'COMPLETED', 'REJECTED'
 
     useEffect(() => {
@@ -201,7 +201,8 @@ function PointsHistory() {
                     };
                 });
 
-                setHistory(mappedHistory);
+                const sortedHistory = mappedHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+                setHistory(sortedHistory);
             } else {
                 setHistory([]);
             }
@@ -293,14 +294,11 @@ function PointsHistory() {
             <Nav />
 
             {/* Platform Standard Layout - Clean, Sidebar, White/Gray Theme */}
-            <div className="min-h-screen bg-gray-50 text-gray-900 pt-20 pb-20">
-                <div className="container mx-auto px-4 max-w-6xl flex flex-col md:flex-row gap-8">
-
-                    {/* Left Sidebar */}
-                    <StudentSidebar />
+            <div className="min-h-screen bg-white text-gray-900 pt-20 pb-20">
+                <div className="container mx-auto px-4 max-w-6xl">
 
                     {/* Main Content Area */}
-                    <main className="flex-1 min-w-0">
+                    <main className="min-w-0">
                         <div className="space-y-8">
 
                             {/* Page Header */}

@@ -363,7 +363,7 @@ const AdminExamList = () => {
                                     {selectedExam.questions?.map((q, idx) => (
                                         <div key={idx} className="bg-slate-50 p-5 rounded-lg border border-slate-100">
                                             <div className="flex gap-2 mb-3">
-                                                <span className="font-bold text-indigo-600 shrink-0">Q{idx + 1}.</span>
+                                                <span className="font-bold text-primary shrink-0">Q{idx + 1}.</span>
                                                 <p className="font-medium text-slate-900 whitespace-pre-wrap">{q.questionText}</p>
                                             </div>
 

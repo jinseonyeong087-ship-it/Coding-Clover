@@ -104,7 +104,7 @@ function AdminMain() {
             <Nav />
             {/* Background Decoration Removed per user feedback */}
 
-            <div className="min-h-screen pt-20 pb-20">
+            <div className="min-h-screen bg-white pt-20 pb-20">
                 <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
                     {/* Admin Sidebar */}
                     <AdminSidebar />
@@ -121,7 +121,7 @@ function AdminMain() {
                         </div>
 
                         {/* Stats Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                             <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">개설된 강좌</h3>
                                 <div className="text-3xl font-bold text-gray-900">{course.length} <span className="text-sm font-normal text-gray-500">개</span></div>
@@ -133,9 +133,6 @@ function AdminMain() {
                             <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                                 <h3 className="text-sm font-medium text-gray-500 mb-2">강의 업로드 대기</h3>
                                 <div className="text-3xl font-bold text-blue-600">{lecture.filter(l => l.approvalStatus === 'PENDING').length} <span className="text-sm font-normal text-gray-500">건</span></div>
-                            </div>
-                            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex items-center justify-center cursor-pointer hover:bg-gray-100">
-                                <span className="text-gray-700 font-bold">전체 통계 보기 →</span>
                             </div>
                         </div>
 
@@ -205,7 +202,7 @@ function AdminMain() {
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
                                     <h2 className="text-xl font-bold flex items-center gap-2">
-                                        <span className="w-2 h-8 bg-purple-600 rounded-full" />
+                                        <span className="w-2 h-8 bg-primary rounded-full" />
                                         신규 강사 승인
                                     </h2>
                                     <Badge variant="outline" className="text-xs bg-white">{status.filter(u => u.status === 'SUSPENDED' && u.profileStatus !== 'REJECTED').length}명 대기중</Badge>
@@ -220,7 +217,7 @@ function AdminMain() {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {status && status.length > 0 ? (
+                                            {status.filter(users => users.status === 'SUSPENDED' && users.profileStatus !== 'REJECTED').length > 0 ? (
                                                 status.filter(users => users.status === 'SUSPENDED' && users.profileStatus !== 'REJECTED').slice(0, 5).map((users, index) => {
                                                     const uniqueKey = users.userId || `user-idx-${index}`;
                                                     return (
@@ -254,7 +251,7 @@ function AdminMain() {
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-xl font-bold flex items-center gap-2">
-                                    <span className="w-2 h-8 bg-indigo-600 rounded-full" />
+                                    <span className="w-2 h-8 bg-blue-600 rounded-full" />
                                     강의 업로드 승인
                                 </h2>
                                 <Badge variant="outline" className="text-xs bg-white">{lecture.filter(l => l.approvalStatus === 'PENDING').length}건 대기중</Badge>

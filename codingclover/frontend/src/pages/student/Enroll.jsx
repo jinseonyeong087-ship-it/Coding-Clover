@@ -86,13 +86,13 @@ function Enroll() {
       {/* Background Decoration */}
       <div className="fixed inset-0 z-[-1] bg-background">
         <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[100px]" />
       </div>
 
       <div className="min-h-screen pt-24 pb-20 container mx-auto px-6 flex flex-col items-center justify-center">
         <div className="w-full max-w-2xl">
           <div className="text-center mb-10">
-            <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 mb-4">
+            <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600 mb-4">
               수강 신청 확인
             </h1>
             <p className="text-muted-foreground">
@@ -102,7 +102,7 @@ function Enroll() {
 
           <Card className="bg-background/60 backdrop-blur-xl border-border/50 shadow-2xl overflow-hidden relative group">
             {/* Decorative Top Border */}
-            <div className="h-2 w-full bg-gradient-to-r from-primary to-purple-600" />
+            <div className="h-2 w-full bg-gradient-to-r from-primary to-blue-600" />
 
             <CardHeader className="p-8 border-b border-border/50">
               <div className="flex justify-between items-start">

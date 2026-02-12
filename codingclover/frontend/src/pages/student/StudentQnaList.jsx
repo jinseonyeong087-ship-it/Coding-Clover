@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/Label';
 import { Badge } from "@/components/ui/badge";
 import {
   Search, MessageCircle, CheckCircle2, HelpCircle,
-  Plus, User, BookOpen, AlertCircle
+  Plus, User, BookOpen, AlertCircle, ChevronLeft, ChevronRight
 } from "lucide-react";
 import {
   Dialog,
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import StudentSidebar from '@/components/StudentSidebar';
+
 
 const StudentQnaList = () => {
   const navigate = useNavigate();
@@ -32,9 +32,11 @@ const StudentQnaList = () => {
   const [courseList, setCourseList] = useState([]); // Enrolled courses
   const [viewMode, setViewMode] = useState('all'); // 'all' | 'my'
 
-  // UI States
+  // 검색 및 페이징 상태
   const [searchTerm, setSearchTerm] = useState('');
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(15);
 
   useEffect(() => {
     // 유저 정보 가져오기
@@ -42,6 +44,12 @@ const StudentQnaList = () => {
     if (storedUser) {
       const u = JSON.parse(storedUser);
       setUser(u);
+    }
+
+    // URL 파라미터 체크 (tab=my)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'my') {
+      setViewMode('my');
     }
   }, []);
 
@@ -58,6 +66,7 @@ const StudentQnaList = () => {
 
       const response = await axios.get(url);
       setQnaList(response.data);
+      setCurrentPage(1); // 모드 변경 시 첫 페이지로
     } catch (e) {
       console.error("Failed fetch qna list", e);
     }
@@ -71,7 +80,6 @@ const StudentQnaList = () => {
   useEffect(() => {
     const fetchEnrolledCourses = async () => {
       try {
-        // Use the endpoint that returns enrolled courses for the logged-in student
         const response = await axios.get('/student/enrollment', { withCredentials: true });
         setCourseList(response.data);
       } catch (err) {
@@ -85,16 +93,8 @@ const StudentQnaList = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!user) {
-      alert('로그인이 필요합니다.');
-      return;
-    }
-
-    if (!courseId) {
-      alert('강좌를 선택해주세요.');
-      return;
-    }
+    if (!user) return alert('로그인이 필요합니다.');
+    if (!courseId) return alert('강좌를 선택해주세요.');
 
     const qnaData = {
       title,
@@ -105,7 +105,6 @@ const StudentQnaList = () => {
 
     try {
       const response = await axios.post('/student/qna/add', qnaData);
-
       if (response.status === 200) {
         alert('질문이 등록되었습니다.');
         setTitle('');
@@ -113,11 +112,8 @@ const StudentQnaList = () => {
         setCourseId('');
         setIsWriteModalOpen(false);
         fetchQnaList();
-      } else {
-        alert('등록 실패');
       }
     } catch (error) {
-      console.error('Error submitting QnA:', error);
       alert('에러 발생');
     }
   };
@@ -135,21 +131,24 @@ const StudentQnaList = () => {
     }
     return filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   };
+
   const filteredQnaList = getFilteredList();
 
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredQnaList.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredQnaList.length / itemsPerPage);
+
+  const handlePageChange = (n) => setCurrentPage(n);
 
   return (
     <>
       <Nav />
-      {/* Clean Layout without background blobs */}
-      <div className="min-h-screen bg-gray-50 pt-20 pb-20">
-        <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
-
-          {/* Component Sidebar */}
-          <StudentSidebar />
-
-          {/* Main Content */}
-          <main className="flex-1 min-w-0">
+      <div className="h-16"></div>
+      <div className="min-h-screen bg-white pb-20">
+        <div className="container mx-auto px-4 max-w-7xl pt-12">
+          <main className="min-w-0">
             <div className="mb-8 flex flex-col sm:flex-row gap-6 justify-between items-start sm:items-end">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">QnA 게시판</h1>
@@ -159,7 +158,6 @@ const StudentQnaList = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                {/* Write Button - Only for Students/Instructors (not purely admins looking at student view, though logic allows all non-admin roles effectively) */}
                 {(!user || user.role !== 'ADMIN') && (
                   <Button
                     onClick={() => {
@@ -173,7 +171,6 @@ const StudentQnaList = () => {
                   </Button>
                 )}
 
-                {/* Search */}
                 <div className="relative w-full sm:w-64">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Search className="h-4 w-4 text-gray-400" />
@@ -182,18 +179,20 @@ const StudentQnaList = () => {
                     className="pl-10 h-11 bg-white border-gray-200 focus:bg-white transition-all shadow-sm"
                     placeholder="검색어 입력..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Filter Tabs */}
             <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
               <button
                 onClick={() => setViewMode('all')}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap border ${viewMode === 'all'
-                  ? 'bg-gray-900 text-white border-gray-900'
+                  ? 'bg-[#4a6fa5] text-white border-[#4a6fa5]'
                   : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
                   }`}
               >
@@ -205,7 +204,7 @@ const StudentQnaList = () => {
                   setViewMode('my');
                 }}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap border ${viewMode === 'my'
-                  ? 'bg-gray-900 text-white border-gray-900'
+                  ? 'bg-[#4a6fa5] text-white border-[#4a6fa5]'
                   : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
                   }`}
               >
@@ -215,7 +214,7 @@ const StudentQnaList = () => {
 
             {/* List */}
             <div className="space-y-4">
-              {filteredQnaList.length === 0 ? (
+              {currentItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
                   <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                     <HelpCircle className="h-8 w-8 text-gray-300" />
@@ -224,63 +223,83 @@ const StudentQnaList = () => {
                   <p className="text-sm text-gray-500 mt-1">첫 번째 질문의 주인공이 되어보세요!</p>
                 </div>
               ) : (
-                filteredQnaList.map(qna => {
-                  const isSolved = qna.status === 'ANSWERED' || (qna.answers && qna.answers.length > 0);
-                  const answerCount = qna.answers ? qna.answers.length : 0;
+                <>
+                  <div className="space-y-4">
+                    {currentItems.map(qna => {
+                      const isSolved = qna.status === 'ANSWERED' || (qna.answers && qna.answers.length > 0);
+                      const answerCount = qna.answers ? qna.answers.length : 0;
 
-                  return (
-                    <div
-                      key={qna.qnaId}
-                      onClick={() => navigate(`/student/qna/${qna.qnaId}`)}
-                      className="group relative bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all duration-200"
-                    >
-                      {/* Left Accent Bar */}
-                      <div className={`absolute left-0 top-6 bottom-6 w-1 rounded-r-full transition-colors ${isSolved ? 'bg-green-500' : 'bg-amber-400'}`} />
-
-                      <div className="flex items-start gap-5 pl-3">
-                        <div className="flex-1 min-w-0 space-y-2">
-                          <div className="flex flex-wrap items-center gap-2">
-                            {qna.courseTitle && (
-                              <Badge variant="outline" className="bg-gray-50 text-gray-600 font-normal border-gray-200">
-                                {qna.courseTitle}
-                              </Badge>
-                            )}
-                            <Badge variant={isSolved ? "default" : "secondary"} className={`${isSolved ? "bg-green-100 text-green-700 hover:bg-green-200 border-0" : "bg-amber-100 text-amber-700 hover:bg-amber-200 border-0"}`}>
-                              {isSolved ? <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />해결됨</span> : <span className="flex items-center gap-1"><HelpCircle className="h-3 w-3" />미해결</span>}
-                            </Badge>
-                          </div>
-
-                          <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-1 pr-4">
-                            {qna.title}
-                          </h3>
-                          <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">
-                            {qna.question}
-                          </p>
-
-                          <div className="flex items-center gap-4 text-xs text-gray-400 pt-2">
-                            <span className="flex items-center gap-1 font-medium text-gray-600">
-                              <User className="h-3 w-3" />
-                              {qna.userName || '익명'}
-                            </span>
-                            <div className="w-px h-3 bg-gray-200"></div>
-                            <span>{new Date(qna.createdAt).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-
-                        {/* Right Side Answer Count */}
-                        <div className="hidden sm:flex flex-col items-center justify-center min-w-[4rem] self-center">
-                          <div className={`flex flex-col items-center justify-center w-12 h-12 rounded-2xl border transition-colors ${answerCount > 0
-                            ? 'bg-primary/5 border-primary/20 text-primary'
-                            : 'bg-gray-50 border-gray-100 text-gray-400'
-                            }`}>
-                            <span className="text-lg font-bold leading-none">{answerCount}</span>
-                            <MessageCircle className="h-3 w-3 mt-1" />
+                      return (
+                        <div
+                          key={qna.qnaId}
+                          onClick={() => navigate(`/student/qna/${qna.qnaId}`)}
+                          className="group relative bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all duration-200"
+                        >
+                          <div className={`absolute left-0 top-6 bottom-6 w-1 rounded-r-full transition-colors ${isSolved ? 'bg-green-500' : 'bg-amber-400'}`} />
+                          <div className="flex items-start gap-5 pl-3">
+                            <div className="flex-1 min-w-0 space-y-2">
+                              <div className="flex flex-wrap items-center gap-2">
+                                {qna.courseTitle && (
+                                  <Badge variant="outline" className="bg-gray-50 text-gray-600 font-normal border-gray-200">
+                                    {qna.courseTitle}
+                                  </Badge>
+                                )}
+                                <Badge variant={isSolved ? "default" : "secondary"} className={`${isSolved ? "bg-green-100 text-green-700 hover:bg-green-200 border-0" : "bg-amber-100 text-amber-700 hover:bg-amber-200 border-0"}`}>
+                                  {isSolved ? <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />해결됨</span> : <span className="flex items-center gap-1"><HelpCircle className="h-3 w-3" />미해결</span>}
+                                </Badge>
+                              </div>
+                              <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-1 pr-4">
+                                {qna.title}
+                              </h3>
+                              <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">
+                                {qna.question}
+                              </p>
+                              <div className="flex items-center gap-4 text-xs text-gray-400 pt-2">
+                                <span className="flex items-center gap-1 font-medium text-gray-600">
+                                  <User className="h-3 w-3" />
+                                  {qna.userName || '익명'}
+                                </span>
+                                <div className="w-px h-3 bg-gray-200"></div>
+                                <span>{new Date(qna.createdAt).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                            <div className="hidden sm:flex flex-col items-center justify-center min-w-[4rem] self-center">
+                              <div className={`flex flex-col items-center justify-center w-12 h-12 rounded-2xl border transition-colors ${answerCount > 0
+                                ? 'bg-primary/5 border-primary/20 text-primary'
+                                : 'bg-gray-50 border-gray-100 text-gray-400'
+                                }`}>
+                                <span className="text-lg font-bold leading-none">{answerCount}</span>
+                                <MessageCircle className="h-3 w-3 mt-1" />
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      );
+                    })}
+                  </div>
+
+                  {totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-1 pt-8">
+                      <Button variant="ghost" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                        <Button
+                          key={p}
+                          variant={currentPage === p ? "default" : "ghost"}
+                          size="sm"
+                          className="w-9 h-9 font-bold"
+                          onClick={() => handlePageChange(p)}
+                        >
+                          {p}
+                        </Button>
+                      ))}
+                      <Button variant="ghost" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
                     </div>
-                  )
-                })
+                  )}
+                </>
               )}
             </div>
           </main>

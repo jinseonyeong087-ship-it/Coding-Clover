@@ -252,7 +252,7 @@ function InstructorMypage() {
     <>
       <Nav />
       {/* Platform Standard Layout - Clean, Sidebar, White/Gray Theme */}
-      <div className="min-h-screen bg-gray-50 text-gray-900 pt-20 pb-20">
+      <div className="min-h-screen bg-white text-gray-900 pt-20 pb-20">
         <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
           {/* Left Sidebar */}
@@ -263,7 +263,7 @@ function InstructorMypage() {
             <div className="space-y-12">
               {/* Header */}
               <header>
-                <h1 className="text-3xl font-extrabold tracking-tight mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
+                <h1 className="text-3xl font-extrabold tracking-tight mb-2 text-black">
                   Instructor dashboard
                 </h1>
                 <p className="text-base text-muted-foreground">
@@ -410,7 +410,7 @@ function InstructorMypage() {
                                 취소
                               </Button>
                             )}
-                            <Button type="submit" disabled={isSubmitting} className="shadow-lg hover:shadow-primary/25 bg-purple-600 hover:bg-purple-700">
+                            <Button type="submit" disabled={isSubmitting} className="shadow-lg hover:shadow-primary/25 bg-primary hover:bg-primary/90">
                               {isSubmitting ? '처리 중...' : '신청서 제출'}
                             </Button>
                           </div>
@@ -470,7 +470,7 @@ function InstructorMypage() {
                           : `${getFilterLabel(courseFilter)} 상태의 강좌가 없습니다.`}
                       </p>
                       {courseFilter === 'ALL' && (
-                        <Button onClick={() => navigate('/instructor/course/new')} className="font-bold shadow-lg bg-purple-600 hover:bg-purple-700">
+                        <Button onClick={() => navigate('/instructor/course/new')} className="font-bold shadow-lg bg-primary hover:bg-primary/90">
                           강좌 개설하기
                         </Button>
                       )}
@@ -493,7 +493,7 @@ function InstructorMypage() {
                                   {course.description}
                                 </p>
                                 <div className="flex items-center gap-3 text-xs font-medium">
-                                  <span className="bg-purple-50 text-purple-600 px-2 py-1 rounded-md">Lv. {course.level}</span>
+                                  <span className="bg-gray-50 text-gray-600 px-2 py-1 rounded-md">Lv. {course.level}</span>
                                   <span className="bg-amber-50 text-amber-600 px-2 py-1 rounded-md">
                                     {course.price.toLocaleString()}P
                                   </span>

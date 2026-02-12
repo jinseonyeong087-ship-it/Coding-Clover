@@ -19,7 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import LectureCreate from "./LectureCreate";
 import InstructorLecture from "./InstructorLecture";
 import LectureDetail from "./LectureDetail";
- 
+
 function InstructorCourseDetail() {
     const { courseId: courseIdParam, lectureId: lectureIdParam } = useParams();
     const [courseId, setCourseId] = useState(courseIdParam || null);
@@ -116,11 +116,11 @@ function InstructorCourseDetail() {
         <>
             <Nav />
             <div className="py-8" />
-            <SidebarProvider className="bg-white">
-                <Sidebar dir="rtl" side="left" className="!top-16 !h-[calc(100svh-4rem)]">
+            <SidebarProvider style={{ "--sidebar-width": "20rem" }} className="bg-white">
+                <Sidebar dir="rtl" side="left" className="!top-16 !h-[calc(100svh-4rem)] border-r">
                     <SidebarHeader
                         onClick={() => navigate(`/instructor/course/${courseId}`)}
-                        className="cursor-pointer hover:bg-accent"
+                        className="cursor-pointer hover:bg-accent p-4"
                     >
                         강의 업로드 {courseInfo ? courseInfo.title : '강좌명'}
                     </SidebarHeader>
@@ -129,18 +129,54 @@ function InstructorCourseDetail() {
                             <SidebarGroup>
                                 <SidebarMenu>
                                     {lectureList.length > 0 ? (
-                                        lectureList.map((lecture) => (
-                                            <SidebarMenuItem key={lecture.lectureId}>
-                                                <SidebarMenuButton onClick={() => navigate(`/instructor/lecture/${lecture.lectureId}`)}>
-                                                    <span>{lecture.orderNo}강. {lecture.title}</span>
-                                                    {getStatusBadge(lecture.approvalStatus)}
-                                                </SidebarMenuButton>
-                                            </SidebarMenuItem>
-                                        ))
+                                        lectureList.map((lecture) => {
+                                            const isActive = selectedLecture && String(selectedLecture.lectureId) === String(lecture.lectureId);
+                                            const min = Math.floor((lecture.duration || 0) / 60);
+                                            const sec = (lecture.duration || 0) % 60;
+                                            const durationStr = `${min}분 ${sec}`;
+
+                                            return (
+                                                <SidebarMenuItem key={lecture.lectureId}>
+                                                    <div
+                                                        onClick={() => navigate(`/instructor/lecture/${lecture.lectureId}`)}
+                                                        className={`w-full flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors border-l-2
+                                                            ${isActive
+                                                                ? 'bg-blue-50/50 border-blue-600'
+                                                                : 'hover:bg-gray-50 border-transparent'
+                                                            }`}
+                                                    >
+                                                        {/* Number Circle */}
+                                                        <div className={`
+                                                            w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5
+                                                            ${isActive
+                                                                ? 'bg-blue-600 text-white shadow-sm'
+                                                                : 'bg-gray-100 text-gray-500'
+                                                            }
+                                                        `}>
+                                                            {lecture.orderNo}
+                                                        </div>
+
+                                                        {/* Content */}
+                                                        <div className="flex flex-col min-w-0 gap-1 flex-1">
+                                                            <span className={`text-sm font-medium leading-tight line-clamp-2 ${isActive ? 'text-blue-700' : 'text-gray-700'}`}>
+                                                                {lecture.orderNo}강. {lecture.title}
+                                                            </span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[11px] text-gray-400 font-medium">
+                                                                    {durationStr}
+                                                                </span>
+                                                                {/* Status Badge (Keep minimal) */}
+                                                                {getStatusBadge(lecture.approvalStatus)}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </SidebarMenuItem>
+                                            );
+                                        })
                                     ) : (
-                                        <SidebarMenuItem>
-                                            <SidebarMenuButton>등록된 강의가 없습니다</SidebarMenuButton>
-                                        </SidebarMenuItem>
+                                        <div className="p-4 text-center text-sm text-gray-500">
+                                            등록된 강의가 없습니다
+                                        </div>
                                     )}
                                 </SidebarMenu>
                             </SidebarGroup>
@@ -154,18 +190,18 @@ function InstructorCourseDetail() {
                     <div className="flex items-center gap-2 px-4 py-2">
                         <SidebarTrigger />
                     </div>
-                    <section className="container mx-auto px-16 py-24">
-                    {selectedLecture ? (
-                        /* 강의 상세 */
-                        <LectureDetail lecture={selectedLecture} onLectureUpdated={fetchLectures} />
-                    ) : (
-                        <>
-                            {/* 강좌 소개 */}
-                            <LectureCreate />
-                            {/* 강의 업로드 */}
-                            {/* <InstructorLecture /> */}
-                        </>
-                    )}
+                    <section className="px-8 py-8 w-full max-w-[1800px] mx-auto">
+                        {selectedLecture ? (
+                            /* 강의 상세 */
+                            resolveLectureDetail()
+                        ) : (
+                            <>
+                                {/* 강좌 소개 */}
+                                <LectureCreate />
+                                {/* 강의 업로드 */}
+                                {/* <InstructorLecture /> */}
+                            </>
+                        )}
                     </section>
                     <Tail />
                 </SidebarInset>

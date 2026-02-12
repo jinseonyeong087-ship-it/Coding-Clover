@@ -278,9 +278,9 @@ const CommunityPostDetail = () => {
                         <div className="space-y-6">
                             {/* 자유게시판 헤더 */}
                             <div className="text-center mb-8">
-                                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent inline-block">자유게시판</h1>
+                                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent inline-block">자유게시판</h1>
                             </div>
-                            
+
                             <Button
                                 variant="ghost"
                                 onClick={() => {

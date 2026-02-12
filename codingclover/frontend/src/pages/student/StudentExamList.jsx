@@ -40,18 +40,18 @@ const StudentExamList = () => {
         try {
             // courseId가 있으면 특정 강좌의 시험, 없으면 전체 시험
             const examEndpoint = courseId ? `/student/exam/${courseId}` : "/student/exam";
-            
+
             console.log("시험 조회 요청:", examEndpoint);
             console.log("Course ID:", courseId);
-            
+
             const [examsRes, scoresRes] = await Promise.all([
                 axios.get(examEndpoint),
                 axios.get("/student/my-scores")
             ]);
-            
+
             console.log("시험 응답 데이터:", examsRes.data);
             console.log("점수 응답 데이터:", scoresRes.data);
-            
+
             setAvailableExams(examsRes.data);
             setScoreHistory(scoresRes.data);
         } catch (error) {
@@ -101,7 +101,7 @@ const StudentExamList = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50">
+        <div className="min-h-screen bg-white">
             <StudentNav />
             <div className="container mx-auto py-10 max-w-5xl">
                 <div className="flex flex-col gap-2 mb-8">

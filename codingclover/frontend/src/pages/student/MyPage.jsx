@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { User, Edit, Coins, ChevronRight, BookOpen, MonitorPlay, Calendar, AlertCircle, Trash2 } from "lucide-react";
+import { User, Edit, Coins, ChevronRight, BookOpen, MonitorPlay, Calendar, AlertCircle, Trash2, Code2 } from "lucide-react";
 import axios from 'axios';
 import coinImg from '../../img/coin.png';
 
@@ -310,6 +310,12 @@ function MyPage() {
       return;
     }
 
+    // edit 파라미터 체크
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('edit') === 'true') {
+      setIsEditing(true);
+    }
+
     fetchData();
     fetchUserPoints();
   }, []);
@@ -455,6 +461,33 @@ function MyPage() {
     }
   };
 
+  const [activeTab, setActiveTab] = useState('courses');
+  const [testHistory, setTestHistory] = useState([]);
+  const [testHistoryLoading, setTestHistoryLoading] = useState(false);
+
+  // 코딩 테스트 내역 조회
+  const fetchTestHistory = async () => {
+    try {
+      setTestHistoryLoading(true);
+      const currentIdentifier = getUserIdentifier();
+      if (!currentIdentifier) return;
+
+      const response = await axios.get('/api/student/coding-test/results', { withCredentials: true });
+      setTestHistory(response.data || []);
+    } catch (err) {
+      console.error('코딩 테스트 내역 조회 실패:', err);
+      setTestHistory([]);
+    } finally {
+      setTestHistoryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'codingtests') {
+      fetchTestHistory();
+    }
+  }, [activeTab]);
+
   //수정 취소
   const handleCancel = () => {
     if (user) {
@@ -472,7 +505,7 @@ function MyPage() {
     <>
       <Nav />
       {/* Platform Standard Layout - Clean, Sidebar, White/Gray Theme */}
-      <div className="min-h-screen bg-gray-50 text-gray-900 pt-20 pb-20">
+      <div className="min-h-screen bg-white text-gray-900 pt-20 pb-20">
         <div className="container mx-auto px-4 max-w-6xl flex flex-col md:flex-row gap-8">
 
           {/* Left Sidebar */}
@@ -508,7 +541,7 @@ function MyPage() {
                     {/* Info Form or Display */}
                     <div className="flex-1 w-full">
                       {isEditing ? (
-                        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 space-y-4">
+                        <div className="bg-white p-6 rounded-lg border border-gray-200 space-y-4">
                           <h3 className="font-bold text-lg mb-4">회원정보 수정</h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -593,96 +626,164 @@ function MyPage() {
                   </div>
                 </div>
 
-                {/* 3. Course List */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-gray-900">최근 수강 강좌</h3>
-                    <Button variant="link" onClick={() => navigate('/lecture')} className="text-gray-500 hover:text-primary p-0 h-auto font-normal">강좌 더보기 <ChevronRight className="w-4 h-4 ml-1" /></Button>
-                  </div>
-
-                  {enrollments.length === 0 ? (
-                    <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-gray-500">
-                      <BookOpen className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-                      <p className="mb-4">수강 중인 강좌가 없습니다.</p>
-                      <Button onClick={() => navigate('/lecture')}>강좌 보러가기</Button>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {enrollments.map((enrollment) => {
-                        const isCanceled = enrollment.status === 'CANCELED' || enrollment.status === 'CANCELLED';
-                        const requestKey = enrollment.enrollmentId ?? enrollment.courseId;
-                        const isRequested = Boolean(cancelRequests[requestKey]);
-                        const progress = courseProgress[enrollment.courseId] || { completed: 0, total: 0, percent: 0 };
-                        const thumbnail = enrollment.thumbnail || enrollment.courseThumbnail || enrollment.thumbnailUrl;
-
-                        return (
-                          <div key={requestKey} className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-primary/50 hover:shadow-md transition-all">
-                            {/* Thumbnail */}
-                            <div className="aspect-video bg-gray-100 relative">
-                              {thumbnail ? (
-                                <img src={thumbnail} alt={enrollment.courseTitle} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-                              ) : null}
-                              <div className={`w-full h-full items-center justify-center text-gray-400 bg-gray-50 ${thumbnail ? 'hidden' : 'flex'}`}>
-                                <MonitorPlay className="w-10 h-10 opacity-20" />
-                              </div>
-
-                              {/* Status Badge */}
-                              <div className="absolute top-3 left-3">
-                                <span className={`px-2 py-1 rounded text-[10px] font-bold text-white
-                                          ${enrollment.status === 'ENROLLED' ? 'bg-primary' :
-                                    enrollment.status === 'COMPLETED' ? 'bg-gray-800' :
-                                      'bg-red-500'}
-                                       `}>
-                                  {enrollment.status === 'ENROLLED' ? '수강중' :
-                                    enrollment.status === 'COMPLETED' ? '완료' : '취소'}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Content */}
-                            <div className="p-4">
-                              <h4 className="font-bold text-gray-900 line-clamp-1 mb-1 group-hover:text-primary transition-colors">{enrollment.courseTitle}</h4>
-                              <p className="text-xs text-gray-500 mb-4">{new Date(enrollment.enrolledAt).toLocaleDateString()} 신청</p>
-
-                              <div className="space-y-1 mb-4">
-                                <div className="flex justify-between text-xs text-gray-600">
-                                  <span>진도율</span>
-                                  <span className="font-bold text-primary">{progress.percent}%</span>
-                                </div>
-                                <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                                  <div className="bg-primary h-full rounded-full transition-all duration-300" style={{ width: `${progress.percent}%` }} />
-                                </div>
-                              </div>
-
-                              <div className="flex gap-2">
-                                <Button
-                                  onClick={() => navigate(`/student/course/${enrollment.courseId}/lectures`)}
-                                  size="sm"
-                                  className="flex-1 h-9 rounded bg-white border border-gray-200 text-gray-900 hover:bg-black hover:text-white hover:border-black shadow-none"
-                                  disabled={isCanceled}
-                                >
-                                  {enrollment.status === 'COMPLETED' ? '복습하기' : '이어하기'}
-                                </Button>
-
-                                {enrollment.status === 'ENROLLED' && (
-                                  <Button
-                                    disabled={isRequested || cancelRequestLoadingId === requestKey}
-                                    onClick={() => handleCancelRequest(enrollment)}
-                                    size="sm"
-                                    className="h-9 px-3 rounded border border-gray-200 bg-white text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 shadow-none text-xs font-medium"
-                                  >
-                                    {isRequested ? '요청됨' : '취소 요청'}
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                {/* 3. Tab Navigation */}
+                <div className="flex gap-4 border-b border-gray-200 mb-6">
+                  <button
+                    onClick={() => setActiveTab('courses')}
+                    className={`pb-4 text-sm font-bold transition-all relative ${activeTab === 'courses' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
+                      }`}
+                  >
+                    수강중인 강좌
+                    {activeTab === 'courses' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary" />}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('codingtests')}
+                    className={`pb-4 text-sm font-bold transition-all relative ${activeTab === 'codingtests' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
+                      }`}
+                  >
+                    코딩 테스트 내역
+                    {activeTab === 'codingtests' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary" />}
+                  </button>
                 </div>
 
+                {/* 4. Tab Content */}
+                {activeTab === 'courses' ? (
+                  <div>
+                    {enrollments.length === 0 ? (
+                      <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-gray-500">
+                        <BookOpen className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+                        <p className="mb-4">수강 중인 강좌가 없습니다.</p>
+                        <Button onClick={() => navigate('/lecture')}>강좌 보러가기</Button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {enrollments.map((enrollment) => {
+                          const isCanceled = enrollment.status === 'CANCELED' || enrollment.status === 'CANCELLED';
+                          const requestKey = enrollment.enrollmentId ?? enrollment.courseId;
+                          const isRequested = Boolean(cancelRequests[requestKey]);
+                          const progress = courseProgress[enrollment.courseId] || { completed: 0, total: 0, percent: 0 };
+                          const thumbnail = enrollment.thumbnail || enrollment.courseThumbnail || enrollment.thumbnailUrl;
+
+                          return (
+                            <div key={requestKey} className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-primary/50 hover:shadow-md transition-all">
+                              {/* Thumbnail */}
+                              <div className="aspect-video bg-gray-100 relative">
+                                {thumbnail ? (
+                                  <img src={thumbnail} alt={enrollment.courseTitle} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                                ) : null}
+                                <div className={`w-full h-full items-center justify-center text-gray-400 bg-gray-50 ${thumbnail ? 'hidden' : 'flex'}`}>
+                                  <MonitorPlay className="w-10 h-10 opacity-20" />
+                                </div>
+
+                                {/* Status Badge */}
+                                <div className="absolute top-3 left-3">
+                                  <span className={`px-2 py-1 rounded text-[10px] font-bold text-white
+                                            ${enrollment.status === 'ENROLLED' ? 'bg-primary' :
+                                      enrollment.status === 'COMPLETED' ? 'bg-gray-800' :
+                                        'bg-red-500'}
+                                         `}>
+                                    {enrollment.status === 'ENROLLED' ? '수강중' :
+                                      enrollment.status === 'COMPLETED' ? '완료' : '취소'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Content */}
+                              <div className="p-4">
+                                <h4 className="font-bold text-gray-900 line-clamp-1 mb-1 group-hover:text-primary transition-colors">{enrollment.courseTitle}</h4>
+                                <p className="text-xs text-gray-500 mb-4">{new Date(enrollment.enrolledAt).toLocaleDateString()} 신청</p>
+
+                                <div className="space-y-1 mb-4">
+                                  <div className="flex justify-between text-xs text-gray-600">
+                                    <span>진도율</span>
+                                    <span className="font-bold text-primary">{progress.percent}%</span>
+                                  </div>
+                                  <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                                    <div className="bg-primary h-full rounded-full transition-all duration-300" style={{ width: `${progress.percent}%` }} />
+                                  </div>
+                                </div>
+
+                                <div className="flex gap-2">
+                                  <Button
+                                    onClick={() => navigate(`/student/course/${enrollment.courseId}/lectures`)}
+                                    size="sm"
+                                    className="flex-1 h-9 rounded bg-white border border-gray-200 text-gray-900 hover:bg-black hover:text-white hover:border-black shadow-none"
+                                    disabled={isCanceled}
+                                  >
+                                    {enrollment.status === 'COMPLETED' ? '복습하기' : '이어하기'}
+                                  </Button>
+
+                                  {enrollment.status === 'ENROLLED' && (
+                                    <Button
+                                      disabled={isRequested || cancelRequestLoadingId === requestKey}
+                                      onClick={() => handleCancelRequest(enrollment)}
+                                      size="sm"
+                                      className="h-9 px-3 rounded border border-gray-200 bg-white text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 shadow-none text-xs font-medium"
+                                    >
+                                      {isRequested ? '요청됨' : '취소 요청'}
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                    {testHistoryLoading ? (
+                      <div className="h-64 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      </div>
+                    ) : testHistory.length === 0 ? (
+                      <div className="p-12 text-center text-gray-500">
+                        <Code2 className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+                        <p>응시한 코딩 테스트 내역이 없습니다.</p>
+                        <Button onClick={() => navigate('/coding-test')} className="mt-4">테스트 도전하기</Button>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                          <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                            <tr>
+                              <th className="px-6 py-4 font-bold">테스트 제목</th>
+                              <th className="px-6 py-4 font-bold text-center">결과</th>
+                              <th className="px-6 py-4 font-bold text-center">점수</th>
+                              <th className="px-6 py-4 font-bold text-center">응시일</th>
+                              <th className="px-6 py-4 font-bold text-right">상세보기</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {testHistory.map((result) => (
+                              <tr key={result.resultId} className="hover:bg-gray-50/50 transition-colors">
+                                <td className="px-6 py-4 font-bold text-gray-900">{result.title}</td>
+                                <td className="px-6 py-4 text-center">
+                                  <Badge variant={result.passed ? "default" : "destructive"} className={result.passed ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0" : ""}>
+                                    {result.passed ? '합격' : '불합격'}
+                                  </Badge>
+                                </td>
+                                <td className="px-6 py-4 text-center font-mono font-bold text-primary">{result.score}점</td>
+                                <td className="px-6 py-4 text-center text-gray-500">{new Date(result.createdAt).toLocaleDateString()}</td>
+                                <td className="px-6 py-4 text-right">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => navigate(`/student/coding-test/results/${result.resultId}`)}
+                                    className="text-gray-400 hover:text-primary"
+                                  >
+                                    <ChevronRight className="h-4 w-4" />
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </main>

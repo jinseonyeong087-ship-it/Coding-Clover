@@ -48,7 +48,7 @@ const ExamResult = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50">
+        <div className="min-h-screen bg-white">
             <InstructorNav />
             <div className="container mx-auto py-10 max-w-5xl">
                 <div className="flex items-center gap-4 mb-8">

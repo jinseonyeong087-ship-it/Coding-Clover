@@ -67,16 +67,14 @@ function InstructorCourseList() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col bg-background relative overflow-hidden">
+        <div className="flex min-h-screen flex-col bg-white relative overflow-hidden">
             <Nav />
             {/* Background Decoration */}
-            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
-            <div className="fixed bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
             <main className="container mx-auto px-6 py-24 flex-1">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
                     <div>
-                        <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 mb-2">
+                        <h1 className="text-4xl font-extrabold tracking-tight text-black mb-2">
                             내 강좌 관리
                         </h1>
                         <p className="text-muted-foreground">
@@ -86,7 +84,7 @@ function InstructorCourseList() {
 
                 </div>
 
-                <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl shadow-xl overflow-hidden p-6">
+                <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden p-6">
                     <Table>
                         <TableHeader>
                             <TableRow className="hover:bg-muted/50 border-b border-border/50">

@@ -172,10 +172,8 @@ function InstructorLecture() {
     return (
         <>
             <Nav />
-            <div className="min-h-screen bg-gray-50 pt-20 pb-20">
-                <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
-
-                    <InstructorSidebar />
+            <div className="min-h-screen bg-white pt-20 pb-20">
+                <div className="container mx-auto px-4 max-w-7xl">
 
                     <main className="flex-1 min-w-0">
                         {/* Header Section */}
@@ -187,7 +185,7 @@ function InstructorLecture() {
                             {isReordering && (
                                 <Button
                                     onClick={saveNewOrder}
-                                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold h-11 px-6 shadow-lg shadow-purple-100 animate-bounce"
+                                    className="bg-primary hover:bg-primary/90 text-white font-bold h-11 px-6 shadow-lg shadow-primary/10 animate-pulse"
                                 >
                                     <Save className="w-4 h-4 mr-2" />
                                     변경된 순서 저장하기
@@ -230,7 +228,7 @@ function InstructorLecture() {
                                                             onClick={() => handleSelectCourse(course)}
                                                             className={`w-full group flex items-center gap-3 p-3 text-left rounded-xl transition-all
                                                                 ${selectedCourse?.courseId === course.courseId
-                                                                    ? 'bg-purple-50 text-purple-700 shadow-sm'
+                                                                    ? 'bg-primary/5 text-primary shadow-sm'
                                                                     : 'hover:bg-gray-50 text-gray-700'}`}
                                                         >
                                                             <div className={`w-12 h-12 rounded-lg overflow-hidden shrink-0 border
@@ -264,7 +262,7 @@ function InstructorLecture() {
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-inter">
                                                 <Card className="p-4 bg-white border-gray-200 shadow-sm rounded-2xl">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+                                                        <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center">
                                                             <Video className="w-5 h-5 text-purple-600" />
                                                         </div>
                                                         <div>
@@ -306,7 +304,7 @@ function InstructorLecture() {
                                                     </div>
                                                     <Button
                                                         onClick={() => setIsUploadOpen(true)}
-                                                        className="h-11 px-6 font-bold shadow-lg shadow-purple-100 bg-purple-600 text-white hover:bg-purple-700 transition-all active:scale-95 rounded-xl border-0"
+                                                        className="h-11 px-6 font-bold shadow-lg shadow-blue-100 bg-[#4a6fa5] text-white hover:bg-[#3b5c8d] transition-all active:scale-95 rounded-xl border-0"
                                                     >
                                                         <Plus className="w-4 h-4 mr-2" />
                                                         새 강의 추가
@@ -324,7 +322,7 @@ function InstructorLecture() {
                                                                     onDragEnd={handleDragEnd}
                                                                     onDragOver={(e) => e.preventDefault()}
                                                                     onDrop={handleSort}
-                                                                    className="flex flex-col md:flex-row md:items-center gap-4 p-6 hover:bg-purple-50/30 transition-all group cursor-move select-none"
+                                                                    className="flex flex-col md:flex-row md:items-center gap-4 p-6 hover:bg-gray-50/50 transition-all group cursor-move select-none"
                                                                 >
                                                                     <div className="flex items-center gap-4 flex-1">
                                                                         <GripVertical className="w-5 h-5 text-gray-300 group-hover:text-purple-400 transition-colors shrink-0" />

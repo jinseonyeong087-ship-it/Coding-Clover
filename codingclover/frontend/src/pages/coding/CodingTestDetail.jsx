@@ -414,7 +414,7 @@ const CodingTestDetail = () => {
                           size="sm"
                           onClick={handleSubmitCode}
                           disabled={isRunning}
-                          className="bg-black hover:bg-gray-800 text-white h-9 px-6 font-bold rounded-lg shadow-md transition-all active:scale-95"
+                          className="bg-[#4a6fa5] hover:bg-[#3b5c8d] text-white h-9 px-6 font-bold rounded-lg shadow-md transition-all active:scale-95"
                         >
                           {isRunning ? <RotateCcw className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
                           제출

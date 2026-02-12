@@ -13,11 +13,22 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LayoutGrid, BookCheck, ClipboardList } from "lucide-react";
+import { LayoutGrid, BookCheck, ClipboardList, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationPrevious,
+    PaginationNext,
+    PaginationEllipsis
+} from "@/components/ui/pagination";
 
 function AdminCourseList() {
 
     const [course, setCourse] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 15;
 
     useEffect(() => {
         fetch('/admin/course', {
@@ -52,10 +63,23 @@ function AdminCourseList() {
         return (now - created) <= 1000 * 60 * 60 * 24;
     };
 
+    // Sorting and Pagination Logic
+    const sortedCourses = [...course].sort((a, b) => (b.courseId || 0) - (a.courseId || 0));
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = sortedCourses.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(sortedCourses.length / itemsPerPage);
+
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
+
     return (
         <>
             <Nav />
-            <div className="min-h-screen bg-gray-50 pt-20 pb-20">
+            <div className="min-h-screen bg-white pt-20 pb-20">
                 <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
                     <AdminSidebar />
@@ -117,8 +141,8 @@ function AdminCourseList() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {course && course.length > 0 ? (
-                                        course.map((item, index) => {
+                                    {currentItems && currentItems.length > 0 ? (
+                                        currentItems.map((item, index) => {
                                             const uniqueKey = item.courseId || `course-idx-${index}`;
                                             return (
                                                 <TableRow key={uniqueKey} className="hover:bg-gray-50/50 transition-colors h-20">
@@ -163,7 +187,7 @@ function AdminCourseList() {
                                                         ) : item.level === 2 ? (
                                                             <Badge variant="outline" className="text-blue-600 border-blue-100 bg-blue-50/50 font-normal">중급</Badge>
                                                         ) : (
-                                                            <Badge variant="outline" className="text-purple-600 border-purple-100 bg-purple-50/50 font-normal">고급</Badge>
+                                                            <Badge variant="outline" className="text-gray-600 border-gray-100 bg-gray-50/50 font-normal">고급</Badge>
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-center">
@@ -188,6 +212,41 @@ function AdminCourseList() {
                                 </TableBody>
                             </Table>
                         </Card>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="mt-6">
+                                <Pagination>
+                                    <PaginationContent>
+                                        <PaginationItem>
+                                            <PaginationPrevious
+                                                onClick={() => handlePageChange(currentPage - 1)}
+                                                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                            />
+                                        </PaginationItem>
+
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                            <PaginationItem key={page}>
+                                                <PaginationLink
+                                                    isActive={page === currentPage}
+                                                    onClick={() => handlePageChange(page)}
+                                                    className="cursor-pointer"
+                                                >
+                                                    {page}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        ))}
+
+                                        <PaginationItem>
+                                            <PaginationNext
+                                                onClick={() => handlePageChange(currentPage + 1)}
+                                                className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                            />
+                                        </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            </div>
+                        )}
                     </main>
                 </div>
             </div>

@@ -101,7 +101,7 @@ function InstructorMain() {
             <Nav />
             {/* Background Decoration */}
             <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
-            <div className="fixed bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
+            <div className="fixed bottom-0 right-0 w-[800px] h-[600px] bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
             {instructorStatus == 'APPROVED' ? (
                 <main className="container mx-auto px-6 py-24 flex-1 max-w-7xl">
@@ -130,7 +130,7 @@ function InstructorMain() {
                             <div className="text-3xl font-bold text-purple-500">{totalStudents} <span className="text-sm font-normal text-muted-foreground">명</span></div>
                         </div>
                         <Link to="/instructor/course/new" className="bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/20 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex items-center justify-center">
-                            <span className="text-primary font-bold">+ 강좌 개설 신청 →</span>
+                            <span className="text-primary font-bold">강좌 개설 신청 →</span>
                         </Link>
                     </div>
 
@@ -170,8 +170,8 @@ function InstructorMain() {
                                                 </TableCell>
                                                 <TableCell className="text-center">
                                                     <span className={`px-2 py-1 rounded text-xs font-medium ${course.level === 1 ? 'bg-yellow-500/10 text-yellow-600' :
-                                                            course.level === 2 ? 'bg-green-500/10 text-green-600' :
-                                                                'bg-red-500/10 text-red-600'
+                                                        course.level === 2 ? 'bg-green-500/10 text-green-600' :
+                                                            'bg-red-500/10 text-red-600'
                                                         }`}>
                                                         {getLevelText(course.level)}
                                                     </span>

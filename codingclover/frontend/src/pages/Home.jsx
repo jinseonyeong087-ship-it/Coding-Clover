@@ -25,7 +25,7 @@ function Home() {
     switch (level) {
       case 1: return <span className="inline-flex items-center px-2 py-0.5 rounded-none text-xs font-bold bg-gray-100 text-gray-800 border border-gray-200 uppercase tracking-wide">Level 1 · Beginner</span>;
       case 2: return <span className="inline-flex items-center px-2 py-0.5 rounded-none text-xs font-bold bg-blue-50 text-blue-800 border border-blue-100 uppercase tracking-wide">Level 2 · Intermediate</span>;
-      case 3: return <span className="inline-flex items-center px-2 py-0.5 rounded-none text-xs font-bold bg-purple-50 text-purple-800 border border-purple-100 uppercase tracking-wide">Level 3 · Advanced</span>;
+      case 3: return <span className="inline-flex items-center px-2 py-0.5 rounded-none text-xs font-bold bg-gray-50 text-gray-800 border border-gray-100 uppercase tracking-wide">Level 3 · Advanced</span>;
       default: return null;
     }
   };

@@ -201,18 +201,27 @@ function LectureDetail({ lecture: lectureProp, onLectureUpdated }) {
                             />
                         </div>
                     ) : lecture.videoUrl ? (
-                        <p className="text-sm text-muted-foreground">영상 URL: {lecture.videoUrl}</p>
+                        <div className="aspect-video w-full bg-black rounded-md overflow-hidden">
+                            <video
+                                className="w-full h-full"
+                                controls
+                                src={lecture.videoUrl}
+                            >
+                                당신의 브라우저는 비디오 태그를 지원하지 않습니다.
+                            </video>
+                        </div>
                     ) : (
-                        <p className="text-sm text-muted-foreground">등록된 영상이 없습니다.</p>
+                        <div className="aspect-video w-full bg-slate-100 rounded-md flex items-center justify-center text-slate-400 flex-col gap-2">
+                            <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 8-6 4 6 4V8Z" /><rect width="14" height="12" x="2" y="6" rx="2" ry="2" /></svg>
+                            </div>
+                            <p className="text-sm font-medium">등록된 영상이 없습니다.</p>
+                        </div>
                     )}
                 </>
             )}
 
-            {lecture.approvalStatus === 'APPROVED' && (
-                <p className="text-green-600 font-medium bg-green-50 p-3 rounded-md border border-green-200">
-                    이 강의는 승인되어 수강생 화면에서 볼 수 있습니다.
-                </p>
-            )}
+
 
             {lecture.approvalStatus === 'REJECTED' && lecture.rejectReason && (
                 <div className="p-4 bg-red-50 border border-red-200 rounded-md">

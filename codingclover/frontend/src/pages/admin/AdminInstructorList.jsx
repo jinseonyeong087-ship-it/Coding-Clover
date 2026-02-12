@@ -14,11 +14,22 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Users, UserCheck, ShieldAlert } from "lucide-react";
+import { BookOpen, Users, UserCheck, ShieldAlert, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationPrevious,
+    PaginationNext,
+    PaginationEllipsis
+} from "@/components/ui/pagination";
 
 function AdminInstructorList() {
 
     const [status, setStatus] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 15;
 
     useEffect(() => {
         fetch('/admin/users/instructors', {
@@ -41,10 +52,23 @@ function AdminInstructorList() {
             });
     }, [])
 
+    // Sorting and Pagination Logic
+    const sortedInstructors = [...status].sort((a, b) => (b.userId || 0) - (a.userId || 0));
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = sortedInstructors.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(sortedInstructors.length / itemsPerPage);
+
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
+
     return (
         <>
             <Nav />
-            <div className="min-h-screen bg-gray-50 pt-20 pb-20">
+            <div className="min-h-screen bg-white pt-20 pb-20">
                 <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
                     <AdminSidebar />
@@ -105,8 +129,8 @@ function AdminInstructorList() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {status && status.length > 0 ? (
-                                        status.map((users, index) => {
+                                    {currentItems && currentItems.length > 0 ? (
+                                        currentItems.map((users, index) => {
                                             const uniqueKey = users.userId || `user-idx-${index}`;
                                             return (
                                                 <TableRow key={uniqueKey} className="hover:bg-gray-50/50 transition-colors">
@@ -145,6 +169,41 @@ function AdminInstructorList() {
                                 </TableBody>
                             </Table>
                         </Card>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="mt-6">
+                                <Pagination>
+                                    <PaginationContent>
+                                        <PaginationItem>
+                                            <PaginationPrevious
+                                                onClick={() => handlePageChange(currentPage - 1)}
+                                                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                            />
+                                        </PaginationItem>
+
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                            <PaginationItem key={page}>
+                                                <PaginationLink
+                                                    isActive={page === currentPage}
+                                                    onClick={() => handlePageChange(page)}
+                                                    className="cursor-pointer"
+                                                >
+                                                    {page}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        ))}
+
+                                        <PaginationItem>
+                                            <PaginationNext
+                                                onClick={() => handlePageChange(currentPage + 1)}
+                                                className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                            />
+                                        </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            </div>
+                        )}
                     </main>
                 </div>
             </div>

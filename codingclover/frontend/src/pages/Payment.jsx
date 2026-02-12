@@ -241,8 +241,7 @@ export default function Payment() {
               </h3>
               <ul className="text-sm text-blue-700 space-y-2 pl-1 list-disc list-inside">
                 <li>충전된 포인트는 모든 유료 강좌 수강신청 시 현금처럼 사용할 수 있습니다.</li>
-                <li>포인트 유효기간은 충전일로부터 5년입니다.</li>
-                <li>환불은 미사용 포인트에 한해 고객센터를 통해 가능합니다.</li>
+                <li>환불은 미사용 포인트에 한해 관리자를 통해 가능합니다.</li>
               </ul>
             </div>
           </div>

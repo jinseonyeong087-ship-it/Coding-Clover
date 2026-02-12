@@ -18,14 +18,26 @@ import {
     Video,
     CheckCircle2,
     Clock,
+    ChevronLeft,
     ChevronRight,
     Search
 } from 'lucide-react';
 import axios from 'axios';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationPrevious,
+    PaginationNext,
+    PaginationEllipsis
+} from "@/components/ui/pagination";
 
 function AdminLectureList() {
     const [lectures, setLectures] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 15;
 
     const fetchLectures = () => {
         setLoading(true);
@@ -88,10 +100,23 @@ function AdminLectureList() {
         return `${min}분 ${sec > 0 ? sec + '초' : ''}`.trim();
     };
 
+    // Sorting and Pagination Logic
+    const sortedLectures = [...lectures].sort((a, b) => (b.lectureId || 0) - (a.lectureId || 0));
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = sortedLectures.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(sortedLectures.length / itemsPerPage);
+
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
+
     return (
         <>
             <Nav />
-            <div className="min-h-screen bg-gray-50 pt-20 pb-20">
+            <div className="min-h-screen bg-white pt-20 pb-20">
                 <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
                     <AdminSidebar />
@@ -160,11 +185,11 @@ function AdminLectureList() {
                                                 ))}
                                             </TableRow>
                                         ))
-                                    ) : (lectures && lectures.length > 0 ? (
-                                        [...lectures].sort((a, b) => b.lectureId - a.lectureId).map((item, index) => (
+                                    ) : (currentItems && currentItems.length > 0 ? (
+                                        currentItems.map((item, index) => (
                                             <TableRow key={item.lectureId} className="hover:bg-gray-50/50 transition-colors">
                                                 <TableCell className="text-center text-sm text-gray-400">
-                                                    {lectures.length - index}
+                                                    {item.lectureId}
                                                 </TableCell>
                                                 <TableCell className="text-center text-sm font-medium text-gray-600">
                                                     {item.courseTitle || '-'}
@@ -206,6 +231,41 @@ function AdminLectureList() {
                                 </TableBody>
                             </Table>
                         </Card>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="mt-6">
+                                <Pagination>
+                                    <PaginationContent>
+                                        <PaginationItem>
+                                            <PaginationPrevious
+                                                onClick={() => handlePageChange(currentPage - 1)}
+                                                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                            />
+                                        </PaginationItem>
+
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                            <PaginationItem key={page}>
+                                                <PaginationLink
+                                                    isActive={page === currentPage}
+                                                    onClick={() => handlePageChange(page)}
+                                                    className="cursor-pointer"
+                                                >
+                                                    {page}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        ))}
+
+                                        <PaginationItem>
+                                            <PaginationNext
+                                                onClick={() => handlePageChange(currentPage + 1)}
+                                                className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                            />
+                                        </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            </div>
+                        )}
                     </main>
                 </div>
             </div>

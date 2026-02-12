@@ -311,9 +311,9 @@ function StudentCourseDetail() {
                                                 </div>
                                                 {(() => {
                                                     const p = progressMap[lecture.lectureId];
-                                                    if (p?.completedYn) return <span className="text-indigo-500 font-bold" title="완료">●</span>;
-                                                    if (p?.lastWatchedAt) return <span className="text-indigo-500 font-bold" title="시청 중">◎</span>;
-                                                    return <span className="text-indigo-500 font-bold" title="미시청">○</span>;
+                                                    if (p?.completedYn) return <span className="text-blue-500 font-bold" title="완료">●</span>;
+                                                    if (p?.lastWatchedAt) return <span className="text-blue-500 font-bold" title="시청 중">◎</span>;
+                                                    return <span className="text-blue-500 font-bold" title="미시청">○</span>;
                                                 })()}
                                             </div>
                                         ))
@@ -380,7 +380,7 @@ function StudentCourseDetail() {
                                         className="w-full font-bold text-lg shadow-lg hover:shadow-primary/25 transition-all"
                                         onClick={() => navigate(`/student/lecture/${lastWatchedLectureId || lectureList[0]?.lectureId}`)}
                                     >
-                                        강의 시청 
+                                        강의 시청
                                     </Button>
                                 ) : (
                                     <Button
@@ -399,8 +399,8 @@ function StudentCourseDetail() {
                                             <span>수강 포인트 : {course?.price?.toLocaleString()}P</span>
                                         </div>
                                     )}
-                                    
-                                    
+
+
                                 </div>
                             </div>
                         </div>
