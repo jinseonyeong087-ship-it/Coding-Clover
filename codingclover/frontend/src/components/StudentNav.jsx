@@ -131,6 +131,16 @@ function StudentNav() {
         };
     }, []);
 
+    // 포인트 충전 버튼 클릭 처리
+    const handlePointChargeClick = () => {
+        if (!loginId) {
+            alert('로그인이 필요합니다');
+            navigate('/auth/login');
+            return;
+        }
+        navigate('/payment');
+    };
+
     // 저장할 때: JSON.stringify()로 객체 → 문자열 변환
     // 불러올 때: JSON.parse()로 문자열 → 객체 변환
     // container mx-auto px-4 py-16
@@ -167,10 +177,10 @@ function StudentNav() {
                             </MenubarContent>
                         </MenubarMenu>
                         <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/notice') }}>공지사항</MenubarTrigger>
+                            <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={handlePointChargeClick}>포인트충전</MenubarTrigger>
                         </MenubarMenu>
                         <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/payment') }}>포인트충전</MenubarTrigger>
+                            <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={handlePointChargeClick}>포인트충전</MenubarTrigger>
                         </MenubarMenu>
                         <MenubarMenu>
                             <Link
