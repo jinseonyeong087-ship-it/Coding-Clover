@@ -1,193 +1,300 @@
-# 백엔드 모듈 아키텍처 분석
+# 백엔드 아키텍처 & 데이터 흐름 분석
 
-## 개요
-Coding-Clover 시스템의 백엔드는 크게 3개의 핵심 모듈로 구성되어 있습니다:
-- **Student Profile**: 학생 프로필 관리
-- **Instructor Profile**: 강사 프로필 및 승인 관리
-- **Enrollment**: 수강신청 및 수강상태 관리
+## 🏗️ 전체 시스템 구조
 
-각 모듈은 **Spring Boot + JPA 아키텍처**를 따르며, **Controller → Service → Repository → Entity** 구조로 설계되어 있습니다.
+Coding-Clover 백엔드는 **3개 핵심 모듈**로 구성되어 있으며, 각각 **Spring Boot + JPA**를 기반으로 한 **계층형 아키텍처(Layered Architecture)**를 따릅니다.
+
+```
+┌─────────────────┬─────────────────┬─────────────────┐
+│ Student Profile │ Instructor Profile │   Enrollment    │
+│   (학생 관리)    │    (강사 관리)     │   (수강 관리)    │
+└─────────────────┴─────────────────┴─────────────────┘
+         ↓                ↓                ↓
+┌────────────────────────────────────────────────────┐
+│            Controller Layer (REST API)            │
+└────────────────────────────────────────────────────┘
+         ↓                ↓                ↓
+┌────────────────────────────────────────────────────┐
+│         Service Layer (Business Logic)            │
+└────────────────────────────────────────────────────┘
+         ↓                ↓                ↓
+┌────────────────────────────────────────────────────┐
+│       Repository Layer (Data Access)              │
+└────────────────────────────────────────────────────┘
+         ↓                ↓                ↓
+┌────────────────────────────────────────────────────┐
+│           Database (JPA Entities)                 │
+└────────────────────────────────────────────────────┘
+```
 
 ---
 
-## 1. Student Profile 모듈 📚
+## 🎯 1. Student Profile 모듈 - 학생 프로필 관리
 
-### 클래스 구성
+### 📋 모듈 구성
 ```
 StudentProfile/
-├── StudentProfile.java          (Entity) - 학생 프로필 엔티티
-├── StudentProfileController.java (REST API) - HTTP 요청 처리
-├── StudentProfileService.java   (Business Logic) - 비즈니스 로직
-├── StudentProfileRepository.java (Data Access) - 데이터베이스 접근
-└── StudentProfileDto.java       (DTO) - 데이터 전송 객체
+├── StudentProfileController.java  → REST API 엔드포인트
+├── StudentProfileService.java     → 비즈니스 로직
+├── StudentProfileRepository.java  → 데이터 접근
+├── StudentProfile.java           → JPA 엔티티
+├── StudentProfileDto.java        → 데이터 전송 객체
 ```
 
-### 데이터 흐름
+### 🔄 데이터 흐름 (학생 프로필 조회)
 ```
-Frontend → Controller → Service → Repository → Database
-                ↓          ↓         ↓
-               DTO    Business    Entity
-                     Logic
+Frontend Request: GET /api/student/mypage
+         ↓
+🌐 StudentProfileController.getStudentProfile()
+   ├── Input: Principal (Spring Security)
+   ├── Process: principal.getName() → loginId 추출
+   └── Call: studentProfileService.getStudentProfileByLoginId(loginId)
+         ↓
+📋 StudentProfileService.getStudentProfileByLoginId()
+   ├── Input: String loginId
+   ├── Process: loginId → Users 조회, 프로필 정보 조합
+   ├── Repository Call: 
+   │   ├── usersRepository.findByLoginId() → Users Entity
+   │   └── studentProfileRepository.findByUserId() → StudentProfile Entity
+   └── Output: StudentProfileDto
+         ↓
+💾 Repository Layer
+   ├── StudentProfileRepository extends JpaRepository<StudentProfile>
+   ├── Database Query: SELECT * FROM student_profile WHERE user_id = ?
+   └── Return: Optional<StudentProfile>
+         ↓
+📤 Response: StudentProfileDto JSON
 ```
 
-### 핵심 기능
-- **프로필 조회**: `getStudentProfileByLoginId()` - loginId 또는 email로 학생 프로필 조회
-- **프로필 업데이트**: `updateStudentProfile()` - 학습수준, 관심분야 수정
-- **Users 연관관계**: `@OneToOne` 매핑으로 Users 테이블과 1:1 관계
-
-### 핵심 로직 위치
-- **StudentProfileService.java**: 메인 비즈니스 로직
-  - 프로필이 없으면 기본값("미설정") 반환
-  - 생성과 수정을 하나의 메서드로 처리 (`createOrUpdateProfile`)
+### 🔧 핵심 비즈니스 로직
+- **프로필 없음 처리**: 기본값("미설정") 반환으로 안정적 처리
+- **생성과 수정 통합**: `createOrUpdateProfile()` 단일 메서드로 처리
 
 ---
 
-## 2. Instructor Profile 모듈 👨‍🏫
+## 👨‍🏫 2. Instructor Profile 모듈 - 강사 승인 시스템
 
-### 클래스 구성
+### 📋 모듈 구성
 ```
 InstructorProfile/
-├── InstructorProfile.java          (Entity) - 강사 프로필 엔티티
-├── InstructorProfileController.java (REST API) - HTTP 요청 처리  
-├── InstructorProfileService.java   (Business Logic) - 비즈니스 로직
-├── InstructorProfileRepository.java (Data Access) - 데이터베이스 접근
-├── InstructorProfileDto.java       (DTO) - 데이터 전송 객체
-└── InstructorStatus.java          (Enum) - 강사 승인 상태
+├── InstructorProfileController.java  → REST API 엔드포인트
+├── InstructorProfileService.java     → 승인 워크플로우 로직
+├── InstructorProfileRepository.java  → 데이터 접근
+├── InstructorProfile.java           → JPA 엔티티
+├── InstructorProfileDto.java        → 데이터 전송 객체
+├── InstructorStatus.java            → 상태 관리 Enum
 ```
 
-### 상태 관리 (InstructorStatus)
+### 🔄 데이터 흐름 (강사 지원 → 승인)
 ```
-APPLIED → APPROVED → REJECTED
-   ↑         ↓
-   └─── REAPPLIED
+1️⃣ 강사 지원
+Frontend: POST /api/instructor/apply (FormData with Resume File)
+         ↓
+🌐 InstructorProfileController.applyInstructor()
+   ├── Input: MultipartFile resumeFile, InstructorProfileDto
+   ├── Process: 파일 업로드 + 프로필 생성
+   └── Call: instructorProfileService.applyInstructor()
+         ↓
+📋 InstructorProfileService.applyInstructor()
+   ├── Input: InstructorProfileDto + MultipartFile
+   ├── Process: 
+   │   ├── File → BLOB 변환
+   │   ├── InstructorProfile Entity 생성
+   │   └── Status = APPLIED 설정
+   └── Repository: save(InstructorProfile)
+
+
+2️⃣ 관리자 승인
+Frontend: POST /admin/instructor/{userId}/approve
+         ↓
+🌐 InstructorProfileController.approveInstructor()
+   ├── Input: Long userId, Principal admin
+   └── Call: instructorProfileService.approveInstructor()
+         ↓
+📋 InstructorProfileService.approveInstructor()
+   ├── Input: Long userId
+   ├── Process: 
+   │   ├── InstructorProfile 조회
+   │   ├── Status: APPLIED → APPROVED
+   │   └── Users Role: STUDENT → INSTRUCTOR
+   └── Repository: save() + 알림 서비스 호출
 ```
 
-### 핵심 기능
-- **신청**: `applyInstructor()` - 강사 지원서 제출 (이력서 파일 업로드 포함)
-- **승인/반려**: `approveInstructor()`, `rejectInstructor()` - 관리자 승인 처리
-- **재신청**: 반려 후 다시 신청 가능
-- **파일 관리**: 이력서 업로드/다운로드 (BLOB 저장)
-
-### 핵심 로직 위치
-- **InstructorProfileService.java**: 
-  - 상태 변경 로직
-  - 파일 업로드/다운로드 처리
-  - 관리자 승인 프로세스
+### 🔄 상태 관리 흐름
+```
+APPLIED (지원) → APPROVED (승인) ↗
+       ↓                      REJECTED (반려)
+    REAPPLIED (재지원) ←─────────────┘
+```
 
 ---
 
-## 3. Enrollment 모듈 🎓
+## 🎓 3. Enrollment 모듈 - 수강 관리 시스템 (가장 복잡)
 
-### 클래스 구성 (가장 복잡)
+### 📋 모듈 구성
 ```
 Enrollment/
-├── Enrollment.java              (Entity) - 수강 엔티티
-├── EnrollmentController.java    (REST API) - HTTP 요청 처리
-├── EnrollmentService.java       (Business Logic) - 비즈니스 로직
-├── EnrollmentRepository.java    (Data Access) - 데이터베이스 접근
-├── EnrollmentStatus.java        (Enum) - 수강 상태
-├── StudentEnrollmentDto.java    (DTO) - 학생용 DTO
-├── InstructorEnrollmentDto.java (DTO) - 강사용 DTO
-├── AdminEnrollmentDto.java      (DTO) - 관리자용 DTO
-└── CancelRequestDto.java        (DTO) - 취소 요청용 DTO
+├── EnrollmentController.java     → REST API (학생/강사/관리자 분리)
+├── EnrollmentService.java        → 복잡한 비즈니스 로직
+├── EnrollmentRepository.java     → 데이터 접근 (커스텀 쿼리 다수)
+├── Enrollment.java              → JPA 엔티티 (상태 관리)
+├── EnrollmentStatus.java        → 상태 Enum (ENROLLED/COMPLETED/CANCELLED)
+├── StudentEnrollmentDto.java    → 학생용 View
+├── InstructorEnrollmentDto.java → 강사용 View (단순화됨)
+├── AdminEnrollmentDto.java      → 관리자용 View
+└── CancelRequestDto.java        → 취소 요청용
 ```
 
-### 상태 관리 (EnrollmentStatus)
+### 🔄 데이터 흐름 1: 수강 취소 요청 (복잡한 워크플로우)
+
 ```
-ENROLLED (수강중) → COMPLETED (완료)
-    ↓
-CANCELLED (취소)
+학생 취소 요청
+Frontend: POST /student/enrollment/{enrollmentId}/cancel-request
+         ↓
+🌐 EnrollmentController.requestCancel()
+   ├── Input: Long enrollmentId, Principal principal
+   ├── Process: 
+   │   ├── Principal → Users 조회
+   │   ├── enrollmentId → Enrollment 조회
+   │   └── 권한 검증 (본인 수강인지 확인)
+   └── Call: enrollmentService.requestCancel(student, enrollment)
+         ↓
+📋 EnrollmentService.requestCancel()
+   ├── Input: Users student, Enrollment enrollment
+   ├── Validation:
+   │   ├── 권한 검증: enrollment.getUser() == student?
+   │   ├── 중복 검증: isCancelRequested() == false?
+   │   └── 상태 검증: status == ENROLLED?
+   ├── Process:
+   │   ├── enrollment.requestCancel() → cancelledAt 설정 + flag 변경
+   │   ├── Repository: save(enrollment)
+   │   └── 관리자 알림 전송 (NotificationService 연동)
+   └── Output: CancelRequestDto
+         ↓
+📤 Response: CancelRequestDto (진도율 포함)
 
-※ 취소 요청 플로우:
-ENROLLED → isCancelRequested=true → CANCELLED (관리자 승인 후)
+
+관리자 승인/반려
+Frontend: POST /admin/cancel-requests/{enrollmentId}/approve
+         ↓
+🌐 EnrollmentController.approveCancelRequest()
+   └── Call: enrollmentService.approveCancelRequest(admin, enrollmentId)
+         ↓
+📋 EnrollmentService.approveCancelRequest()
+   ├── Process:
+   │   ├── Enrollment 조회 + 상태 검증
+   │   ├── enrollment.cancel(admin) → Status: CANCELLED
+   │   └── PaymentService.processCourseCancelRefund() 호출
+   └── 학생 알림 전송
 ```
 
-### 역할별 View (DTO 분리)
-- **StudentEnrollmentDto**: 학생이 보는 수강 정보
-- **InstructorEnrollmentDto**: 강사가 보는 수강생 정보  
-- **AdminEnrollmentDto**: 관리자가 보는 전체 수강 정보
-- **CancelRequestDto**: 취소 요청 처리용
+### 🔄 데이터 흐름 2: 진도율 계산 (여러 시스템 연동)
 
-### 핵심 기능
-1. **수강 취소 요청**: `requestCancel()` - 학생이 취소 요청
-2. **취소 요청 승인/반려**: `approveCancelRequest()`, `rejectCancelRequest()`
-3. **즉시 취소**: `cancelMyEnrollment()` - 포인트 환불 포함
-4. **강제 취소**: `adminCancelEnrollment()` - 관리자 권한
-
-### 핵심 로직 위치
-- **EnrollmentService.java**: 
-  - 취소 요청 워크플로우
-  - 결제/환불 처리 연동
-  - 진도율 계산 로직
-  - 알림 서비스 연동
+```
+관리자 수강 내역 조회
+Frontend: GET /admin/enrollment
+         ↓
+🌐 EnrollmentController.getAllEnrollments()
+   └── Call: enrollmentService.getAllEnrollments()
+         ↓
+📋 EnrollmentService.getAllEnrollments()
+   ├── Repository: enrollmentRepository.findAllWithUserAndCourse()
+   │   ├── JOIN 쿼리로 Enrollment + Users + Course 한번에 조회
+   │   └── Return: List<Enrollment>
+   ├── 진도율 계산 로직:
+   │   ├── lectureProgressRepository.findByEnrollmentAndCompletedYnTrue()
+   │   ├── lectureService.getLecturesForStudent()
+   │   └── progressRate = (완료강의 / 전체강의) * 100
+   └── Output: List<AdminEnrollmentDto>
+         ↓ 
+💾 Database Queries (N+1 문제 해결)
+   ├── 1 Query: Enrollment + Users + Course (JOIN)
+   ├── N Queries: 각 수강별 진도율 계산
+   └── Exception Handling: 진도 계산 실패시 기본값
+```
 
 ---
 
-## 데이터 흐름 종합
+## 🔗 모듈 간 상호작용 & 의존성
 
-### 일반적인 CRUD 흐름
+### 💡 Enrollment 모듈의 외부 의존성
 ```
-Frontend Request
-    ↓
-@RestController (HTTP 처리)
-    ↓
-@Service (비즈니스 로직 + @Transactional)
-    ↓
-@Repository (JPA 쿼리)
-    ↓
-@Entity (DB 테이블 매핑)
-    ↓
-Database
+EnrollmentService
+├── PaymentService          → 결제/환불 처리
+├── NotificationService     → 알림 전송
+├── LectureProgressService  → 진도율 계산
+├── LectureService         → 강의 정보 조회
+└── UsersRepository        → 사용자 정보 조회
 ```
 
-### 모듈간 의존성
-```
-Enrollment 모듈
-    ↓
-├── Users (사용자 정보)
-├── Course (강좌 정보)  
-├── PaymentService (결제/환불)
-├── NotificationService (알림)
-└── LectureProgressService (진도관리)
+### 🎯 트랜잭션 관리 전략
+```java
+@Transactional                    // 쓰기 작업
+@Transactional(readOnly = true)   // 읽기 전용 (성능 최적화)
+
+// 예시: 수강 취소 + 환불
+@Transactional  
+public void cancelMyEnrollment() {
+    cancel(student, student, course);           // 1. 상태 변경
+    paymentService.processDirectRefund(...);    // 2. 환불 처리
+    // 환불 실패시 전체 롤백 → 데이터 일관성 보장
+}
 ```
 
 ---
 
-## 핵심 설계 패턴
+## 📊 DTO 설계 패턴 - 역할별 View 분리
 
-### 1. 계층 분리 (Layered Architecture)
-- **Controller**: HTTP 요청/응답 처리
-- **Service**: 비즈니스 로직 (트랜잭션 관리)
-- **Repository**: 데이터 접근
-- **Entity**: 도메인 객체
+### 🎭 같은 데이터, 다른 관점
+```
+Enrollment Entity (DB)
+├── StudentEnrollmentDto    → 학생이 보는 수강 정보
+├── InstructorEnrollmentDto → 강사가 보는 수강생 정보 (단순화)
+├── AdminEnrollmentDto     → 관리자가 보는 전체 정보
+└── CancelRequestDto       → 취소 요청 전용
+```
 
-### 2. DTO 패턴
-- **목적별 DTO 분리**: Student/Instructor/Admin 각각의 View
-- **데이터 은닉**: 필요한 정보만 노출
-- **API 안정성**: Entity 변경이 API에 미치는 영향 최소화
-
-### 3. 상태 패턴
-- **EnrollmentStatus**: 수강 상태 관리
-- **InstructorStatus**: 강사 승인 상태 관리
-- **명확한 상태 전환**: 비즈니스 규칙을 코드로 표현
-
-### 4. 트랜잭션 관리
-- **@Transactional**: 데이터 일관성 보장
-- **롤백 처리**: 환불 실패 시 수강 취소도 롤백
-- **읽기 전용**: `@Transactional(readOnly = true)` 성능 최적화
+### 🔒 정보 보안 & 캡슐화
+- **Student**: 본인 수강 정보만 + 진도율
+- **Instructor**: 수강생 상태만 (개인정보 최소화)
+- **Admin**: 모든 정보 + 취소자/진도율/결제 정보
 
 ---
 
-## 특별히 주목할 점
+## ⚡ 성능 최적화 포인트
 
-### Enrollment 모듈의 복잡성
-- **가장 복잡한 비즈니스 로직**: 결제, 환불, 알림, 진도 등 여러 시스템 연동
-- **다양한 액터**: 학생, 강사, 관리자 각각 다른 권한과 뷰
-- **상태 관리**: 단순한 CRUD가 아닌 복잡한 워크플로우
+### 🚀 N+1 문제 해결
+```java
+// ❌ N+1 Problem
+enrollments.forEach(e -> calculateProgress(e)); // N개 쿼리
 
-### Profile 모듈의 단순성
-- **기본적인 CRUD**: 생성, 조회, 수정, 삭제
-- **일대일 관계**: Users 테이블과 단순한 확장 관계
-- **상태 변화 최소**: InstructorProfile만 승인 상태 관리
+// ✅ JOIN + Batch Processing
+@Query("SELECT e FROM Enrollment e JOIN FETCH e.user JOIN FETCH e.course")
+List<Enrollment> findAllWithUserAndCourse();
+```
 
-이러한 구조로 **관심사의 분리**와 **단일 책임 원칙**을 잘 지키고 있으며, 각 모듈이 독립적으로 발전할 수 있는 **확장 가능한 아키텍처**를 구성하고 있습니다.
+### 📈 읽기 최적화
+- **@Transactional(readOnly = true)**: 읽기 전용 트랜잭션
+- **Lazy Loading**: 필요한 연관 엔티티만 로드
+- **DTO Projection**: 필요한 필드만 조회
+
+---
+
+## 🎯 면접 포인트 정리
+
+### 💼 "Enrollment 모듈을 설명해주세요"
+**답변 구조:**
+1. **아키텍처**: "3계층 구조로 Controller-Service-Repository 패턴을 따릅니다"
+2. **복잡성**: "결제, 환불, 알림, 진도관리 등 여러 시스템이 연동됩니다"
+3. **상태 관리**: "ENROLLED → CANCELLED 상태 전환과 요청-승인 워크플로우"
+4. **트랜잭션**: "수강취소+환불의 원자성을 @Transactional로 보장합니다"
+5. **성능**: "JOIN 쿼리와 DTO 패턴으로 N+1 문제를 해결했습니다"
+
+### 🔧 "왜 DTO를 역할별로 분리했나요?"
+**답변:**
+1. **보안**: 역할에 따른 정보 접근 제한
+2. **성능**: 불필요한 데이터 전송 방지  
+3. **유지보수**: 프론트엔드 요구사항 변경시 독립적 수정
+4. **확장성**: 새로운 역할 추가시 기존 코드 영향 최소화
+
+이러한 구조를 통해 **확장 가능하고 유지보수 쉬운 교육 플랫폼 백엔드**를 구현했습니다.
