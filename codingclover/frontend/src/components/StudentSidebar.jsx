@@ -35,7 +35,7 @@ const StudentSidebar = () => {
     {
       category: "나의 활동",
       items: [
-        { icon: BookOpen, label: "시험 응시 내역", path: "/student/exam/list" },
+        { icon: BookOpen, label: "시험 응시 내역", path: "/student/exam?tab=history" },
         { icon: Coins, label: "포인트 현황", path: "/student/points" },
         { icon: MessageCircle, label: "문의 내역", path: "/student/qna/list" }
       ]
