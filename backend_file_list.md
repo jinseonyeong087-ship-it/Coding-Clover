@@ -93,4 +93,107 @@
 - **dto/**
     - `SearchResultDto.java`
 
-##
+## 준서가 한거
+
+### 1. Problem (코딩 테스트 문제)
+- `Problem.java`
+- `ProblemController.java`
+- `ProblemRepository.java`
+- `ProblemDifficulty.java`
+- `CodeExecutor.java`
+- `JavaNativeExecutor.java`
+- `ExecutionRequest.java`
+- `ExecutionResponse.java`
+- `GradingResult.java`
+
+### 2. Submission (코드 제출 및 채점)
+- `Submission.java`
+- `SubmissionController.java`
+- `SubmissionRepository.java`
+- `SubmissionService.java`
+- `SubmissionResponse.java`
+
+### 3. Users (회원 관리 및 인증)
+- `Users.java`
+- `UsersController.java`
+- `UsersRepository.java`
+- `UsersService.java`
+- `UsersRole.java`
+- `UsersStatus.java`
+- `UsersFindRequest.java`
+- `UsersSecurityService.java`
+- `SocialLoginService.java`
+- `ApiLoginFilter.java`
+- `ApiLoginSuccess.java`
+- `ApiLoginFail.java`
+- `StudentDTO.java`
+- `InstructorDTO.java`
+
+### 4. Qna (질문 게시판)
+- `Qna.java`
+- `QnaController.java`
+- `QnaRepository.java`
+- `QnaService.java`
+- `QnaStatus.java`
+- `QnaDto.java`
+
+### 5. QnaAnswer (질문 답변)
+- `QnaAnswer.java`
+- `QnaAnswerRepository.java`
+- `QnaAnswerService.java`
+
+### 6. Notice (공지사항)
+- `Notice.java`
+- `NoticeController.java`
+- `NoticeRepository.java`
+- `NoticeService.java`
+- `NoticeStatus.java`
+
+### 7. Notification (알림)
+- `Notification.java`
+- `NotificationController.java`
+- `NotificationRepository.java`
+- `NotificationService.java`
+- `NotificationDto.java`
+
+### 8. ChatBot (AI 챗봇)
+- `ChatConfig.java`
+- `ChatController.java`
+- `ChatDto.java`
+
+### 9. Mail (이메일 인증)
+- `MailController.java`
+- `MailService.java`
+
+### 10. Image (이미지 업로드)
+- `ImageController.java`
+- `ImageService.java`
+
+### 11. Configuration & Global (설정 및 공통)
+- `CodingcloverApplication.java`
+- `SecurityConfig.java`
+- `WebConfig.java`
+- `DataNotFoundException.java`
+
+### 12. Payment (결제 및 포인트)
+- `Payment.java`
+- `PaymentController.java`
+- `PaymentRepository.java`
+- `PaymentService.java`
+- `PaymentStatus.java`
+- `PaymentType.java`
+- `PaymentSuccessDto.java`
+- `PaymentWithUserDto.java`
+
+### 13. UserWallet (지갑 및 포인트 변동)
+- `UserWallet.java`
+- `UserWalletRepository.java`
+- `UserWalletService.java`
+- `WalletController.java`
+- `WalletIntegrationService.java`
+
+### 14. WalletHistory (지갑 사용 내역)
+- `WalletHistory.java`
+- `WalletHistoryRepository.java`
+- `WalletHistoryService.java`
+- `WalletChangeReason.java`
