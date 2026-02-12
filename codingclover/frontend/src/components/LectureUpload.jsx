@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,14 +15,11 @@ import {
     AlertCircle,
     Loader2,
     Play,
-    
 } from "lucide-react";
 
 function LectureUpload({ courseId: courseIdProp, nextOrderNo, onUploaded }) {
     const params = useParams();
     const courseId = courseIdProp || params.courseId;
-
-    const navigate = useNavigate();
     const [durationLoading, setDurationLoading] = useState(false);
     const debounceTimer = useRef(null);
     const [existingLectures, setExistingLectures] = useState([]);
@@ -49,12 +46,14 @@ function LectureUpload({ courseId: courseIdProp, nextOrderNo, onUploaded }) {
             .catch(() => setExistingLectures([]));
     }, [courseId]);
 
-    // 유튜브 ID 추출 유틸리티
+    // watch\?v=브라우저 주소창에서 가져오기, &v= 재생목록에서 id 가져오기, []안에꺼제외
+    // ^.* = url시작부터 watch까지 뭐가와도 상관없음, ()로 그룹지어주기-match 배열에서 값을 꺼내기 위해
     const getYoutubeId = (url) => {
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const regExp = /^.*(watch\?v=|&v=)([^#&?]*).*/;
         const match = url?.match(regExp);
         return (match && match[2].length === 11) ? match[2] : null;
     };
+    //match[2]는 두번째 괄호 그룹임. match에 있는 거 다 가져와 
 
     // 초 → "n분 n초" 포맷
     const formatDuration = (totalSeconds) => {
@@ -163,6 +162,7 @@ function LectureUpload({ courseId: courseIdProp, nextOrderNo, onUploaded }) {
         }
     };
 
+    // 유튜브 ID 추출, youtubeId를 이용해서 미리보기 랜더링
     const youtubeId = getYoutubeId(formData.videoUrl);
 
     return (
