@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import StudentNav from '../../components/StudentNav';
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { Play, Loader2, History, Trophy, ChevronLeft, ChevronRight } from "lucid
 
 const StudentExamList = () => {
     const navigate = useNavigate();
+    const { courseId } = useParams(); // courseId가 있으면 특정 강좌의 시험, 없으면 전체 시험
     const [availableExams, setAvailableExams] = useState([]);
     const [scoreHistory, setScoreHistory] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -30,19 +31,30 @@ const StudentExamList = () => {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [courseId]);
 
     const fetchData = async () => {
         setLoading(true);
         try {
+            // courseId가 있으면 특정 강좌의 시험, 없으면 전체 시험
+            const examEndpoint = courseId ? `/student/exam/${courseId}` : "/student/exam";
+            
+            console.log("시험 조회 요청:", examEndpoint);
+            console.log("Course ID:", courseId);
+            
             const [examsRes, scoresRes] = await Promise.all([
-                axios.get("/student/exam"),
+                axios.get(examEndpoint),
                 axios.get("/student/my-scores")
             ]);
+            
+            console.log("시험 응답 데이터:", examsRes.data);
+            console.log("점수 응답 데이터:", scoresRes.data);
+            
             setAvailableExams(examsRes.data);
             setScoreHistory(scoresRes.data);
         } catch (error) {
             console.error("Error fetching data:", error);
+            console.error("Error response:", error.response);
             // toast.error("데이터를 불러오는데 실패했습니다.");
         } finally {
             setLoading(false);
@@ -60,7 +72,7 @@ const StudentExamList = () => {
 
     const handleStartExam = (examId) => {
         if (window.confirm("시험을 시작하시겠습니까?\n시험 도중 이탈하면 불이익이 있을 수 있습니다.")) {
-            navigate(`/student/exam/${examId}`);
+            navigate(`/student/exam/taking/${examId}`);
         }
     };
 

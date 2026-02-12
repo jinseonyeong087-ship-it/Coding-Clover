@@ -16,7 +16,6 @@ public class AdminExamDto {
     private Integer timeLimit;
     private Integer level;
     private Integer passScore;
-    private Boolean isPublished;
     private List<ExamQuestionDto> questions;
 
     public static AdminExamDto fromEntity(Exam exam) {
@@ -43,7 +42,6 @@ public class AdminExamDto {
                 exam.getTimeLimit(),
                 exam.getLevel(),
                 exam.getPassScore(),
-                exam.getIsPublished(),
                 questionDtos);
     }
 }

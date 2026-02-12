@@ -29,9 +29,6 @@ public class ExamCreateRequest {
     @NotNull(message = "통과 기준 점수는 필수입니다.")
     private Integer passScore;
 
-    // 시험 공개 여부 (체크하지 않으면 false = 비공개)
-    private Boolean isPublished = false;
-
     // 시험 문제 리스트 (최소 1문제, 최대 20문제)
     @NotNull(message = "문제 리스트는 필수입니다.")
     @jakarta.validation.constraints.Size(min = 1, max = 20, message = "문제는 1개 이상 20개 이하로 등록해야 합니다.")

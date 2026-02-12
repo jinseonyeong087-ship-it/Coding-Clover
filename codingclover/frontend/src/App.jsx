@@ -171,7 +171,8 @@ function App() {
           <Route path="course/:courseId/lectures" element={<StudentLectureDetail />} />
           <Route path="lecture/:lectureId" element={<StudentLectureDetail />} />
           <Route path="exam" element={<StudentExamList />} />
-          <Route path="exam/:examId" element={<StudentExamTaking />} />
+          <Route path="exam/course/:courseId" element={<StudentExamList />} />
+          <Route path="exam/taking/:examId" element={<StudentExamTaking />} />
         </Route>
         {/* 강사페이지 */}
         <Route path="/instructor/*" element={

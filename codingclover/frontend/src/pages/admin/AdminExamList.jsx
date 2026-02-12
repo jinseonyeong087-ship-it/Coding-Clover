@@ -138,20 +138,19 @@ const AdminExamList = () => {
                                 <TableHead>강좌명</TableHead>
                                 <TableHead>출제 강사</TableHead>
                                 <TableHead>난이도</TableHead>
-                                <TableHead className="text-center">상태</TableHead>
                                 <TableHead className="text-right">관리</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center">
+                                    <TableCell colSpan={6} className="h-24 text-center">
                                         로딩 중...
                                     </TableCell>
                                 </TableRow>
                             ) : currentExams.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                                         검색 결과가 없습니다.
                                     </TableCell>
                                 </TableRow>
@@ -170,13 +169,6 @@ const AdminExamList = () => {
                                             <Badge variant={exam.level === 1 ? "secondary" : exam.level === 2 ? "default" : "destructive"}>
                                                 {exam.level === 1 ? "초급" : exam.level === 2 ? "중급" : "고급"}
                                             </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            {exam.isPublished ? (
-                                                <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">공개중</Badge>
-                                            ) : (
-                                                <Badge variant="outline" className="text-slate-500">비공개</Badge>
-                                            )}
                                         </TableCell>
                                         <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex justify-end gap-2">

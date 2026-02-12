@@ -25,7 +25,6 @@ const ExamCreate = () => {
     const [timeLimit, setTimeLimit] = useState(60);
     const [level, setLevel] = useState(1);
     const [passScore, setPassScore] = useState(60);
-    const [isPublished, setIsPublished] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     // Questions list
@@ -122,7 +121,6 @@ const ExamCreate = () => {
                     setTimeLimit(exam.timeLimit);
                     setLevel(exam.level);
                     setPassScore(exam.passScore);
-                    setIsPublished(exam.isPublished);
                     setSelectedCourseId(exam.courseId); // Ensure this matches the select value type
 
                     // Populate questions
@@ -175,7 +173,6 @@ const ExamCreate = () => {
             timeLimit: parseInt(timeLimit),
             level: parseInt(level),
             passScore: parseInt(passScore),
-            isPublished,
             questions: questions.map(q => ({
                 questionText: q.questionText,
                 option1: q.option1,
@@ -311,16 +308,6 @@ const ExamCreate = () => {
                                             onChange={(e) => setPassScore(e.target.value)}
                                         />
                                     </div>
-                                </div>
-                                <div className="flex items-center space-x-2 col-span-2">
-                                    <input
-                                        type="checkbox"
-                                        id="published"
-                                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                        checked={isPublished}
-                                        onChange={(e) => setIsPublished(e.target.checked)}
-                                    />
-                                    <Label htmlFor="published">시험 즉시 공개</Label>
                                 </div>
                             </div>
                         </CardContent>

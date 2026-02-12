@@ -55,7 +55,7 @@ function StudentCourseDetail() {
                 const examExists = await response.json();
                 if (examExists) {
                     // 시험이 존재하면 시험 페이지로 이동
-                    navigate(`/student/exam/${courseId}`);
+                    navigate(`/student/exam/course/${courseId}`);
                 } else {
                     // 시험이 없으면 알림 다이얼로그 표시
                     setDialogMessage({

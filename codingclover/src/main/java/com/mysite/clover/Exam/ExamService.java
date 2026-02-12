@@ -68,7 +68,6 @@ public class ExamService {
         exam.setTimeLimit(request.getTimeLimit()); // 제한 시간
         exam.setLevel(request.getLevel()); // 난이도
         exam.setPassScore(request.getPassScore()); // 합격 기준 점수
-        exam.setIsPublished(request.getIsPublished()); // 공개 여부
         exam.setCreatedBy(instructor); // 출제 강사
 
         // 4. 시험 저장 (ID 생성)
@@ -182,9 +181,6 @@ public class ExamService {
         exam.setTimeLimit(form.getTimeLimit());
         exam.setLevel(form.getLevel());
         exam.setPassScore(form.getPassScore());
-        exam.setPassScore(form.getPassScore());
-        // null 체크 및 기본값 설정
-        exam.setIsPublished(form.getIsPublished() != null ? form.getIsPublished() : false);
 
         // 3. 저장 (Dirty Checking으로 자동 반영 가능하지만 명시적 save 호출)
         examRepository.save(exam);
@@ -248,7 +244,7 @@ public class ExamService {
             Course course = enrollment.getCourse();
 
             // 2. 진도율 체크 로직 제거 (수강생이면 무조건 시험 응시 가능)
-            availableExams.addAll(examRepository.findByCourseAndIsPublishedTrue(course));
+            availableExams.addAll(examRepository.findByCourse(course));
         }
         return availableExams;
     }

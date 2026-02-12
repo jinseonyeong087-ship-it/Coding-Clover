@@ -40,10 +40,6 @@ public class Exam {
     @JoinColumn(name = "created_by")
     private Users createdBy;
 
-    // 시험 공개 여부 (false: 비공개, true: 공개) - 기본값은 false
-    @Column(nullable = false)
-    private Boolean isPublished = false;
-
     // 이 시험에 포함된 문제 리스트 (일대다 관계)
     // 시험이 삭제되면 문제들도 함께 삭제됩니다 (CascadeType.ALL)
     @OneToMany(mappedBy = "exam", cascade = CascadeType.ALL, orphanRemoval = true)

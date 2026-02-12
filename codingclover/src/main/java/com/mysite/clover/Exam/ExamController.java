@@ -17,6 +17,8 @@ import com.mysite.clover.ExamAttempt.dto.ExamAttemptDto;
 import com.mysite.clover.ScoreHistory.dto.ScoreHistoryDto;
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.Users.UsersRepository;
+import com.mysite.clover.Course.Course;
+import com.mysite.clover.Course.CourseRepository;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,8 @@ public class ExamController {
 
         private final ExamService examService;
         private final UsersRepository usersRepository;
+        private final ExamRepository examRepository;
+        private final CourseRepository courseRepository;
 
         // ==========================================
         // 🟩 수강생 영역
@@ -46,9 +50,34 @@ public class ExamController {
                                 .toList());
         }
 
+        // 수강생 : 특정 강좌의 시험 조회 (강좌 ID로)
+        @PreAuthorize("hasRole('STUDENT')")
+        @GetMapping("/student/exam/{courseId}")
+        public ResponseEntity<List<StudentExamDto>> getExamsByCourse(@PathVariable Long courseId, Principal principal) {
+                try {
+                        // 1. 현재 로그인한 학생 정보 조회
+                        Users student = usersRepository.findByLoginId(principal.getName())
+                                        .orElseThrow(() -> new RuntimeException("학생 없음"));
+
+                        // 2. 강좌 조회
+                        Course course = courseRepository.findById(courseId)
+                                        .orElseThrow(() -> new RuntimeException("강좌 없음"));
+
+                        // 3. 해당 강좌의 모든 시험 목록 조회 (공개 여부 무관)
+                        List<Exam> exams = examRepository.findByCourse(course);
+                        
+                        // 4. DTO로 변환하여 반환
+                        return ResponseEntity.ok(exams.stream()
+                                        .map(StudentExamDto::fromEntity)
+                                        .toList());
+                } catch (Exception e) {
+                        return ResponseEntity.notFound().build();
+                }
+        }
+
         // 수강생 : 시험 상세 조회 (응시 화면 진입용)
         @PreAuthorize("hasRole('STUDENT')")
-        @GetMapping("/student/exam/{examId}")
+        @GetMapping("/student/exam/detail/{examId}")
         public ResponseEntity<StudentExamDto> getExamDetail(@PathVariable Long examId) {
                 // 시험 ID로 상세 정보 조회 및 DTO 변환
                 return ResponseEntity.ok(StudentExamDto.fromEntity(examService.getExam(examId)));
@@ -202,7 +231,35 @@ public class ExamController {
         }
 
         // ==========================================
-        // 🟥 관리자 영역
+        // � API - 시험 존재 여부 확인
+        // ==========================================
+
+        // 학생/강사 공용: 특정 강좌에 시험이 있는지 확인
+        @GetMapping("/api/exam/course/{courseId}/check")
+        public ResponseEntity<Boolean> checkExamExists(@PathVariable Long courseId) {
+                try {
+                        // 강좌 조회
+                        Course course = courseRepository.findById(courseId)
+                                        .orElse(null);
+                        
+                        if (course == null) {
+                                // 강좌가 없으면 false 반환
+                                return ResponseEntity.ok(false);
+                        }
+                        
+                        // 해당 강좌에 시험이 있는지 확인
+                        List<Exam> exams = examRepository.findByCourse(course);
+                        boolean examExists = !exams.isEmpty();
+                        
+                        return ResponseEntity.ok(examExists);
+                } catch (Exception e) {
+                        // 에러 발생시 false 반환
+                        return ResponseEntity.ok(false);
+                }
+        }
+
+        // ==========================================
+        // �🟥 관리자 영역
         // ==========================================
 
         // 관리자 : 시스템 전체 시험 응시 로그 조회 (ExamAttempt 기준)

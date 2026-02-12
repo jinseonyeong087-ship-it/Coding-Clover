@@ -32,7 +32,7 @@ const StudentExamTaking = () => {
     useEffect(() => {
         const fetchExam = async () => {
             try {
-                const response = await axios.get(`/student/exam/${examId}`);
+                const response = await axios.get(`/student/exam/detail/${examId}`);
                 setExam(response.data);
                 // Set initial time
                 setTimeLeft(response.data.timeLimit * 60);

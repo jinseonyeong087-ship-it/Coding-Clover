@@ -15,8 +15,6 @@ public interface ExamRepository extends JpaRepository<Exam, Long> {
     // 특정 강자가 출제한 모든 시험 목록 조회
     List<Exam> findByCreatedBy(Users user);
 
-    // 특정 강좌 내에서 '공개(isPublished = true)' 상태인 시험만 조회 (수강생용)
-    List<Exam> findByCourseAndIsPublishedTrue(Course course);
 
     // 강좌 삭제 시 관련 시험 삭제
     void deleteByCourse(Course course);
