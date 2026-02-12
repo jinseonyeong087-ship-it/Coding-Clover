@@ -30,80 +30,15 @@ public class EnrollmentService {
   private final NotificationService notificationService;
   private final UsersRepository usersRepository;
 
-  @Transactional
-  public void enroll(Users user, Course course) {
-    System.out.println("=== 수강신청 시작 ===");
-    System.out.println("사용자 ID: " + user.getUserId() + ", 강좌 ID: " + course.getCourseId());
-
-    // 이미 수강중인지 확인
-    boolean alreadyEnrolled = enrollmentRepository.existsByUserAndCourseAndStatus(
-        user,
-        course,
-        EnrollmentStatus.ENROLLED);
-
-    System.out.println("이미 수강중 여부: " + alreadyEnrolled);
-    if (alreadyEnrolled) {
-      throw new IllegalStateException("이미 수강 중인 강좌입니다.");
-    }
-
-    // 해당 사용자-강좌 레코드가 존재하는지 확인
-    boolean recordExists = enrollmentRepository.existsByUserAndCourse(user, course);
-    System.out.println("기존 레코드 존재 여부: " + recordExists);
-
-    if (recordExists) {
-      System.out.println("기존 레코드가 존재함 - UPDATE 시도");
-      // 기존 레코드가 있으면 취소된 수강을 재활성화 시도
-      int updatedRows = enrollmentRepository.reactivateEnrollment(
-          user,
-          course,
-          EnrollmentStatus.CANCELLED,
-          EnrollmentStatus.ENROLLED,
-          LocalDateTime.now());
-
-      System.out.println("UPDATE된 행 수: " + updatedRows);
-      if (updatedRows == 0) {
-        // UPDATE가 실패했다면 이미 다른 상태(완료 등)인 레코드가 존재
-        throw new IllegalStateException("해당 강좌의 수강 내역이 이미 처리되었습니다.");
-      } else {
-        System.out.println("=== 수강신청 완료 (재활성화) ===");
-      }
-    } else {
-      System.out.println("기존 레코드가 없음 - INSERT 시도");
-      // 레코드가 없으면 새로운 수강 등록
-      Enrollment enrollment = new Enrollment(user, course);
-      enrollmentRepository.save(enrollment);
-      System.out.println("=== 수강신청 완료 (신규) ===");
-    }
-  }
-
   // 수강 취소(actor가 수강 취소 행위자)
   @Transactional
   public void cancel(Users actor, Users user, Course course) {
-
     Enrollment enrollment = enrollmentRepository
         .findByUserAndCourseAndStatus(
             user, course, EnrollmentStatus.ENROLLED)
         .orElseThrow(() -> new IllegalStateException("수강 중인 정보가 없습니다."));
 
     enrollment.cancel(actor);
-  }
-
-  // 수강 완료 처리
-  @Transactional
-  public void complete(Users user, Course course) {
-
-    Enrollment enrollment = enrollmentRepository
-        .findByUserAndCourseAndStatus(
-            user, course, EnrollmentStatus.ENROLLED)
-        .orElseThrow(() -> new IllegalStateException("수강 중인 정보가 없습니다."));
-
-    enrollment.complete();
-  }
-
-  // 수강 목록 조회
-  @Transactional(readOnly = true)
-  public List<Enrollment> getMyEnrollments(Users user) {
-    return enrollmentRepository.findWithUserAndCourseByUser(user);
   }
 
   // === 학생용 메소드 ===
@@ -398,17 +333,10 @@ public class EnrollmentService {
     dto.setId(enrollment.getEnrollmentId()); // 프론트엔드 호환
     dto.setCourseId(enrollment.getCourse().getCourseId());
     dto.setCourseTitle(enrollment.getCourse().getTitle());
-    dto.setStudentName(enrollment.getUser().getName());
-    dto.setStudentEmail(enrollment.getUser().getEmail());
-    dto.setEnrollmentDate(enrollment.getEnrolledAt());
-    dto.setCancelRequestDate(enrollment.getCancelledAt());
     dto.setRequestedAt(enrollment.getCancelledAt()); // 프론트엔드 호환
     dto.setCreatedAt(enrollment.getCancelledAt()); // 프론트엔드 호환
-    dto.setProgress(progressPercent);
     dto.setCurrentProgress(progressPercent); // 프론트엔드 호환
     dto.setProgressRate(progressPercent); // 프론트엔드 호환
-    dto.setCompletedLectures(completedLectures);
-    dto.setTotalLectures(totalLectures);
     dto.setStatus(enrollment.getStatus());
 
     return dto;
