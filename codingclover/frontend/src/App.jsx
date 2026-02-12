@@ -10,11 +10,8 @@ import AdminMain from './pages/admin/AdminMain'
 import Level from './pages/student/Level'
 import MyPage from './pages/student/MyPage'
 import PointsHistory from './pages/student/PointsHistory'
-import CodingTest from './test/CodingTest'
-import EmailTest from './test/EmailTest'
 import CourseCreateRequest from '@/pages/instructor/CourseCreateRequest'
 import FindAccount from '@/pages/FindAccount'
-import SubmissionTest from './test/SubmissionTest'
 import ProtectedRoute from '@/components/ProtectdRoute'
 import Noroll from '@/pages/Noroll'
 import CommunityPostList from './pages/student/CommunityPostList'
@@ -25,13 +22,6 @@ import InstructorCourseEdit from '@/pages/instructor/InstructorCourseEdit'
 import AdminApproch from '@/pages/admin/AdminApproch'
 import InstructorMypage from '@/pages/instructor/InstructorMypage'
 import Payment from './pages/Payment'
-import LectureBatchTest from './test/LectureBatchTest';
-import LectureCreateTest from './test/LectureCreateTest';
-import TestInstructorCourseManage from './test/TestInstructorCourseManage';
-import TestInstructorCourseEdit from './test/TestInstructorCourseEdit';
-import TestInstructorLectureEdit from './test/TestInstructorLectureEdit';
-import FindAccountTest from './test/FindAccountTest';
-import TestSearch from './test/TestSearch';
 import Notice from './pages/public/Notice';
 import NoticeDetail from './pages/public/NoticeDetail';
 import AdminLectureDetail from '@/pages/admin/AdminLectureDetail'
@@ -62,6 +52,7 @@ import AdminLectureList from '@/pages/admin/AdminLectureList';
 import AdminStudentList from '@/pages/admin/AdminStudentList';
 import AdminStudentDetail from '@/pages/admin/AdminStudentDetail';
 import AdminInstructorCourses from '@/pages/admin/AdminInstructorCourses';
+import Search from '@/pages/Search';
 
 
 
@@ -99,21 +90,10 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        {/* 임시 코딩 테스트 페이지 */}
-        <Route path="/test/coding" element={<CodingTest />} />
-        {/* 이메일 발송 테스트 페이지 */}
-        <Route path="/test/email" element={<EmailTest />} />
-        {/* QnA 테스트 페이지 */}
 
-        {/* Submission 테스트 페이지 */}
-        <Route path="/test/submission" element={<SubmissionTest />} />
-        {/* 강의 일괄 승인 테스트 경로 추가 */}
-        <Route path="/test/lecture/batch" element={<LectureBatchTest />} />
-        <Route path="/test/lecture/create" element={<LectureCreateTest />} />
         {/*검색*/}
-        <Route path="/test/search" element={<TestSearch />} />
-        {/*공지사항 테스트*/}
-        <Route path="/test/notice" element={<Notice />} />
+        <Route path="/search" element={<Search />} />
+
         {/* 공지사항 */}
         <Route path="/notice" element={<Notice />} />
         <Route path="/notice/detail/:noticeId" element={<NoticeDetail />} />
@@ -126,20 +106,10 @@ function App() {
         {/* 챗봇 ui확인용 라우터 */}
         <Route path="/ask" element={<ChatBot />} />
 
-        {/* 아이디/비밀번호 찾기 테스트 */}
-        <Route path="/test/findaccount" element={<FindAccountTest />} />
-
-        {/* 강사 통합 관리 테스트 영역 */}
-        <Route path="/test/*" element={<ProtectedRoute allowedRoles={['INSTRUCTOR']} />}>
-          <Route path="manage" element={<TestInstructorCourseManage />} />
-          <Route path="course/edit/:courseId" element={<TestInstructorCourseEdit />} />
-          <Route path="lecture/edit/:lectureId" element={<TestInstructorLectureEdit />} />
-        </Route>
 
         {/* 결제 관련 */}
         <Route path="/payment" element={<Payment />} />
-        {/* 결제 테스트 (프론트/백엔드 연동) - 기존 경로 유지 */}
-        <Route path="/test/payment/checkout" element={<Payment />} />
+
         {/* 로그인 관련 */}
         <Route path="/auth/login" element={<MainLogin />} />
         <Route path="/auth/register" element={<Register />} />

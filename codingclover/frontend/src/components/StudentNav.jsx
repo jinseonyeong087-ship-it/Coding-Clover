@@ -147,7 +147,7 @@ function StudentNav() {
                     <Menubar className="border-none shadow-none bg-transparent">
                         <MenubarMenu>
                             <MenubarTrigger className="cursor-pointer"
-                             onClick={() => { navigate('/course/level/0') }}>전체 강좌</MenubarTrigger>
+                                onClick={() => { navigate('/course/level/0') }}>전체 강좌</MenubarTrigger>
                             <MenubarContent>
                                 <MenubarGroup>
                                     <MenubarItem onClick={() => { navigate('/course/level/1') }}>초급</MenubarItem>
@@ -195,7 +195,7 @@ function StudentNav() {
                             onChange={(e) => setKeyword(e.target.value)}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' && keyword.trim()) {
-                                    navigate(`/test/search?category=COURSE&keyword=${encodeURIComponent(keyword)}`);
+                                    navigate(`/search?category=COURSE&keyword=${encodeURIComponent(keyword)}`);
                                 }
                             }} />
                     </div>

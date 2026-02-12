@@ -86,7 +86,7 @@ function AdminNav() {
                         onChange={(e) => setKeyword(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && keyword.trim()) {
-                                navigate(`/test/search?category=COURSE&keyword=${encodeURIComponent(keyword)}`);
+                                navigate(`/search?category=COURSE&keyword=${encodeURIComponent(keyword)}`);
                             }
                         }} />
                 </div>
