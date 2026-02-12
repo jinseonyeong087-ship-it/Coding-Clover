@@ -229,6 +229,7 @@ const StudentExamList = () => {
                                         <Table>
                                             <TableHeader>
                                                 <TableRow>
+                                                    <TableHead>강좌명</TableHead>
                                                     <TableHead>시험 제목</TableHead>
                                                     <TableHead>응시 차수</TableHead>
                                                     <TableHead>점수</TableHead>
@@ -239,6 +240,7 @@ const StudentExamList = () => {
                                             <TableBody>
                                                 {currentScoreHistory.map((history) => (
                                                     <TableRow key={history.historyId}>
+                                                        <TableCell className="text-muted-foreground text-sm">{history.courseTitle || '강좌 정보 없음'}</TableCell>
                                                         <TableCell className="font-medium">{history.examTitle}</TableCell>
                                                         <TableCell>{history.attemptNo}회차</TableCell>
                                                         <TableCell>{history.score}점</TableCell>
