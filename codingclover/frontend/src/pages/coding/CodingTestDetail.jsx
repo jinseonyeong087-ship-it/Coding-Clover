@@ -222,7 +222,7 @@ const CodingTestDetail = () => {
       const data = res.data;
 
       setResult(data);
-      if (data.passed) {
+      if (data.status === "PASS") {
         toast.success("정답입니다!", { description: `Time: ${data.executionTime}ms` });
         // 목록 상태 업데이트 (성공 표시 등)
         setTasks(prev => prev.map(t => t.problemId === selectedTask.problemId ? { ...t, status: 'PASS' } : t));
@@ -585,18 +585,18 @@ const CodingTestDetail = () => {
                         </div>
                         <ScrollArea className="flex-1 p-5">
                           {result ? (
-                            <div className={`flex flex-col gap-3 p-5 rounded-xl border ${result.passed ? 'bg-white border-black/10' : 'bg-white border-red-200'}`}>
+                            <div className={`flex flex-col gap-3 p-5 rounded-xl border ${result.status === "PASS" ? 'bg-white border-black/10' : 'bg-white border-red-200'}`}>
                               <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${result.passed ? 'bg-black text-white' : 'bg-red-100 text-red-600'}`}>
-                                  {result.passed ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${result.status === "PASS" ? 'bg-black text-white' : 'bg-red-100 text-red-600'}`}>
+                                  {result.status === "PASS" ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
                                 </div>
-                                <div className={`font-bold text-lg ${result.passed ? 'text-black' : 'text-red-600'}`}>
-                                  {result.passed ? "테스트 통과" : "오답입니다"}
+                                <div className={`font-bold text-lg ${result.status === "PASS" ? 'text-black' : 'text-red-600'}`}>
+                                  {result.status === "PASS" ? "테스트 통과" : "오답입니다"}
                                 </div>
                               </div>
                               <div className="pl-[44px]">
                                 {/* 오답일 경우 상세 메시지(영어 에러 등) 숨김. 정답일 때만 시간 표시 */}
-                                {result.passed && result.executionTime > 0 &&
+                                {result.status === "PASS" && result.executionTime > 0 &&
                                   <div className="inline-flex items-center gap-2 px-2 py-1 bg-gray-100 rounded text-xs font-medium text-gray-600">
                                     <Sparkles className="w-3 h-3 text-black" />
                                     {result.executionTime}ms

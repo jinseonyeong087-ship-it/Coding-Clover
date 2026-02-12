@@ -87,7 +87,7 @@ public class ProblemController {
     Problem problem = problemRepository.findById(id).orElseThrow(() -> new RuntimeException("문제를 찾을 수 없습니다."));
 
     long totalTime = 0;
-    boolean passed = false;
+    String status = "FAIL";
     int totalCases = 1;
     int passedCases = 0;
 
@@ -98,7 +98,7 @@ public class ProblemController {
     // 3. 에러 처리
     if (res.getError() != null && !res.getError().isEmpty()) {
       return ResponseEntity.ok(GradingResult.builder()
-          .passed(false)
+          .status("ERROR")
           .totalCases(1)
           .passedCases(0)
           .message("실행 중 에러: " + res.getError())
@@ -111,21 +111,21 @@ public class ProblemController {
     String expected = problem.getExpectedOutput() != null ? problem.getExpectedOutput().trim() : "";
 
     if (!expected.isEmpty() && actual.equals(expected)) {
-      passed = true;
+      status = "PASS";
       passedCases = 1;
     }
 
-    String message = passed ? "정답입니다!" : "오답입니다.\n[예상]\n" + expected + "\n[실행결과]\n" + actual;
+    String message = "PASS".equals(status) ? "정답입니다!" : "오답입니다.\n[예상]\n" + expected + "\n[실행결과]\n" + actual;
 
     // 5. 제출 이력 저장 (회원일 경우에만)
     if (request.getUserId() != null) {
       System.out.println("Saving submission for User ID: " + request.getUserId());
       final long finalTotalTime = totalTime;
-      final boolean finalPassed = passed;
+      final String finalStatus = status;
       try {
         usersRepository.findById(request.getUserId()).ifPresent(user -> {
           submissionService.create(user, problem, request.getCode(),
-              finalPassed ? "PASS" : "FAIL", finalTotalTime);
+              finalStatus, finalTotalTime);
           System.out.println("Submission saved successfully.");
         });
       } catch (Exception e) {
@@ -135,7 +135,7 @@ public class ProblemController {
     }
 
     return ResponseEntity.ok(GradingResult.builder()
-        .passed(passed)
+        .status(status)
         .totalCases(totalCases)
         .passedCases(passedCases)
         .message(message)
@@ -160,7 +160,7 @@ public class ProblemController {
           map.put("userId", s.getUsers().getUserId());
           map.put("loginId", s.getUsers().getLoginId());
         }
-        map.put("submittedAt", s.getCreatedAt());
+        map.put("createdAt", s.getCreatedAt());
         map.put("status", s.getStatus()); // "PASS" 또는 "FAIL"
         map.put("code", s.getCode()); // 제출 코드 포함
         return map;

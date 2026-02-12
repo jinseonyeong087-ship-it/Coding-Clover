@@ -760,8 +760,8 @@ function MyPage() {
                               <tr key={result.resultId} className="hover:bg-gray-50/50 transition-colors">
                                 <td className="px-6 py-4 font-bold text-gray-900">{result.title}</td>
                                 <td className="px-6 py-4 text-center">
-                                  <Badge variant={result.passed ? "default" : "destructive"} className={result.passed ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0" : ""}>
-                                    {result.passed ? '합격' : '불합격'}
+                                  <Badge variant={result.status === "PASS" ? "default" : "destructive"} className={result.status === "PASS" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0" : ""}>
+                                    {result.status === "PASS" ? '합격' : '불합격'}
                                   </Badge>
                                 </td>
                                 <td className="px-6 py-4 text-center font-mono font-bold text-primary">{result.score}점</td>
