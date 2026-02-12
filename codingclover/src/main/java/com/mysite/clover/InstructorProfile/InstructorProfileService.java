@@ -166,7 +166,7 @@ public class InstructorProfileService {
         }
     }
 
-    // 강사 반료 처리 (어드민용)
+    // 강사 반려 처리 (어드민용)
     public boolean rejectInstructor(String userId) {
         try {
             InstructorProfile profile = instructorProfileRepository

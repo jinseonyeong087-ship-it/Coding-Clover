@@ -139,9 +139,8 @@ public class StudentProfileService {
         return cleaned.isEmpty() ? "미설정" : cleaned;
     }
     
-    /**
-     * 로그인한 학생의 학습 수준에 따른 추천 강좌 목록 조회
-     */
+    
+     //로그인한 학생의 학습 수준에 따른 추천 강좌 목록 조회
     @Transactional(readOnly = true)
     public List<Course> getRecommendedCourses(String identifier) {
         Users user = usersRepository.findByLoginId(identifier)
