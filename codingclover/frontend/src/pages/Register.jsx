@@ -1,24 +1,22 @@
 import React, { useState } from 'react';
-import Nav from '@/components/Nav';
-import Tail from '../components/Tail';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/RadioGroup';
-import { cn } from '@/lib/utils';
-import { Eye, EyeOff } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { cn } from "@/lib/utils";
+import { Eye, EyeOff, ArrowLeft, GraduationCap, Laptop } from "lucide-react";
 
-const Register = ({ onToLogin }) => {
+const Register = () => {
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     loginId: '',
     password: '',
     passwordConfirm: '',
     name: '',
     email: '',
-    role: 'STUDENT'
+    role: 'STUDENT',
   });
 
   const [errors, setErrors] = useState({});
@@ -26,71 +24,36 @@ const Register = ({ onToLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
   const handleRoleChange = (value) => {
-    setFormData(prev => ({
-      ...prev,
-      role: value
-    }));
-
-    if (errors.role) {
-      setErrors(prev => ({
-        ...prev,
-        role: ''
-      }));
-    }
+    setFormData((prev) => ({ ...prev, role: value }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-
-    if (!formData.loginId.trim()) {
-      newErrors.loginId = '아이디를 입력해주세요.';
-    } else if (formData.loginId.length < 4 || formData.loginId.length > 50) {
-      newErrors.loginId = 'ID는 4자 이상이여야 합니다.';
+    if (!formData.loginId.trim()) newErrors.loginId = '아이디를 입력해 주세요.';
+    if (!formData.name.trim()) newErrors.name = '이름을 입력해 주세요.';
+    if (!formData.email.trim()) {
+      newErrors.email = '이메일을 입력해 주세요.';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = '유효한 이메일 형식이 아닙니다.';
     }
-
     if (!formData.password) {
-      newErrors.password = '비밀번호를 입력해주세요.';
+      newErrors.password = '비밀번호를 입력해 주세요.';
     } else if (formData.password.length < 8) {
       newErrors.password = '비밀번호는 8자 이상이어야 합니다.';
     }
-
-    if (!formData.passwordConfirm) {
-      newErrors.passwordConfirm = '비밀번호 확인을 입력해주세요.';
-    } else if (formData.password !== formData.passwordConfirm) {
+    if (formData.password !== formData.passwordConfirm) {
       newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
     }
-
-    if (!formData.name.trim()) {
-      newErrors.name = '이름을 입력해주세요.';
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email.trim()) {
-      newErrors.email = '이메일을 입력해주세요.';
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = '올바른 이메일 형식이 아닙니다.';
-    }
-
-    if (!formData.role) {
-      newErrors.role = '회원 유형을 선택해주세요.';
-    }
+    if (!formData.role) newErrors.role = '회원 유형을 선택해 주세요.';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -98,36 +61,23 @@ const Register = ({ onToLogin }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
+    if (!validateForm()) return;
     setIsSubmitting(true);
+    setErrors({});
 
     try {
-      const response = await fetch('/auth/register', {
+      const response = await fetch('/auth/signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          loginId: formData.loginId,
-          password: formData.password,
-          passwordConfirm: formData.passwordConfirm,
-          name: formData.name,
-          email: formData.email,
-          role: formData.role
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        alert('회원가입이 완료되었습니다!');
-        navigate("/auth/login");
+        alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+        navigate('/auth/login');
       } else {
         const errorData = await response.json();
-        // 서버에서 반환한 필드별 에러를 errors 상태에 반영
-        setErrors(errorData);
+        setErrors(errorData || { global: '회원가입 실패' });
       }
     } catch (error) {
       console.error('회원가입 에러:', error);
@@ -138,280 +88,132 @@ const Register = ({ onToLogin }) => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <Nav />
-      {/* Background Decoration */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
-      <div className="fixed bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white text-gray-900">
+      {/* Left: Brand Side */}
+      <div className="hidden lg:flex flex-col justify-between bg-[#0f172a] text-white p-12 lg:p-20 relative overflow-hidden">
+        <div className="relative z-10">
+          <Link to="/" className="inline-flex items-center gap-2 text-2xl font-bold tracking-tight mb-8 hover:opacity-80 transition-opacity">
+            <ArrowLeft className="w-5 h-5" /> Back to Home
+          </Link>
+          <div className="mt-20">
+            <h1 className="text-5xl font-extrabold tracking-tight leading-tight mb-6">
+              Join the<br />
+              <span className="text-primary">New Generation</span>
+            </h1>
+            <p className="text-xl text-gray-400 max-w-md leading-relaxed">
+              Coding-Clover 커뮤니티의 일원이 되세요.<br />
+              함께 성장하고, 지식을 공유하는 여정이 시작됩니다.
+            </p>
+          </div>
+        </div>
 
-      <main className="flex-1 flex items-center justify-center py-12 px-4 relative z-10">
-        <Card className="w-full max-w-lg border-border/50 bg-background/60 backdrop-blur-xl shadow-2xl">
-          <CardHeader className="space-y-2 text-center pb-8 pt-8">
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">회원가입</CardTitle>
-            <CardDescription className="text-base">
-              Coding-Clover와 함께 성장을 시작하세요
-            </CardDescription>
-          </CardHeader>
+        <div className="relative z-10 grid grid-cols-2 gap-8 text-sm text-gray-400">
+          <div>
+            <h4 className="font-bold text-white mb-2">For Students</h4>
+            <p>체계적인 학습 로드맵과 실전 프로젝트로 실력을 키우세요.</p>
+          </div>
+          <div>
+            <h4 className="font-bold text-white mb-2">For Instructors</h4>
+            <p>당신의 지식을 공유하고 수익을 창출하세요.</p>
+          </div>
+        </div>
 
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-              {/* 전역 에러 메시지 */}
-              {errors.global && (
-                <p className="text-sm text-destructive text-center">{errors.global}</p>
-              )}
-              {/* 회원 유형 선택 */}
-              <div className="space-y-3">
-                <Label className="text-base font-semibold">
-                  회원 유형 선택 <span className="text-destructive">*</span>
-                </Label>
-                <RadioGroup
-                  value={formData.role}
-                  onValueChange={handleRoleChange}
-                  className="grid grid-cols-2 gap-4"
-                >
-                  <div className="relative">
-                    <RadioGroupItem
-                      value="STUDENT"
-                      id="roleStudent"
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor="roleStudent"
-                      className={cn(
-                        "flex flex-col items-center justify-center rounded-xl border-2 border-muted bg-white/50 backdrop-blur-sm p-6 hover:bg-accent/50 hover:border-primary/50 cursor-pointer transition-all duration-200 shadow-sm",
-                        formData.role === 'STUDENT' && "border-primary bg-primary/10 shadow-md ring-2 ring-primary/20 ring-offset-0"
-                      )}
-                    >
-                      <div className={cn("p-2 rounded-full mb-3 bg-muted transition-colors", formData.role === 'STUDENT' && "bg-primary text-primary-foreground")}>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="h-6 w-6"
-                        >
-                          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                          <circle cx="12" cy="7" r="4" />
-                        </svg>
-                      </div>
-                      <span className="text-base font-bold">수강생</span>
-                      <span className="text-xs text-muted-foreground mt-1">학습을 시작하고 싶어요</span>
-                    </Label>
-                  </div>
+        {/* Decorative Pattern */}
+        <div className="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none">
+          <div className="absolute right-0 bottom-0 w-[500px] h-[500px] bg-blue-600 rounded-full blur-[200px]"></div>
+        </div>
+      </div>
 
-                  <div className="relative">
-                    <RadioGroupItem
-                      value="INSTRUCTOR"
-                      id="roleInstructor"
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor="roleInstructor"
-                      className={cn(
-                        "flex flex-col items-center justify-center rounded-xl border-2 border-muted bg-white/50 backdrop-blur-sm p-6 hover:bg-accent/50 hover:border-primary/50 cursor-pointer transition-all duration-200 shadow-sm",
-                        formData.role === 'INSTRUCTOR' && "border-primary bg-primary/10 shadow-md ring-2 ring-primary/20 ring-offset-0"
-                      )}
-                    >
-                      <div className={cn("p-2 rounded-full mb-3 bg-muted transition-colors", formData.role === 'INSTRUCTOR' && "bg-primary text-primary-foreground")}>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="h-6 w-6"
-                        >
-                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                          <circle cx="9" cy="7" r="4" />
-                          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                        </svg>
-                      </div>
-                      <span className="text-base font-bold">강사</span>
-                      <span className="text-xs text-muted-foreground mt-1">지식을 공유하고 싶어요</span>
-                    </Label>
-                  </div>
-                </RadioGroup>
-                {errors.role && (
-                  <p className="text-sm text-destructive font-medium ml-1">{errors.role}</p>
-                )}
+      {/* Right: Registration Form */}
+      <div className="flex flex-col justify-center items-center p-8 lg:p-12 overflow-y-auto">
+        <div className="w-full max-w-lg space-y-8">
+          <div className="text-center lg:text-left">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900">회원가입</h2>
+            <p className="mt-2 text-gray-500">이미 계정이 있으신가요? <Link to="/auth/login" className="font-bold text-primary hover:underline">로그인</Link></p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+            {errors.global && (
+              <div className="p-3 bg-red-50 text-red-600 text-sm font-medium border-l-4 border-red-500">{errors.global}</div>
+            )}
+
+            {/* Role Selection */}
+            <div className="space-y-3">
+              <Label className="text-sm font-bold text-gray-700">회원 유형 <span className="text-red-500">*</span></Label>
+              <RadioGroup value={formData.role} onValueChange={handleRoleChange} className="grid grid-cols-2 gap-4">
+                <div>
+                  <RadioGroupItem value="STUDENT" id="roleStudent" className="peer sr-only" />
+                  <Label htmlFor="roleStudent" className={cn(
+                    "flex flex-col items-center justify-center border-2 border-gray-200 p-4 cursor-pointer hover:bg-gray-50 transition-all rounded-none",
+                    formData.role === 'STUDENT' && "border-primary bg-primary/5 ring-1 ring-primary"
+                  )}>
+                    <GraduationCap className={cn("w-6 h-6 mb-2 text-gray-400", formData.role === 'STUDENT' && "text-primary")} />
+                    <span className="font-bold">수강생</span>
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="INSTRUCTOR" id="roleInstructor" className="peer sr-only" />
+                  <Label htmlFor="roleInstructor" className={cn(
+                    "flex flex-col items-center justify-center border-2 border-gray-200 p-4 cursor-pointer hover:bg-gray-50 transition-all rounded-none",
+                    formData.role === 'INSTRUCTOR' && "border-primary bg-primary/5 ring-1 ring-primary"
+                  )}>
+                    <Laptop className={cn("w-6 h-6 mb-2 text-gray-400", formData.role === 'INSTRUCTOR' && "text-primary")} />
+                    <span className="font-bold">강사</span>
+                  </Label>
+                </div>
+              </RadioGroup>
+              {errors.role && <p className="text-xs text-red-500 font-medium">{errors.role}</p>}
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="loginId" className="text-sm font-bold text-gray-700">아이디 <span className="text-red-500">*</span></Label>
+                <Input type="text" id="loginId" name="loginId" value={formData.loginId} onChange={handleChange} className={cn("h-12 rounded-none border-gray-300 focus:border-primary", errors.loginId && "border-red-500")} placeholder="아이디를 입력하세요" />
+                {errors.loginId && <p className="text-xs text-red-500">{errors.loginId}</p>}
               </div>
 
-              {/* 로그인 ID */}
-              <div className="space-y-2">
-                <Label htmlFor="loginId">
-                  로그인 ID <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  type="text"
-                  id="loginId"
-                  name="loginId"
-                  value={formData.loginId}
-                  onChange={handleChange}
-                  placeholder="아이디를 입력해 주세요"
-                  maxLength={50}
-                  className={cn(errors.loginId && "border-destructive focus-visible:ring-destructive")}
-                />
-                {errors.loginId && (
-                  <p className="text-sm text-destructive">{errors.loginId}</p>
-                )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm font-bold text-gray-700">이름 <span className="text-red-500">*</span></Label>
+                  <Input type="text" id="name" name="name" value={formData.name} onChange={handleChange} className={cn("h-12 rounded-none border-gray-300 focus:border-primary", errors.name && "border-red-500")} placeholder="실명 입력" />
+                  {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-bold text-gray-700">이메일 <span className="text-red-500">*</span></Label>
+                  <Input type="email" id="email" name="email" value={formData.email} onChange={handleChange} className={cn("h-12 rounded-none border-gray-300 focus:border-primary", errors.email && "border-red-500")} placeholder="example@email.com" />
+                  {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
+                </div>
               </div>
 
-              {/* 이름 */}
               <div className="space-y-2">
-                <Label htmlFor="name">
-                  성명 <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="이름을 입력하세요"
-                  maxLength={50}
-                  className={cn(errors.name && "border-destructive focus-visible:ring-destructive")}
-                />
-                {errors.name && (
-                  <p className="text-sm text-destructive">{errors.name}</p>
-                )}
-              </div>
-
-              {/* 이메일 */}
-              <div className="space-y-2">
-                <Label htmlFor="email">
-                  이메일 <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="example@email.com"
-                  maxLength={100}
-                  className={cn(errors.email && "border-destructive focus-visible:ring-destructive")}
-                />
-                {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email}</p>
-                )}
-              </div>
-
-              {/* 비밀번호 */}
-              <div className="space-y-2">
-                <Label htmlFor="password">
-                  비밀번호 <span className="text-destructive">*</span>
-                </Label>
+                <Label htmlFor="password" className="text-sm font-bold text-gray-700">비밀번호 <span className="text-red-500">*</span></Label>
                 <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="8자 이상의 비밀번호를 입력해 주세요"
-                    maxLength={255}
-                    className={cn("pr-10", errors.password && "border-destructive focus-visible:ring-destructive")}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
+                  <Input type={showPassword ? "text" : "password"} id="password" name="password" value={formData.password} onChange={handleChange} className={cn("h-12 pr-10 rounded-none border-gray-300 focus:border-primary", errors.password && "border-red-500")} placeholder="8자 이상 입력" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password}</p>
-                )}
+                {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
               </div>
 
-              {/* 비밀번호 확인 */}
               <div className="space-y-2">
-                <Label htmlFor="passwordConfirm">
-                  비밀번호 확인 <span className="text-destructive">*</span>
-                </Label>
+                <Label htmlFor="passwordConfirm" className="text-sm font-bold text-gray-700">비밀번호 확인 <span className="text-red-500">*</span></Label>
                 <div className="relative">
-                  <Input
-                    type={showPasswordConfirm ? "text" : "password"}
-                    id="passwordConfirm"
-                    name="passwordConfirm"
-                    value={formData.passwordConfirm}
-                    onChange={handleChange}
-                    placeholder="비밀번호를 다시 입력하세요"
-                    className={cn("pr-10", errors.passwordConfirm && "border-destructive focus-visible:ring-destructive")}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
+                  <Input type={showPasswordConfirm ? "text" : "password"} id="passwordConfirm" name="passwordConfirm" value={formData.passwordConfirm} onChange={handleChange} className={cn("h-12 pr-10 rounded-none border-gray-300 focus:border-primary", errors.passwordConfirm && "border-red-500")} placeholder="비밀번호 재입력" />
+                  <button type="button" onClick={() => setShowPasswordConfirm(!showPasswordConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                     {showPasswordConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {errors.passwordConfirm && (
-                  <p className="text-sm text-destructive">{errors.passwordConfirm}</p>
-                )}
+                {errors.passwordConfirm && <p className="text-xs text-red-500">{errors.passwordConfirm}</p>}
               </div>
-
-              {/* 제출 버튼 */}
-              <Button
-                type="submit"
-                className="w-full"
-                size="lg"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    처리 중...
-                  </>
-                ) : (
-                  '가입하기'
-                )}
-              </Button>
-            </form>
-
-            {/* 로그인 링크 */}
-            <div className="mt-6 text-center text-sm text-muted-foreground">
-              이미 계정이 있으신가요?{' '}
-              <button
-                type="button"
-                onClick={() => navigate('/auth/login')}
-                className="font-medium text-primary underline-offset-4 hover:underline bg-transparent border-none p-0 cursor-pointer"
-              >
-                로그인
-              </button>
             </div>
-          </CardContent>
-        </Card>
-      </main>
 
-      <Tail />
+            <Button type="submit" className="w-full h-12 text-base font-bold bg-primary hover:bg-primary/90 text-white rounded-none shadow-none" disabled={isSubmitting}>
+              {isSubmitting ? '처리 중...' : '회원가입 완료'}
+            </Button>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };

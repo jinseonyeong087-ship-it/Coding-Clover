@@ -6,14 +6,15 @@ import Tail from '@/components/Tail';
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ArrowRight, Code2, Terminal, Search as SearchIcon } from "lucide-react";
+import { Button } from '@/components/ui/button';
 
 function Search() {
   const [searchParams] = useSearchParams();
@@ -60,44 +61,73 @@ function Search() {
     }
   }, [keyword]);
 
+  const renderCourseGrid = (items) => {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {items.map((item) => (
+          <Link to={`/course/${item.courseId}`} key={item.courseId} className="group block h-full">
+            <div className="h-full bg-white border border-gray-200 hover:border-primary transition-colors flex flex-col rounded-none">
+              <div className="aspect-[16/9] bg-gray-100 relative overflow-hidden group-hover:bg-gray-50 transition-colors">
+                {item.thumbnailUrl ? (
+                  <img src={item.thumbnailUrl} alt={item.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-300">
+                    <Code2 className="w-12 h-12" />
+                  </div>
+                )}
+                {item.level && (
+                  <div className="absolute top-0 right-0 p-2">
+                    <Badge variant="secondary" className="rounded-none bg-white/90 text-gray-800 hover:bg-white border border-gray-200">
+                      Level {item.level}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+              <div className="p-5 flex-1 flex flex-col">
+                <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-primary transition-colors">{item.title}</h3>
+                <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-1">{item.description}</p>
+                <div className="text-xs font-medium text-gray-400 pt-4 border-t border-gray-100 flex justify-between items-center">
+                  <span>{item.instructorName || 'Instructor'}</span>
+                  <span className="text-primary group-hover:underline flex items-center gap-1">View <ArrowRight className="w-3 h-3" /></span>
+                </div>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    );
+  };
+
   // 테이블 헤더 설정
   const renderHeader = (categoryId) => {
     switch (categoryId) {
-      case 'COURSE':
-        return (
-          <TableRow>
-            <TableHead className="text-center w-20">번호</TableHead>
-            <TableHead className="text-center">강좌명</TableHead>
-            <TableHead className="text-center">강사명</TableHead>
-          </TableRow>
-        );
       case 'COMMUNITY':
       case 'QNA':
       case 'NOTICE':
         return (
-          <TableRow>
-            <TableHead className="text-center w-20">번호</TableHead>
-            <TableHead className="text-center">제목</TableHead>
-            <TableHead className="text-center w-40">작성자</TableHead>
-            <TableHead className="text-center w-40">작성일</TableHead>
+          <TableRow className="hover:bg-transparent border-b border-gray-200">
+            <TableHead className="text-center w-16 text-gray-500 font-bold">No</TableHead>
+            <TableHead className="text-center text-gray-500 font-bold">제목</TableHead>
+            <TableHead className="text-center w-32 text-gray-500 font-bold">작성자</TableHead>
+            <TableHead className="text-center w-32 text-gray-500 font-bold">작성일</TableHead>
           </TableRow>
         );
       case 'STUDENT':
       case 'INSTRUCTOR':
         return (
-          <TableRow>
-            <TableHead className="text-center w-20">번호</TableHead>
-            <TableHead className="text-center">이름</TableHead>
-            <TableHead className="text-center">아이디</TableHead>
-            <TableHead className="text-center">이메일</TableHead>
+          <TableRow className="hover:bg-transparent border-b border-gray-200">
+            <TableHead className="text-center w-16 text-gray-500 font-bold">No</TableHead>
+            <TableHead className="text-center text-gray-500 font-bold">이름</TableHead>
+            <TableHead className="text-center text-gray-500 font-bold">아이디</TableHead>
+            <TableHead className="text-center text-gray-500 font-bold">이메일</TableHead>
           </TableRow>
         );
       default:
         return (
-          <TableRow>
-            <TableHead className="text-center w-20">번호</TableHead>
-            <TableHead className="text-center">제목</TableHead>
-            <TableHead className="text-center">날짜</TableHead>
+          <TableRow className="hover:bg-transparent border-b border-gray-200">
+            <TableHead className="text-center w-16 text-gray-500 font-bold">No</TableHead>
+            <TableHead className="text-center text-gray-500 font-bold">제목</TableHead>
+            <TableHead className="text-center w-32 text-gray-500 font-bold">날짜</TableHead>
           </TableRow>
         );
     }
@@ -111,138 +141,120 @@ function Search() {
     const author = item.authorName || item.writer || item.user?.name || (categoryId === 'NOTICE' ? '관리자' : '익명');
 
     switch (categoryId) {
-      case 'COURSE':
-        return (
-          <>
-            <TableCell className="text-center">{index + 1}</TableCell>
-            <TableCell className="text-center font-medium text-blue-600">
-              <Link to={`/admin/course/${item.courseId}`} className="hover:underline">
-                {item.title}
-              </Link>
-            </TableCell>
-            <TableCell className="text-center">{item.instructorName || "관리자"}</TableCell>
-          </>
-        );
       case 'COMMUNITY':
       case 'QNA':
       case 'NOTICE':
         return (
           <>
-            <TableCell className="text-center">{item.postId || item.qnaId || item.noticeId || item.id}</TableCell>
-            <TableCell className="text-center font-medium">
-              <Link to={linkPath} className="hover:underline">
+            <TableCell className="text-center text-gray-400">{item.postId || item.qnaId || item.noticeId || item.id}</TableCell>
+            <TableCell className="text-left font-medium">
+              <Link to={linkPath} className="hover:text-primary hover:underline transition-colors block py-1">
                 {title}
               </Link>
             </TableCell>
-            <TableCell className="text-center font-semibold text-gray-700">
-              {author}
-            </TableCell>
-            <TableCell className="text-center text-gray-500">{dateStr}</TableCell>
+            <TableCell className="text-center text-gray-600 font-medium">{author}</TableCell>
+            <TableCell className="text-center text-gray-400 text-sm">{dateStr}</TableCell>
           </>
         );
       case 'STUDENT':
       case 'INSTRUCTOR':
         return (
           <>
-            <TableCell className="text-center">{item.userId || item.id}</TableCell>
+            <TableCell className="text-center text-gray-400">{item.userId || item.id}</TableCell>
             <TableCell className="text-center font-medium">{item.name}</TableCell>
-            <TableCell className="text-center">{item.loginId}</TableCell>
-            <TableCell className="text-center">{item.email}</TableCell>
+            <TableCell className="text-center text-gray-600">{item.loginId}</TableCell>
+            <TableCell className="text-center text-gray-500">{item.email}</TableCell>
           </>
         );
       default: // CODING_TEST etc.
         return (
           <>
-            <TableCell className="text-center">{item.id || item.problemId}</TableCell>
-            <TableCell className="text-center font-medium">
-              <Link to={`/coding-test/${item.id || item.problemId}`} className="hover:underline">
+            <TableCell className="text-center text-gray-400">{item.id || item.problemId}</TableCell>
+            <TableCell className="text-left font-medium">
+              <Link to={`/coding-test/${item.id || item.problemId}`} className="hover:text-primary hover:underline transition-colors block py-1">
                 {item.title}
               </Link>
             </TableCell>
-            <TableCell className="text-center text-gray-500">{dateStr}</TableCell>
+            <TableCell className="text-center text-gray-400 text-sm">{dateStr}</TableCell>
           </>
         );
     }
   };
 
-  const [navHeight, setNavHeight] = useState(0);
-
-  // 네비게이션 바 높이 동적 측정
-  useEffect(() => {
-    const updateNavHeight = () => {
-      const navElement = document.querySelector('nav') || document.querySelector('header');
-      if (navElement) {
-        setNavHeight(navElement.offsetHeight);
-      }
-    };
-
-    // 초기 측정 및 리사이즈 이벤트 등록
-    updateNavHeight();
-    // 이미지 로딩 등으로 높이가 변할 수 있으므로 잠시 후 한 번 더 체크
-    setTimeout(updateNavHeight, 100);
-
-    window.addEventListener('resize', updateNavHeight);
-    return () => window.removeEventListener('resize', updateNavHeight);
-  }, []);
-
   const hasAnyResults = Object.values(results).some(list => list && list.length > 0);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-white">
       <Nav />
-      {/* 네비게이션 바 높이만큼 상단 여백을 동적으로 부여 (+ 여유 공간 40px) */}
-      <main
-        className="flex-1 container mx-auto px-16 pb-12"
-        style={{ paddingTop: navHeight ? `${navHeight + 40}px` : '120px' }}
-      >
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-            <span className="text-blue-600">"{keyword}"</span> 검색 결과
-          </h2>
-          {loading && <p className="text-gray-500 mt-2">검색 중입니다...</p>}
+      {/* Search Header */}
+      <div className="bg-gray-50 border-b border-gray-200">
+        <div className="container mx-auto px-6 py-12">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-4">
+              <span className="text-primary">"{keyword}"</span> 검색 결과
+            </h2>
+            <p className="text-gray-500">
+              Coding-Clover에서 관련된 콘텐츠를 확인하세요.
+            </p>
+          </div>
         </div>
+      </div>
 
+      <main className="flex-1 container mx-auto px-6 py-12">
         {loading ? (
-          <div className="space-y-6">
-            {[1, 2, 3].map(i => (
-              <Card key={i} className="h-40 animate-pulse bg-gray-100 border-none" />
-            ))}
+          <div className="space-y-6 max-w-5xl mx-auto">
+            <div className="h-8 w-48 bg-gray-100 animate-pulse mb-6"></div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map(i => <div key={i} className="h-64 bg-gray-100 animate-pulse"></div>)}
+            </div>
           </div>
         ) : hasAnyResults ? (
-          <div className="space-y-12">
+          <div className="space-y-16 max-w-6xl mx-auto">
             {categories.map((cat) => {
               const catData = results[cat.id] || [];
               if (catData.length === 0) return null;
 
               return (
                 <div key={cat.id} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="flex items-center mb-4 ml-1">
-                    <h3 className="text-xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3">
-                      {cat.name} <span className="text-blue-600 ml-1">({catData.length})</span>
+                  <div className="flex items-center justify-between mb-6 pb-2 border-b border-gray-200">
+                    <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                      {cat.name}
+                      <span className="inline-flex items-center justify-center px-2 py-0.5 ml-2 text-xs font-bold text-white bg-primary rounded-none">
+                        {catData.length}
+                      </span>
                     </h3>
                   </div>
-                  <Card className="shadow-md border-none overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                    <Table>
-                      <TableHeader className="bg-gray-100/80">
-                        {renderHeader(cat.id)}
-                      </TableHeader>
-                      <TableBody className="bg-white">
-                        {catData.map((item, index) => (
-                          <TableRow key={index} className="hover:bg-blue-50/30 transition-colors">
-                            {renderRows(item, cat.id, index)}
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </Card>
+
+                  {cat.id === 'COURSE' ? (
+                    renderCourseGrid(catData)
+                  ) : (
+                    <div className="border border-gray-200 bg-white">
+                      <Table>
+                        <TableHeader className="bg-gray-50">
+                          {renderHeader(cat.id)}
+                        </TableHeader>
+                        <TableBody>
+                          {catData.map((item, index) => (
+                            <TableRow key={index} className="hover:bg-gray-50/50 transition-colors border-b border-gray-100 last:border-0">
+                              {renderRows(item, cat.id, index)}
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
         ) : (
-          <div className="text-center py-20 text-gray-500 bg-white rounded-xl shadow-sm">
-            <p className="text-xl">"{keyword}"에 대한 검색 결과가 없습니다.</p>
-            <p className="text-sm mt-2 text-gray-400">다른 키워드로 검색해보세요.</p>
+          <div className="text-center py-32 border border-dashed border-gray-200 bg-gray-50">
+            <SearchIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-xl font-bold text-gray-900">"{keyword}"에 대한 검색 결과가 없습니다.</p>
+            <p className="text-sm mt-2 text-gray-500">철자를 확인하거나 다른 검색어로 다시 시도해보세요.</p>
+            <Link to="/" className="inline-block mt-6">
+              <Button variant="outline" className="rounded-none border-gray-300">홈으로 돌아가기</Button>
+            </Link>
           </div>
         )}
       </main>

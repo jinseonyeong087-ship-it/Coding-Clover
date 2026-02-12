@@ -86,26 +86,26 @@ const ExamList = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50">
+        <div className="min-h-screen bg-white">
             <InstructorNav />
             <div className="container mx-auto py-10 max-w-6xl">
                 {/* ... (Header) ... */}
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">시험 결과 / 관리</h1>
-                        <p className="text-muted-foreground mt-2">
+                        <h1 className="text-3xl font-bold tracking-tight text-gray-900">시험 결과 / 관리</h1>
+                        <p className="text-gray-500 mt-2">
                             등록된 시험 목록을 조회하고 수정/삭제, 또는 응시 결과를 확인할 수 있습니다.
                         </p>
                     </div>
-                    <Button onClick={() => navigate("/instructor/exam/new")} className="gap-2">
+                    <Button onClick={() => navigate("/instructor/exam/new")} className="gap-2 rounded-none bg-primary hover:bg-primary/90 text-white">
                         <Plus className="w-4 h-4" />
                         새 시험 등록
                     </Button>
                 </div>
 
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle>등록된 시험 목록</CardTitle>
+                <Card className="rounded-none border border-border shadow-none">
+                    <CardHeader className="pb-2 border-b border-border bg-white">
+                        <CardTitle className="text-gray-900">등록된 시험 목록</CardTitle>
                         <CardDescription>총 {exams.length}개의 시험이 등록되어 있습니다.</CardDescription>
                     </CardHeader>
                     <CardContent>

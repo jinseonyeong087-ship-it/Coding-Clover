@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import AdminSidebar from "@/components/AdminSidebar";
 
 function AdminMain() {
 
@@ -101,210 +102,214 @@ function AdminMain() {
     return (
         <>
             <Nav />
-            {/* Background Decoration */}
-            <div className="fixed inset-0 z-[-1] bg-background">
-                <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[100px]" />
-            </div>
+            {/* Background Decoration Removed per user feedback */}
 
-            <div className="pt-24 pb-20 container mx-auto px-6 max-w-7xl">
-                <div className="mb-10">
-                    <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 mb-2">
-                        Admin Dashboard
-                    </h1>
-                    <p className="text-muted-foreground">
-                        관리자 대시보드입니다. 강좌, 강사, 강의 업로드를 관리하세요.
-                    </p>
-                </div>
+            <div className="min-h-screen pt-20 pb-20">
+                <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
+                    {/* Admin Sidebar */}
+                    <AdminSidebar />
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-                    <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2">개설된 강좌</h3>
-                        <div className="text-3xl font-bold">{course.length} <span className="text-sm font-normal text-muted-foreground">개</span></div>
-                    </div>
-                    <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2">신규 강사 신청</h3>
-                        <div className="text-3xl font-bold text-amber-500">{status.filter(u => u.status === 'SUSPENDED' && u.profileStatus !== 'REJECTED').length} <span className="text-sm font-normal text-muted-foreground">명</span></div>
-                    </div>
-                    <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2">강의 업로드 대기</h3>
-                        <div className="text-3xl font-bold text-purple-500">{lecture.filter(l => l.approvalStatus === 'PENDING').length} <span className="text-sm font-normal text-muted-foreground">건</span></div>
-                    </div>
-                    <div className="bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/20 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex items-center justify-center">
-                        <span className="text-primary font-bold">전체 통계 보기 →</span>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-                    {/* ================= 강좌 승인 ================= */}
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold flex items-center gap-2">
-                                <span className="w-2 h-8 bg-primary rounded-full" />
-                                강좌 개설 승인
-                            </h2>
-                            <Badge variant="outline" className="text-xs">{course.filter(c => c.proposalStatus === 'PENDING').length}건 대기중</Badge>
+                    {/* Main Content */}
+                    <main className="flex-1 min-w-0">
+                        <div className="mb-10">
+                            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-2">
+                                Admin Dashboard
+                            </h1>
+                            <p className="text-gray-500">
+                                관리자 대시보드입니다. 강좌, 강사, 강의 업로드를 관리하세요.
+                            </p>
                         </div>
-                        <Card className="bg-background/60 backdrop-blur-xl border-border/50 shadow-lg overflow-hidden">
-                            <Table>
-                                <TableHeader className="bg-muted/50">
-                                    <TableRow>
-                                        <TableHead className="text-center w-[80px]">ID</TableHead>
-                                        <TableHead className="text-center">강좌명</TableHead>
-                                        <TableHead className="text-center w-[100px]">강사</TableHead>
-                                        <TableHead className="text-center w-[80px]">상태</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {course && course.length > 0 ? (
-                                        course.slice(0, 5).map((item, index) => {
-                                            const uniqueKey = item.courseId || `course-idx-${index}`;
-                                            return (
-                                                <TableRow key={uniqueKey} className="hover:bg-muted/30 transition-colors">
-                                                    <TableCell className="text-center font-mono text-xs text-muted-foreground">
-                                                        {item.courseId}
+
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">개설된 강좌</h3>
+                                <div className="text-3xl font-bold text-gray-900">{course.length} <span className="text-sm font-normal text-gray-500">개</span></div>
+                            </div>
+                            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">신규 강사 신청</h3>
+                                <div className="text-3xl font-bold text-amber-500">{status.filter(u => u.status === 'SUSPENDED' && u.profileStatus !== 'REJECTED').length} <span className="text-sm font-normal text-gray-500">명</span></div>
+                            </div>
+                            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">강의 업로드 대기</h3>
+                                <div className="text-3xl font-bold text-blue-600">{lecture.filter(l => l.approvalStatus === 'PENDING').length} <span className="text-sm font-normal text-gray-500">건</span></div>
+                            </div>
+                            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex items-center justify-center cursor-pointer hover:bg-gray-100">
+                                <span className="text-gray-700 font-bold">전체 통계 보기 →</span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+                            {/* ================= 강좌 승인 ================= */}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-xl font-bold flex items-center gap-2">
+                                        <span className="w-2 h-8 bg-primary rounded-full" />
+                                        강좌 개설 승인
+                                    </h2>
+                                    <Badge variant="outline" className="text-xs bg-white">{course.filter(c => c.proposalStatus === 'PENDING').length}건 대기중</Badge>
+                                </div>
+                                <Card className="bg-white border-gray-200 shadow-sm overflow-hidden">
+                                    <Table>
+                                        <TableHeader className="bg-gray-50">
+                                            <TableRow>
+                                                <TableHead className="text-center w-[80px]">ID</TableHead>
+                                                <TableHead className="text-center">강좌명</TableHead>
+                                                <TableHead className="text-center w-[100px]">강사</TableHead>
+                                                <TableHead className="text-center w-[80px]">상태</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {course && course.length > 0 ? (
+                                                course.slice(0, 5).map((item, index) => {
+                                                    const uniqueKey = item.courseId || `course-idx-${index}`;
+                                                    return (
+                                                        <TableRow key={uniqueKey} className="hover:bg-gray-50/50 transition-colors">
+                                                            <TableCell className="text-center font-mono text-xs text-gray-500">
+                                                                {item.courseId}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Link to={`/admin/course/${item.courseId}`} className="font-medium hover:text-primary transition-colors block truncate max-w-[200px]">
+                                                                    {item.title}
+                                                                    {isNewCourse(item.createdAt) && (
+                                                                        <span className="inline-block w-1.5 h-1.5 bg-red-500 rounded-full ml-1.5 align-middle mb-0.5" />
+                                                                    )}
+                                                                </Link>
+                                                            </TableCell>
+                                                            <TableCell className="text-center text-sm text-gray-600">{item.instructorName}</TableCell>
+                                                            <TableCell className="text-center">
+                                                                {item.proposalStatus === 'PENDING' ? (
+                                                                    <Badge variant="secondary" className="bg-amber-50 text-amber-600 hover:bg-amber-100 border-amber-200">대기</Badge>
+                                                                ) : item.proposalStatus === 'APPROVED' ? (
+                                                                    <Badge variant="secondary" className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-emerald-200">승인</Badge>
+                                                                ) : (
+                                                                    <Badge variant="outline">반려</Badge>
+                                                                )}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })
+                                            ) : (
+                                                <TableRow>
+                                                    <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+                                                        대기 중인 강좌가 없습니다.
                                                     </TableCell>
-                                                    <TableCell>
-                                                        <Link to={`/admin/course/${item.courseId}`} className="font-medium hover:text-primary transition-colors block truncate max-w-[200px]">
-                                                            {item.title}
-                                                            {isNewCourse(item.createdAt) && (
-                                                                <span className="inline-block w-1.5 h-1.5 bg-red-500 rounded-full ml-1.5 align-middle mb-0.5" />
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </Card>
+                            </div>
+
+                            {/* ================= 강사 승인 ================= */}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-xl font-bold flex items-center gap-2">
+                                        <span className="w-2 h-8 bg-purple-600 rounded-full" />
+                                        신규 강사 승인
+                                    </h2>
+                                    <Badge variant="outline" className="text-xs bg-white">{status.filter(u => u.status === 'SUSPENDED' && u.profileStatus !== 'REJECTED').length}명 대기중</Badge>
+                                </div>
+                                <Card className="bg-white border-gray-200 shadow-sm overflow-hidden">
+                                    <Table>
+                                        <TableHeader className="bg-gray-50">
+                                            <TableRow>
+                                                <TableHead className="text-center w-[80px]">ID</TableHead>
+                                                <TableHead className="text-center">강사명</TableHead>
+                                                <TableHead className="text-center w-[100px]">상태</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {status && status.length > 0 ? (
+                                                status.filter(users => users.status === 'SUSPENDED' && users.profileStatus !== 'REJECTED').slice(0, 5).map((users, index) => {
+                                                    const uniqueKey = users.userId || `user-idx-${index}`;
+                                                    return (
+                                                        <TableRow key={uniqueKey} className="hover:bg-gray-50/50 transition-colors">
+                                                            <TableCell className="text-center font-mono text-xs text-gray-500">{users.userId}</TableCell>
+                                                            <TableCell className="text-center">
+                                                                <Link to={`/admin/users/instructors/${users.userId}`} className="font-medium hover:underline hover:text-primary">
+                                                                    {users.name}
+                                                                </Link>
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                <Badge variant="secondary" className="bg-amber-50 text-amber-600 hover:bg-amber-100 border-amber-200">승인 필요</Badge>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })
+                                            ) : (
+                                                <TableRow>
+                                                    <TableCell colSpan={3} className="text-center py-8 text-gray-500">
+                                                        승인 대기 중인 강사가 없습니다.
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </Card>
+                            </div>
+                        </div>
+
+                        {/* 강의 승인란 */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-bold flex items-center gap-2">
+                                    <span className="w-2 h-8 bg-indigo-600 rounded-full" />
+                                    강의 업로드 승인
+                                </h2>
+                                <Badge variant="outline" className="text-xs bg-white">{lecture.filter(l => l.approvalStatus === 'PENDING').length}건 대기중</Badge>
+                            </div>
+                            <Card className="bg-white border-gray-200 shadow-sm overflow-hidden">
+                                <Table>
+                                    <TableHeader className="bg-gray-50">
+                                        <TableRow>
+                                            <TableHead className="text-center w-[60px]">No</TableHead>
+                                            <TableHead className="text-center w-[80px]">순서</TableHead>
+                                            <TableHead className="text-left">강의 제목</TableHead>
+                                            <TableHead className="text-center w-[120px]">강사명</TableHead>
+                                            <TableHead className="text-center w-[150px]">업로드 일정</TableHead>
+                                            <TableHead className="text-center w-[100px]">상태</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {lecture && lecture.length > 0 ? (
+                                            lecture.slice(0, 8).map((item, index) => {
+                                                const uniqueKey = item.lectureId || `lecture-idx-${index}`;
+                                                return (
+                                                    <TableRow key={uniqueKey} className="hover:bg-gray-50/50 transition-colors">
+                                                        <TableCell className="text-center font-mono text-xs text-gray-500">{item.lectureId}</TableCell>
+                                                        <TableCell className="text-center font-bold text-gray-500">{item.orderNo}강</TableCell>
+                                                        <TableCell>
+                                                            <Link to={`/admin/lectures/${item.lectureId}`} className="font-medium hover:text-primary transition-colors block truncate max-w-[300px]">
+                                                                {item.title}
+                                                            </Link>
+                                                        </TableCell>
+                                                        <TableCell className="text-center text-sm text-gray-600">{item.createdByName}</TableCell>
+                                                        <TableCell className="text-center text-xs text-gray-400">{item.scheduledAt}</TableCell>
+                                                        <TableCell className="text-center">
+                                                            {item.approvalStatus === 'PENDING' ? (
+                                                                <Badge variant="secondary" className="bg-amber-50 text-amber-600 hover:bg-amber-100 border-amber-200">대기</Badge>
+                                                            ) : item.approvalStatus === 'APPROVED' ? (
+                                                                <Badge variant="secondary" className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-emerald-200">승인</Badge>
+                                                            ) : (
+                                                                <Badge variant="outline">반려</Badge>
                                                             )}
-                                                        </Link>
-                                                    </TableCell>
-                                                    <TableCell className="text-center text-sm">{item.instructorName}</TableCell>
-                                                    <TableCell className="text-center">
-                                                        {item.proposalStatus === 'PENDING' ? (
-                                                            <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border-amber-500/20">대기</Badge>
-                                                        ) : item.proposalStatus === 'APPROVED' ? (
-                                                            <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20">승인</Badge>
-                                                        ) : (
-                                                            <Badge variant="outline">반려</Badge>
-                                                        )}
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                                                대기 중인 강좌가 없습니다.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </Card>
-                    </div>
-
-                    {/* ================= 강사 승인 ================= */}
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold flex items-center gap-2">
-                                <span className="w-2 h-8 bg-purple-500 rounded-full" />
-                                신규 강사 승인
-                            </h2>
-                            <Badge variant="outline" className="text-xs">{status.filter(u => u.status === 'SUSPENDED' && u.profileStatus !== 'REJECTED').length}명 대기중</Badge>
-                        </div>
-                        <Card className="bg-background/60 backdrop-blur-xl border-border/50 shadow-lg overflow-hidden">
-                            <Table>
-                                <TableHeader className="bg-muted/50">
-                                    <TableRow>
-                                        <TableHead className="text-center w-[80px]">ID</TableHead>
-                                        <TableHead className="text-center">강사명</TableHead>
-                                        <TableHead className="text-center w-[100px]">상태</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {status && status.length > 0 ? (
-                                        status.filter(users => users.status === 'SUSPENDED' && users.profileStatus !== 'REJECTED').slice(0, 5).map((users, index) => {
-                                            const uniqueKey = users.userId || `user-idx-${index}`;
-                                            return (
-                                                <TableRow key={uniqueKey} className="hover:bg-muted/30 transition-colors">
-                                                    <TableCell className="text-center font-mono text-xs text-muted-foreground">{users.userId}</TableCell>
-                                                    <TableCell className="text-center">
-                                                        <Link to={`/admin/users/instructors/${users.userId}`} className="font-medium hover:underline hover:text-primary">
-                                                            {users.name}
-                                                        </Link>
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border-amber-500/20">승인 필요</Badge>
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                                                승인 대기 중인 강사가 없습니다.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </Card>
-                    </div>
-                </div>
-
-                {/* 강의 승인란 */}
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-bold flex items-center gap-2">
-                            <span className="w-2 h-8 bg-indigo-500 rounded-full" />
-                            강의 업로드 승인
-                        </h2>
-                        <Badge variant="outline" className="text-xs">{lecture.filter(l => l.approvalStatus === 'PENDING').length}건 대기중</Badge>
-                    </div>
-                    <Card className="bg-background/60 backdrop-blur-xl border-border/50 shadow-lg overflow-hidden">
-                        <Table>
-                            <TableHeader className="bg-muted/50">
-                                <TableRow>
-                                    <TableHead className="text-center w-[60px]">No</TableHead>
-                                    <TableHead className="text-center w-[80px]">순서</TableHead>
-                                    <TableHead className="text-left">강의 제목</TableHead>
-                                    <TableHead className="text-center w-[120px]">강사명</TableHead>
-                                    <TableHead className="text-center w-[150px]">업로드 일정</TableHead>
-                                    <TableHead className="text-center w-[100px]">상태</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {lecture && lecture.length > 0 ? (
-                                    lecture.slice(0, 8).map((item, index) => {
-                                        const uniqueKey = item.lectureId || `lecture-idx-${index}`;
-                                        return (
-                                            <TableRow key={uniqueKey} className="hover:bg-muted/30 transition-colors">
-                                                <TableCell className="text-center font-mono text-xs text-muted-foreground">{item.lectureId}</TableCell>
-                                                <TableCell className="text-center font-bold text-muted-foreground">{item.orderNo}강</TableCell>
-                                                <TableCell>
-                                                    <Link to={`/admin/lectures/${item.lectureId}`} className="font-medium hover:text-primary transition-colors block truncate max-w-[300px]">
-                                                        {item.title}
-                                                    </Link>
-                                                </TableCell>
-                                                <TableCell className="text-center text-sm">{item.createdByName}</TableCell>
-                                                <TableCell className="text-center text-xs text-muted-foreground">{item.scheduledAt}</TableCell>
-                                                <TableCell className="text-center">
-                                                    {item.approvalStatus === 'PENDING' ? (
-                                                        <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border-amber-500/20">대기</Badge>
-                                                    ) : item.approvalStatus === 'APPROVED' ? (
-                                                        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20">승인</Badge>
-                                                    ) : (
-                                                        <Badge variant="outline">반려</Badge>
-                                                    )}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={6} className="text-center py-12 text-gray-500">
+                                                    업로드된 강의가 없습니다.
                                                 </TableCell>
                                             </TableRow>
-                                        );
-                                    })
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                                            업로드된 강의가 없습니다.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </Card>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </Card>
+                        </div>
+                    </main>
                 </div>
             </div>
             <Tail />

@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from "react-router-dom";
-import Nav from '@/components/Nav';
-import Tail from '@/components/Tail';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Label } from '@/components/ui/Label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import { User, Lock, Mail, ShieldCheck, ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import axios from 'axios';
 
 function FindAccount() {
@@ -114,158 +112,261 @@ function FindAccount() {
     }
 
     return (
-        <div className="flex min-h-screen flex-col bg-background relative overflow-hidden">
-            <Nav />
+        <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white text-gray-900">
+            {/* Left: Brand Side */}
+            <div className="hidden lg:flex flex-col justify-between bg-[#0f172a] text-white p-12 lg:p-20 relative overflow-hidden">
+                <div className="relative z-10">
+                    <Link to="/" className="inline-flex items-center gap-2 text-2xl font-bold tracking-tight mb-8 hover:opacity-80 transition-opacity">
+                        <ArrowLeft className="w-5 h-5" /> Back to Home
+                    </Link>
+                    <div className="mt-20">
+                        <h1 className="text-5xl font-extrabold tracking-tight leading-tight mb-6">
+                            Account<br />
+                            <span className="text-primary">Recovery</span>
+                        </h1>
+                        <p className="text-xl text-gray-400 max-w-md leading-relaxed">
+                            계정 정보를 잊으셨나요? 걱정하지 마세요. 안전하게 계정을 찾을 수 있도록 도와드립니다.
+                        </p>
+                    </div>
+                </div>
 
-            {/* Background Decoration */}
-            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
-            <div className="fixed bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
+                <div className="relative z-10 space-y-4">
+                    <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-6 h-6 text-primary" />
+                        <span className="text-lg font-medium text-gray-300">간편한 아이디 찾기</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-6 h-6 text-primary" />
+                        <span className="text-lg font-medium text-gray-300">안전한 비밀번호 재설정</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-6 h-6 text-primary" />
+                        <span className="text-lg font-medium text-gray-300">개인정보 보호</span>
+                    </div>
+                </div>
 
-            <main className="flex-1 flex items-center justify-center py-20 px-4">
-                <Card className="w-full max-w-md border-border/50 bg-background/60 backdrop-blur-xl shadow-2xl">
-                    <CardHeader className="text-center pb-6">
-                        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">계정 찾기</CardTitle>
-                        <CardDescription>
-                            아이디 또는 비밀번호를 잊으셨나요?
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
+                {/* Decorative Pattern */}
+                <div className="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none">
+                    <div className="absolute right-0 top-1/4 w-96 h-96 bg-primary rounded-full blur-[150px]"></div>
+                </div>
+            </div>
+
+            {/* Right: Form Side */}
+            <div className="flex flex-col justify-center items-center p-8 lg:p-20 relative">
+                <div className="w-full max-w-[400px] space-y-8">
+                    <div className="text-center lg:text-left">
+                        <h2 className="text-3xl font-bold tracking-tight text-gray-900">계정 찾기</h2>
+                        <p className="mt-2 text-gray-500">
+                            아이디 또는 비밀번호를 찾으시나요?
+                        </p>
+                    </div>
+
+                    <div className="bg-white">
                         <Tabs defaultValue="id" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                            <TabsList className="grid w-full grid-cols-2 mb-6">
-                                <TabsTrigger value="id">아이디 찾기</TabsTrigger>
-                                <TabsTrigger value="password">비밀번호 찾기</TabsTrigger>
+                            <TabsList className="grid w-full grid-cols-2 mb-8 bg-gray-100 p-1 rounded-none h-auto">
+                                <TabsTrigger
+                                    value="id"
+                                    className="data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-none font-semibold transition-all py-3"
+                                >
+                                    아이디 찾기
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="password"
+                                    className="data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-none font-semibold transition-all py-3"
+                                >
+                                    비밀번호 찾기
+                                </TabsTrigger>
                             </TabsList>
 
-                            <TabsContent value="id" className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name-for-id">이름</Label>
-                                    <Input
-                                        id="name-for-id"
-                                        placeholder="이름을 입력하세요"
-                                        value={idForm.name}
-                                        onChange={(e) => setIdForm({ ...idForm, name: e.target.value })}
-                                    />
+                            <TabsContent value="id" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name-for-id" className="text-sm font-bold text-gray-700">이름</Label>
+                                        <div className="relative">
+                                            <Input
+                                                id="name-for-id"
+                                                placeholder="가입 시 등록한 이름"
+                                                value={idForm.name}
+                                                onChange={(e) => setIdForm({ ...idForm, name: e.target.value })}
+                                                className="h-12 rounded-none border-gray-300 focus:border-primary focus:ring-0 pl-3"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email-for-id" className="text-sm font-bold text-gray-700">이메일</Label>
+                                        <div className="relative">
+                                            <Input
+                                                id="email-for-id"
+                                                placeholder="example@email.com"
+                                                type="email"
+                                                value={idForm.email}
+                                                onChange={(e) => setIdForm({ ...idForm, email: e.target.value })}
+                                                className="h-12 rounded-none border-gray-300 focus:border-primary focus:ring-0 pl-3"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="email-for-id">가입형 이메일</Label>
-                                    <Input
-                                        id="email-for-id"
-                                        placeholder="example@email.com"
-                                        type="email"
-                                        value={idForm.email}
-                                        onChange={(e) => setIdForm({ ...idForm, email: e.target.value })}
-                                    />
-                                </div>
-                                <Button className="w-full font-bold" onClick={findId} disabled={loading}>
+
+                                <Button
+                                    className="w-full h-12 font-bold text-base bg-primary hover:bg-primary/90 rounded-none transition-all shadow-none"
+                                    onClick={findId}
+                                    disabled={loading}
+                                >
                                     {loading ? '처리중...' : '아이디 찾기'}
                                 </Button>
+
                                 {foundId && (
-                                    <div className="p-4 bg-muted/50 rounded-lg text-center mt-4 border border-primary/20">
-                                        <p className="text-sm text-muted-foreground mb-1">찾은 아이디</p>
-                                        <p className="text-xl font-bold text-primary">{foundId}</p>
+                                    <div className="p-6 bg-blue-50 border border-blue-100 rounded-none text-center mt-6 animate-in zoom-in-95 duration-200">
+                                        <p className="text-sm text-blue-600 font-medium mb-2">회원님의 아이디를 찾았습니다</p>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <p className="text-2xl font-bold text-blue-900 tracking-tight">{foundId}</p>
+                                        </div>
+                                        <div className="mt-4 pt-4 border-t border-blue-200/50">
+                                            <Link to="/auth/login" className="text-sm font-semibold text-primary hover:underline flex items-center justify-center gap-1">
+                                                로그인 하러 가기 <ArrowRight className="w-4 h-4" />
+                                            </Link>
+                                        </div>
                                     </div>
                                 )}
                             </TabsContent>
 
-                            <TabsContent value="password" className="space-y-4">
+                            <TabsContent value="password" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
                                 {pwStep === 1 && (
-                                    <>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="id-for-pw">아이디</Label>
-                                            <Input
-                                                id="id-for-pw"
-                                                placeholder="아이디를 입력하세요"
-                                                value={pwForm.loginId}
-                                                onChange={(e) => setPwForm({ ...pwForm, loginId: e.target.value })}
-                                            />
+                                    <div className="space-y-6">
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="id-for-pw" className="text-sm font-bold text-gray-700">아이디</Label>
+                                                <Input
+                                                    id="id-for-pw"
+                                                    placeholder="아이디를 입력하세요"
+                                                    value={pwForm.loginId}
+                                                    onChange={(e) => setPwForm({ ...pwForm, loginId: e.target.value })}
+                                                    className="h-12 rounded-none border-gray-300 focus:border-primary focus:ring-0 pl-3"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="name-for-pw" className="text-sm font-bold text-gray-700">이름</Label>
+                                                <Input
+                                                    id="name-for-pw"
+                                                    placeholder="이름을 입력하세요"
+                                                    value={pwForm.name}
+                                                    onChange={(e) => setPwForm({ ...pwForm, name: e.target.value })}
+                                                    className="h-12 rounded-none border-gray-300 focus:border-primary focus:ring-0 pl-3"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="email-for-pw" className="text-sm font-bold text-gray-700">이메일</Label>
+                                                <Input
+                                                    id="email-for-pw"
+                                                    placeholder="example@email.com"
+                                                    type="email"
+                                                    value={pwForm.email}
+                                                    onChange={(e) => setPwForm({ ...pwForm, email: e.target.value })}
+                                                    className="h-12 rounded-none border-gray-300 focus:border-primary focus:ring-0 pl-3"
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="name-for-pw">이름</Label>
-                                            <Input
-                                                id="name-for-pw"
-                                                placeholder="이름을 입력하세요"
-                                                value={pwForm.name}
-                                                onChange={(e) => setPwForm({ ...pwForm, name: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="email-for-pw">가입형 이메일</Label>
-                                            <Input
-                                                id="email-for-pw"
-                                                placeholder="example@email.com"
-                                                type="email"
-                                                value={pwForm.email}
-                                                onChange={(e) => setPwForm({ ...pwForm, email: e.target.value })}
-                                            />
-                                        </div>
-                                        <Button className="w-full font-bold" onClick={requestAuthNumber} disabled={loading}>
+                                        <Button
+                                            className="w-full h-12 font-bold text-base bg-primary hover:bg-primary/90 rounded-none transition-all shadow-none"
+                                            onClick={requestAuthNumber}
+                                            disabled={loading}
+                                        >
                                             {loading ? '전송중...' : '인증번호 받기'}
                                         </Button>
-                                    </>
+                                    </div>
                                 )}
 
                                 {pwStep === 2 && (
-                                    <>
-                                        <div className="bg-primary/5 p-4 rounded-lg mb-4 text-sm text-muted-foreground">
-                                            이메일로 발송된 인증번호 6자리를 입력해주세요.
+                                    <div className="space-y-6">
+                                        <div className="bg-blue-50 p-4 border-l-4 border-primary rounded-none">
+                                            <div className="flex">
+                                                <div className="flex-shrink-0">
+                                                    <Mail className="h-5 w-5 text-primary" aria-hidden="true" />
+                                                </div>
+                                                <div className="ml-3">
+                                                    <h3 className="text-sm font-medium text-blue-800">인증번호 발송 완료</h3>
+                                                    <div className="mt-2 text-sm text-blue-700">
+                                                        <p>입력하신 이메일로 발송된 인증번호 6자리를 입력해주세요.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="auth-num">인증번호</Label>
+                                            <Label htmlFor="auth-num" className="text-sm font-bold text-gray-700">인증번호</Label>
                                             <Input
                                                 id="auth-num"
                                                 placeholder="123456"
                                                 value={authNumber}
                                                 onChange={(e) => setAuthNumber(e.target.value)}
+                                                className="h-12 text-center text-lg tracking-widest font-mono rounded-none border-gray-300 focus:border-primary focus:ring-0"
                                             />
                                         </div>
-                                        <Button className="w-full font-bold" onClick={verifyAuthNumber} disabled={loading}>
-                                            {loading ? '확인중...' : '인증하기'}
-                                        </Button>
-                                        <Button variant="ghost" className="w-full mt-2" onClick={() => setPwStep(1)}>
-                                            이전으로
-                                        </Button>
-                                    </>
+                                        <div className="space-y-2">
+                                            <Button
+                                                className="w-full h-12 font-bold text-base bg-primary hover:bg-primary/90 rounded-none transition-all shadow-none"
+                                                onClick={verifyAuthNumber}
+                                                disabled={loading}
+                                            >
+                                                {loading ? '확인중...' : '인증하기'}
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                className="w-full h-10 rounded-none text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                                                onClick={() => setPwStep(1)}
+                                            >
+                                                이전 단계로
+                                            </Button>
+                                        </div>
+                                    </div>
                                 )}
 
                                 {pwStep === 3 && (
-                                    <>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="new-pw">새 비밀번호</Label>
-                                            <Input
-                                                id="new-pw"
-                                                type="password"
-                                                placeholder="새 비밀번호 입력"
-                                                value={newPassword}
-                                                onChange={(e) => setNewPassword(e.target.value)}
-                                            />
+                                    <div className="space-y-6">
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="new-pw" className="text-sm font-bold text-gray-700">새 비밀번호</Label>
+                                                <Input
+                                                    id="new-pw"
+                                                    type="password"
+                                                    placeholder="새로운 비밀번호"
+                                                    value={newPassword}
+                                                    onChange={(e) => setNewPassword(e.target.value)}
+                                                    className="h-12 rounded-none border-gray-300 focus:border-primary focus:ring-0 pl-3"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="confirm-pw" className="text-sm font-bold text-gray-700">비밀번호 확인</Label>
+                                                <Input
+                                                    id="confirm-pw"
+                                                    type="password"
+                                                    placeholder="비밀번호 재입력"
+                                                    value={confirmPassword}
+                                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                                    className="h-12 rounded-none border-gray-300 focus:border-primary focus:ring-0 pl-3"
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="confirm-pw">비밀번호 확인</Label>
-                                            <Input
-                                                id="confirm-pw"
-                                                type="password"
-                                                placeholder="새 비밀번호 확인"
-                                                value={confirmPassword}
-                                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                            />
-                                        </div>
-                                        <Button className="w-full font-bold" onClick={resetPassword} disabled={loading}>
-                                            {loading ? '변경중...' : '비밀번호 변경하기'}
+                                        <Button
+                                            className="w-full h-12 font-bold text-base bg-primary hover:bg-primary/90 rounded-none transition-all shadow-none"
+                                            onClick={resetPassword}
+                                            disabled={loading}
+                                        >
+                                            {loading ? '변경중...' : '비밀번호 변경 완료'}
                                         </Button>
-                                    </>
+                                    </div>
                                 )}
                             </TabsContent>
                         </Tabs>
 
-                        <div className="mt-6 text-center text-sm text-muted-foreground">
-                            <Link to="/auth/login" className="text-base text-primary hover:underline underline-offset-4">
-                                로그인 화면으로 돌아가기
+                        <div className="mt-8 pt-6 border-t border-gray-100 text-center text-sm text-gray-500">
+                            이미 계정이 있으신가요?{' '}
+                            <Link to="/auth/login" className="font-bold text-primary hover:underline underline-offset-4 ml-1">
+                                로그인하기
                             </Link>
                         </div>
-                    </CardContent>
-                </Card>
-            </main>
-            <Tail />
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }

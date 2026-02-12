@@ -13,6 +13,7 @@ import com.mysite.clover.Lecture.dto.AdminLectureDto;
 import com.mysite.clover.Lecture.dto.BatchApprovalRequest;
 import com.mysite.clover.Lecture.dto.InstructorLectureDto;
 import com.mysite.clover.Lecture.dto.LectureCreateRequest;
+import com.mysite.clover.Lecture.dto.LectureOrderRequest;
 import com.mysite.clover.Lecture.dto.LecturePreviewDto;
 import com.mysite.clover.Lecture.dto.RejectRequest;
 import com.mysite.clover.Lecture.dto.StudentLectureDto;
@@ -204,6 +205,14 @@ public class LectureController {
         lectureService.submitDraft(lectureId, form, principal.getName());
 
         return ResponseEntity.ok("강의가 최종 제출(승인 요청) 되었습니다.");
+    }
+
+    // 강사용: 강의 순서 변경 (드래그 앤 드롭)
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @PutMapping("/instructor/lecture/reorder")
+    public ResponseEntity<String> reorderLectures(@RequestBody LectureOrderRequest request) {
+        lectureService.reorderLectures(request.getOrders());
+        return ResponseEntity.ok("강의 순서가 변경되었습니다.");
     }
 
     // ==========================================

@@ -2,14 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 import axios from 'axios';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 import { RadioGroup, RadioGroupItem } from '../components/ui/RadioGroup';
 import { Label } from '../components/ui/Label';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../components/ui/alert-dialog';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, CreditCard, AlertCircle } from 'lucide-react';
 import Nav from '../components/Nav';
-import StudentNav from '../components/StudentNav';
 import Tail from '../components/Tail';
 import coinImg from '../img/coin.png';
 
@@ -171,102 +170,108 @@ export default function Payment() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background relative overflow-hidden">
+    <div className="flex min-h-screen flex-col bg-white">
       <Nav />
-
-      {/* Background Decoration */}
-      <div className="fixed inset-0 z-[-1] bg-background">
-        <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[100px]" />
+      {/* Header Section */}
+      <div className="border-b border-gray-200 bg-gray-50/50">
+        <div className="container mx-auto px-6 py-12">
+          <div className="max-w-4xl">
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl mb-2">
+              포인트 충전
+            </h1>
+            <p className="text-lg text-gray-500">
+              원하는 금액을 충전하고 강좌를 수강해보세요.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="container mx-auto px-4 pt-28 py-12 relative z-10 flex-1">
-        <div className="max-w-4xl mx-auto">
-          {/* 헤더 */}
-          <div className="text-center mb-10">
-            <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 mb-3">포인트 충전</h1>
-            <p className="text-muted-foreground text-lg">원하는 금액을 충전하고 강좌를 수강해보세요.</p>
+      <div className="flex-1 container mx-auto px-6 py-12">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column: Selection */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* 포인트 충전 금액 선택 */}
+            <Card className="bg-white border border-gray-200 shadow-none rounded-none">
+              <CardHeader className="border-b border-gray-100 pb-4">
+                <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
+                  <CreditCard className="w-5 h-5 text-gray-400" />
+                  충전 금액 선택
+                </CardTitle>
+                <CardDescription className="text-gray-500">
+                  1원 = 1포인트로 즉시 충전됩니다.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <RadioGroup
+                  value={selectedAmount}
+                  onValueChange={setSelectedAmount}
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                >
+                  {amountOptions.map((option) => (
+                    <Label
+                      key={option.value}
+                      htmlFor={option.value}
+                      className={`group relative flex flex-col p-6 border transition-all cursor-pointer rounded-none hover:bg-gray-50
+                                ${selectedAmount === option.value
+                          ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                          : 'border-gray-200'
+                        }`}
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <span className={`text-lg font-bold ${selectedAmount === option.value ? 'text-primary' : 'text-gray-900'}`}>
+                          {option.label}
+                        </span>
+                        <RadioGroupItem value={option.value} id={option.value} className="text-primary border-gray-300" />
+                      </div>
+                      <div className="mt-auto pt-4 border-t border-gray-200 w-full flex justify-between items-center">
+                        <span className="text-xs text-gray-400 font-mono">POINTS</span>
+                        <span className={`font-bold font-mono ${selectedAmount === option.value ? 'text-primary' : 'text-gray-600'}`}>{option.points}</span>
+                      </div>
+                    </Label>
+                  ))}
+                </RadioGroup>
+              </CardContent>
+            </Card>
+
+            {/* 안내사항 */}
+            <div className="bg-blue-50 border border-blue-100 p-6 rounded-none">
+              <h3 className="font-bold text-blue-800 mb-3 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                안내사항
+              </h3>
+              <ul className="text-sm text-blue-700 space-y-2 pl-1 list-disc list-inside">
+                <li>충전된 포인트는 모든 유료 강좌 수강신청 시 현금처럼 사용할 수 있습니다.</li>
+                <li>포인트 유효기간은 충전일로부터 5년입니다.</li>
+                <li>환불은 미사용 포인트에 한해 고객센터를 통해 가능합니다.</li>
+              </ul>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column: Selection */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* 포인트 충전 금액 선택 */}
-              <Card className="bg-background/60 backdrop-blur-xl border-border/50 shadow-xl overflow-hidden">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <img src={coinImg} alt="코인" className="w-6 h-6 drop-shadow-md" />
-                    충전 금액 선택
-                  </CardTitle>
-                  <CardDescription>
-                    1원 = 1포인트로 즉시 충전됩니다
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <RadioGroup
-                    value={selectedAmount}
-                    onValueChange={setSelectedAmount}
-                    className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-                  >
-                    {amountOptions.map((option) => (
-                      <Label
-                        key={option.value}
-                        htmlFor={option.value}
-                        className={`flex items-center justify-between p-4 border rounded-xl cursor-pointer transition-all duration-200 
-                                ${selectedAmount === option.value
-                            ? 'border-primary bg-primary/10 shadow-md ring-1 ring-primary/20'
-                            : 'border-border bg-background/50 hover:bg-muted/50 hover:border-primary/50'
-                          }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <RadioGroupItem value={option.value} id={option.value} className="text-primary" />
-                          <span className="font-bold text-lg">{option.label}</span>
-                        </div>
-                        <span className="text-primary font-bold bg-primary/10 px-2 py-1 rounded text-sm">{option.points}</span>
-                      </Label>
-                    ))}
-                  </RadioGroup>
-                </CardContent>
-              </Card>
-
-              {/* 안내사항 */}
-              <div className="p-5 bg-blue-500/5 border border-blue-500/20 rounded-xl">
-                <h3 className="font-bold text-blue-500 mb-2 flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
-                  안내사항
-                </h3>
-                <ul className="text-sm text-muted-foreground space-y-1.5 pl-1">
-                  <li className="flex items-start gap-2 before:content-['•'] before:text-blue-500">충전된 포인트는 모든 유료 강좌 수강신청 시 현금처럼 사용할 수 있습니다.</li>
-                  <li className="flex items-start gap-2 before:content-['•'] before:text-blue-500">포인트 유효기간은 충전일로부터 5년입니다.</li>
-                  <li className="flex items-start gap-2 before:content-['•'] before:text-blue-500">환불은 미사용 포인트에 한해 고객센터를 통해 가능합니다.</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Right Column: Summary & Payment */}
-            <div className="lg:col-span-1">
-              <Card className="bg-background/80 backdrop-blur-xl border-border/50 shadow-2xl sticky top-28">
-                <CardHeader className="bg-muted/30 border-b border-border/50 pb-4">
-                  <CardTitle className="text-lg">결제 상세</CardTitle>
+          {/* Right Column: Summary & Payment */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24 space-y-6">
+              <Card className="bg-white border border-gray-200 shadow-xl shadow-gray-200/50 rounded-none">
+                <CardHeader className="bg-gray-50 border-b border-gray-200 py-4">
+                  <CardTitle className="text-lg font-bold text-gray-900">결제 요약</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-6">
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>선택 금액</span>
+                  <div className="space-y-4">
+                    <div className="flex justify-between text-gray-500 font-medium">
+                      <span>충전 금액</span>
                       <span>{parseInt(selectedAmount).toLocaleString()}원</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">충전 포인트</span>
-                      <span className="font-bold text-primary flex items-center gap-1">
+                    <div className="flex justify-between items-center text-gray-500 font-medium">
+                      <span>적립 예정 포인트</span>
+                      <span className="font-bold text-primary flex items-center gap-1 font-mono">
                         +{parseInt(selectedAmount).toLocaleString()} P
                       </span>
                     </div>
-                    <div className="h-px bg-border/50 my-2" />
+                    <div className="h-px bg-gray-200 my-2" />
                     <div className="flex justify-between items-end">
-                      <span className="font-bold text-lg">최종 결제 금액</span>
-                      <span className="font-extrabold text-2xl text-foreground">
+                      <span className="font-bold text-lg text-gray-900">최종 결제 금액</span>
+                      <span className="font-extrabold text-2xl text-primary font-mono">
                         {parseInt(selectedAmount).toLocaleString()}
-                        <span className="text-base font-medium text-muted-foreground ml-1">원</span>
+                        <span className="text-base font-bold text-gray-500 ml-1 font-sans">원</span>
                       </span>
                     </div>
                   </div>
@@ -274,17 +279,21 @@ export default function Payment() {
                   <Button
                     onClick={handlePayment}
                     disabled={isLoading || !tossPayments}
-                    className="w-full h-12 text-lg font-bold shadow-lg hover:shadow-primary/25 transition-all mb-2"
-                    size="lg"
+                    className="w-full h-14 text-lg font-bold bg-primary hover:bg-primary/90 text-white rounded-none shadow-sm transition-all flex items-center justify-center gap-2"
                   >
                     {isLoading ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                        결제 준비 중...
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        결제 처리 중...
                       </>
-                    ) : '충전하기'}
+                    ) : (
+                      <>
+                        <CreditCard className="w-5 h-5" />
+                        결제하기
+                      </>
+                    )}
                   </Button>
-                  <p className="text-xs text-center text-muted-foreground">
+                  <p className="text-xs text-center text-gray-400">
                     위 내용을 확인하였으며 결제에 동의합니다.
                   </p>
                 </CardContent>
@@ -296,25 +305,29 @@ export default function Payment() {
 
       {/* 결제 결과 모달 */}
       <AlertDialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <AlertDialogContent className="bg-background/90 backdrop-blur-xl border-border/50">
-          <AlertDialogHeader className="flex flex-col items-center text-center">
-            <div className="mb-4 p-4 rounded-full bg-muted/50">
+        <AlertDialogContent className="bg-white border border-gray-200 rounded-none shadow-2xl p-0 overflow-hidden max-w-md w-full">
+          <div className={`h-2 w-full ${modalData.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
+          <AlertDialogHeader className="flex flex-col items-center text-center p-8 pb-4">
+            <div className={`mb-4 p-3 rounded-full ${modalData.type === 'success' ? 'bg-green-50' : 'bg-red-50'}`}>
               {modalData.type === 'success' ? (
-                <CheckCircle className="h-12 w-12 text-emerald-500" />
+                <CheckCircle className="h-10 w-10 text-green-600" />
               ) : (
-                <XCircle className="h-12 w-12 text-destructive" />
+                <XCircle className="h-10 w-10 text-red-600" />
               )}
             </div>
-            <AlertDialogTitle className={`text-2xl font-bold ${modalData.type === 'success' ? 'text-emerald-500' : 'text-destructive'}`}>
-              {modalData.type === 'success' ? '충전 성공!' : '충전 실패'}
+            <AlertDialogTitle className="text-2xl font-bold text-gray-900 mb-2">
+              {modalData.type === 'success' ? '결제 성공' : '결제 실패'}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-base mt-2 whitespace-pre-line text-muted-foreground">
+            <AlertDialogDescription className="text-center text-base whitespace-pre-line text-gray-500 leading-relaxed">
               {modalData.message}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-6">
-            <AlertDialogAction onClick={closeModal} className="w-full h-11 font-bold">
-              {modalData.type === 'success' ? '확인' : '다시 시도'}
+          <AlertDialogFooter className="p-6 pt-2 w-full flex justify-center">
+            <AlertDialogAction
+              onClick={closeModal}
+              className={`w-full h-11 text-base font-bold text-white rounded-none ${modalData.type === 'success' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
+            >
+              {modalData.type === 'success' ? '확인 (홈으로)' : '다시 시도'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

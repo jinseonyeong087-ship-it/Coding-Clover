@@ -33,42 +33,42 @@ function AdminNav() {
         }
     }, []);
     return (
-        <nav className="flex mx-auto w-full justify-between py-3 px-16 border-b fixed bg-white z-50">
+        <nav className="flex mx-auto w-full justify-between py-3 px-16 border-b border-border fixed bg-white z-50">
             {/* 로고 + 메뉴바 */}
             <div className="flex items-center gap-6">
-                <Link to="/admin/dashboard" className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity no-underline">
+                <Link to="/admin/dashboard" className="text-2xl font-bold text-primary hover:opacity-80 transition-opacity no-underline">
                     Coding-Clover
                 </Link>
 
-                <Menubar className="border-none shadow-none bg-transparent">
+                <Menubar className="border-none shadow-none bg-transparent p-0">
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer">강좌·강의·강사</MenubarTrigger>
-                        <MenubarContent>
-                            <MenubarItem className="cursor-pointer" onClick={() => { navigate('/admin/course') }}>강좌 전체 목록</MenubarItem>
-                            <MenubarItem className="cursor-pointer" onClick={() => { navigate('/admin/lectures') }}>강의 전체 목록</MenubarItem>
-                            <MenubarItem className="cursor-pointer" onClick={() => { navigate('/admin/users/instructors') }}>강사 관리</MenubarItem>
+                        <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent">강좌·강의·강사</MenubarTrigger>
+                        <MenubarContent className="bg-white border-border rounded-none shadow-lg">
+                            <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => { navigate('/admin/course') }}>강좌 전체 목록</MenubarItem>
+                            <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => { navigate('/admin/lectures') }}>강의 전체 목록</MenubarItem>
+                            <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => { navigate('/admin/users/instructors') }}>강사 관리</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/notice') }}>공지사항</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/notice') }}>공지사항</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/coding-test') }}>코딩테스트</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/coding-test') }}>코딩테스트</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/admin/payments') }}>결제관리</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/admin/payments') }}>결제관리</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/admin/enrollment') }}>수강관리</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/admin/enrollment') }}>수강관리</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer" onClick={() => { navigate('/admin/students') }}>학생 관리</MenubarTrigger>
+                        <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/admin/students') }}>학생 관리</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer">커뮤니티</MenubarTrigger>
-                        <MenubarContent>
-                            <MenubarItem onClick={() => { navigate('/student/qna') }}>Q&A</MenubarItem>
-                            <MenubarItem onClick={() => { navigate('/student/community') }}>자유게시판</MenubarItem>
+                        <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent">커뮤니티</MenubarTrigger>
+                        <MenubarContent className="bg-white border-border rounded-none shadow-lg">
+                            <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => { navigate('/student/qna') }}>Q&A</MenubarItem>
+                            <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => { navigate('/student/community') }}>자유게시판</MenubarItem>
                         </MenubarContent>
                     </MenubarMenu>
                 </Menubar>
@@ -77,11 +77,11 @@ function AdminNav() {
             {/* 검색 & 로그인 */}
             <div className="flex items-center gap-3">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
                         type="search"
                         placeholder="메뉴 검색..."
-                        className="pl-9 w-48"
+                        className="pl-9 w-48 bg-gray-50 border-gray-200 focus:bg-white focus:border-primary transition-all rounded-none h-9"
                         value={keyword}
                         onChange={(e) => setKeyword(e.target.value)}
                         onKeyDown={(e) => {
@@ -92,7 +92,7 @@ function AdminNav() {
                 </div>
 
                 <NotificationDropdown />
-                <Button variant="ghost" className="text-sm">{users.name}님</Button>
+                <Button variant="ghost" className="text-sm font-bold text-gray-700 rounded-none">{users.name}님</Button>
                 <Logout />
             </div>
         </nav>

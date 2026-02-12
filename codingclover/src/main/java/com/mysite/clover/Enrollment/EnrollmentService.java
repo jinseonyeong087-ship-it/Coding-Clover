@@ -118,6 +118,7 @@ public class EnrollmentService {
             e.getEnrollmentId(),
             e.getCourse().getCourseId(),
             e.getCourse().getTitle(),
+            e.getCourse().getThumbnailUrl(),
             e.getEnrolledAt(),
             e.getStatus()))
         .collect(Collectors.toList());

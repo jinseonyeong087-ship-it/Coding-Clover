@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AdminNav from '@/components/AdminNav';
+import Nav from '@/components/Nav';
+import AdminSidebar from '@/components/AdminSidebar';
 import Tail from '../../components/Tail';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
-import { Badge } from "@/components/ui/Badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
     Table,
     TableBody,
@@ -14,15 +15,15 @@ import {
     TableHead,
     TableHeader,
     TableRow
-} from "@/components/ui/Table";
+} from "@/components/ui/table";
 
 import {
     Tabs,
     TabsContent,
     TabsList,
     TabsTrigger
-} from "@/components/ui/Tabs";
-import { Search, Filter, Download, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
+} from "@/components/ui/tabs";
+import { Search, Filter, RefreshCw, AlertCircle } from 'lucide-react';
 
 function PaymentManagement() {
     const navigate = useNavigate();
@@ -191,10 +192,10 @@ function PaymentManagement() {
                     return p.orderId && p.orderId.startsWith('COURSE_') && p.paymentStatus === 'PAID' && !p.orderId.includes('CANCEL');
                 } else if (filters.status === 'PAID') {
                     // 결제완료: paymentStatus가 PAID이면서 수강신청, 수강취소, 환불거절이 아닌 경우 (포인트 충전)
-                    return p.paymentStatus === 'PAID' && 
-                           !(p.orderId && p.orderId.startsWith('COURSE_')) &&
-                           !(p.orderId && p.orderId.startsWith('COURSE_CANCEL_')) &&
-                           p.refundStatus !== 'REJECTED';
+                    return p.paymentStatus === 'PAID' &&
+                        !(p.orderId && p.orderId.startsWith('COURSE_')) &&
+                        !(p.orderId && p.orderId.startsWith('COURSE_CANCEL_')) &&
+                        p.refundStatus !== 'REJECTED';
                 } else if (filters.status === 'REFUNDED') {
                     // 환불완료: 환불 상태가 APPROVED
                     return p.refundStatus === 'APPROVED';
@@ -420,240 +421,185 @@ function PaymentManagement() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-50 relative overflow-hidden">
-                {/* Background Decorations */}
-                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                    <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-indigo-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-                    <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-                </div>
-
-                <div className="relative z-10">
-                    <AdminNav />
-                    <div className="container mx-auto px-4 py-16 pt-32">
-                        <div className="max-w-7xl mx-auto">
+            <>
+                <Nav />
+                <div className="min-h-screen bg-gray-50 pt-20 pb-20">
+                    <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
+                        <AdminSidebar />
+                        <main className="flex-1 min-w-0">
                             {/* 헤더 스켈레톤 */}
                             <div className="mb-8">
-                                <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
-                                    <span>관리자</span>
-                                    <span>/</span>
-                                    <span className="text-indigo-600 font-medium">결제관리</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <div className="h-10 bg-slate-200/50 rounded-lg w-48 mb-2 animate-pulse"></div>
-                                        <div className="h-5 bg-slate-100/50 rounded w-64 animate-pulse"></div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-10 bg-slate-200/50 rounded-lg w-24 animate-pulse"></div>
-                                        <div className="h-10 bg-slate-200/50 rounded-lg w-24 animate-pulse"></div>
-                                    </div>
-                                </div>
+                                <div className="h-10 bg-gray-200 rounded-lg w-48 mb-2 animate-pulse"></div>
+                                <div className="h-5 bg-gray-100 rounded w-64 animate-pulse"></div>
                             </div>
 
                             {/* 필터 스켈레톤 */}
-                            <Card className="mb-6 border-0 shadow-lg bg-white/80 backdrop-blur-xl ring-1 ring-white/50">
+                            <Card className="mb-6 border-gray-200 bg-white shadow-sm">
                                 <CardHeader>
-                                    <div className="h-6 bg-slate-200/50 rounded w-20 animate-pulse"></div>
+                                    <div className="h-6 bg-gray-200 rounded w-20 animate-pulse"></div>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                                         {Array.from({ length: 4 }).map((_, i) => (
                                             <div key={i} className="space-y-2">
-                                                <div className="h-4 bg-slate-200/50 rounded w-16 animate-pulse"></div>
-                                                <div className="h-10 bg-slate-100/50 rounded animate-pulse"></div>
+                                                <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
+                                                <div className="h-10 bg-gray-100 rounded animate-pulse"></div>
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="flex gap-2">
-                                        <div className="h-10 bg-slate-100/50 rounded flex-1 animate-pulse"></div>
-                                        <div className="h-10 bg-slate-200/50 rounded w-20 animate-pulse"></div>
-                                    </div>
+                                    <div className="h-10 bg-gray-100 rounded animate-pulse"></div>
                                 </CardContent>
                             </Card>
 
                             {/* 테이블 스켈레톤 */}
-                            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-xl ring-1 ring-white/50">
+                            <Card className="border-gray-200 bg-white shadow-sm overflow-hidden">
                                 <CardContent className="p-0">
-                                    <div className="p-6">
-                                        {Array.from({ length: 10 }).map((_, i) => (
-                                            <div key={i} className="flex items-center space-x-4 py-4 border-b border-slate-100">
-                                                <div className="h-4 bg-slate-200/50 rounded w-20 animate-pulse"></div>
-                                                <div className="h-4 bg-slate-200/50 rounded w-16 animate-pulse"></div>
-                                                <div className="h-4 bg-slate-200/50 rounded w-32 animate-pulse"></div>
-                                                <div className="h-4 bg-slate-200/50 rounded w-20 animate-pulse"></div>
-                                                <div className="h-4 bg-slate-200/50 rounded w-16 animate-pulse"></div>
-                                                <div className="h-4 bg-slate-200/50 rounded w-16 animate-pulse"></div>
-                                                <div className="h-4 bg-slate-200/50 rounded w-24 animate-pulse"></div>
-                                            </div>
+                                    <div className="p-6 space-y-4">
+                                        {Array.from({ length: 8 }).map((_, i) => (
+                                            <div key={i} className="h-12 bg-gray-50 rounded animate-pulse"></div>
                                         ))}
                                     </div>
                                 </CardContent>
                             </Card>
-                        </div>
+                        </main>
                     </div>
-                    <Tail />
                 </div>
-            </div>
+                <Tail />
+            </>
         );
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 relative overflow-hidden">
-            {/* Background Decorations */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-indigo-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-                <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-purple-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-                <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] bg-blue-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
-            </div>
+        <>
+            <Nav />
+            <div className="min-h-screen bg-gray-50 pt-20 pb-20">
+                <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
-            <div className="relative z-10">
-                <AdminNav />
-                <div className="container mx-auto px-4 py-16 pt-32">
-                    <div className="max-w-7xl mx-auto">
+                    <AdminSidebar />
+
+                    <main className="flex-1 min-w-0">
                         {/* 헤더 */}
-                        <div className="mb-10 text-center md:text-left">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-medium mb-4">
-                                <Sparkles className="w-3 h-3" />
-                                <span>관리자 페이지</span>
-                            </div>
-                            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 mb-2">
-                                결제 관리
+                        <div className="mb-10">
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                                결제 및 정산 관리
                             </h1>
-                            <p className="text-slate-600">
-                                모든 결제 및 환불 요청을 한눈에 관리하세요.
+                            <p className="text-gray-500">
+                                모든 결제 내역과 환불 요청을 한눈에 관리하고 처리할 수 있습니다.
                             </p>
                         </div>
 
-                        {/* 탭 */}
-                        <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-8">
-                            <TabsList className="bg-white/50 backdrop-blur-sm border border-white/40 p-1 rounded-xl shadow-sm">
-                                <TabsTrigger
-                                    value="all"
-                                    className="data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-lg px-6 transition-all"
-                                >
-                                    전체 내역
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="refund"
-                                    className="relative data-[state=active]:bg-white data-[state=active]:text-rose-600 data-[state=active]:shadow-sm rounded-lg px-6 transition-all"
-                                >
-                                    환불 요청
-                                    {refundRequestCount > 0 && (
-                                        <Badge className="ml-2 bg-rose-500 text-white border-0 text-[10px] px-1.5 py-0.5 h-auto">
-                                            {refundRequestCount}
-                                        </Badge>
-                                    )}
-                                </TabsTrigger>
-                            </TabsList>
-                        </Tabs>
+                        {/* 탭 & 필터 카드 */}
+                        <Card className="mb-8 border-gray-200 bg-white shadow-sm overflow-visible">
+                            <CardHeader className="pb-0 border-b border-gray-100/50">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 -mb-px">
+                                    <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full md:w-auto">
+                                        <TabsList className="bg-transparent p-0 gap-8 h-12">
+                                            <TabsTrigger
+                                                value="all"
+                                                className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none px-0 h-full font-bold"
+                                            >
+                                                전체 결제 내역
+                                            </TabsTrigger>
+                                            <TabsTrigger
+                                                value="refund"
+                                                className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none px-0 h-full font-bold"
+                                            >
+                                                환불 요청 목록
+                                                {refundRequestCount > 0 && (
+                                                    <Badge className="ml-2 bg-red-500 text-white border-0 text-[10px] px-1.5 h-4">
+                                                        {refundRequestCount}
+                                                    </Badge>
+                                                )}
+                                            </TabsTrigger>
+                                        </TabsList>
+                                    </Tabs>
 
-                        {/* 필터 */}
-                        <Card className="mb-8 border-0 shadow-xl bg-white/80 backdrop-blur-xl ring-1 ring-white/50 overflow-visible">
-                            <CardHeader className="pb-4 border-b border-slate-100/50">
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="flex items-center gap-2 text-lg text-slate-800">
-                                        <Filter className="w-5 h-5 text-indigo-500" />
-                                        상세 검색
-                                    </CardTitle>
                                     <Button
                                         variant="ghost"
                                         onClick={resetFilters}
                                         size="sm"
-                                        className="text-slate-500 hover:text-indigo-600 hover:bg-indigo-50"
+                                        className="text-gray-400 hover:text-gray-900 hover:bg-gray-50 h-8 self-end md:self-center"
                                     >
-                                        <RefreshCw className="w-4 h-4 mr-2" />
+                                        <RefreshCw className="w-3.5 h-3.5 mr-2" />
                                         필터 초기화
                                     </Button>
                                 </div>
                             </CardHeader>
                             <CardContent className="pt-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                                    {/* 내용(Type) 필터 */}
-                                    <div className="space-y-2">
-                                        <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">거래 내용</Label>
-                                        <div className="relative">
-                                            <select
-                                                className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
-                                                value={filters.contentType}
-                                                onChange={(e) => handleFilterChange('contentType', e.target.value)}
-                                            >
-                                                <option value="ALL">전체</option>
-                                                <option value="CHARGE">포인트 충전</option>
-                                                <option value="USE">포인트 사용</option>
-                                                <option value="REFUND">포인트 환불</option>
-                                            </select>
-                                        </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-gray-400 text-[11px] font-bold">거래 유형</Label>
+                                        <select
+                                            className="flex h-10 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                                            value={filters.contentType}
+                                            onChange={(e) => handleFilterChange('contentType', e.target.value)}
+                                        >
+                                            <option value="ALL">전체 유형</option>
+                                            <option value="CHARGE">포인트 충전</option>
+                                            <option value="USE">포인트 사용</option>
+                                            <option value="REFUND">포인트 환불</option>
+                                        </select>
                                     </div>
 
-                                    {/* 상태(Status) 필터 */}
-                                    <div className="space-y-2">
-                                        <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">처리 상태</Label>
-                                        <div className="relative">
-                                            <select
-                                                className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
-                                                value={filters.status}
-                                                onChange={(e) => handleFilterChange('status', e.target.value)}
-                                            >
-                                                <option value="ALL">전체 상태</option>
-                                                <option value="PAID">결제완료</option>
-                                                <option value="ENROLLMENT">수강신청</option>
-                                                <option value="REFUNDED">환불완료</option>
-                                                <option value="REJECTED">환불거절</option>
-                                                <option value="CANCELLED">수강취소</option>
-                                            </select>
-                                        </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-gray-400 text-[11px] font-bold">처리 상태</Label>
+                                        <select
+                                            className="flex h-10 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                                            value={filters.status}
+                                            onChange={(e) => handleFilterChange('status', e.target.value)}
+                                        >
+                                            <option value="ALL">전체 상태</option>
+                                            <option value="PAID">결제완료(충전)</option>
+                                            <option value="ENROLLMENT">수강신청(사용)</option>
+                                            <option value="REFUNDED">환불완료</option>
+                                            <option value="REJECTED">환불거절</option>
+                                            <option value="CANCELLED">수강취소</option>
+                                        </select>
                                     </div>
 
-                                    {/* 기간(Period) 필터 */}
-                                    <div className="space-y-2">
-                                        <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">조회 기간</Label>
-                                        <div className="relative">
-                                            <select
-                                                className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
-                                                value={filters.period}
-                                                onChange={(e) => handleFilterChange('period', e.target.value)}
-                                            >
-                                                <option value="1">오늘 하루</option>
-                                                <option value="7">최근 7일</option>
-                                                <option value="30">최근 30일</option>
-                                                <option value="custom">직접 지정</option>
-                                            </select>
-                                        </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-gray-400 text-[11px] font-bold">조회 기간</Label>
+                                        <select
+                                            className="flex h-10 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                                            value={filters.period}
+                                            onChange={(e) => handleFilterChange('period', e.target.value)}
+                                        >
+                                            <option value="1">오늘</option>
+                                            <option value="7">최근 7일</option>
+                                            <option value="30">최근 30일</option>
+                                            <option value="custom">기간 직접 지정</option>
+                                        </select>
                                     </div>
 
-                                    {/* 검색 기준(SearchType) 필터 */}
-                                    <div className="space-y-2">
-                                        <Label className="text-slate-600 text-xs font-semibold uppercase tracking-wider">검색 기준</Label>
-                                        <div className="relative">
-                                            <select
-                                                className="flex h-11 w-full rounded-xl border border-slate-200 bg-white/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:border-indigo-300"
-                                                value={filters.searchType}
-                                                onChange={(e) => handleFilterChange('searchType', e.target.value)}
-                                            >
-                                                <option value="student">학생명</option>
-                                                <option value="course">강좌명</option>
-                                            </select>
-                                        </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-gray-400 text-[11px] font-bold">검색 기준</Label>
+                                        <select
+                                            className="flex h-10 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                                            value={filters.searchType}
+                                            onChange={(e) => handleFilterChange('searchType', e.target.value)}
+                                        >
+                                            <option value="student">학생명</option>
+                                            <option value="course">항목/강좌명</option>
+                                        </select>
                                     </div>
                                 </div>
 
-                                {/* 직접 지정 기간 */}
                                 {filters.period === 'custom' && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 p-4 bg-slate-50/50 rounded-xl border border-slate-100">
-                                        <div className="space-y-2">
-                                            <Label className="text-slate-600">시작일</Label>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-gray-500 text-xs">시작일</Label>
                                             <Input
                                                 type="date"
-                                                className="bg-white border-slate-200"
+                                                className="bg-white"
                                                 value={filters.startDate}
                                                 onChange={(e) => handleFilterChange('startDate', e.target.value)}
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-slate-600">종료일</Label>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-gray-500 text-xs">종료일</Label>
                                             <Input
                                                 type="date"
-                                                className="bg-white border-slate-200"
+                                                className="bg-white"
                                                 value={filters.endDate}
                                                 onChange={(e) => handleFilterChange('endDate', e.target.value)}
                                             />
@@ -661,13 +607,12 @@ function PaymentManagement() {
                                     </div>
                                 )}
 
-                                {/* 검색 */}
                                 <div className="flex gap-3">
                                     <div className="relative flex-1">
-                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                         <Input
-                                            placeholder={`${filters.searchType === 'student' ? '학생명' : '강좌명'}으로 검색...`}
-                                            className="pl-11 h-12 bg-white/50 border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 text-base rounded-xl transition-all"
+                                            placeholder={`${filters.searchType === 'student' ? '학생명' : '강좌/항목명'}으로 검색...`}
+                                            className="pl-10 h-11 bg-gray-50/50 border-gray-200 focus:bg-white transition-all"
                                             value={filters.searchKeyword}
                                             onChange={(e) => handleFilterChange('searchKeyword', e.target.value)}
                                             onKeyPress={(e) => e.key === 'Enter' && applyFilters()}
@@ -675,7 +620,7 @@ function PaymentManagement() {
                                     </div>
                                     <Button
                                         onClick={applyFilters}
-                                        className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg hover:shadow-indigo-500/30 transition-all"
+                                        className="h-11 px-6 font-bold"
                                     >
                                         검색
                                     </Button>
@@ -683,199 +628,178 @@ function PaymentManagement() {
                             </CardContent>
                         </Card>
 
-                        {/* 결과 요약 */}
-                        <div className="mb-4 flex items-center justify-between px-2">
-                            <span className="text-sm font-medium text-slate-500">
-                                검색 결과: <span className="text-indigo-600 font-bold">{filteredPayments.length}</span> 건
-                            </span>
-                            <span className="text-xs text-slate-400">
-                                ({new Date().toLocaleDateString()} 기준)
+                        {/* 결제 내역 테이블 */}
+                        <div className="flex items-center justify-between mb-4 px-1">
+                            <span className="text-sm text-gray-500">
+                                검색 결과 <span className="text-gray-900 font-bold">{filteredPayments.length}</span>건
                             </span>
                         </div>
 
-                        {/* 결제 내역 테이블 */}
-                        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-xl ring-1 ring-white/50 overflow-hidden">
-                            <CardContent className="p-0">
-                                {currentItems.length === 0 ? (
-                                    <div className="text-center py-20">
-                                        {error ? (
-                                            <div className="flex flex-col items-center">
-                                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                                                    <AlertCircle className="w-8 h-8 text-red-500" />
-                                                </div>
-                                                <h3 className="text-lg font-bold text-slate-800 mb-2">데이터 로드 실패</h3>
-                                                <p className="text-slate-500 mb-6">{error}</p>
-                                                <Button onClick={fetchPayments} variant="outline" className="border-slate-200">
-                                                    <RefreshCw className="w-4 h-4 mr-2" />
-                                                    다시 시도
-                                                </Button>
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col items-center text-slate-500">
-                                                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                                                    <Filter className="w-8 h-8 text-slate-400" />
-                                                </div>
-                                                <h3 className="text-lg font-bold text-slate-700 mb-2">결제 내역이 없습니다</h3>
-                                                <p>검색 조건을 변경하거나 필터를 초기화해보세요.</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <>
-                                        <Table>
-                                            <TableHeader className="bg-slate-50/80">
-                                                <TableRow className="border-b-slate-100 hover:bg-transparent">
-                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-[100px]">결제ID</TableHead>
-                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">학생명</TableHead>
-                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider min-w-[200px]">내용</TableHead>
-                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">금액</TableHead>
-                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">상태</TableHead>
-                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">결제일시</TableHead>
-                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">환불요청일</TableHead>
-                                                    <TableHead className="text-center py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">액션</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {currentItems.map((payment) => (
-                                                    <TableRow
-                                                        key={payment.id}
-                                                        className="border-b-slate-50 transition-colors hover:bg-indigo-50/30"
-                                                    >
-                                                        <TableCell className="text-center py-4">
-                                                            <span className="inline-flex items-center px-2 py-1 rounded bg-slate-100 text-slate-600 font-mono text-xs">
-                                                                {payment.paymentId}
-                                                            </span>
-                                                        </TableCell>
-                                                        <TableCell className="text-center py-4 font-medium text-slate-700">
-                                                            {payment.studentName}
-                                                        </TableCell>
-                                                        <TableCell className="text-center py-4 text-slate-600">
-                                                            {payment.courseTitle}
-                                                        </TableCell>
-                                                        <TableCell className="text-center py-4">
-                                                            <span className="font-bold text-slate-800">
-                                                                {payment.amount.toLocaleString()}
-                                                            </span>
-                                                            <span className="text-xs text-slate-500 ml-1">P</span>
-                                                        </TableCell>
-                                                        <TableCell className="text-center py-4">
-                                                            {payment.refundStatus !== 'NONE' ? (
-                                                                <Badge variant="outline" className={`border ${getRefundStatusColor(payment.refundStatus)}`}>
-                                                                    {getRefundStatusLabel(payment.refundStatus)}
-                                                                </Badge>
-                                                            ) : (
-                                                                <Badge variant="outline" className={`border ${getPaymentStatusColor(payment.paymentStatus, getPaymentStatusLabel(payment.paymentStatus, payment.type, payment.orderId))}`}>
-                                                                    {getPaymentStatusLabel(payment.paymentStatus, payment.type, payment.orderId)}
-                                                                </Badge>
-                                                            )}
-                                                        </TableCell>
-                                                        <TableCell className="text-center py-4 text-xs text-slate-500">
-                                                            {new Date(payment.paymentDate).toLocaleString('ko-KR')}
-                                                        </TableCell>
-                                                        <TableCell className="text-center py-4 text-xs text-slate-500">
-                                                            {payment.refundRequestDate ?
-                                                                new Date(payment.refundRequestDate).toLocaleString('ko-KR') :
-                                                                '-'
-                                                            }
-                                                        </TableCell>
-                                                        <TableCell className="text-center py-4">
-                                                            {payment.refundStatus === 'REQUESTED' ? (
-                                                                <div className="flex gap-2 justify-center">
-                                                                    <Button
-                                                                        size="sm"
-                                                                        className="h-8 bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-sm"
-                                                                        onClick={() => {
-                                                                            if (confirm('환불을 승인하시겠습니까?')) {
-                                                                                handleRefundApproval(payment.id);
-                                                                            }
-                                                                        }}
-                                                                    >
-                                                                        승인
-                                                                    </Button>
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="outline"
-                                                                        className="h-8 text-rose-500 border-rose-200 hover:bg-rose-50"
-                                                                        onClick={() => {
-                                                                            if (confirm('환불을 거절하시겠습니까?')) {
-                                                                                handleRefundReject(payment.id);
-                                                                            }
-                                                                        }}
-                                                                    >
-                                                                        거절
-                                                                    </Button>
-                                                                </div>
-                                                            ) : (
-                                                                <span className="text-slate-300">-</span>
-                                                            )}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-
-                                        {/* 페이징 */}
-                                        {totalPages > 1 && (
-                                            <div className="flex justify-center items-center gap-2 p-6 border-t border-slate-100 bg-slate-50/30">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handlePageChange(currentPage - 1)}
-                                                    disabled={currentPage === 1}
-                                                    className="border-slate-200 hover:bg-white hover:text-indigo-600 disabled:opacity-50"
-                                                >
-                                                    이전
-                                                </Button>
-
-                                                {Array.from({ length: Math.min(10, totalPages) }, (_, i) => {
-                                                    let pageNumber;
-                                                    if (totalPages <= 10) {
-                                                        pageNumber = i + 1;
-                                                    } else {
-                                                        const start = Math.max(1, currentPage - 5);
-                                                        const end = Math.min(totalPages, start + 9);
-                                                        pageNumber = start + i;
-                                                        if (pageNumber > end) return null;
-                                                    }
-
-                                                    return (
-                                                        <Button
-                                                            key={pageNumber}
-                                                            variant={currentPage === pageNumber ? "default" : "outline"}
-                                                            size="sm"
-                                                            onClick={() => handlePageChange(pageNumber)}
-                                                            className={`
-                                                                w-9 h-9 rounded-lg p-0 transition-all
-                                                                ${currentPage === pageNumber
-                                                                    ? "bg-indigo-600 text-white shadow-md hover:bg-indigo-700"
-                                                                    : "border-slate-200 text-slate-600 hover:bg-white hover:text-indigo-600 hover:border-indigo-200"}
-                                                            `}
-                                                        >
-                                                            {pageNumber}
+                        <Card className="border-gray-200 bg-white shadow-sm overflow-hidden">
+                            <Table>
+                                <TableHeader className="bg-gray-50 border-b border-gray-100">
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[100px]">ID</TableHead>
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider">학생명</TableHead>
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider min-w-[180px]">내역 정보</TableHead>
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[120px]">금액(P)</TableHead>
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[100px]">상태</TableHead>
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[150px]">일시</TableHead>
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[100px]">관리</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {currentItems.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="text-center py-20">
+                                                {error ? (
+                                                    <div className="flex flex-col items-center">
+                                                        <AlertCircle className="w-10 h-10 text-red-400 mb-3" />
+                                                        <p className="text-gray-500 font-medium mb-4">{error}</p>
+                                                        <Button onClick={fetchPayments} variant="outline" size="sm">
+                                                            <RefreshCw className="w-4 h-4 mr-2" />
+                                                            다시 시도
                                                         </Button>
-                                                    );
-                                                })}
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-col items-center text-gray-400">
+                                                        <Filter className="w-10 h-10 mb-3 opacity-20" />
+                                                        <p className="font-medium">검색된 결제 내역이 없습니다.</p>
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        currentItems.map((payment) => (
+                                            <TableRow
+                                                key={payment.id}
+                                                className="hover:bg-gray-50/50 transition-colors"
+                                            >
+                                                <TableCell className="text-center py-4">
+                                                    <span className="font-mono text-[10px] text-gray-400">
+                                                        {payment.paymentId}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="text-center py-4 font-bold text-gray-900">
+                                                    {payment.studentName}
+                                                </TableCell>
+                                                <TableCell className="text-center py-4 text-gray-600 text-sm">
+                                                    {payment.courseTitle}
+                                                </TableCell>
+                                                <TableCell className="text-center py-4">
+                                                    <span className="font-bold text-gray-900">
+                                                        {payment.amount.toLocaleString()}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="text-center py-4">
+                                                    {payment.refundStatus !== 'NONE' ? (
+                                                        <Badge className={`${payment.refundStatus === 'REQUESTED' ? 'bg-amber-100 text-amber-700' : payment.refundStatus === 'APPROVED' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'} border-0 font-bold whitespace-nowrap`}>
+                                                            {getRefundStatusLabel(payment.refundStatus)}
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge className={`${getPaymentStatusLabel(payment.paymentStatus, payment.type, payment.orderId) === '수강신청' ? 'bg-blue-100 text-blue-700' :
+                                                            getPaymentStatusLabel(payment.paymentStatus, payment.type, payment.orderId) === '수강취소' ? 'bg-red-100 text-red-700' :
+                                                                'bg-emerald-100 text-emerald-700'
+                                                            } border-0 font-bold whitespace-nowrap`}>
+                                                            {getPaymentStatusLabel(payment.paymentStatus, payment.type, payment.orderId)}
+                                                        </Badge>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="text-center py-4 text-[11px] text-gray-400">
+                                                    <div className="flex flex-col">
+                                                        <span>{new Date(payment.paymentDate).toLocaleDateString()}</span>
+                                                        <span>{new Date(payment.paymentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-center py-4">
+                                                    {payment.refundStatus === 'REQUESTED' ? (
+                                                        <div className="flex gap-1.5 justify-center">
+                                                            <Button
+                                                                size="sm"
+                                                                className="h-7 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px]"
+                                                                onClick={() => {
+                                                                    if (confirm('환불을 승인하시겠습니까?')) {
+                                                                        handleRefundApproval(payment.id);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                승인
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="h-7 px-2.5 text-red-600 border-red-100 hover:bg-red-50 font-bold text-[11px]"
+                                                                onClick={() => {
+                                                                    if (confirm('환불을 거절하시겠습니까?')) {
+                                                                        handleRefundReject(payment.id);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                거절
+                                                            </Button>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-gray-200">-</span>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
 
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handlePageChange(currentPage + 1)}
-                                                    disabled={currentPage === totalPages}
-                                                    className="border-slate-200 hover:bg-white hover:text-indigo-600 disabled:opacity-50"
-                                                >
-                                                    다음
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-                            </CardContent>
+                            {/* 페이징 */}
+                            {totalPages > 1 && (
+                                <div className="flex justify-center items-center gap-2 py-6 border-t border-gray-100 bg-gray-50/30">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className="h-8 w-8 p-0 border-gray-200"
+                                    >
+                                        &lt;
+                                    </Button>
+
+                                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                        let pageNumber;
+                                        if (totalPages <= 5) {
+                                            pageNumber = i + 1;
+                                        } else {
+                                            const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+                                            pageNumber = start + i;
+                                        }
+
+                                        return (
+                                            <Button
+                                                key={pageNumber}
+                                                variant={currentPage === pageNumber ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => handlePageChange(pageNumber)}
+                                                className={`w-8 h-8 p-0 ${currentPage === pageNumber ? "font-bold" : "border-gray-200 text-gray-500"}`}
+                                            >
+                                                {pageNumber}
+                                            </Button>
+                                        );
+                                    })}
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className="h-8 w-8 p-0 border-gray-200"
+                                    >
+                                        &gt;
+                                    </Button>
+                                </div>
+                            )}
                         </Card>
-                    </div>
+                    </main>
                 </div>
-                <Tail />
             </div>
-        </div>
+            <Tail />
+        </>
     );
 }
 

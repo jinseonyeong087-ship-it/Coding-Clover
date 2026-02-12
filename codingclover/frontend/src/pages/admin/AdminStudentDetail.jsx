@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import AdminNav from "@/components/AdminNav";
+import Nav from "@/components/Nav";
+import AdminSidebar from "@/components/AdminSidebar";
 import Tail from "@/components/Tail";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, CheckCircle2, XCircle } from "lucide-react";
+import { ChevronLeft, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 
 function AdminStudentDetail() {
   const { studentId } = useParams();
@@ -86,7 +87,7 @@ function AdminStudentDetail() {
 
   const fetchStudentData = async () => {
     if (!studentId) return;
-    
+
     setLoading(true);
     try {
       // 새로 추가한 학생 상세 정보 API 사용
@@ -98,7 +99,7 @@ function AdminStudentDetail() {
 
       if (response.ok) {
         const studentDetail = await response.json();
-        
+
         // summary 정보 設정
         setSummary({
           name: studentDetail.name,
@@ -109,14 +110,14 @@ function AdminStudentDetail() {
           canceledCount: studentDetail.canceledCount || 0,
           lastActiveAt: studentDetail.lastActiveAt
         });
-        
+
         console.log("✅ 새로운 학생 상세 API 성공");
       } else {
         // 백업: 기존 enrollment 기반 방식
         console.warn("학생 상세 API 실패, enrollment 기반으로 대체");
         await fetchFallbackStudentData();
       }
-      
+
       // enrollment 목록 조회
       await fetchEnrollments();
 
@@ -137,20 +138,20 @@ function AdminStudentDetail() {
         headers: { "Content-Type": "application/json" },
         credentials: "include"
       });
-      
+
       let studentEnrollments = [];
       let userInfo = null;
-      
+
       if (enrollmentResponse.ok) {
         const allEnrollments = await enrollmentResponse.json();
         const enrollmentList = Array.isArray(allEnrollments) ? allEnrollments : [];
-        
+
         // 해당 학생의 수강내역만 필터링
         studentEnrollments = enrollmentList.filter(enrollment => {
           const enrollmentStudentId = String(enrollment.userId || enrollment.studentId);
           return enrollmentStudentId === String(studentId);
         });
-        
+
         // enrollment에서 학생 정보 추출
         if (studentEnrollments.length > 0) {
           const firstEnrollment = studentEnrollments[0];
@@ -170,7 +171,7 @@ function AdminStudentDetail() {
           headers: { "Content-Type": "application/json" },
           credentials: "include"
         });
-        
+
         if (userInfoResponse.ok) {
           const userData = await userInfoResponse.json();
           userInfo = {
@@ -183,7 +184,7 @@ function AdminStudentDetail() {
       } catch (error) {
         console.warn("사용자 정보 조회 실패:", error);
       }
-      
+
       // 기본 정보가 전혀 없다면 임시값 설정
       if (!userInfo) {
         userInfo = {
@@ -193,7 +194,7 @@ function AdminStudentDetail() {
           role: 'STUDENT'
         };
       }
-      
+
       // summary 정보 설정
       setSummary({
         ...userInfo,
@@ -216,7 +217,7 @@ function AdminStudentDetail() {
       }
 
       // 취소된 수강 내역 제외하고 진도율 계산
-      const activeEnrollments = enrollmentList.filter(enrollment => 
+      const activeEnrollments = enrollmentList.filter(enrollment =>
         enrollment.status === 'ENROLLED' || enrollment.status === 'COMPLETED'
       );
 
@@ -235,7 +236,7 @@ function AdminStudentDetail() {
         totalLectures: enrollment.totalLectures || 0,
         enrollmentStatus: enrollment.status
       }));
-      
+
       setLectureProgress(progressList);
       console.log("✅ 강좌별 진도율 조회 성공:", progressList);
     } catch (error) {
@@ -271,19 +272,19 @@ function AdminStudentDetail() {
         headers: { "Content-Type": "application/json" },
         credentials: "include"
       });
-      
+
       if (enrollmentResponse.ok) {
         const allEnrollments = await enrollmentResponse.json();
         const enrollmentList = Array.isArray(allEnrollments) ? allEnrollments : [];
-        
+
         // 해당 학생의 수강내역만 필터링
         const studentEnrollments = enrollmentList.filter(enrollment => {
           const enrollmentStudentId = String(enrollment.userId || enrollment.studentId);
           return enrollmentStudentId === String(studentId);
         });
-        
+
         setEnrollments(studentEnrollments);
-        
+
         // 수강 내역이 설정된 후 강의 진도 조회
         await fetchLectureProgressForEnrollments(studentEnrollments);
       } else {
@@ -401,232 +402,262 @@ function AdminStudentDetail() {
 
   return (
     <>
-      <AdminNav />
-      <div className="fixed inset-0 z-[-1] bg-background">
-        <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[100px]" />
-      </div>
+      <Nav />
+      <div className="min-h-screen bg-gray-50 pt-20 pb-20">
+        <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
-      <div className="pt-32 pb-20 container mx-auto px-6 max-w-7xl">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
-          <div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-              <ChevronLeft className="h-4 w-4" />
-              학생 상세
-            </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground mb-2">
-              {summaryMetrics.name || "학생"}
-            </h1>
-            <p className="text-muted-foreground">로그인 ID: {summaryMetrics.loginId || "-"}</p>
-          </div>
-          <Button variant="outline" onClick={() => navigate("/admin/students")}>목록으로</Button>
-        </div>
+          <AdminSidebar />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-          <Card className="p-4 bg-background/60 backdrop-blur-xl border-border/50">
-            <div className="text-sm text-muted-foreground">총 수강 신청</div>
-            <div className="text-2xl font-bold mt-1">{summaryMetrics.totalEnrollments}</div>
-          </Card>
-          <Card className="p-4 bg-background/60 backdrop-blur-xl border-border/50">
-            <div className="text-sm text-muted-foreground">ENROLLED</div>
-            <div className="text-2xl font-bold mt-1 text-emerald-500">{summaryMetrics.counts.ENROLLED}</div>
-          </Card>
-          <Card className="p-4 bg-background/60 backdrop-blur-xl border-border/50">
-            <div className="text-sm text-muted-foreground">COMPLETED</div>
-            <div className="text-2xl font-bold mt-1 text-purple-500">{summaryMetrics.counts.COMPLETED}</div>
-          </Card>
-          <Card className="p-4 bg-background/60 backdrop-blur-xl border-border/50">
-            <div className="text-sm text-muted-foreground">CANCELED</div>
-            <div className="text-2xl font-bold mt-1 text-rose-500">{summaryMetrics.counts.CANCELED}</div>
-          </Card>
-          <Card className="p-4 bg-background/60 backdrop-blur-xl border-border/50">
-            <div className="text-sm text-muted-foreground">취소율</div>
-            <div className="text-2xl font-bold mt-1">{summaryMetrics.cancelRate}%</div>
-            <div className="text-xs text-muted-foreground mt-1">최근 활동: {formatDate(summaryMetrics.lastActiveAt)}</div>
-          </Card>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="enrollments">수강 이력</TabsTrigger>
-            <TabsTrigger value="progress">강의 진도</TabsTrigger>
-            <TabsTrigger value="cancel-requests">수강 취소 요청 관리</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="enrollments">
-            <Card className="bg-background/60 backdrop-blur-xl border-border/50 shadow-xl overflow-hidden">
-              <Table>
-                <TableHeader className="bg-muted/50">
-                  <TableRow>
-                    <TableHead className="text-center">강좌명</TableHead>
-                    <TableHead className="text-center w-[120px]">상태</TableHead>
-                    <TableHead className="text-center w-[160px]">신청일</TableHead>
-                    <TableHead className="text-center w-[180px]">완료/취소일</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center py-16">
-                        로딩중...
-                      </TableCell>
-                    </TableRow>
-                  ) : enrollments.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center py-16 text-muted-foreground">
-                        수강 이력이 없습니다.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    enrollments.map((enrollment) => {
-                      const normalized = normalizeStatus(enrollment.status);
-                      const completedOrCanceledAt =
-                        normalized === "COMPLETED"
-                          ? enrollment.completedAt
-                          : normalized === "CANCELED"
-                            ? enrollment.canceledAt
-                            : "-";
-                      return (
-                        <TableRow key={enrollment.enrollmentId || enrollment.id}>
-                          <TableCell className="text-center">
-                            {enrollment.courseTitle || enrollment.course?.title || "-"}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge variant="outline" className={statusBadgeClass(normalized)}>
-                              {statusLabel(normalized)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-center text-sm text-muted-foreground">
-                            {formatDate(enrollment.enrolledAt)}
-                          </TableCell>
-                          <TableCell className="text-center text-sm text-muted-foreground">
-                            {formatDate(completedOrCanceledAt)}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="progress">
-            <Card className="p-6 bg-background/60 backdrop-blur-xl border-border/50 shadow-xl">
-              {loading ? (
-                <div className="text-center py-16">로딩중...</div>
-              ) : groupedProgress.length === 0 ? (
-                <div className="text-center py-16 text-muted-foreground">
-                  강의 진도 데이터가 없습니다.
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {groupedProgress.map((course) => (
-                    <div key={course.courseId} className="border border-border/50 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-lg">{course.courseTitle}</h3>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-primary">{course.progressRate}%</div>
-                          <div className="text-sm text-muted-foreground">
-                            {course.completedLectures}/{course.totalLectures} 강의 완료
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-3">
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div 
-                            className="bg-primary h-2 rounded-full transition-all duration-300" 
-                            style={{ width: `${course.progressRate}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="cancel-requests">
-            <Card className="p-6 bg-background/60 backdrop-blur-xl border-border/50 shadow-xl">
-              <div className="mb-4 text-sm text-muted-foreground">
-                취소 요청은 처리 전 상태만 표시됩니다. 승인/반려는 이 탭에서만 가능합니다.
+          <main className="flex-1 min-w-0">
+            {/* 헤더 */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
+              <div>
+                <button
+                  onClick={() => navigate("/admin/student")}
+                  className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  학생 목록으로 돌아가기
+                </button>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  {summaryMetrics.name || "학생 상세 정보"}
+                </h1>
+                <p className="text-gray-500">
+                  로그인 ID: <span className="text-gray-900 font-medium">{summaryMetrics.loginId || "-"}</span>
+                </p>
               </div>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/admin/student")}
+                className="bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+              >
+                목록으로
+              </Button>
+            </div>
 
-              {loading ? (
-                <div className="text-center py-16">로딩중...</div>
-              ) : cancelRequests.length === 0 ? (
-                <div className="text-center py-16 text-muted-foreground">
-                  처리할 취소 요청이 없습니다.
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader className="bg-muted/50">
-                    <TableRow>
-                      <TableHead className="text-center">강좌명</TableHead>
-                      <TableHead className="text-center w-[160px]">요청일</TableHead>
-                      <TableHead className="text-center w-[140px]">현재 진행률</TableHead>
-                      <TableHead className="text-center">사유</TableHead>
-                      <TableHead className="text-center w-[220px]">처리</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {cancelRequests.map((request) => {
-                      const requestId = request.requestId || request.id;
-                      const isProcessing = processingRequestId === requestId;
-                      return (
-                        <TableRow key={requestId}>
-                          <TableCell className="text-center">
-                            {request.courseTitle || request.course?.title || "-"}
-                          </TableCell>
-                          <TableCell className="text-center text-sm text-muted-foreground">
-                            {formatDate(request.requestedAt || request.createdAt)}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {request.currentProgress ?? request.progressRate ?? 0}%
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Textarea
-                              value={reasonByRequest[requestId] || ""}
-                              onChange={(event) => updateReason(requestId, event.target.value)}
-                              placeholder="승인/반려 사유를 입력하세요"
-                              className="min-h-[60px]"
-                            />
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <div className="flex flex-col gap-2">
-                              <Button
-                                size="sm"
-                                className="w-full bg-rose-600 hover:bg-rose-700"
-                                disabled={isProcessing}
-                                onClick={() => handleApprove(request)}
-                              >
-                                <CheckCircle2 className="h-4 w-4 mr-1" />
-                                취소 승인
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="w-full border-amber-300 text-amber-600 hover:bg-amber-50"
-                                disabled={isProcessing}
-                                onClick={() => handleReject(request)}
-                              >
-                                <XCircle className="h-4 w-4 mr-1" />
-                                취소 반려
-                              </Button>
+            {/* 통계 카드 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+              {[
+                { label: "총 수강 신청", value: summaryMetrics.totalEnrollments, color: "text-gray-900" },
+                { label: "수강 중", value: summaryMetrics.counts.ENROLLED, color: "text-emerald-600" },
+                { label: "수료 완료", value: summaryMetrics.counts.COMPLETED, color: "text-blue-600" },
+                { label: "수강 취소", value: summaryMetrics.counts.CANCELED, color: "text-rose-600" },
+                { label: "취소율", value: `${summaryMetrics.cancelRate}%`, sub: `최근 활동: ${formatDate(summaryMetrics.lastActiveAt)}`, color: "text-gray-900" }
+              ].map((stat, i) => (
+                <Card key={i} className="p-4 bg-white border-gray-200 shadow-sm">
+                  <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{stat.label}</div>
+                  <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
+                  {stat.sub && <div className="text-[10px] text-gray-400 mt-1">{stat.sub}</div>}
+                </Card>
+              ))}
+            </div>
+
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="bg-transparent p-0 gap-8 h-12 border-b border-gray-200 rounded-none w-full justify-start mb-8">
+                <TabsTrigger
+                  value="enrollments"
+                  className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none px-0 h-full font-bold text-gray-500"
+                >
+                  수강 이력
+                </TabsTrigger>
+                <TabsTrigger
+                  value="progress"
+                  className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none px-0 h-full font-bold text-gray-500"
+                >
+                  강의 진도
+                </TabsTrigger>
+                <TabsTrigger
+                  value="cancel-requests"
+                  className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none px-0 h-full font-bold text-gray-500"
+                >
+                  수강 취소 요청
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="enrollments" className="mt-0">
+                <Card className="bg-white border-gray-200 shadow-sm overflow-hidden">
+                  <Table>
+                    <TableHeader className="bg-gray-50 border-b border-gray-100">
+                      <TableRow>
+                        <TableHead className="text-center text-gray-600 font-bold">강좌명</TableHead>
+                        <TableHead className="text-center w-[120px] text-gray-600 font-bold">상태</TableHead>
+                        <TableHead className="text-center w-[160px] text-gray-600 font-bold">신청일</TableHead>
+                        <TableHead className="text-center w-[180px] text-gray-600 font-bold">완료/취소일</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-20">
+                            <div className="flex justify-center">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                             </div>
                           </TableCell>
                         </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              )}
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+                      ) : enrollments.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-20 text-gray-400">
+                            수강 이력이 없습니다.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        enrollments.map((enrollment) => {
+                          const normalized = normalizeStatus(enrollment.status);
+                          const completedOrCanceledAt =
+                            normalized === "COMPLETED"
+                              ? enrollment.completedAt
+                              : normalized === "CANCELED"
+                                ? enrollment.canceledAt
+                                : "-";
+                          return (
+                            <TableRow key={enrollment.enrollmentId || enrollment.id} className="hover:bg-gray-50/50 transition-colors">
+                              <TableCell className="text-center font-medium text-gray-900 border-r border-gray-50">
+                                {enrollment.courseTitle || enrollment.course?.title || "-"}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <Badge className={`${statusBadgeClass(normalized)} font-medium border-0`}>
+                                  {statusLabel(normalized)}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-center text-sm text-gray-500">
+                                {formatDate(enrollment.enrolledAt)}
+                              </TableCell>
+                              <TableCell className="text-center text-sm text-gray-500">
+                                {formatDate(completedOrCanceledAt)}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </Card>
+              </TabsContent>
 
+              <TabsContent value="progress" className="mt-0">
+                <Card className="p-6 bg-white border-gray-200 shadow-sm">
+                  {loading ? (
+                    <div className="flex justify-center py-20">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  ) : groupedProgress.length === 0 ? (
+                    <div className="text-center py-20 text-gray-400">
+                      강의 진도 데이터가 없습니다.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {groupedProgress.map((course) => (
+                        <div key={course.courseId} className="bg-gray-50/50 rounded-xl p-5 border border-gray-100 flex flex-col justify-between">
+                          <div className="flex items-start justify-between gap-4 mb-4">
+                            <h3 className="font-bold text-gray-900 flex-1">{course.courseTitle}</h3>
+                            <div className="text-right flex-shrink-0">
+                              <div className="text-xl font-bold text-primary">{course.progressRate}%</div>
+                              <div className="text-[11px] text-gray-400 font-medium">
+                                {course.completedLectures}/{course.totalLectures} 완료
+                              </div>
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className="bg-primary h-full rounded-full transition-all duration-500 ease-out shadow-[0_0_8px_rgba(var(--primary),0.3)]"
+                                style={{ width: `${course.progressRate}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="cancel-requests" className="mt-0">
+                <Card className="bg-white border-gray-200 shadow-sm overflow-hidden">
+                  <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                    <div className="flex items-center gap-2 text-gray-500 text-sm">
+                      <AlertCircle className="w-4 h-4 text-amber-500" />
+                      <span>승인/반려 시 해당 학생의 수강 상태가 자동으로 업데이트됩니다.</span>
+                    </div>
+                  </div>
+
+                  {loading ? (
+                    <div className="flex justify-center py-20">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  ) : cancelRequests.length === 0 ? (
+                    <div className="text-center py-20 text-gray-400">
+                      처리 대기 중인 취소 요청이 없습니다.
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader className="bg-gray-50 border-b border-gray-100">
+                        <TableRow>
+                          <TableHead className="text-center text-gray-600 font-bold">강좌명</TableHead>
+                          <TableHead className="text-center w-[140px] text-gray-600 font-bold">요청일</TableHead>
+                          <TableHead className="text-center w-[100px] text-gray-600 font-bold">진행률</TableHead>
+                          <TableHead className="text-center text-gray-600 font-bold">처리 사유 입력</TableHead>
+                          <TableHead className="text-center w-[180px] text-gray-600 font-bold">관리</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {cancelRequests.map((request) => {
+                          const requestId = request.requestId || request.id;
+                          const isProcessing = processingRequestId === requestId;
+                          return (
+                            <TableRow key={requestId} className="hover:bg-gray-50/50 transition-colors">
+                              <TableCell className="text-center font-bold text-gray-900">
+                                {request.courseTitle || request.course?.title || "-"}
+                              </TableCell>
+                              <TableCell className="text-center text-sm text-gray-500">
+                                {formatDate(request.requestedAt || request.createdAt)}
+                              </TableCell>
+                              <TableCell className="text-center font-bold text-gray-900">
+                                {request.currentProgress ?? request.progressRate ?? 0}%
+                              </TableCell>
+                              <TableCell className="p-4">
+                                <Textarea
+                                  value={reasonByRequest[requestId] || ""}
+                                  onChange={(event) => updateReason(requestId, event.target.value)}
+                                  placeholder="사유를 입력하세요 (선택)"
+                                  className="min-h-[60px] bg-white border-gray-200 focus:ring-primary text-sm"
+                                />
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <div className="flex flex-col gap-2 p-2">
+                                  <Button
+                                    size="sm"
+                                    className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold h-9"
+                                    disabled={isProcessing}
+                                    onClick={() => handleApprove(request)}
+                                  >
+                                    <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                                    취소 승인
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="w-full border-gray-200 text-gray-600 hover:bg-gray-50 font-medium h-9"
+                                    disabled={isProcessing}
+                                    onClick={() => handleReject(request)}
+                                  >
+                                    <XCircle className="h-4 w-4 mr-1.5 text-gray-400" />
+                                    취소 반려
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  )}
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </main>
+        </div>
+      </div>
       <Tail />
     </>
   );

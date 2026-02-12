@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import Nav from '@/components/Nav';
+import Nav from "@/components/Nav";
+import AdminSidebar from "@/components/AdminSidebar";
 import Tail from "@/components/Tail";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -195,257 +194,236 @@ function AdminApproch() {
         });
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-slate-50 relative overflow-hidden">
-                <Nav />
-                <div className="container mx-auto px-4 py-16 pt-32 flex justify-center items-center h-[80vh]">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-                </div>
-            </div>
-        );
-    }
-
     return (
-        <div className="min-h-screen bg-slate-50 relative overflow-hidden">
-            {/* Background Decorations */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-indigo-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-                <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-                <div className="absolute top-[40%] left-[30%] w-[400px] h-[400px] bg-purple-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
-            </div>
+        <>
+            <Nav />
+            <div className="min-h-screen bg-gray-50 pt-20 pb-20">
+                <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
-            <div className="relative z-10">
-                <Nav />
-                <div className='py-8' />
+                    <AdminSidebar />
 
-                {!instructor ? (
-                    <div className="container mx-auto px-4 py-16 text-center">
-                        <div className="bg-rose-50 border border-rose-200 text-rose-700 px-6 py-4 rounded-xl inline-block">
-                            강사 정보를 불러올 수 없습니다.
-                        </div>
-                    </div>
-                ) : (
-                    <section className="container mx-auto px-4 py-16 max-w-4xl">
-                        <Button
-                            variant="ghost"
-                            onClick={() => navigate(-1)}
-                            className="mb-8 hover:bg-white/50 hover:text-indigo-600 transition-colors"
-                        >
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            목록으로 돌아가기
-                        </Button>
-
-                        <div className="mb-8 text-center">
-                            <h1 className="text-3xl font-bold text-slate-800 mb-2">강사 승인 심사</h1>
-                            <p className="text-slate-500">제출된 프로필과 이력서를 검토하여 강사 활동 승인 여부를 결정해주세요.</p>
+                    <main className="flex-1 min-w-0">
+                        {/* 헤더 */}
+                        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                                    강사 승인 심사
+                                </h1>
+                                <p className="text-gray-500">
+                                    제출된 프로필과 이력서를 검토하여 강사 활동 승인 여부를 결정합니다.
+                                </p>
+                            </div>
+                            <Button
+                                variant="outline"
+                                onClick={() => navigate(-1)}
+                                className="bg-white border-gray-200 text-gray-600 hover:bg-gray-50 h-10 px-4 rounded-lg self-start md:self-center"
+                            >
+                                <ArrowLeft className="w-4 h-4 mr-2" />
+                                목록으로
+                            </Button>
                         </div>
 
-                        <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-xl ring-1 ring-white/50 overflow-hidden">
-                            <CardHeader className="bg-gradient-to-r from-indigo-50/50 to-purple-50/50 border-b border-indigo-100/50 p-8">
-                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-2xl font-bold text-indigo-600 shadow-md ring-2 ring-indigo-50">
-                                            {instructor.name[0]}
-                                        </div>
-                                        <div>
-                                            <CardTitle className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                                                {instructor.name}
-                                                {instructor.status === 'ACTIVE' && <CheckCircle className="w-5 h-5 text-emerald-500" />}
-                                                {instructor.profileStatus === 'REJECTED' && <span className="text-red-500 text-sm font-bold border border-red-500 px-2 py-0.5 rounded">반려됨</span>}
-                                            </CardTitle>
-                                            <CardDescription className="text-slate-500 font-medium flex items-center gap-2 mt-1">
-                                                <Mail className="w-4 h-4" />
-                                                {instructor.email}
-                                            </CardDescription>
-                                        </div>
-                                    </div>
-                                    {instructor.status === 'ACTIVE' ? (
-                                        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 px-4 py-1.5 text-sm font-medium hover:bg-emerald-100">
-                                            승인 완료
-                                        </Badge>
-                                    ) : instructor.profileStatus === 'REJECTED' ? (
-                                        <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-200 px-4 py-1.5 text-sm font-medium hover:bg-red-100">
-                                            반려됨
-                                        </Badge>
-                                    ) : (
-                                        <Badge className="bg-amber-100 text-amber-700 border-amber-200 px-4 py-1.5 text-sm font-medium hover:bg-amber-100 animate-pulse">
-                                            승인 대기중
-                                        </Badge>
-                                    )}
+                        {!instructor ? (
+                            <Card className="p-12 text-center bg-white border-gray-200 shadow-sm rounded-xl">
+                                <div className="text-gray-400 mb-4">
+                                    <User className="w-12 h-12 mx-auto opacity-20" />
                                 </div>
-                            </CardHeader>
-                            <CardContent className="p-8 space-y-8">
-                                {/* 기본 정보 */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                                        <div className="flex items-center gap-2 text-slate-500 mb-2">
-                                            <User className="w-4 h-4" />
-                                            <span className="text-sm font-medium">로그인 ID</span>
+                                <p className="text-gray-500">강사 정보를 불러올 수 없습니다.</p>
+                            </Card>
+                        ) : (
+                            <div className="space-y-6">
+                                {/* 프로필 카드 */}
+                                <Card className="bg-white border-gray-200 shadow-sm overflow-hidden rounded-xl">
+                                    <div className="p-8 border-b border-gray-100 bg-slate-50/50">
+                                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                                            <div className="flex items-center gap-5">
+                                                <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center text-3xl font-bold text-primary shadow-sm border border-primary/20">
+                                                    {instructor.name[0]}
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-3 mb-1">
+                                                        <h2 className="text-2xl font-bold text-gray-900">{instructor.name}</h2>
+                                                        {instructor.status === 'ACTIVE' ? (
+                                                            <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0">승인 완료</Badge>
+                                                        ) : instructor.profileStatus === 'REJECTED' ? (
+                                                            <Badge variant="destructive" className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-0">반려됨</Badge>
+                                                        ) : (
+                                                            <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-0">승인 대기중</Badge>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-gray-500 text-sm">
+                                                        <Mail className="w-4 h-4" />
+                                                        {instructor.email}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2 w-full md:w-auto">
+                                                <Button
+                                                    variant="ghost"
+                                                    onClick={() => setIsDeleteDialogOpen(true)}
+                                                    className="flex-1 md:flex-none text-rose-500 hover:text-rose-600 hover:bg-rose-50 font-bold"
+                                                >
+                                                    <Trash2 className="w-4 h-4 mr-2" />
+                                                    강사 삭제
+                                                </Button>
+                                            </div>
                                         </div>
-                                        <p className="font-semibold text-slate-800 pl-6">{instructor.loginId || '-'}</p>
                                     </div>
-                                    <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
-                                        <div className="flex items-center gap-2 text-slate-500 mb-2">
-                                            <Briefcase className="w-4 h-4" />
-                                            <span className="text-sm font-medium">경력</span>
+
+                                    <CardContent className="p-8 space-y-10">
+                                        {/* 기본 정보 그리드 */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-1">
+                                                <Label className="text-gray-400 text-xs font-bold uppercase tracking-wider">로그인 ID</Label>
+                                                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100 font-medium text-gray-700">
+                                                    {instructor.loginId || '-'}
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label className="text-gray-400 text-xs font-bold uppercase tracking-wider">경력 사항</Label>
+                                                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100 font-medium text-gray-700">
+                                                    {instructor.careerYears ? `${instructor.careerYears}년` : '-'}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <p className="font-semibold text-slate-800 pl-6">{instructor.careerYears ? `${instructor.careerYears}년` : '-'}</p>
-                                    </div>
-                                </div>
 
-                                <Separator className="bg-slate-100" />
-
-                                {/* 자기소개 */}
-                                <div>
-                                    <div className="flex items-center gap-2 text-indigo-900 font-semibold mb-4">
-                                        <FileText className="w-5 h-5" />
-                                        <h3>자기소개</h3>
-                                    </div>
-                                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-slate-600 leading-relaxed whitespace-pre-wrap">
-                                        {instructor.bio || '등록된 자기소개가 없습니다.'}
-                                    </div>
-                                </div>
-
-                                <Separator className="bg-slate-100" />
-
-                                {/* 이력서 */}
-                                <div>
-                                    <div className="flex items-center gap-2 text-indigo-900 font-semibold mb-4">
-                                        <Download className="w-5 h-5" />
-                                        <h3>이력서 및 증빙자료</h3>
-                                    </div>
-                                    {instructor.resumeFilePath ? (
-                                        <Button
-                                            variant="outline"
-                                            onClick={downloadResume}
-                                            className="w-full sm:w-auto h-12 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all font-medium"
-                                        >
-                                            <FileText className="w-4 h-4 mr-2" />
-                                            이력서 다운로드 (PDF)
-                                        </Button>
-                                    ) : (
-                                        <div className="flex items-center gap-2 text-slate-400 bg-slate-50 p-3 rounded-lg inline-flex">
-                                            <FileText className="w-4 h-4" />
-                                            <span className="text-sm">등록된 이력서가 없습니다.</span>
+                                        {/* 자기소개 */}
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-2 text-gray-900 font-bold">
+                                                <FileText className="w-5 h-5 text-primary" />
+                                                <h3>자기소개</h3>
+                                            </div>
+                                            <div className="p-6 bg-gray-50 rounded-xl border border-gray-100 text-gray-600 leading-relaxed whitespace-pre-wrap">
+                                                {instructor.bio || '등록된 자기소개가 없습니다.'}
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
 
-                                <Separator className="bg-slate-100" />
-
-                                {/* 날짜 정보 */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                                    <div className="flex items-center justify-between p-3 bg-slate-50/50 rounded-lg">
-                                        <div className="flex items-center gap-2 text-slate-500">
-                                            <Clock className="w-4 h-4" />
-                                            <span>신청일</span>
+                                        {/* 이력서 섹션 */}
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-2 text-gray-900 font-bold">
+                                                <Download className="w-5 h-5 text-primary" />
+                                                <h3>이력서 및 증빙자료</h3>
+                                            </div>
+                                            {instructor.resumeFilePath ? (
+                                                <div className="p-4 bg-primary/5 rounded-xl border border-primary/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center border border-primary/20">
+                                                            <FileText className="w-5 h-5 text-primary" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-bold text-gray-900">이력서_준비됨.pdf</div>
+                                                            <div className="text-xs text-gray-500">클릭하여 파일을 다운로드하세요.</div>
+                                                        </div>
+                                                    </div>
+                                                    <Button
+                                                        onClick={downloadResume}
+                                                        className="bg-primary hover:bg-primary/90 text-white font-bold px-6"
+                                                    >
+                                                        <Download className="w-4 h-4 mr-2" />
+                                                        다운로드
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <div className="p-6 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-center text-gray-400">
+                                                    등록된 이력서가 없습니다.
+                                                </div>
+                                            )}
                                         </div>
-                                        <span className="font-medium text-slate-800">{formatDate(instructor.appliedAt)}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between p-3 bg-slate-50/50 rounded-lg">
-                                        <div className="flex items-center gap-2 text-slate-500">
-                                            <ShieldCheck className="w-4 h-4" />
-                                            <span>승인일</span>
-                                        </div>
-                                        <span className="font-medium text-slate-800">{formatDate(instructor.approvedAt)}</span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                            <CardFooter className="p-8 bg-slate-50/50 border-t border-slate-100 flex justify-end gap-3 md:gap-4 flex-wrap">
-                                <Button
-                                    variant="destructive"
-                                    onClick={() => setIsDeleteDialogOpen(true)}
-                                    className="mr-auto h-12 px-6 bg-red-100 text-red-700 hover:bg-red-200 border-red-200"
-                                >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    강사 삭제
-                                </Button>
 
-                                {instructor.status === 'ACTIVE' ? (
-                                    <>
-                                        <Button
-                                            variant="outline"
-                                            disabled
-                                            className="h-12 px-8 bg-emerald-50 text-emerald-600 border-emerald-200 opacity-100"
-                                        >
-                                            <CheckCircle className="w-4 h-4 mr-2" />
-                                            승인된 강사
-                                        </Button>
-                                        <Button
-                                            onClick={handleRejectClick}
-                                            variant="outline"
-                                            className="h-12 px-8 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition-all text-base font-semibold"
-                                        >
-                                            승인 취소 (반려)
-                                        </Button>
-                                    </>
-                                ) : instructor.profileStatus === 'REJECTED' ? (
-                                    <>
-                                        <Button
-                                            variant="outline"
-                                            disabled
-                                            className="h-12 px-8 bg-red-50 text-red-600 border-red-200 opacity-100"
-                                        >
-                                            반려된 강사
-                                        </Button>
-                                        <Button
-                                            onClick={approveInstructor}
-                                            className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-indigo-500/30 transition-all text-base font-semibold"
-                                        >
-                                            <CheckCircle className="w-5 h-5 mr-2" />
-                                            재승인 처리
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Button
-                                            onClick={handleRejectClick}
-                                            variant="outline"
-                                            className="h-12 px-8 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition-all text-base font-semibold"
-                                        >
-                                            반려
-                                        </Button>
-                                        <Button
-                                            onClick={approveInstructor}
-                                            className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-indigo-500/30 transition-all text-base font-semibold"
-                                        >
-                                            <CheckCircle className="w-5 h-5 mr-2" />
-                                            강사 승인 처리
-                                        </Button>
-                                    </>
-                                )}
-                            </CardFooter>
-                        </Card>
-                    </section>
-                )}
+                                        {/* 타임스탬프 */}
+                                        <div className="pt-6 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="flex items-center gap-3 text-sm text-gray-500">
+                                                <Calendar className="w-4 h-4" />
+                                                <span>신청일: <span className="text-gray-900 font-medium">{formatDate(instructor.appliedAt)}</span></span>
+                                            </div>
+                                            {instructor.approvedAt && (
+                                                <div className="flex items-center gap-3 text-sm text-gray-500">
+                                                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                                                    <span>승인일: <span className="text-gray-900 font-medium">{formatDate(instructor.approvedAt)}</span></span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </CardContent>
+
+                                    {/* 하단 액션바 */}
+                                    <div className="p-8 bg-slate-900 flex justify-end gap-3 rounded-b-xl">
+                                        {instructor.status === 'ACTIVE' ? (
+                                            <>
+                                                <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-4 py-2 text-sm mr-auto font-bold">
+                                                    현재 승인된 상태입니다
+                                                </Badge>
+                                                <Button
+                                                    onClick={handleRejectClick}
+                                                    variant="outline"
+                                                    className="bg-transparent border-rose-500/50 text-rose-400 hover:bg-rose-500 hover:text-white font-bold transition-all px-8 h-12"
+                                                >
+                                                    승인 취소 (반려)
+                                                </Button>
+                                            </>
+                                        ) : instructor.profileStatus === 'REJECTED' ? (
+                                            <>
+                                                <Badge className="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-4 py-2 text-sm mr-auto font-bold">
+                                                    현재 반려된 상태입니다
+                                                </Badge>
+                                                <Button
+                                                    onClick={approveInstructor}
+                                                    className="bg-primary hover:bg-primary/90 text-white font-bold px-10 h-12 shadow-lg shadow-primary/20"
+                                                >
+                                                    <CheckCircle className="w-5 h-5 mr-2" />
+                                                    재승인 처리
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Button
+                                                    onClick={handleRejectClick}
+                                                    variant="outline"
+                                                    className="bg-transparent border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white font-bold transition-all px-8 h-12"
+                                                >
+                                                    반려
+                                                </Button>
+                                                <Button
+                                                    onClick={approveInstructor}
+                                                    className="bg-primary hover:bg-primary/90 text-white font-bold px-10 h-12 shadow-lg shadow-primary/20"
+                                                >
+                                                    <CheckCircle className="w-5 h-5 mr-2" />
+                                                    강사 승인 확정
+                                                </Button>
+                                            </>
+                                        )}
+                                    </div>
+                                </Card>
+                            </div>
+                        )}
+                    </main>
+                </div>
             </div>
 
             <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-red-600 flex items-center gap-2">
-                            <ShieldCheck className="w-5 h-5" /> 강사 반려
+                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                            <AlertCircle className="w-5 h-5 text-rose-500" /> 강사 반려 처리
                         </DialogTitle>
-                        <DialogDescription>
-                            해당 강사 신청을 반려하시겠습니까? 반려 사유를 입력해주세요.
+                        <DialogDescription className="pt-2">
+                            해당 강사 신청을 반려합니다. 구체적인 반려 사유를 입력하시면 강사에게 알림이 전송됩니다.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid w-full gap-1.5">
-                            <Label htmlFor="rejectReason">반려 사유</Label>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="rejectReason" className="font-bold text-gray-700">반려 사유</Label>
                             <Textarea
                                 id="rejectReason"
                                 value={rejectReason}
                                 onChange={(e) => setRejectReason(e.target.value)}
-                                placeholder="예: 경력 증빙 자료가 부족합니다."
-                                rows={4}
+                                placeholder="예: 학력/경력 증빙 서류가 불충분합니다. 보완 후 다시 신청해주세요."
+                                className="min-h-[120px] focus:ring-rose-500 border-gray-200"
                             />
                         </div>
                     </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>취소</Button>
-                        <Button variant="destructive" onClick={submitReject}>반려 확정</Button>
+                    <DialogFooter className="gap-2">
+                        <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)} className="px-6">취소</Button>
+                        <Button variant="destructive" onClick={submitReject} className="px-6 font-bold">반려 확정</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -453,22 +431,23 @@ function AdminApproch() {
             <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="text-red-600 flex items-center gap-2">
-                            <Trash2 className="w-5 h-5" /> 강사 삭제
+                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                            <Trash2 className="w-5 h-5 text-rose-500" /> 강사 영구 삭제
                         </DialogTitle>
-                        <DialogDescription>
-                            정말로 이 강사를 삭제하시겠습니까? 이 작업은 되돌릴 수 없으며, 모든 관련 데이터(프로필, 계정 등)가 영구적으로 삭제됩니다.
+                        <DialogDescription className="pt-2 text-gray-600">
+                            정말로 이 강사 계정을 삭제하시겠습니까? <br />
+                            강사가 등록한 모든 강좌와 데이터가 삭제되며, 이 작업은 <strong className="text-rose-500">절대 되돌릴 수 없습니다.</strong>
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>취소</Button>
-                        <Button variant="destructive" onClick={handleDeleteInstructor}>삭제 확정</Button>
+                    <DialogFooter className="pt-4 gap-2">
+                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} className="px-6">취소</Button>
+                        <Button variant="destructive" onClick={handleDeleteInstructor} className="px-6 font-bold">강사 삭제 확정</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
             <Tail />
-        </div>
+        </>
     );
 }
 

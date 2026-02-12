@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Nav from '@/components/Nav';
 import Tail from "@/components/Tail";
+import AdminSidebar from "@/components/AdminSidebar";
 import { Link } from "react-router-dom";
 import {
     Table,
@@ -10,19 +11,24 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-// Checkbox import removed
-// AlertDialog imports removed
+import {
+    Video,
+    CheckCircle2,
+    Clock,
+    ChevronRight,
+    Search
+} from 'lucide-react';
 import axios from 'axios';
 
-
 function AdminLectureList() {
-
     const [lectures, setLectures] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const fetchLectures = () => {
+        setLoading(true);
         fetch('/admin/lectures', {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
@@ -36,15 +42,19 @@ function AdminLectureList() {
             })
             .then((resData) => {
                 console.log("강의 데이터 로드 성공", resData);
+                let data = [];
                 if (Array.isArray(resData)) {
-                    setLectures(resData);
+                    data = resData;
                 } else if (resData && typeof resData === 'object') {
                     const list = resData.content || resData.list || [resData];
-                    setLectures(Array.isArray(list) ? list : [list]);
+                    data = Array.isArray(list) ? list : [list];
                 }
+                setLectures(data);
+                setLoading(false);
             })
             .catch((error) => {
                 console.error('강의 데이터 로딩 실패', error);
+                setLoading(false);
             });
     };
 
@@ -52,20 +62,24 @@ function AdminLectureList() {
         fetchLectures();
     }, []);
 
+    const stats = {
+        total: lectures.length,
+        approved: lectures.filter(l => l.approvalStatus === 'APPROVED').length,
+        pending: lectures.filter(l => l.approvalStatus === 'PENDING').length
+    };
+
     const getApprovalBadge = (status) => {
         switch (status) {
             case 'PENDING':
-                return <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border-amber-500/20">승인 대기</Badge>;
+                return <Badge className="bg-amber-100 text-amber-700 border-0 font-bold">승인 대기</Badge>;
             case 'APPROVED':
-                return <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20">승인 완료</Badge>;
+                return <Badge className="bg-emerald-100 text-emerald-700 border-0 font-bold">승인 완료</Badge>;
             case 'REJECTED':
-                return <Badge variant="secondary" className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/20">반려됨</Badge>;
+                return <Badge className="bg-red-100 text-red-700 border-0 font-bold">반려됨</Badge>;
             default:
                 return <Badge variant="outline">{status}</Badge>;
         }
     };
-
-
 
     const formatDuration = (seconds) => {
         if (!seconds) return '-';
@@ -77,118 +91,123 @@ function AdminLectureList() {
     return (
         <>
             <Nav />
-            {/* Background Decoration */}
-            <div className="fixed inset-0 z-[-1] bg-background">
-                <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[100px]" />
-            </div>
+            <div className="min-h-screen bg-gray-50 pt-20 pb-20">
+                <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
-            <div className="pt-24 pb-20 container mx-auto px-6 max-w-7xl">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
-                    <div>
-                        <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 mb-2">
-                            Lecture Management
-                        </h1>
-                        <p className="text-muted-foreground">
-                            전체 강의 목록을 관리하고 승인 상태를 변경할 수 있습니다.
-                        </p>
-                    </div>
-                </div>
+                    <AdminSidebar />
 
-                <Card className="bg-background/60 backdrop-blur-xl border-border/50 shadow-xl overflow-hidden">
-                    <Table>
-                        <TableHeader className="bg-muted/50">
-                            <TableRow>
-                                {/* Checkbox column removed */}
-                                {/* Checkbox column removed */}
-                                <TableHead className="text-center w-[50px]">No.</TableHead>
-                                <TableHead className="text-center">강좌명</TableHead>
-                                <TableHead className="text-center">강의명</TableHead>
-                                <TableHead className="text-center w-[120px]">강사명</TableHead>
-                                <TableHead className="text-center w-[80px]">순서</TableHead>
-                                <TableHead className="text-center w-[150px]">예약유무</TableHead>
+                    <main className="flex-1 min-w-0">
+                        {/* 헤더 */}
+                        <div className="mb-10">
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">강의 관리</h1>
+                            <p className="text-gray-500">전체 강의 목록을 관리하고 승인 처리를 진행합니다.</p>
+                        </div>
 
-                                <TableHead className="text-center w-[100px]">재생시간</TableHead>
-                                <TableHead className="text-center w-[100px]">상태</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {lectures && lectures.length > 0 ? (
-                                // 최신순 정렬 (ID 기준 내림차순)
-                                [...lectures].sort((a, b) => b.lectureId - a.lectureId).map((item, index) => {
-                                    const uniqueKey = item.lectureId || `lecture-idx-${index}`;
+                        {/* 퀵 스탯 */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
+                                    <Video className="h-6 w-6 text-blue-600" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+                                    <div className="text-xs text-gray-500 font-medium">전체 강의</div>
+                                </div>
+                            </Card>
+                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center">
+                                    <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-gray-900">{stats.approved}</div>
+                                    <div className="text-xs text-gray-500 font-medium">승인 완료</div>
+                                </div>
+                            </Card>
+                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center">
+                                    <Clock className="h-6 w-6 text-amber-600" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-gray-900">{stats.pending}</div>
+                                    <div className="text-xs text-gray-500 font-medium">승인 대기</div>
+                                </div>
+                            </Card>
+                        </div>
 
-                                    // 예약 시간 처리 로직
-                                    let reservationDisplay = '-';
-                                    if (item.scheduledAt) {
-                                        const scheduledDate = new Date(item.scheduledAt);
-                                        const now = new Date();
-                                        if (scheduledDate > now) {
-                                            const datePart = scheduledDate.toLocaleDateString('ko-KR', {
-                                                year: 'numeric',
-                                                month: 'numeric',
-                                                day: 'numeric'
-                                            });
-                                            const timePart = scheduledDate.toLocaleTimeString('ko-KR', {
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                hour12: true
-                                            });
-                                            reservationDisplay = (
-                                                <div className="flex flex-col items-center leading-tight">
-                                                    <span>{datePart}</span>
-                                                    <span>{timePart}</span>
+                        {/* 리스트 카드 */}
+                        <Card className="bg-white border-gray-200 shadow-sm overflow-hidden">
+                            <Table>
+                                <TableHeader className="bg-gray-50">
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[60px]">No.</TableHead>
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider">강좌 정보</TableHead>
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider">강의명</TableHead>
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[120px]">강사</TableHead>
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[80px]">순서</TableHead>
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[100px]">재생시간</TableHead>
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[100px]">상태</TableHead>
+                                        <TableHead className="text-center py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[80px]">상세</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {loading ? (
+                                        Array.from({ length: 5 }).map((_, i) => (
+                                            <TableRow key={i}>
+                                                {Array.from({ length: 8 }).map((_, j) => (
+                                                    <TableCell key={j} className="py-4">
+                                                        <div className="h-4 bg-gray-100 rounded animate-pulse mx-auto w-12"></div>
+                                                    </TableCell>
+                                                ))}
+                                            </TableRow>
+                                        ))
+                                    ) : (lectures && lectures.length > 0 ? (
+                                        [...lectures].sort((a, b) => b.lectureId - a.lectureId).map((item, index) => (
+                                            <TableRow key={item.lectureId} className="hover:bg-gray-50/50 transition-colors">
+                                                <TableCell className="text-center text-sm text-gray-400">
+                                                    {lectures.length - index}
+                                                </TableCell>
+                                                <TableCell className="text-center text-sm font-medium text-gray-600">
+                                                    {item.courseTitle || '-'}
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <span className="font-bold text-gray-900">{item.title}</span>
+                                                </TableCell>
+                                                <TableCell className="text-center text-sm">
+                                                    {item.instructorName || '-'}
+                                                </TableCell>
+                                                <TableCell className="text-center text-sm font-medium text-gray-500">
+                                                    {item.orderNo != null ? item.orderNo : '-'}
+                                                </TableCell>
+                                                <TableCell className="text-center text-sm text-gray-500">
+                                                    {formatDuration(item.duration)}
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    {getApprovalBadge(item.approvalStatus)}
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Button variant="ghost" size="sm" asChild className="h-8 w-8 p-0 text-gray-400 hover:text-primary">
+                                                        <Link to={`/admin/lectures/${item.lectureId}`}>
+                                                            <ChevronRight className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={8} className="text-center py-20">
+                                                <div className="flex flex-col items-center text-gray-400">
+                                                    <Search className="w-10 h-10 mb-3 opacity-20" />
+                                                    <p className="font-medium">등록된 강의가 없습니다.</p>
                                                 </div>
-                                            );
-                                        }
-                                    }
-
-                                    return (
-                                        <TableRow key={uniqueKey} className="h-16 hover:bg-muted/30 transition-colors">
-                                            {/* Checkbox cell removed */}
-                                            <TableCell className="text-center text-muted-foreground w-[50px]">
-                                                {lectures.length - index}
-                                            </TableCell>
-                                            <TableCell className="text-center font-medium">
-                                                {item.courseTitle || '-'}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Link
-                                                    to={`/admin/lectures/${item.lectureId}`}
-                                                    className="font-medium hover:text-primary transition-colors flex items-center justify-center gap-2"
-                                                >
-                                                    {item.title}
-                                                </Link>
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                {item.instructorName || '-'}
-                                            </TableCell>
-                                            <TableCell className="text-center font-medium text-foreground/80">
-                                                {item.orderNo != null ? item.orderNo : '-'}
-                                            </TableCell>
-                                            <TableCell className="text-center text-sm">
-                                                {reservationDisplay}
-                                            </TableCell>
-
-                                            <TableCell className="text-center text-sm text-muted-foreground">
-                                                {formatDuration(item.duration)}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                {getApprovalBadge(item.approvalStatus)}
                                             </TableCell>
                                         </TableRow>
-                                    );
-                                })
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={8} className="text-center py-16 text-muted-foreground">
-                                        등록된 강의가 없습니다.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </Card>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Card>
+                    </main>
+                </div>
             </div>
             <Tail />
         </>

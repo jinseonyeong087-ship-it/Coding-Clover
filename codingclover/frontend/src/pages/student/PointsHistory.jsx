@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Tail from '../../components/Tail';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/badge";
 import {
     Table,
     TableBody,
@@ -13,8 +13,8 @@ import {
     TableHeader,
     TableRow
 } from "@/components/ui/Table";
-import { ArrowLeft, Coins, RefreshCw, AlertTriangle } from 'lucide-react';
-import coinImg from '../../img/coin.png';
+import { Coins, RefreshCw, AlertTriangle } from 'lucide-react';
+import StudentSidebar from '@/components/StudentSidebar';
 
 function PointsHistory() {
     const navigate = useNavigate();
@@ -123,35 +123,26 @@ function PointsHistory() {
                 fetch('/api/payment/history', { method: 'GET', credentials: 'include' })
             ]);
 
-            console.log('Balance API 응답:', balanceResponse.status);
-            console.log('History API 응답:', historyResponse.status);
-            console.log('Payment API 응답:', paymentResponse.status);
-
             if (balanceResponse.ok) {
                 const balanceData = await balanceResponse.json();
-                console.log('잔액 데이터:', balanceData);
                 setPoints(balanceData.balance || balanceData.amount || 0);
             } else {
-                console.warn('잔액 조회 실패');
-                setPoints(0); // API 실패 시 0으로 설정
+                setPoints(0);
             }
 
             // 환불 상태 확인 로직
             let paymentData = [];
             if (paymentResponse.ok) {
                 paymentData = await paymentResponse.json();
-                console.log('결제 데이터:', paymentData);
                 const payments = Array.isArray(paymentData) ? paymentData : [];
 
                 // 가장 최근의 환불 관련 결제 내역 찾기
                 const refundPayments = payments.filter(p => p.type === 'REFUND');
-                console.log('환불 결제 내역:', refundPayments);
 
                 if (refundPayments.length > 0) {
                     // 최신순 정렬 (ID 기준)
                     refundPayments.sort((a, b) => b.paymentId - a.paymentId);
                     const latestRefund = refundPayments[0];
-                    console.log('최근 환불 내역:', latestRefund);
 
                     if (latestRefund.status === 'REFUND_REQUEST') {
                         setRefundStatus('REQUESTED');
@@ -163,15 +154,11 @@ function PointsHistory() {
                     setRefundStatus(null);
                 }
             } else {
-                console.warn('결제 내역 조회 실패, 환불 상태 초기화');
-                setRefundStatus(null); // API 실패 시 환불 상태 초기화
+                setRefundStatus(null);
             }
 
             if (historyResponse.ok) {
                 const historyData = await historyResponse.json();
-                console.log('히스토리 데이터:', historyData);
-
-                // 백엔드에서 배열로 반환
                 const historyArr = Array.isArray(historyData) ? historyData : [];
 
                 // 결제 내역을 기준으로 환불 여부 판단하기 위한 Map 생성
@@ -188,12 +175,8 @@ function PointsHistory() {
 
                 // 월렛히스토리 엔티티 필드에 맞게 매핑
                 const mappedHistory = historyArr.map(item => {
-                    console.log('원본 데이터:', item); // 디버깅용
-
-                    // 타입 결정 로직 개선 - 결제 내역을 참조
                     let type = item.reason;
 
-                    // paymentId가 있고 해당 결제가 환불 타입인지 확인
                     if (item.paymentId && refundPaymentMap.has(item.paymentId)) {
                         type = 'REFUND';
                     } else if (item.reason === 'REFUND') {
@@ -206,8 +189,6 @@ function PointsHistory() {
 
                     const relatedPayment = item.paymentId ? paymentMap.get(item.paymentId) : null;
                     const description = getTransactionDescription(type, relatedPayment?.orderId);
-
-                    console.log('매핑된 데이터:', { type, amount: item.changeAmount, description }); // 디버깅용
 
                     return {
                         id: item.walletHistoryId,
@@ -222,27 +203,24 @@ function PointsHistory() {
 
                 setHistory(mappedHistory);
             } else {
-                console.warn('히스토리 조회 실패');
-                setHistory([]); // API 실패 시 빈 배열로 설정
+                setHistory([]);
             }
-
-
         } catch (error) {
             console.error('데이터 조회 실패:', error);
             setError('데이터를 불러오는 중 오류가 발생했습니다.');
-            setRefundStatus(null); // 오류 시 환불 상태도 초기화
-            setPoints(0); // 오류 시 포인트 0으로 설정
-            setHistory([]); // 오류 시 빈 배열로 설정
+            setRefundStatus(null);
+            setPoints(0);
+            setHistory([]);
         } finally {
             setLoading(false);
         }
     };
 
-    const getTypeColor = (type, amount) => {
-        if (type === 'CHARGE') return 'bg-green-100 text-green-800';
-        if (type === 'REFUND') return 'bg-blue-100 text-blue-800';
-        if (type === 'USE') return 'bg-red-100 text-red-800';
-        return 'bg-gray-100 text-gray-800';
+    const getTypeColor = (type) => {
+        if (type === 'CHARGE') return 'bg-green-50 text-green-700 border-green-200';
+        if (type === 'REFUND') return 'bg-blue-50 text-blue-700 border-blue-200';
+        if (type === 'USE') return 'bg-red-50 text-red-700 border-red-200';
+        return 'bg-gray-50 text-gray-700 border-gray-200';
     };
 
     const getTypeLabel = (type) => {
@@ -254,7 +232,6 @@ function PointsHistory() {
         }
     };
 
-    // 금액 포맷
     const formatAmount = (amount) => {
         return amount ? amount.toLocaleString() : '0';
     };
@@ -263,31 +240,26 @@ function PointsHistory() {
         setCurrentPage(pageNumber);
     };
 
-    // 버튼 렌더링 헬퍼
     const renderRefundButton = () => {
-        console.log('현재 포인트:', points, '환불 상태:', refundStatus);
-
         if (refundStatus === 'REQUESTED') {
             return (
                 <Button
                     variant="outline"
                     size="sm"
-                    className="text-orange-600 border-orange-300 bg-orange-50 cursor-not-allowed"
+                    className="rounded-none text-orange-600 border-orange-300 bg-orange-50 cursor-not-allowed"
                     disabled={true}
                 >
                     환불 대기중
                 </Button>
             );
         } else {
-            // 환불 완료 상태 제거 - 완료되면 다시 환불 요청 가능
-            // 포인트가 0보다 클 때만 활성화
             const isDisabled = points <= 0;
             return (
                 <Button
                     onClick={requestFullRefund}
                     variant="outline"
                     size="sm"
-                    className={isDisabled ? "text-gray-400 border-gray-300 bg-gray-50 cursor-not-allowed" : "text-red-600 border-red-300 hover:bg-red-50"}
+                    className={`rounded-none ${isDisabled ? "text-gray-400 border-gray-300 bg-gray-50 cursor-not-allowed" : "text-red-600 border-red-300 hover:bg-red-50"}`}
                     disabled={isDisabled}
                 >
                     환불 요청
@@ -302,7 +274,7 @@ function PointsHistory() {
                 <Nav />
                 <div className="container mx-auto px-4 py-16 pt-32">
                     <div className="flex justify-center items-center h-64">
-                        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     </div>
                 </div>
                 <Tail />
@@ -310,7 +282,6 @@ function PointsHistory() {
         );
     }
 
-    // 페이지네이션 로직 (로딩 후 계산)
     const safeHistory = Array.isArray(history) ? history : [];
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -318,149 +289,148 @@ function PointsHistory() {
     const totalPages = Math.ceil(safeHistory.length / itemsPerPage);
 
     return (
-        <div className="flex min-h-screen flex-col bg-background relative overflow-hidden">
+        <div className="flex min-h-screen flex-col bg-white">
             <Nav />
-            {/* Background Decoration */}
-            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
-            <div className="fixed bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
-            <div className="fixed top-1/2 left-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
-            <div className="container mx-auto px-4 py-24 flex-1">
-                <div className="max-w-6xl mx-auto">
-                    {/* 헤더 */}
-                    <div className="mb-10 text-center">
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent inline-block">
-                            포인트 내역
-                        </h1>
-                        <p className="text-muted-foreground mt-2">
-                            보유하신 포인트와 사용 내역을 확인하세요.
-                        </p>
-                    </div>
+            {/* Platform Standard Layout - Clean, Sidebar, White/Gray Theme */}
+            <div className="min-h-screen bg-gray-50 text-gray-900 pt-20 pb-20">
+                <div className="container mx-auto px-4 max-w-6xl flex flex-col md:flex-row gap-8">
 
-                    {/* 현재 포인트 카드 */}
-                    <Card className="mb-10 border-border/50 bg-background/60 backdrop-blur-xl shadow-2xl overflow-hidden relative group">
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <CardContent className="p-8 relative">
-                            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                                <div className="flex items-center gap-6">
-                                    <div className="p-4 bg-blue-100 rounded-full shadow-inner ring-4 ring-blue-50">
-                                        <Coins className="w-10 h-10 text-blue-600" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-medium text-muted-foreground mb-1">현재 보유 포인트</h3>
-                                        <div className="flex items-baseline gap-1">
-                                            <span className="text-5xl font-extrabold text-foreground tracking-tight">
-                                                {points.toLocaleString()}
-                                            </span>
-                                            <span className="text-2xl font-bold text-muted-foreground">P</span>
+                    {/* Left Sidebar */}
+                    <StudentSidebar />
+
+                    {/* Main Content Area */}
+                    <main className="flex-1 min-w-0">
+                        <div className="space-y-8">
+
+                            {/* Page Header */}
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900 mb-2">포인트 현황</h1>
+                                <p className="text-gray-500">보유하신 포인트와 사용 내역을 확인하세요.</p>
+                            </div>
+
+                            {/* Current Points Card */}
+                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 md:p-8">
+                                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                                    <div className="flex items-center gap-6">
+                                        <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl">
+                                            <Coins className="w-8 h-8 text-primary" />
                                         </div>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col items-end gap-3 w-full md:w-auto">
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground bg-background/50 px-3 py-1 rounded-full border border-border/50">
-                                        <AlertTriangle className="h-4 w-4 text-amber-500" />
-                                        환불은 보유 포인트 내에서만 가능합니다
-                                    </div>
-                                    {renderRefundButton()}
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* 포인트 내역 테이블 */}
-                    <Card className="border-border/50 bg-background/60 backdrop-blur-xl shadow-xl overflow-hidden">
-                        <CardHeader className="border-b border-border/50 bg-muted/20 pb-4">
-                            <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                    <RefreshCw className="h-5 w-5 text-muted-foreground" />
-                                    <CardTitle>포인트 사용 내역</CardTitle>
-                                </div>
-                                <div className="text-sm text-muted-foreground">
-                                    최근 {itemsPerPage}건씩 표시됩니다
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            {currentItems.length === 0 ? (
-                                <div className="text-center py-20 flex flex-col items-center gap-4">
-                                    <div className="h-16 w-16 bg-muted/50 rounded-full flex items-center justify-center">
-                                        <Coins className="h-8 w-8 text-muted-foreground/50" />
-                                    </div>
-                                    <span className="text-lg text-muted-foreground font-medium">포인트 사용 내역이 없습니다.</span>
-                                </div>
-                            ) : (
-                                <>
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow className="bg-muted/30 hover:bg-muted/30">
-                                                <TableHead className="w-[200px] pl-6">일시</TableHead>
-                                                <TableHead className="text-center w-[120px]">구분</TableHead>
-                                                <TableHead>내용</TableHead>
-                                                <TableHead className="text-right w-[150px] pr-8">금액</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {currentItems.map((item) => (
-                                                <TableRow key={item.id} className="hover:bg-primary/5 transition-colors cursor-default">
-                                                    <TableCell className="font-medium pl-6 text-muted-foreground">
-                                                        {new Date(item.date).toLocaleString('ko-KR')}
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        <Badge variant="outline" className={`border-0 font-bold px-3 py-1 ${getTypeColor(item.type)}`}>
-                                                            {getTypeLabel(item.type)}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-foreground/90 font-medium">{item.description}</TableCell>
-                                                    <TableCell className={`text-right pr-8 font-bold text-lg ${item.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                                        {item.amount >= 0 ? '+' : ''}{formatAmount(item.amount)} P
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-
-                                    {/* 페이징 컨트롤 */}
-                                    {totalPages > 1 && (
-                                        <div className="flex justify-center items-center gap-2 py-6 border-t border-border/50 bg-muted/10">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handlePageChange(currentPage - 1)}
-                                                disabled={currentPage === 1}
-                                                className="bg-background/80"
-                                            >
-                                                이전
-                                            </Button>
-
-                                            <div className="flex gap-1">
-                                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
-                                                    <Button
-                                                        key={pageNumber}
-                                                        variant={currentPage === pageNumber ? "default" : "outline"}
-                                                        size="sm"
-                                                        onClick={() => handlePageChange(pageNumber)}
-                                                        className={`w-8 ${currentPage === pageNumber ? "bg-primary shadow-md" : "bg-background/80"}`}
-                                                    >
-                                                        {pageNumber}
-                                                    </Button>
-                                                ))}
+                                        <div>
+                                            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide">보유 포인트</h3>
+                                            <div className="flex items-baseline gap-2 mt-1">
+                                                <span className="text-4xl font-extrabold text-gray-900 tracking-tight font-mono">
+                                                    {points.toLocaleString()}
+                                                </span>
+                                                <span className="text-xl font-bold text-gray-400">P</span>
                                             </div>
-
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handlePageChange(currentPage + 1)}
-                                                disabled={currentPage === totalPages}
-                                                className="bg-background/80"
-                                            >
-                                                다음
-                                            </Button>
                                         </div>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-3 w-full md:w-auto">
+                                        <div className="flex items-center gap-2 text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1.5 border border-amber-200 rounded-md">
+                                            <AlertTriangle className="h-3 w-3" />
+                                            환불은 보유 포인트 내에서만 가능합니다
+                                        </div>
+                                        {renderRefundButton()}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Transaction History Table */}
+                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
+                                    <div className="flex items-center gap-2">
+                                        <RefreshCw className="h-4 w-4 text-gray-400" />
+                                        <h3 className="font-bold text-gray-900">최근 거래 내역</h3>
+                                    </div>
+                                    <div className="text-xs font-medium text-gray-400">
+                                        최근 {itemsPerPage}건 표시
+                                    </div>
+                                </div>
+                                <div className="p-0">
+                                    {currentItems.length === 0 ? (
+                                        <div className="text-center py-20 flex flex-col items-center gap-3">
+                                            <div className="h-12 w-12 bg-gray-50 border border-gray-200 flex items-center justify-center rounded-full">
+                                                <Coins className="h-6 w-6 text-gray-300" />
+                                            </div>
+                                            <span className="text-sm text-gray-500 font-medium">포인트 사용 내역이 없습니다.</span>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow className="bg-gray-50/50 hover:bg-gray-50/50 border-gray-100">
+                                                        <TableHead className="w-[180px] pl-6 font-semibold text-gray-600">일시</TableHead>
+                                                        <TableHead className="text-center w-[100px] font-semibold text-gray-600">유형</TableHead>
+                                                        <TableHead className="font-semibold text-gray-600">내용</TableHead>
+                                                        <TableHead className="text-right w-[150px] pr-6 font-semibold text-gray-600">금액</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {currentItems.map((item) => (
+                                                        <TableRow key={item.id} className="hover:bg-gray-50 border-gray-100 transition-colors">
+                                                            <TableCell className="font-mono text-xs text-gray-500 pl-6">
+                                                                {new Date(item.date).toLocaleString('ko-KR')}
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                <Badge variant="outline" className={`rounded-md font-bold text-[10px] px-2 py-0.5 border ${getTypeColor(item.type)}`}>
+                                                                    {getTypeLabel(item.type)}
+                                                                </Badge>
+                                                            </TableCell>
+                                                            <TableCell className="text-gray-900 font-medium text-sm">{item.description}</TableCell>
+                                                            <TableCell className={`text-right pr-6 font-mono font-bold text-sm ${item.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                                {item.amount >= 0 ? '+' : ''}{formatAmount(item.amount)} P
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+
+                                            {/* Pagination */}
+                                            {totalPages > 1 && (
+                                                <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handlePageChange(currentPage - 1)}
+                                                        disabled={currentPage === 1}
+                                                        className="h-8 text-xs font-medium"
+                                                    >
+                                                        이전
+                                                    </Button>
+
+                                                    <div className="flex gap-1">
+                                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                                                            <button
+                                                                key={pageNumber}
+                                                                onClick={() => handlePageChange(pageNumber)}
+                                                                className={`w-8 h-8 flex items-center justify-center text-xs font-bold transition-all rounded-md border ${currentPage === pageNumber
+                                                                    ? "bg-primary text-white border-primary"
+                                                                    : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                                                                    }`}
+                                                            >
+                                                                {pageNumber}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handlePageChange(currentPage + 1)}
+                                                        disabled={currentPage === totalPages}
+                                                        className="h-8 text-xs font-medium"
+                                                    >
+                                                        다음
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </>
                                     )}
-                                </>
-                            )}
-                        </CardContent>
-                    </Card>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
                 </div>
             </div>
             <Tail />

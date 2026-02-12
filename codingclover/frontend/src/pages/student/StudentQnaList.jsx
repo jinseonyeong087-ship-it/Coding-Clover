@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import StudentSidebar from '@/components/StudentSidebar';
 
 const StudentQnaList = () => {
   const navigate = useNavigate();
@@ -138,113 +139,89 @@ const StudentQnaList = () => {
 
 
   return (
-    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
-      {/* Background Decoration */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
-
+    <>
       <Nav />
-      {/* Spacer for fixed nav */}
-      <div className="h-16"></div>
+      {/* Clean Layout without background blobs */}
+      <div className="min-h-screen bg-gray-50 pt-20 pb-20">
+        <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
-      <main className="container mx-auto px-4 py-8 max-w-7xl relative z-0">
-        <div className="flex flex-col lg:flex-row gap-8">
-
-          {/* Sidebar */}
-          <aside className="w-full lg:w-72 shrink-0 space-y-6">
-            {/* Write Button */}
-            {(!user || user.role !== 'ADMIN') && (
-              <Button
-                onClick={() => {
-                  if (!user) return alert("로그인이 필요합니다.");
-                  setIsWriteModalOpen(true);
-                }}
-                className="w-full h-14 text-base font-bold shadow-lg bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 transition-all rounded-xl"
-              >
-                <Plus className="mr-2 h-5 w-5" />
-                새 질문 작성하기
-              </Button>
-            )}
-
-            {/* Filter Menu */}
-            <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-xl p-2 shadow-sm">
-              <nav className="space-y-1">
-                <button
-                  onClick={() => setViewMode('all')}
-                  className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-all ${viewMode === 'all'
-                    ? 'bg-primary/10 text-primary shadow-sm'
-                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                    }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <BookOpen className="h-4 w-4" />
-                    전체 질문
-                  </div>
-                  {viewMode === 'all' && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (!user) return alert('로그인이 필요합니다.');
-                    setViewMode('my');
-                  }}
-                  className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-all ${viewMode === 'my'
-                    ? 'bg-primary/10 text-primary shadow-sm'
-                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                    }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <User className="h-4 w-4" />
-                    내 질문
-                  </div>
-                  {viewMode === 'my' && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
-                </button>
-              </nav>
-            </div>
-
-            {/* Helper Card */}
-            <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 p-6 rounded-xl border border-purple-500/20 shadow-sm">
-              <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                <HelpCircle className="h-4 w-4 text-primary" />
-                도움말
-              </h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                궁금한 내용이 있다면 주저하지 말고 질문해보세요. 강사님과 다른 학생들이 답변해드립니다.
-              </p>
-            </div>
-          </aside>
+          {/* Component Sidebar */}
+          <StudentSidebar />
 
           {/* Main Content */}
-          <section className="flex-1 min-w-0">
+          <main className="flex-1 min-w-0">
             <div className="mb-8 flex flex-col sm:flex-row gap-6 justify-between items-start sm:items-end">
               <div>
-                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 mb-2">QnA 게시판</h1>
-                <p className="text-muted-foreground">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">QnA 게시판</h1>
+                <p className="text-gray-500">
                   {viewMode === 'my' ? '내가 작성한 질문들의 목록입니다.' : '함께 배우고 성장하는 지식 공유의 공간입니다.'}
                 </p>
               </div>
-              {/* Search */}
-              <div className="relative w-full sm:w-80">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-4 w-4 text-muted-foreground" />
+
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                {/* Write Button - Only for Students/Instructors (not purely admins looking at student view, though logic allows all non-admin roles effectively) */}
+                {(!user || user.role !== 'ADMIN') && (
+                  <Button
+                    onClick={() => {
+                      if (!user) return alert("로그인이 필요합니다.");
+                      setIsWriteModalOpen(true);
+                    }}
+                    className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md h-11 px-6 rounded-xl"
+                  >
+                    <Plus className="mr-2 h-5 w-5" />
+                    새 질문 작성
+                  </Button>
+                )}
+
+                {/* Search */}
+                <div className="relative w-full sm:w-64">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <Input
+                    className="pl-10 h-11 bg-white border-gray-200 focus:bg-white transition-all shadow-sm"
+                    placeholder="검색어 입력..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
                 </div>
-                <Input
-                  className="pl-10 h-11 bg-background/50 backdrop-blur-sm border-border/50 focus:bg-background transition-all"
-                  placeholder="제목, 내용으로 검색..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
               </div>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+              <button
+                onClick={() => setViewMode('all')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap border ${viewMode === 'all'
+                  ? 'bg-gray-900 text-white border-gray-900'
+                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                  }`}
+              >
+                전체 질문
+              </button>
+              <button
+                onClick={() => {
+                  if (!user) return alert('로그인이 필요합니다.');
+                  setViewMode('my');
+                }}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap border ${viewMode === 'my'
+                  ? 'bg-gray-900 text-white border-gray-900'
+                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                  }`}
+              >
+                내 질문
+              </button>
             </div>
 
             {/* List */}
             <div className="space-y-4">
               {filteredQnaList.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-background/40 rounded-2xl border border-dashed border-border/50">
-                  <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
-                    <HelpCircle className="h-8 w-8 text-muted-foreground" />
+                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
+                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                    <HelpCircle className="h-8 w-8 text-gray-300" />
                   </div>
-                  <p className="text-lg font-medium text-foreground">등록된 질문이 없습니다</p>
-                  <p className="text-sm text-muted-foreground mt-1">첫 번째 질문의 주인공이 되어보세요!</p>
+                  <p className="text-lg font-medium text-gray-900">등록된 질문이 없습니다</p>
+                  <p className="text-sm text-gray-500 mt-1">첫 번째 질문의 주인공이 되어보세요!</p>
                 </div>
               ) : (
                 filteredQnaList.map(qna => {
@@ -255,37 +232,37 @@ const StudentQnaList = () => {
                     <div
                       key={qna.qnaId}
                       onClick={() => navigate(`/student/qna/${qna.qnaId}`)}
-                      className="group relative bg-background/60 backdrop-blur-md rounded-xl border border-border/50 p-6 cursor-pointer hover:bg-background/80 hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+                      className="group relative bg-white rounded-xl border border-gray-200 p-6 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all duration-200"
                     >
                       {/* Left Accent Bar */}
-                      <div className={`absolute left-0 top-6 bottom-6 w-1 rounded-r-full transition-colors ${isSolved ? 'bg-green-500' : 'bg-orange-400'}`} />
+                      <div className={`absolute left-0 top-6 bottom-6 w-1 rounded-r-full transition-colors ${isSolved ? 'bg-green-500' : 'bg-amber-400'}`} />
 
                       <div className="flex items-start gap-5 pl-3">
                         <div className="flex-1 min-w-0 space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
                             {qna.courseTitle && (
-                              <Badge variant="outline" className="bg-muted/50 text-muted-foreground font-normal border-border/50">
+                              <Badge variant="outline" className="bg-gray-50 text-gray-600 font-normal border-gray-200">
                                 {qna.courseTitle}
                               </Badge>
                             )}
-                            <Badge variant={isSolved ? "default" : "secondary"} className={`${isSolved ? "bg-green-500 hover:bg-green-600" : "bg-orange-400/10 text-orange-500 hover:bg-orange-400/20"}`}>
-                              {isSolved ? <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />해결됨</span> : "답변 대기"}
+                            <Badge variant={isSolved ? "default" : "secondary"} className={`${isSolved ? "bg-green-100 text-green-700 hover:bg-green-200 border-0" : "bg-amber-100 text-amber-700 hover:bg-amber-200 border-0"}`}>
+                              {isSolved ? <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />해결됨</span> : <span className="flex items-center gap-1"><HelpCircle className="h-3 w-3" />미해결</span>}
                             </Badge>
                           </div>
 
-                          <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1 pr-4">
+                          <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-1 pr-4">
                             {qna.title}
                           </h3>
-                          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                          <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">
                             {qna.question}
                           </p>
 
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
-                            <span className="flex items-center gap-1 font-medium text-foreground/80">
+                          <div className="flex items-center gap-4 text-xs text-gray-400 pt-2">
+                            <span className="flex items-center gap-1 font-medium text-gray-600">
                               <User className="h-3 w-3" />
                               {qna.userName || '익명'}
                             </span>
-                            <div className="w-px h-3 bg-border"></div>
+                            <div className="w-px h-3 bg-gray-200"></div>
                             <span>{new Date(qna.createdAt).toLocaleDateString()}</span>
                           </div>
                         </div>
@@ -293,8 +270,8 @@ const StudentQnaList = () => {
                         {/* Right Side Answer Count */}
                         <div className="hidden sm:flex flex-col items-center justify-center min-w-[4rem] self-center">
                           <div className={`flex flex-col items-center justify-center w-12 h-12 rounded-2xl border transition-colors ${answerCount > 0
-                            ? 'bg-primary/10 border-primary/20 text-primary'
-                            : 'bg-muted/30 border-border/50 text-muted-foreground'
+                            ? 'bg-primary/5 border-primary/20 text-primary'
+                            : 'bg-gray-50 border-gray-100 text-gray-400'
                             }`}>
                             <span className="text-lg font-bold leading-none">{answerCount}</span>
                             <MessageCircle className="h-3 w-3 mt-1" />
@@ -306,28 +283,28 @@ const StudentQnaList = () => {
                 })
               )}
             </div>
-          </section>
+          </main>
         </div>
-      </main>
+      </div>
 
       {/* Write Modal */}
       <Dialog open={isWriteModalOpen} onOpenChange={setIsWriteModalOpen}>
-        <DialogContent className="sm:max-w-[600px] bg-background/95 backdrop-blur-xl border-border/50">
+        <DialogContent className="sm:max-w-[600px] bg-white border-gray-200">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">새로운 질문 작성</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl font-bold text-gray-900">새로운 질문 작성</DialogTitle>
+            <DialogDescription className="text-gray-500">
               궁금한 점을 자세히 적어주세요. 상세한 질문은 더 좋은 답변을 받습니다.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="courseId" className="font-semibold">강좌 선택</Label>
+              <Label htmlFor="courseId" className="font-semibold text-gray-700">강좌 선택</Label>
               <select
                 id="courseId"
                 value={courseId}
                 onChange={(e) => setCourseId(e.target.value)}
                 required
-                className="flex h-11 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="flex h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <option value="">강좌를 선택해주세요 (수강 중인 강좌만 표시됩니다)</option>
                 {courseList.length === 0 && <option disabled>수강 중인 강좌가 없습니다.</option>}
@@ -337,32 +314,32 @@ const StudentQnaList = () => {
               </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="title" className="font-semibold">제목</Label>
+              <Label htmlFor="title" className="font-semibold text-gray-700">제목</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
                 placeholder="핵심 내용을 요약해주세요"
-                className="h-11 bg-background/50"
+                className="h-11 bg-white border-gray-300"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="question" className="font-semibold">내용</Label>
+              <Label htmlFor="question" className="font-semibold text-gray-700">내용</Label>
               <textarea
-                className="flex min-h-[200px] w-full rounded-md border border-input bg-background/50 px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none leading-relaxed"
+                className="flex min-h-[200px] w-full rounded-md border border-gray-300 bg-white px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary resize-none leading-relaxed"
                 value={question} onChange={(e) => setQuestion(e.target.value)} required placeholder="질문 내용을 자세히 입력해주세요. 코드나 에러 메시지를 포함하면 좋습니다."
               />
             </div>
             <DialogFooter className="gap-2">
               <Button type="button" variant="ghost" onClick={() => setIsWriteModalOpen(false)}>취소</Button>
-              <Button type="submit" className="bg-primary hover:bg-primary/90">등록하기</Button>
+              <Button type="submit" className="bg-primary hover:bg-primary/90 text-white">등록하기</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
       <Tail />
-    </div>
+    </>
   );
 };
 

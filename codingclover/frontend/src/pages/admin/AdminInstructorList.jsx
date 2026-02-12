@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Nav from '@/components/Nav';
+import AdminSidebar from "@/components/AdminSidebar";
 import Tail from "@/components/Tail";
 import { Link } from "react-router-dom";
 import {
     Table,
     TableBody,
-
     TableCell,
     TableHead,
     TableHeader,
@@ -14,13 +14,11 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Users, UserCheck, ShieldAlert } from "lucide-react";
 
 function AdminInstructorList() {
 
-    const [course, setCourse] = useState([]);
     const [status, setStatus] = useState([]);
-    const [lecture, setLecture] = useState([]);
 
     useEffect(() => {
         fetch('/admin/users/instructors', {
@@ -43,86 +41,117 @@ function AdminInstructorList() {
             });
     }, [])
 
-
-
     return (
         <>
             <Nav />
-            {/* Background Decoration */}
-            <div className="fixed inset-0 z-[-1] bg-background">
-                <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[100px]" />
-            </div>
+            <div className="min-h-screen bg-gray-50 pt-20 pb-20">
+                <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
-            <div className="pt-24 pb-20 container mx-auto px-6 max-w-7xl">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
-                    <div>
-                        <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 mb-2">
-                            Instructor Management
-                        </h1>
-                        <p className="text-muted-foreground">
-                            강사 목록을 관리하고 승인 상태를 변경할 수 있습니다.
-                        </p>
-                    </div>
+                    <AdminSidebar />
+
+                    <main className="flex-1 min-w-0">
+                        <div className="mb-10">
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                                강사 관리
+                            </h1>
+                            <p className="text-gray-500">
+                                강사 목록을 관리하고 승인 상태를 변경할 수 있습니다.
+                            </p>
+                        </div>
+
+                        {/* Quick Stats Summary */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
+                                    <Users className="h-6 w-6 text-blue-600" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-gray-900">{status.length}</div>
+                                    <div className="text-xs text-gray-500 font-medium">전체 강사</div>
+                                </div>
+                            </Card>
+                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center">
+                                    <UserCheck className="h-6 w-6 text-emerald-600" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-gray-900">
+                                        {status.filter(u => u.status === 'ACTIVE').length}
+                                    </div>
+                                    <div className="text-xs text-gray-500 font-medium">승인 완료</div>
+                                </div>
+                            </Card>
+                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 border-amber-100">
+                                <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center">
+                                    <ShieldAlert className="h-6 w-6 text-amber-600" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-gray-900">
+                                        {status.filter(u => u.status === 'SUSPENDED').length}
+                                    </div>
+                                    <div className="text-xs text-gray-500 font-medium">승인 대기</div>
+                                </div>
+                            </Card>
+                        </div>
+
+                        <Card className="bg-white border-gray-200 shadow-sm overflow-hidden">
+                            <Table>
+                                <TableHeader className="bg-gray-50 border-b border-gray-100">
+                                    <TableRow>
+                                        <TableHead className="text-center w-[100px] text-gray-600 font-bold">번호</TableHead>
+                                        <TableHead className="text-center text-gray-600 font-bold">강사명</TableHead>
+                                        <TableHead className="text-center w-[150px] text-gray-600 font-bold">상태</TableHead>
+                                        <TableHead className="text-center w-[150px] text-gray-600 font-bold">관리</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {status && status.length > 0 ? (
+                                        status.map((users, index) => {
+                                            const uniqueKey = users.userId || `user-idx-${index}`;
+                                            return (
+                                                <TableRow key={uniqueKey} className="hover:bg-gray-50/50 transition-colors">
+                                                    <TableCell className="text-center font-mono text-xs text-gray-400">{users.userId}</TableCell>
+                                                    <TableCell className="text-center font-bold text-gray-900">
+                                                        <Link to={`/admin/users/instructors/${users.userId}`} className="hover:text-primary transition-colors">
+                                                            {users.name}
+                                                        </Link>
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        {users.status === 'ACTIVE' ? (
+                                                            <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0">승인 완료</Badge>
+                                                        ) : users.status === 'SUSPENDED' ? (
+                                                            <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-0">승인 대기</Badge>
+                                                        ) : (
+                                                            <Badge variant="outline">{users.status}</Badge>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <Link to={`/admin/users/instructors/${users.userId}/courses`}>
+                                                            <Button variant="outline" size="sm" className="bg-white border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 h-8 px-3 rounded-lg text-xs">
+                                                                <BookOpen className="w-3.5 h-3.5 mr-1.5" />
+                                                                강좌 목록
+                                                            </Button>
+                                                        </Link>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="text-center py-20 text-gray-400">
+                                                등록된 강사가 없습니다.
+                                            </TableCell>
+                                        </TableRow>)}
+                                </TableBody>
+                            </Table>
+                        </Card>
+                    </main>
                 </div>
-
-                <Card className="bg-background/60 backdrop-blur-xl border-border/50 shadow-xl overflow-hidden">
-                    <Table>
-                        <TableHeader className="bg-muted/50">
-                            <TableRow>
-                                <TableHead className="text-center w-[100px]">가입번호</TableHead>
-                                <TableHead className="text-center">강사명</TableHead>
-                                <TableHead className="text-center w-[150px]">승인상태</TableHead>
-                                <TableHead className="text-center w-[150px]">관리</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {status && status.length > 0 ? (
-                                status.map((users, index) => {
-                                    const uniqueKey = users.userId || `user-idx-${index}`;
-                                    return (
-                                        <TableRow key={uniqueKey} className="h-16 hover:bg-muted/30 transition-colors">
-                                            <TableCell className="text-center font-medium text-foreground/80">{users.userId}</TableCell>
-                                            <TableCell className="text-center font-medium">
-                                                <Link to={`/admin/users/instructors/${users.userId}`} className="hover:text-primary transition-colors">
-                                                    {users.name}
-                                                </Link>
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                {users.status === 'ACTIVE' ? (
-                                                    <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20">승인 완료</Badge>
-                                                ) : users.status === 'SUSPENDED' ? (
-                                                    <Badge variant="secondary" className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/20">승인 필요</Badge>
-                                                ) : (
-                                                    <Badge variant="outline">{users.status}</Badge>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <Link to={`/admin/users/instructors/${users.userId}/courses`}>
-                                                    <Button variant="outline" size="sm" className="h-8 border-primary/20 hover:bg-primary/5 hover:text-primary">
-                                                        <BookOpen className="w-4 h-4 mr-1.5" />
-                                                        강좌 목록
-                                                    </Button>
-                                                </Link>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="text-center py-16 text-muted-foreground">
-                                        승인할 강사가 없습니다.
-                                    </TableCell>
-                                </TableRow>)}
-                        </TableBody>
-                    </Table>
-                </Card>
             </div>
 
             <Tail />
         </>
-
-    )
+    );
 }
 
 export default AdminInstructorList;

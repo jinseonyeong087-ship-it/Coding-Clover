@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Nav from '@/components/Nav';
+import Nav from "@/components/Nav";
+import AdminSidebar from "@/components/AdminSidebar";
 import Tail from "@/components/Tail";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
@@ -14,7 +15,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BookOpen, Video } from "lucide-react";
+import { ChevronLeft, BookOpen, CheckCircle2, Clock } from "lucide-react";
 
 function AdminInstructorCourses() {
     const { userId } = useParams();
@@ -63,109 +64,124 @@ function AdminInstructorCourses() {
     return (
         <>
             <Nav />
-            <div className="min-h-screen bg-slate-50 relative overflow-hidden">
-                {/* Background Decorations */}
-                <div className="fixed inset-0 z-0 pointer-events-none">
-                    <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-indigo-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-                    <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-                </div>
+            <div className="min-h-screen bg-gray-50 pt-20 pb-20">
+                <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
-                <div className="relative z-10 container mx-auto px-4 py-8 pt-24 max-w-7xl">
-                    <Button
-                        variant="ghost"
-                        onClick={() => navigate('/admin/users/instructors')}
-                        className="mb-8 hover:bg-white/50 hover:text-indigo-600 transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        강사 목록으로 돌아가기
-                    </Button>
+                    <AdminSidebar />
 
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-slate-800 mb-2">
-                            {instructorName ? `${instructorName} 강사의 강좌 목록` : '강좌 목록'}
-                        </h1>
-                        <p className="text-slate-500">
-                            해당 강사가 개설한 모든 강좌와 강의를 확인할 수 있습니다.
-                        </p>
-                    </div>
+                    <main className="flex-1 min-w-0">
+                        {/* 헤더 */}
+                        <div className="mb-8">
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                                강사별 강좌 목록
+                            </h1>
+                            <p className="text-gray-500">
+                                특정 강사가 개설했거나 신청 중인 강좌 목록을 확인합니다.
+                            </p>
+                        </div>
 
-                    <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-xl ring-1 ring-white/50 overflow-hidden">
-                        <Table>
-                            <TableHeader className="bg-slate-50/50">
-                                <TableRow>
-                                    <TableHead className="text-center w-[80px]">ID</TableHead>
-                                    <TableHead className="text-center">강좌명</TableHead>
-                                    <TableHead className="text-center w-[100px]">난이도</TableHead>
-                                    <TableHead className="text-center w-[100px]">수강료</TableHead>
-                                    <TableHead className="text-center w-[120px]">상태</TableHead>
-                                    <TableHead className="text-center w-[150px]">관리</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {loading ? (
+                        {/* 통계 카드 */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
+                                    <BookOpen className="h-6 w-6 text-blue-600" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-gray-900">{courses.length}</div>
+                                    <div className="text-xs text-gray-500 font-medium">전체 강좌</div>
+                                </div>
+                            </Card>
+                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center">
+                                    <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-gray-900">
+                                        {courses.filter(c => c.proposalStatus === 'APPROVED').length}
+                                    </div>
+                                    <div className="text-xs text-gray-500 font-medium">승인 완료</div>
+                                </div>
+                            </Card>
+                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center">
+                                    <Clock className="h-6 w-6 text-amber-600" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-gray-900">
+                                        {courses.filter(c => c.proposalStatus === 'PENDING').length}
+                                    </div>
+                                    <div className="text-xs text-gray-500 font-medium">승인 대기</div>
+                                </div>
+                            </Card>
+                        </div>
+
+                        <Card className="bg-white border-gray-200 shadow-sm overflow-hidden">
+                            <Table>
+                                <TableHeader className="bg-gray-50 border-b border-gray-100">
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-20">
-                                            <div className="flex justify-center">
-                                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                                            </div>
-                                        </TableCell>
+                                        <TableHead className="text-center w-[100px] text-gray-600 font-bold">강좌번호</TableHead>
+                                        <TableHead className="text-center text-gray-600 font-bold">강좌명</TableHead>
+                                        <TableHead className="text-center w-[150px] text-gray-600 font-bold">가격</TableHead>
+                                        <TableHead className="text-center w-[150px] text-gray-600 font-bold">상태</TableHead>
+                                        <TableHead className="text-center w-[120px] text-gray-600 font-bold">상세</TableHead>
                                     </TableRow>
-                                ) : courses && courses.length > 0 ? (
-                                    courses.map((course) => (
-                                        <TableRow key={course.courseId} className="hover:bg-slate-50/50 transition-colors">
-                                            <TableCell className="text-center text-slate-500">{course.courseId}</TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-12 h-8 rounded bg-slate-200 overflow-hidden flex-shrink-0">
-                                                        {course.thumbnailUrl ? (
-                                                            <img src={course.thumbnailUrl} alt="" className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">No Img</div>
-                                                        )}
-                                                    </div>
-                                                    <span className="font-medium text-slate-700">{course.title}</span>
+                                </TableHeader>
+                                <TableBody>
+                                    {loading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={5} className="text-center py-20">
+                                                <div className="flex justify-center">
+                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-center">
-                                                {course.level === 1 ? <Badge variant="outline" className="text-slate-500">초급</Badge> :
-                                                    course.level === 2 ? <Badge variant="outline" className="text-indigo-500 border-indigo-200">중급</Badge> :
-                                                        <Badge variant="outline" className="text-purple-500 border-purple-200">고급</Badge>}
-                                            </TableCell>
-                                            <TableCell className="text-center text-slate-600">
-                                                {course.price > 0 ? `${course.price.toLocaleString()}P` : '무료'}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                {course.proposalStatus === 'APPROVED' ? (
-                                                    <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-emerald-200">승인됨</Badge>
-                                                ) : course.proposalStatus === 'REJECTED' ? (
-                                                    <Badge variant="destructive" className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200">반려됨</Badge>
-                                                ) : (
-                                                    <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-amber-200">승인 대기</Badge>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <Link to={`/admin/course/${course.courseId}`}>
-                                                    <Button variant="outline" size="sm" className="bg-white hover:bg-slate-50 text-indigo-600 border-indigo-100 hover:border-indigo-200">
-                                                        <Video className="w-4 h-4 mr-1.5" />
-                                                        강의 상세
+                                        </TableRow>
+                                    ) : courses.length > 0 ? (
+                                        courses.map((course) => (
+                                            <TableRow key={course.courseId} className="hover:bg-gray-50/50 transition-colors">
+                                                <TableCell className="text-center font-mono text-xs text-gray-400">
+                                                    {course.courseId}
+                                                </TableCell>
+                                                <TableCell className="text-center font-bold text-gray-900">
+                                                    {course.title}
+                                                </TableCell>
+                                                <TableCell className="text-center font-medium text-gray-600">
+                                                    {course.price?.toLocaleString()} P
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    {course.proposalStatus === 'APPROVED' ? (
+                                                        <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0">승인 완료</Badge>
+                                                    ) : course.proposalStatus === 'PENDING' ? (
+                                                        <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-0">승인 대기</Badge>
+                                                    ) : (
+                                                        <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-200 border-0">반려</Badge>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => navigate(`/admin/course/${course.courseId}/detail`)}
+                                                        className="h-8 px-3 rounded-lg text-xs font-bold border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                                                    >
+                                                        상세보기
                                                     </Button>
-                                                </Link>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={5} className="text-center py-20 text-gray-400">
+                                                개설된 강좌가 없습니다.
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-16 text-slate-500">
-                                            등록된 강좌가 없습니다.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </Card>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </Card>
+                    </main>
                 </div>
-                <Tail />
             </div>
+            <Tail />
         </>
     );
 }

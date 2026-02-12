@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Nav from '@/components/Nav';
-import Tail from '@/components/Tail';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Separator } from '@/components/ui/separator';
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 
-
-// Users 엔티티의 UsersRole enum과 일치
 const UsersRole = {
     STUDENT: 'STUDENT',
     INSTRUCTOR: 'INSTRUCTOR',
@@ -21,6 +17,7 @@ const MainLogin = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+
     const handleSocialLogin = (provider) => {
         window.location.href = `http://localhost:3333/oauth2/authorization/${provider}`;
     };
@@ -30,170 +27,162 @@ const MainLogin = () => {
         if (secureLocalStorage === "true") {
             setLoginId('');
         }
-    }, []); // [] 이거 뭐하는 용도임? []이거 무한루프 방지용임
+    }, []);
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') handleLogin();
     };
 
     const handleLogin = async () => {
-
         setError('');
-
-        // if (!loginId || !password) {
-        //     setError('아이디, 비밀번호를 입력해 주세요.');
-        //     return;
-        // };
-
         try {
             const response = await fetch('/auth/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({
-                    loginId: loginId,
-                    password: password
-                })
+                body: JSON.stringify({ loginId, password })
             });
-
-            console.log("try 구문 성공");
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setError(errorData.message || '새로고침 후 시도해 주세요.');
+                setError(errorData.message || '로그인에 실패했습니다.');
                 return;
             }
 
             const userData = await response.json();
-
             localStorage.setItem("users", JSON.stringify(userData));
 
             if (loginId && password) {
                 localStorage.setItem("loginId", true);
                 setLoginId('');
                 switch (userData.role) {
-                    case UsersRole.STUDENT:
-                        navigate('/');
-                        break;
-                    case UsersRole.INSTRUCTOR:
-                        navigate('/instructor/dashboard');
-                        break;
-                    case UsersRole.ADMIN:
-                        navigate('/admin/dashboard');
-                        break;
-                    default:
-                        navigate('/');
-                        break;
+                    case UsersRole.STUDENT: navigate('/'); break;
+                    case UsersRole.INSTRUCTOR: navigate('/instructor/dashboard'); break;
+                    case UsersRole.ADMIN: navigate('/admin/dashboard'); break;
+                    default: navigate('/'); break;
                 }
-            };
+            }
         } catch (err) {
-            setError(err.message || '정의되지 않은 변수 참조, 함수 호출 실패, 데이터 타입 불일치');
-            return;
+            setError(err.message || '로그인 요청 중 오류가 발생했습니다.');
         }
     };
 
     return (
+        <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white text-gray-900">
+            {/* Left: Brand Side */}
+            <div className="hidden lg:flex flex-col justify-between bg-[#0f172a] text-white p-12 lg:p-20 relative overflow-hidden">
+                <div className="relative z-10">
+                    <Link to="/" className="inline-flex items-center gap-2 text-2xl font-bold tracking-tight mb-8 hover:opacity-80 transition-opacity">
+                        <ArrowLeft className="w-5 h-5" /> Back to Home
+                    </Link>
+                    <div className="mt-20">
+                        <h1 className="text-5xl font-extrabold tracking-tight leading-tight mb-6">
+                            Welcome Back to<br />
+                            <span className="text-primary">Coding-Clover</span>
+                        </h1>
+                        <p className="text-xl text-gray-400 max-w-md leading-relaxed">
+                            개발자의 성장을 위한 최적의 플랫폼. 지금 로그인하여 학습을 이어나가세요.
+                        </p>
+                    </div>
+                </div>
 
-        <div className="flex min-h-screen flex-col bg-background">
-            <Nav />
-            <main className="flex flex-1 items-center justify-center py-12 px-4 relative overflow-hidden">
-                {/* Background Decoration */}
-                <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
-                <div className="fixed bottom-0 right-0 w-[800px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
+                <div className="relative z-10 space-y-4">
+                    <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-6 h-6 text-primary" />
+                        <span className="text-lg font-medium text-gray-300">체계적인 커리큘럼</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-6 h-6 text-primary" />
+                        <span className="text-lg font-medium text-gray-300">실전 코딩 테스트</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-6 h-6 text-primary" />
+                        <span className="text-lg font-medium text-gray-300">전문 강사진의 피드백</span>
+                    </div>
+                </div>
 
-                <Card className="w-full max-w-md border-border/50 bg-background/60 backdrop-blur-xl shadow-2xl">
-                    <CardHeader className="space-y-2 text-center pb-8 pt-8">
-                        <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">로그인</CardTitle>
-                        <CardDescription className="text-base">
-                            Coding-Clover에 오신 것을 환영합니다
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="px-8 pb-8">
-                        <div className="space-y-6">
-                            {error && (
-                                <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm font-medium text-center border border-destructive/20 animate-in fade-in slide-in-from-top-2">
-                                    {error}
-                                </div>
-                            )}
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="loginId" className="text-sm font-semibold ml-1">아이디</Label>
-                                    <Input
-                                        id="loginId"
-                                        type="text"
-                                        value={loginId}
-                                        onChange={(e) => setLoginId(e.target.value)}
-                                        onKeyDown={handleKeyDown}
-                                        placeholder="아이디를 입력하세요"
-                                        className="h-11"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between items-center">
-                                        <Label htmlFor="password" className="text-sm font-semibold ml-1">비밀번호</Label>
+                {/* Decorative Pattern */}
+                <div className="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none">
+                    <div className="absolute right-0 top-1/4 w-96 h-96 bg-primary rounded-full blur-[150px]"></div>
+                </div>
+            </div>
 
-                                    </div>
-                                    <Input
-                                        id="password"
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        onKeyDown={handleKeyDown}
-                                        placeholder="비밀번호를 입력하세요"
-                                        className="h-11"
-                                    />
-                                </div>
+            {/* Right: Login Form Side */}
+            <div className="flex flex-col justify-center items-center p-8 lg:p-20 relative">
+                <div className="w-full max-w-[400px] space-y-8">
+                    <div className="text-center lg:text-left">
+                        <h2 className="text-3xl font-bold tracking-tight text-gray-900">로그인</h2>
+                        <p className="mt-2 text-gray-500">계정이 없으신가요? <Link to="/auth/Register" className="font-bold text-primary hover:underline">회원가입</Link></p>
+                    </div>
+
+                    <div className="space-y-6">
+                        {error && (
+                            <div className="p-4 bg-red-50 text-red-600 text-sm font-medium border-l-4 border-red-500">
+                                {error}
                             </div>
+                        )}
 
-                            <div className="space-y-3 pt-2">
-                                <Button className="w-full h-11 text-base shadow-lg hover:shadow-primary/25" variant="default" onClick={handleLogin} type="submit">
-                                    로그인
-                                </Button>
-                                <Link to="/auth/register" className="block">
-                                    <Button variant="outline" className="w-full h-11 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-all">
-                                        회원가입
-                                    </Button>
-                                </Link>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="loginId" className="text-sm font-bold text-gray-700">아이디</Label>
+                                <Input
+                                    id="loginId"
+                                    value={loginId}
+                                    onChange={(e) => setLoginId(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    placeholder="Enter your ID"
+                                    className="h-12 rounded-none border-gray-300 focus:border-primary focus:ring-0"
+                                />
                             </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="password" className="text-sm font-bold text-gray-700">비밀번호</Label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    placeholder="Enter your password"
+                                    className="h-12 rounded-none border-gray-300 focus:border-primary focus:ring-0"
+                                />
+                            </div>
+                        </div>
 
-                            <div className="relative">
-                                <div className="absolute inset-0 flex items-center">
-                                    <span className="w-full border-t border-border/60" />
-                                </div>
-                                <div className="relative flex justify-center text-xs uppercase">
-                                    <span className="bg-background/60 backdrop-blur-xl px-2 text-muted-foreground">
-                                        Or continue with
-                                    </span>
-                                </div>
-                            </div>
+                        <Button onClick={handleLogin} className="w-full h-12 text-base font-bold bg-primary hover:bg-primary/90 text-white rounded-none shadow-none">
+                            로그인
+                        </Button>
 
-                            <div className="grid grid-cols-3 gap-3">
-                                <Button variant="outline" className="h-12 hover:bg-[#FEE500] hover:text-black hover:border-[#FEE500] hover:-translate-y-0.5 transition-all duration-300" onClick={() => handleSocialLogin('kakao')}>
-                                    <span className="font-bold">Kakao</span>
-                                </Button>
-                                <Button variant="outline" className="h-12 hover:bg-[#03C75A] hover:text-white hover:border-[#03C75A] hover:-translate-y-0.5 transition-all duration-300" onClick={() => handleSocialLogin('naver')}>
-                                    <span className="font-bold">Naver</span>
-                                </Button>
-                                <Button variant="outline" className="h-12 hover:bg-[#4285F4] hover:text-white hover:border-[#4285F4] hover:-translate-y-0.5 transition-all duration-300" onClick={() => handleSocialLogin('google')}>
-                                    <span className="font-bold">Google</span>
-                                </Button>
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-gray-200" />
                             </div>
-                            <Separator />
-                            <Link to="/auth/findReques" className="text-base text-muted-foreground hover:text-primary transition-colors align-center w-full text-center block">
-                                아이디 / 비밀번호를 잊으셨나요?
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-white px-2 text-gray-400 font-medium">Or continue with</span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                            <Button variant="outline" className="h-12 rounded-none border-gray-200 hover:bg-[#FEE500] hover:border-[#FEE500] hover:text-black transition-all" onClick={() => handleSocialLogin('kakao')}>
+                                Kakao
+                            </Button>
+                            <Button variant="outline" className="h-12 rounded-none border-gray-200 hover:bg-[#03C75A] hover:border-[#03C75A] hover:text-white transition-all" onClick={() => handleSocialLogin('naver')}>
+                                Naver
+                            </Button>
+                            <Button variant="outline" className="h-12 rounded-none border-gray-200 hover:bg-[#4285F4] hover:border-[#4285F4] hover:text-white transition-all" onClick={() => handleSocialLogin('google')}>
+                                Google
+                            </Button>
+                        </div>
+
+                        <div className="text-center mt-2">
+                            <Link to="/auth/findReques" className="text-xs font-medium text-gray-500 hover:text-primary hover:underline transition-colors">
+                                아이디/비밀번호 찾기
                             </Link>
                         </div>
-                    </CardContent>
-                </Card>
-            </main>
-            <Tail />
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
-
-
-
 
 export default MainLogin;

@@ -329,4 +329,15 @@ public class LectureService {
     public List<Lecture> getLecturesByCourseId(Long courseId) {
         return lectureRepository.findByCourse_CourseIdOrderByOrderNoAsc(courseId);
     }
+
+    // 강의 순서 변경 (일괄 업데이트)
+    @Transactional
+    public void reorderLectures(List<com.mysite.clover.Lecture.dto.LectureOrderRequest.OrderItem> orders) {
+        for (com.mysite.clover.Lecture.dto.LectureOrderRequest.OrderItem item : orders) {
+            Lecture lecture = lectureRepository.findById(item.getLectureId())
+                    .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다. ID: " + item.getLectureId()));
+            lecture.setOrderNo(item.getOrderNo());
+            lectureRepository.save(lecture);
+        }
+    }
 }

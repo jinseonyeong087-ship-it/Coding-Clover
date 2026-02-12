@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import AdminNav from '@/components/AdminNav';
+import Nav from "@/components/Nav";
+import AdminSidebar from "@/components/AdminSidebar";
 import Tail from "@/components/Tail";
 import {
     Table,
@@ -13,7 +14,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, UserX } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, X } from "lucide-react";
 
 function AdminEnrollmentManagement() {
     const [enrollments, setEnrollments] = useState([]);
@@ -56,8 +57,8 @@ function AdminEnrollmentManagement() {
     };
 
     // 수강 강제취소
-    const handleCancelEnrollment = async (enrollmentId, userName, courseTitle) => {
-        if (!confirm(`${userName}님의 "${courseTitle}" 수강을 강제취소하시겠습니까?`)) {
+    const handleCancel = async (enrollmentId, studentName, courseTitle) => {
+        if (!confirm(`${studentName}님의 "${courseTitle}" 수강을 강제취소하시겠습니까?`)) {
             return;
         }
 
@@ -74,7 +75,7 @@ function AdminEnrollmentManagement() {
 
             const message = await response.text();
             alert(message);
-            
+
             // 목록 새로고침
             fetchAllEnrollments();
         } catch (error) {
@@ -89,7 +90,7 @@ function AdminEnrollmentManagement() {
 
         // 검색어 필터링
         if (searchKeyword.trim()) {
-            filtered = filtered.filter(item => 
+            filtered = filtered.filter(item =>
                 item.userName?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
                 item.courseTitle?.toLowerCase().includes(searchKeyword.toLowerCase())
             );
@@ -130,14 +131,16 @@ function AdminEnrollmentManagement() {
     };
 
     // 상태 뱃지 렌더링
-    const renderStatusBadge = (status) => {
+    const getStatusBadge = (status) => {
         switch (status) {
             case 'ENROLLED':
-                return <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">수강중</Badge>;
-            case 'CANCELLED':
-                return <Badge variant="outline" className="text-red-500 border-red-500/30">취소됨</Badge>;
+                return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-0">수강 중</Badge>;
             case 'COMPLETED':
-                return <Badge variant="secondary" className="bg-purple-500/10 text-purple-500 border-purple-500/20">완료</Badge>;
+                return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0">수료 완료</Badge>;
+            case 'CANCEL_REQUESTED':
+                return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-0">취소 대기</Badge>;
+            case 'CANCELED':
+                return <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-200 border-0">취소 완료</Badge>;
             default:
                 return <Badge variant="outline">{status}</Badge>;
         }
@@ -157,205 +160,153 @@ function AdminEnrollmentManagement() {
 
     return (
         <>
-            <AdminNav />
-            {/* Background Decoration */}
-            <div className="fixed inset-0 z-[-1] bg-background">
-                <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[100px]" />
-            </div>
+            <Nav />
+            <div className="min-h-screen bg-gray-50 pt-20 pb-20">
+                <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
-            <div className="pt-32 pb-20 container mx-auto px-6 max-w-7xl">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
-                    <div>
-                        <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 mb-2">
-                            수강 관리
-                        </h1>
-                        <p className="text-muted-foreground">
-                            전체 수강내역을 조회하고 관리할 수 있습니다.
-                        </p>
-                    </div>
-                    <Button onClick={handleReset} variant="outline">
-                        초기화
-                    </Button>
-                </div>
+                    <AdminSidebar />
 
-                {/* 검색 및 필터 */}
-                <Card className="p-4 mb-6 bg-background/60 backdrop-blur-xl border-border/50">
-                    <div className="flex flex-col md:flex-row gap-4 items-center">
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                type="text"
-                                placeholder="수강생명 또는 강좌명으로 검색..."
-                                className="pl-9"
-                                value={searchKeyword}
-                                onChange={(e) => setSearchKeyword(e.target.value)}
-                            />
+                    <main className="flex-1 min-w-0">
+                        {/* 헤더 */}
+                        <div className="mb-8">
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                                수강 신청 관리
+                            </h1>
+                            <p className="text-gray-500">
+                                학생들의 수강 신청 현황을 파악하고 상태를 관리합니다.
+                            </p>
                         </div>
-                        <select 
-                            value={statusFilter} 
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="w-[180px] px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                        >
-                            <option value="ALL">전체 상태</option>
-                            <option value="ENROLLED">수강중</option>
-                            <option value="COMPLETED">완료</option>
-                            <option value="CANCELLED">취소됨</option>
-                        </select>
-                    </div>
-                </Card>
 
-                {/* 수강내역 테이블 */}
-                <Card className="bg-background/60 backdrop-blur-xl border-border/50 shadow-xl overflow-hidden">
-                    <Table>
-                        <TableHeader className="bg-muted/50">
-                            <TableRow>
-                                <TableHead className="text-center w-[80px]">ID</TableHead>
-                                <TableHead className="text-center">수강생</TableHead>
-                                <TableHead className="text-center">강좌명</TableHead>
-                                <TableHead className="text-center w-[120px]">수강일시</TableHead>
-                                <TableHead className="text-center w-[100px]">상태</TableHead>
-                                <TableHead className="text-center w-[100px]">관리</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-16">
-                                        로딩중...
-                                    </TableCell>
-                                </TableRow>
-                            ) : currentEnrollments && currentEnrollments.length > 0 ? (
-                                currentEnrollments.map((item, index) => {
-                                    const uniqueKey = item.enrollmentId || `enrollment-idx-${index}`;
-                                    return (
-                                        <TableRow key={uniqueKey} className="hover:bg-muted/30 transition-colors">
-                                            <TableCell className="text-center font-mono text-xs text-muted-foreground">
-                                                {item.enrollmentId}
-                                            </TableCell>
-                                            <TableCell className="text-center font-medium">
-                                                {item.userName}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <div className="max-w-[300px] truncate mx-auto">
-                                                    {item.courseTitle}
+                        {/* 필터 섹션 */}
+                        <Card className="p-6 bg-white border-gray-200 shadow-sm mb-8">
+                            <div className="flex flex-col md:flex-row gap-4">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <Input
+                                        placeholder="학생 이름 또는 강좌명 검색..."
+                                        value={searchKeyword}
+                                        onChange={(e) => setSearchKeyword(e.target.value)}
+                                        className="pl-9 bg-white border-gray-200 focus:ring-primary h-11"
+                                    />
+                                </div>
+                                <select
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    className="w-full md:w-[180px] h-11 bg-white border border-gray-200 rounded-md px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%236B7280%22%20stroke-width%3D%221.67%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] bg-[length:20px_20px] bg-no-repeat bg-[right_0.5rem_center]"
+                                >
+                                    <option value="ALL">모든 상태</option>
+                                    <option value="ENROLLED">수강 중</option>
+                                    <option value="COMPLETED">수료 완료</option>
+                                    <option value="CANCEL_REQUESTED">취소 대기</option>
+                                    <option value="CANCELED">취소 완료</option>
+                                </select>
+                            </div>
+                        </Card>
+
+                        {/* 테이블 섹션 */}
+                        <Card className="bg-white border-gray-200 shadow-sm overflow-hidden mb-8">
+                            <Table>
+                                <TableHeader className="bg-gray-50 border-b border-gray-100">
+                                    <TableRow>
+                                        <TableHead className="text-center w-[80px] text-gray-600 font-bold">번호</TableHead>
+                                        <TableHead className="text-center text-gray-600 font-bold">학생명</TableHead>
+                                        <TableHead className="text-center text-gray-600 font-bold">강좌명</TableHead>
+                                        <TableHead className="text-center w-[160px] text-gray-600 font-bold">신청일</TableHead>
+                                        <TableHead className="text-center w-[140px] text-gray-600 font-bold">상태</TableHead>
+                                        <TableHead className="text-center w-[120px] text-gray-600 font-bold">관리</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {loading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-20">
+                                                <div className="flex justify-center">
+                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-center text-sm text-muted-foreground">
-                                                {formatDate(item.enrolledAt)}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                {renderStatusBadge(item.status)}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                {item.status === 'ENROLLED' && (
-                                                    <Button
-                                                        size="sm"
-                                                        variant="destructive"
-                                                        className="h-8 px-2"
-                                                        onClick={() => handleCancelEnrollment(
-                                                            item.enrollmentId,
-                                                            item.userName,
-                                                            item.courseTitle
-                                                        )}
-                                                    >
-                                                        <UserX className="h-3 w-3 mr-1" />
-                                                        취소
-                                                    </Button>
-                                                )}
+                                        </TableRow>
+                                    ) : currentEnrollments.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-20 text-gray-400">
+                                                수강 신청 내역이 없습니다.
                                             </TableCell>
                                         </TableRow>
-                                    );
-                                })
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-16 text-muted-foreground">
-                                        {searchKeyword || statusFilter !== "ALL" 
-                                            ? "검색 조건에 맞는 수강내역이 없습니다."
-                                            : "등록된 수강내역이 없습니다."
-                                        }
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </Card>
+                                    ) : (
+                                        currentEnrollments.map((enrollment) => (
+                                            <TableRow key={enrollment.enrollmentId} className="hover:bg-gray-50/50 transition-colors">
+                                                <TableCell className="text-center font-mono text-xs text-gray-400">
+                                                    {enrollment.enrollmentId}
+                                                </TableCell>
+                                                <TableCell className="text-center font-bold text-gray-900">
+                                                    {enrollment.userName || enrollment.studentName}
+                                                </TableCell>
+                                                <TableCell className="text-center font-medium text-gray-600">
+                                                    {enrollment.courseTitle}
+                                                </TableCell>
+                                                <TableCell className="text-center text-sm text-gray-500">
+                                                    {formatDate(enrollment.enrolledAt)}
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    {getStatusBadge(enrollment.status)}
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    {(enrollment.status !== 'CANCELED' && enrollment.status !== 'CANCELLED') && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-8 px-3 rounded-lg text-xs font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50"
+                                                            onClick={() => handleCancel(enrollment.enrollmentId, enrollment.userName || enrollment.studentName, enrollment.courseTitle)}
+                                                        >
+                                                            <X className="w-3.5 h-3.5 mr-1" />
+                                                            강제 취소
+                                                        </Button>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </Card>
 
-                {totalPages > 1 && (
-                    <div className="flex justify-center items-center gap-2 pt-6">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            className="h-9 w-9"
-                        >
-                            이전
-                        </Button>
-
-                        <div className="flex gap-1">
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                        {/* 페이지네이션 */}
+                        {totalPages > 1 && (
+                            <div className="flex justify-center items-center gap-2">
                                 <Button
-                                    key={page}
-                                    variant={currentPage === page ? "default" : "ghost"}
-                                    size="sm"
-                                    onClick={() => handlePageChange(page)}
-                                    className={`w-9 h-9 font-medium ${currentPage === page ? 'shadow-md' : 'text-muted-foreground'}`}
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="bg-white border-gray-200 text-gray-600 h-10 w-10"
                                 >
-                                    {page}
+                                    <ChevronLeft className="h-4 w-4" />
                                 </Button>
-                            ))}
-                        </div>
-
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            className="h-9 w-9"
-                        >
-                            다음
-                        </Button>
-                    </div>
-                )}
-
-                {/* 통계 정보 */}
-                {filteredEnrollments.length > 0 && (
-                    <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <Card className="p-4 bg-background/60 backdrop-blur-xl border-border/50">
-                            <div className="text-center">
-                                <div className="text-2xl font-bold text-primary">{filteredEnrollments.length}</div>
-                                <div className="text-sm text-muted-foreground">총 수강내역</div>
-                            </div>
-                        </Card>
-                        <Card className="p-4 bg-background/60 backdrop-blur-xl border-border/50">
-                            <div className="text-center">
-                                <div className="text-2xl font-bold text-emerald-500">
-                                    {filteredEnrollments.filter(e => e.status === 'ENROLLED').length}
+                                <div className="flex gap-1">
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                                        <Button
+                                            key={pageNum}
+                                            variant={currentPage === pageNum ? "default" : "outline"}
+                                            onClick={() => handlePageChange(pageNum)}
+                                            className={`h-10 w-10 ${currentPage === pageNum ? "" : "bg-white border-gray-200 text-gray-600"}`}
+                                        >
+                                            {pageNum}
+                                        </Button>
+                                    ))}
                                 </div>
-                                <div className="text-sm text-muted-foreground">수강중</div>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className="bg-white border-gray-200 text-gray-600 h-10 w-10"
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
                             </div>
-                        </Card>
-                        <Card className="p-4 bg-background/60 backdrop-blur-xl border-border/50">
-                            <div className="text-center">
-                                <div className="text-2xl font-bold text-purple-500">
-                                    {filteredEnrollments.filter(e => e.status === 'COMPLETED').length}
-                                </div>
-                                <div className="text-sm text-muted-foreground">완료</div>
-                            </div>
-                        </Card>
-                        <Card className="p-4 bg-background/60 backdrop-blur-xl border-border/50">
-                            <div className="text-center">
-                                <div className="text-2xl font-bold text-red-500">
-                                    {filteredEnrollments.filter(e => e.status === 'CANCELLED').length}
-                                </div>
-                                <div className="text-sm text-muted-foreground">취소됨</div>
-                            </div>
-                        </Card>
-                    </div>
-                )}
+                        )}
+                    </main>
+                </div>
             </div>
-
             <Tail />
         </>
     );

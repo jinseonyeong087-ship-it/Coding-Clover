@@ -34,53 +34,52 @@ function InstructorNav() {
         }
     }, []);
     return (
-        <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md shadow-sm transition-all">
+        <nav className="sticky top-0 z-50 w-full border-b border-border bg-white">
             <div className="container mx-auto flex h-16 items-center justify-between px-6">
                 <div className="flex items-center gap-8">
-                    <Link to="/instructor/dashboard" className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity no-underline">
+                    <Link to="/instructor/dashboard" className="text-2xl font-bold text-primary hover:opacity-80 transition-opacity no-underline">
                         Coding-Clover
-                        {/* <span className="ml-1 text-xs text-muted-foreground font-medium uppercase tracking-wider">Instructor</span> */}
                     </Link>
-                    <Menubar className="border-none shadow-none bg-transparent">
+                    <Menubar className="border-none shadow-none bg-transparent p-0">
                         <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer font-medium text-muted-foreground hover:text-foreground transition-colors">강좌 관리</MenubarTrigger>
-                            <MenubarContent>
+                            <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent">강좌 관리</MenubarTrigger>
+                            <MenubarContent className="bg-white border-border rounded-none shadow-lg">
                                 <MenubarGroup>
-                                    <MenubarItem onClick={() => { navigate('/instructor/course/new') }}>강좌 개설</MenubarItem>
-                                    <MenubarItem onClick={() => { navigate('/instructor/course') }}>내 강좌</MenubarItem>
-                                    <MenubarItem onClick={() => { navigate('/instructor/lecture/upload') }}>강의 업로드</MenubarItem>
+                                    <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => { navigate('/instructor/course/new') }}>강좌 개설</MenubarItem>
+                                    <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => { navigate('/instructor/course') }}>내 강좌</MenubarItem>
+                                    <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => { navigate('/instructor/lecture/upload') }}>강의 업로드</MenubarItem>
                                 </MenubarGroup>
                             </MenubarContent>
                         </MenubarMenu>
                         <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer font-medium text-muted-foreground hover:text-foreground transition-colors">시험 제출</MenubarTrigger>
-                            <MenubarContent>
-                                <MenubarItem onClick={() => navigate('/instructor/exam/list')}>시험 목록</MenubarItem>
-                                <MenubarItem onClick={() => navigate('/instructor/exam/new')}>시험 제출하기</MenubarItem>
+                            <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent">시험 제출</MenubarTrigger>
+                            <MenubarContent className="bg-white border-border rounded-none shadow-lg">
+                                <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => navigate('/instructor/exam/list')}>시험 목록</MenubarItem>
+                                <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => navigate('/instructor/exam/new')}>시험 제출하기</MenubarItem>
                             </MenubarContent>
                         </MenubarMenu>
                         <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer font-medium text-muted-foreground hover:text-foreground transition-colors" onClick={() => { navigate('/instructor/qna') }}>Q&A 답변관리</MenubarTrigger>
-                            <MenubarContent>
-                                <MenubarItem onClick={() => { navigate('/instructor/qna') }}>수강생 질문</MenubarItem>
+                            <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/instructor/qna') }}>Q&A 답변관리</MenubarTrigger>
+                            <MenubarContent className="bg-white border-border rounded-none shadow-lg">
+                                <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => { navigate('/instructor/qna') }}>수강생 질문</MenubarItem>
                             </MenubarContent>
                         </MenubarMenu>
                         <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer font-medium text-muted-foreground hover:text-foreground transition-colors" onClick={() => { navigate('/notice') }}>공지사항</MenubarTrigger>
+                            <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/notice') }}>공지사항</MenubarTrigger>
                         </MenubarMenu>
                         <MenubarMenu>
-                            <MenubarTrigger onClick={() => navigate('/instructor/mypage')} className="cursor-pointer font-medium text-muted-foreground hover:text-foreground transition-colors">마이 페이지</MenubarTrigger>
+                            <MenubarTrigger onClick={() => navigate('/instructor/mypage')} className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent">마이 페이지</MenubarTrigger>
                         </MenubarMenu>
                     </Menubar>
                 </div>
 
                 <div className="flex items-center gap-4">
                     <div className="relative hidden md:block">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <Input
                             type="search"
                             placeholder="메뉴 검색..."
-                            className="pl-9 w-64 bg-secondary/50 border-transparent focus:bg-background transition-all"
+                            className="pl-9 w-64 bg-gray-50 border-gray-200 focus:bg-white focus:border-primary transition-all rounded-none h-9"
                             value={keyword}
                             onChange={(e) => setKeyword(e.target.value)}
                             onKeyDown={(e) => {
@@ -90,9 +89,9 @@ function InstructorNav() {
                             }} />
                     </div>
 
-                    <div className="flex items-center gap-3 pl-2 border-l border-border/50">
+                    <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
                         <NotificationDropdown />
-                        <div className="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 font-medium text-sm">
+                        <div className="px-3 py-1 bg-emerald-50 text-emerald-700 font-bold text-sm border border-emerald-100">
                             {users.name} 강사님
                         </div>
                         <Logout />

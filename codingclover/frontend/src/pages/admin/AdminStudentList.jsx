@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminNav from "@/components/AdminNav";
+import Nav from "@/components/Nav";
+import AdminSidebar from "@/components/AdminSidebar";
 import Tail from "@/components/Tail";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { Search } from "lucide-react";
+import { Search, RefreshCw, UserCheck, GraduationCap } from "lucide-react";
 
 function AdminStudentList() {
   const navigate = useNavigate();
@@ -24,8 +25,6 @@ function AdminStudentList() {
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      
-      // 새로 추가한 학생 전용 API 사용
       const response = await fetch("/admin/users/students", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -43,10 +42,8 @@ function AdminStudentList() {
         })));
         return;
       }
-      
+
       console.warn("학생 API 실패, enrollment 기반으로 대체");
-      
-      // 백업: enrollment 조회 (수강 정보 추가)
       const enrollmentResponse = await fetch("/admin/enrollment", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -60,8 +57,6 @@ function AdminStudentList() {
 
       const enrollmentData = await enrollmentResponse.json();
       const enrollmentList = Array.isArray(enrollmentData) ? enrollmentData : [];
-      
-      // 학생별 수강 정보 집계
       const enrollmentMap = new Map();
       enrollmentList.forEach(enrollment => {
         const studentKey = String(enrollment.userId || enrollment.studentId);
@@ -75,14 +70,13 @@ function AdminStudentList() {
         }
         const info = enrollmentMap.get(studentKey);
         info.count += 1;
-        
+
         const activityDate = enrollment.enrolledAt;
         if (activityDate && (!info.lastActivity || new Date(activityDate) > new Date(info.lastActivity))) {
           info.lastActivity = activityDate;
         }
       });
-      
-      // enrollment 기반 학생 목록 구성
+
       const fallbackStudents = [];
       enrollmentMap.forEach((info, studentId) => {
         fallbackStudents.push({
@@ -93,7 +87,7 @@ function AdminStudentList() {
           lastActiveAt: info.lastActivity
         });
       });
-      
+
       setStudents(fallbackStudents);
     } catch (error) {
       console.error("학생 목록 조회 실패:", error);
@@ -134,128 +128,145 @@ function AdminStudentList() {
 
   return (
     <>
-      <AdminNav />
-      <div className="fixed inset-0 z-[-1] bg-background">
-        <div className="absolute top-[-10%] right-[-5%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[100px]" />
-      </div>
+      <Nav />
+      {/* Background neutralized per user feedback */}
+      <div className="min-h-screen bg-gray-50 pt-20 pb-20">
+        <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
-      <div className="pt-32 pb-20 container mx-auto px-6 max-w-7xl">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
-          <div>
-            <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600 mb-2">
-              학생 관리
-            </h1>
-            <p className="text-muted-foreground">학생 목록을 조회하고 상세 화면으로 이동합니다.</p>
-          </div>
-          <Button variant="outline" onClick={fetchStudents}>
-            새로고침
-          </Button>
-        </div>
+          <AdminSidebar />
 
-        <Card className="p-4 mb-6 bg-background/60 backdrop-blur-xl border-border/50">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="학생명 또는 로그인 ID로 검색..."
-                className="pl-9"
-                value={keyword}
-                onChange={(event) => setKeyword(event.target.value)}
-              />
+          <main className="flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  학생 관리
+                </h1>
+                <p className="text-gray-500">학생 목록을 조회하고 상세 정보를 관리합니다.</p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={fetchStudents}
+                className="bg-white border-gray-200 hover:bg-gray-50"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                새로고침
+              </Button>
             </div>
-          </div>
-        </Card>
 
-        <Card className="bg-background/60 backdrop-blur-xl border-border/50 shadow-xl overflow-hidden">
-          <Table>
-            <TableHeader className="bg-muted/50">
-              <TableRow>
-                <TableHead className="text-center w-[100px]">ID</TableHead>
-                <TableHead className="text-center">학생명</TableHead>
-                <TableHead className="text-center">로그인 ID</TableHead>
-                <TableHead className="text-center w-[140px]">총 수강</TableHead>
-                <TableHead className="text-center w-[160px]">최근 활동</TableHead>
-                <TableHead className="text-center w-[120px]">상세</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-16">
-                    로딩중...
-                  </TableCell>
-                </TableRow>
-              ) : filteredStudents.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-16 text-muted-foreground">
-                    학생 데이터가 없습니다.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredStudents.map((student) => (
-                  <TableRow
-                    key={student.studentId || student.userId || student.id}
-                    className="hover:bg-muted/30 transition-colors"
-                  >
-                    <TableCell className="text-center font-mono text-xs text-muted-foreground">
-                      {student.studentId || student.userId || student.id}
-                    </TableCell>
-                    <TableCell className="text-center font-medium">
-                      {student.name || "-"}
-                    </TableCell>
-                    <TableCell className="text-center text-sm text-muted-foreground">
-                      {student.loginId || student.email || "-"}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {student.totalEnrollments ?? student.enrollmentCount ?? 0}
-                    </TableCell>
-                    <TableCell className="text-center text-sm text-muted-foreground">
-                      {formatDate(student.lastActiveAt)}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleOpenDetail(student)}
-                      >
-                        상세 보기
-                      </Button>
-                    </TableCell>
+            {/* Quick Stats Summary */}
+            {!loading && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
+                    <GraduationCap className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-gray-900">{students.length}</div>
+                    <div className="text-xs text-gray-500 font-medium">전체 학생</div>
+                  </div>
+                </Card>
+                <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center">
+                    <UserCheck className="h-6 w-6 text-emerald-600" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-gray-900">
+                      {students.filter((student) => (student.totalEnrollments ?? 0) > 0).length}
+                    </div>
+                    <div className="text-xs text-gray-500 font-medium">수강 경험 있음</div>
+                  </div>
+                </Card>
+                <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
+                    <Search className="h-6 w-6 text-gray-400" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-gray-900">
+                      {students.filter((student) => (student.totalEnrollments ?? 0) === 0).length}
+                    </div>
+                    <div className="text-xs text-gray-500 font-medium">수강 경험 없음</div>
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            <Card className="p-3 mb-6 bg-white border-gray-200 shadow-sm">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="학생명 또는 로그인 ID로 검색..."
+                  className="pl-10 h-11 border-transparent focus:ring-0 bg-gray-50/50"
+                  value={keyword}
+                  onChange={(event) => setKeyword(event.target.value)}
+                />
+              </div>
+            </Card>
+
+            <Card className="bg-white border-gray-200 shadow-sm overflow-hidden">
+              <Table>
+                <TableHeader className="bg-gray-50 border-b border-gray-100">
+                  <TableRow>
+                    <TableHead className="text-center w-[100px] text-gray-600 font-bold">ID</TableHead>
+                    <TableHead className="text-center text-gray-600 font-bold">학생명</TableHead>
+                    <TableHead className="text-center text-gray-600 font-bold">로그인 ID</TableHead>
+                    <TableHead className="text-center w-[140px] text-gray-600 font-bold">총 수강</TableHead>
+                    <TableHead className="text-center w-[160px] text-gray-600 font-bold">최근 활동</TableHead>
+                    <TableHead className="text-center w-[120px] text-gray-600 font-bold">관리</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </Card>
-
-        {!loading && filteredStudents.length > 0 && (
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="p-4 bg-background/60 backdrop-blur-xl border-border/50">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{students.length}</div>
-                <div className="text-sm text-muted-foreground">전체 학생</div>
-              </div>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-20 text-gray-400">
+                        데이터를 불러오는 중입니다...
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredStudents.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-20 text-gray-400">
+                        검색 결과가 없습니다.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredStudents.map((student) => (
+                      <TableRow
+                        key={student.studentId || student.userId || student.id}
+                        className="hover:bg-gray-50/50 transition-colors"
+                      >
+                        <TableCell className="text-center font-mono text-xs text-gray-400">
+                          {student.studentId || student.userId || student.id}
+                        </TableCell>
+                        <TableCell className="text-center font-medium text-gray-900">
+                          {student.name || "-"}
+                        </TableCell>
+                        <TableCell className="text-center text-sm text-gray-500">
+                          {student.loginId || student.email || "-"}
+                        </TableCell>
+                        <TableCell className="text-center text-gray-900 font-bold">
+                          {student.totalEnrollments ?? student.enrollmentCount ?? 0}
+                        </TableCell>
+                        <TableCell className="text-center text-sm text-gray-500">
+                          {formatDate(student.lastActiveAt)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleOpenDetail(student)}
+                            className="bg-white border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 h-8 px-3 rounded-lg text-xs"
+                          >
+                            상세 정보
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             </Card>
-            <Card className="p-4 bg-background/60 backdrop-blur-xl border-border/50">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-emerald-500">
-                  {students.filter((student) => (student.totalEnrollments ?? 0) > 0).length}
-                </div>
-                <div className="text-sm text-muted-foreground">수강 경험 있음</div>
-              </div>
-            </Card>
-            <Card className="p-4 bg-background/60 backdrop-blur-xl border-border/50">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-slate-500">
-                  {students.filter((student) => (student.totalEnrollments ?? 0) === 0).length}
-                </div>
-                <div className="text-sm text-muted-foreground">수강 경험 없음</div>
-              </div>
-            </Card>
-          </div>
-        )}
+          </main>
+        </div>
       </div>
 
       <Tail />
