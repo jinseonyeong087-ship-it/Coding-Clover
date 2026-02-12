@@ -1,6 +1,5 @@
 package com.mysite.clover.Enrollment;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -150,6 +149,7 @@ public class EnrollmentService {
   }
 
   // 학생 - 내 취소 요청 목록 조회
+  //학생이 수강중인 강좌에 대해 중복 취소 요청을 방지하기 위한 UI 상태 관리에 사용
   @Transactional(readOnly = true)
   public List<CancelRequestDto> getMyCancelRequests(Users student) {
     return enrollmentRepository.findUserPendingCancelRequestsOrderByCancelledAtDesc(student, EnrollmentStatus.ENROLLED)
@@ -165,12 +165,7 @@ public class EnrollmentService {
   public List<InstructorEnrollmentDto> getMyAllCourseStudents(Users instructor) {
     List<Enrollment> enrollments = enrollmentRepository.findByInstructor(instructor);
     return enrollments.stream()
-        .map(e -> new InstructorEnrollmentDto(
-            e.getEnrollmentId(),
-            e.getUser().getUserId(),
-            e.getUser().getName(),
-            e.getEnrolledAt(),
-            e.getStatus()))
+        .map(e -> new InstructorEnrollmentDto(e.getStatus()))
         .collect(Collectors.toList());
   }
 

@@ -20,4 +20,6 @@ public class CancelRequestDto {
     private Double progressRate; // 프론트엔드 호환용 (progress와 같은 값)
 
     private EnrollmentStatus status;
+
+    //Enrollment 기반 취소 요청 객체처럼 보이게 만드는 필드를 추가(테이블이 없어서 DTO로 대체)
 }

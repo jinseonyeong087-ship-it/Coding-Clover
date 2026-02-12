@@ -74,7 +74,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
                         """)
         List<Enrollment> findByInstructor(@Param("instructor") Users instructor);
 
-        // 관리자용 전체 조회 (N+1 방지)
+        // 관리자 전체 수강 조회 - 사용자, 강좌, 취소처리자 정보를 한 번에 가져옴 (추가 쿼리 방지)
         @Query("""
                         SELECT e FROM Enrollment e
                         JOIN FETCH e.user
