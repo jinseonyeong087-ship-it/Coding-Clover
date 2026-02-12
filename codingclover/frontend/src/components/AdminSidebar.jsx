@@ -39,7 +39,7 @@ const AdminSidebar = () => {
     {
       category: "회원 관리",
       items: [
-        { icon: Users, label: "학생 관리", path: "/admin/students" },
+        { icon: Users, label: "학생 관리", path: "/admin/users/students" },
         { icon: GraduationCap, label: "강사 관리", path: "/admin/users/instructors" },
       ]
     },

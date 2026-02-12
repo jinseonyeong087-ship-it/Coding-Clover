@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Nav from "@/components/Nav";
 import AdminSidebar from "@/components/AdminSidebar";
@@ -14,7 +14,16 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { Search, RefreshCw, UserCheck, GraduationCap } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationEllipsis
+} from "@/components/ui/pagination";
+import { Search, RefreshCw, UserCheck, GraduationCap, ChevronLeft, ChevronRight } from "lucide-react";
 
 function AdminStudentList() {
   const navigate = useNavigate();
@@ -22,94 +31,92 @@ function AdminStudentList() {
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const fetchStudents = async () => {
+  // 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+
+  // 통계 카드 상태 (백엔드에서 전체 학생 수 불러오기)
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [withEnrollment, setWithEnrollment] = useState(0);
+  const [withoutEnrollment, setWithoutEnrollment] = useState(0);
+
+  const fetchStudents = useCallback(async (page = 0, searchKeyword = "") => {
     try {
       setLoading(true);
-      const response = await fetch("/admin/users/students", {
+      const params = new URLSearchParams();
+      params.set("page", page);
+      if (searchKeyword.trim()) {
+        params.set("keyword", searchKeyword.trim());
+      }
+
+      const response = await fetch(`/admin/users/students?${params.toString()}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         credentials: "include"
       });
 
       if (response.ok) {
-        const students = await response.json();
-        setStudents(students.map(student => ({
+        const data = await response.json();
+        setStudents(data.students.map(student => ({
           studentId: student.userId,
           name: student.name,
           loginId: student.loginId,
           totalEnrollments: student.totalEnrollments || 0,
           lastActiveAt: student.lastActiveAt
         })));
+        setCurrentPage(data.currentPage);
+        setTotalPages(data.totalPages);
+        setTotalElements(data.totalElements);
+
+        // 통계 카드 데이터 (백엔드에서 전체 학생 수 계산)
+        setTotalStudents(data.totalStudents);
+        setWithEnrollment(data.withEnrollment);
+        setWithoutEnrollment(data.withoutEnrollment);
         return;
       }
 
-      console.warn("학생 API 실패, enrollment 기반으로 대체");
-      const enrollmentResponse = await fetch("/admin/enrollment", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include"
-      });
-
-      if (!enrollmentResponse.ok) {
-        setStudents([]);
-        return;
-      }
-
-      const enrollmentData = await enrollmentResponse.json();
-      const enrollmentList = Array.isArray(enrollmentData) ? enrollmentData : [];
-      const enrollmentMap = new Map();
-      enrollmentList.forEach(enrollment => {
-        const studentKey = String(enrollment.userId || enrollment.studentId);
-        if (!enrollmentMap.has(studentKey)) {
-          enrollmentMap.set(studentKey, {
-            count: 0,
-            lastActivity: null,
-            name: enrollment.userName || enrollment.studentName,
-            loginId: enrollment.loginId
-          });
-        }
-        const info = enrollmentMap.get(studentKey);
-        info.count += 1;
-
-        const activityDate = enrollment.enrolledAt;
-        if (activityDate && (!info.lastActivity || new Date(activityDate) > new Date(info.lastActivity))) {
-          info.lastActivity = activityDate;
-        }
-      });
-
-      const fallbackStudents = [];
-      enrollmentMap.forEach((info, studentId) => {
-        fallbackStudents.push({
-          studentId: studentId,
-          name: info.name || `학생 ${studentId}`,
-          loginId: info.loginId || 'unknown',
-          totalEnrollments: info.count,
-          lastActiveAt: info.lastActivity
-        });
-      });
-
-      setStudents(fallbackStudents);
+      setStudents([]);
     } catch (error) {
       console.error("학생 목록 조회 실패:", error);
       setStudents([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchStudents();
-  }, []);
+  }, [fetchStudents]);
 
-  const filteredStudents = useMemo(() => {
-    const keywordLower = keyword.trim().toLowerCase();
-    if (!keywordLower) return students;
-    return students.filter((student) => {
-      const name = (student.name || "").toLowerCase();
-      const loginId = (student.loginId || student.email || "").toLowerCase();
-      return name.includes(keywordLower) || loginId.includes(keywordLower);
-    });
-  }, [students, keyword]);
+  // 검색어 변경 시 디바운스 (500ms 후 서버 요청)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentPage(0);
+      fetchStudents(0, keyword);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [keyword, fetchStudents]);
+
+  // 페이지 변경
+  const handlePageChange = (page) => {
+    if (page < 0 || page >= totalPages) return;
+    setCurrentPage(page);
+    fetchStudents(page, keyword);
+  };
+
+  // 페이지 번호 목록 생성 (현재 페이지 기준 최대 5개)
+  const getPageNumbers = () => {
+    const pages = [];
+    let start = Math.max(0, currentPage - 2);
+    let end = Math.min(totalPages - 1, start + 4);
+    start = Math.max(0, end - 4);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return "-";
@@ -129,7 +136,6 @@ function AdminStudentList() {
   return (
     <>
       <Nav />
-      {/* Background neutralized per user feedback */}
       <div className="min-h-screen bg-gray-50 pt-20 pb-20">
         <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
@@ -145,7 +151,7 @@ function AdminStudentList() {
               </div>
               <Button
                 variant="outline"
-                onClick={fetchStudents}
+                onClick={() => fetchStudents(currentPage, keyword)}
                 className="bg-white border-gray-200 hover:bg-gray-50"
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
@@ -153,7 +159,7 @@ function AdminStudentList() {
               </Button>
             </div>
 
-            {/* Quick Stats Summary */}
+            {/* 통계 카드 (백엔드에서 전체 학생 수 불러오기) */}
             {!loading && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
@@ -161,7 +167,7 @@ function AdminStudentList() {
                     <GraduationCap className="h-6 w-6 text-blue-600" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-gray-900">{students.length}</div>
+                    <div className="text-2xl font-bold text-gray-900">{totalStudents}</div>
                     <div className="text-xs text-gray-500 font-medium">전체 학생</div>
                   </div>
                 </Card>
@@ -170,9 +176,7 @@ function AdminStudentList() {
                     <UserCheck className="h-6 w-6 text-emerald-600" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {students.filter((student) => (student.totalEnrollments ?? 0) > 0).length}
-                    </div>
+                    <div className="text-2xl font-bold text-gray-900">{withEnrollment}</div>
                     <div className="text-xs text-gray-500 font-medium">수강 경험 있음</div>
                   </div>
                 </Card>
@@ -181,9 +185,7 @@ function AdminStudentList() {
                     <Search className="h-6 w-6 text-gray-400" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {students.filter((student) => (student.totalEnrollments ?? 0) === 0).length}
-                    </div>
+                    <div className="text-2xl font-bold text-gray-900">{withoutEnrollment}</div>
                     <div className="text-xs text-gray-500 font-medium">수강 경험 없음</div>
                   </div>
                 </Card>
@@ -222,14 +224,14 @@ function AdminStudentList() {
                         데이터를 불러오는 중입니다...
                       </TableCell>
                     </TableRow>
-                  ) : filteredStudents.length === 0 ? (
+                  ) : students.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-20 text-gray-400">
                         검색 결과가 없습니다.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredStudents.map((student) => (
+                    students.map((student) => (
                       <TableRow
                         key={student.studentId || student.userId || student.id}
                         className="hover:bg-gray-50/50 transition-colors"
@@ -265,6 +267,71 @@ function AdminStudentList() {
                 </TableBody>
               </Table>
             </Card>
+
+            {/* 페이지네이션: 이전 <- 1, 2, 3, 4 -> 다음 */}
+            {totalPages > 1 && (
+              <div className="mt-6">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        className={currentPage === 0 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+
+                    {getPageNumbers()[0] > 0 && (
+                      <>
+                        <PaginationItem>
+                          <PaginationLink onClick={() => handlePageChange(0)} className="cursor-pointer">
+                            1
+                          </PaginationLink>
+                        </PaginationItem>
+                        {getPageNumbers()[0] > 1 && (
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        )}
+                      </>
+                    )}
+
+                    {getPageNumbers().map((page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          isActive={page === currentPage}
+                          onClick={() => handlePageChange(page)}
+                          className="cursor-pointer"
+                        >
+                          {page + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+
+                    {getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1 && (
+                      <>
+                        {getPageNumbers()[getPageNumbers().length - 1] < totalPages - 2 && (
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        )}
+                        <PaginationItem>
+                          <PaginationLink onClick={() => handlePageChange(totalPages - 1)} className="cursor-pointer">
+                            {totalPages}
+                          </PaginationLink>
+                        </PaginationItem>
+                      </>
+                    )}
+
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        className={currentPage === totalPages - 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
           </main>
         </div>
       </div>

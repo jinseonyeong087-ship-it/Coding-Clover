@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.mysite.clover.Mail.MailService;
@@ -74,12 +77,30 @@ public class UsersController {
         return ResponseEntity.ok(instructorList);
     }
 
-    // 관리자: 학생 목록 조회
-    @GetMapping("/admin/users/students") 
+    // 관리자: 학생 목록 조회 (페이지네이션 + 검색)
+    // ?page=0&keyword=홍길동 형태로 요청
+    @GetMapping("/admin/users/students")
     @ResponseBody
-    public ResponseEntity<List<StudentDTO>> getStudents() {
-        List<StudentDTO> studentList = usersService.getStudentList();
-        return ResponseEntity.ok(studentList);
+    public ResponseEntity<?> getStudents(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "keyword", defaultValue = "") String keyword) {
+
+        Page<StudentDTO> paging = usersService.getStudentListPaged(page, keyword);
+
+        // 전체 학생 수 불러오기 (통계 카드용)
+        long totalStudents = usersService.getTotalStudentCount();
+        long withEnrollment = usersService.getStudentsWithEnrollmentCount();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("students", paging.getContent());       // 현재 페이지 학생 목록 (10명)
+        response.put("currentPage", paging.getNumber());      // 현재 페이지 번호
+        response.put("totalPages", paging.getTotalPages());   // 전체 페이지 수
+        response.put("totalElements", paging.getTotalElements()); // 검색 결과 총 수
+        response.put("totalStudents", totalStudents);         // 전체 학생 수 (통계 카드)
+        response.put("withEnrollment", withEnrollment);       // 수강 경험 있는 학생 수
+        response.put("withoutEnrollment", totalStudents - withEnrollment); // 수강 경험 없는 학생 수
+
+        return ResponseEntity.ok(response);
     }
 
     // 관리자: 학생 상세 조회

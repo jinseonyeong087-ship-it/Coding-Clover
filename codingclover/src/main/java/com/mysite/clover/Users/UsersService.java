@@ -1,5 +1,8 @@
 package com.mysite.clover.Users;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -236,7 +239,61 @@ public class UsersService {
         System.out.println("사용자 계정 삭제 완료: " + identifier);
     }
 
-    // 관리자 - 학생 목록 조회
+    // 관리자 - 학생 목록 페이지네이션 (한 페이지 10명, 검색 지원)
+    public Page<StudentDTO> getStudentListPaged(int page, String keyword) {
+        Pageable pageable = PageRequest.of(page, 15);
+
+        Page<Users> studentsPage;
+        if (keyword == null || keyword.trim().isEmpty()) {
+            studentsPage = usersRepository.findByRole(UsersRole.STUDENT, pageable);
+        } else {
+            studentsPage = usersRepository.findByRoleAndKeyword(UsersRole.STUDENT, keyword.trim(), pageable);
+        }
+
+        return studentsPage.map(user -> {
+            String educationLevel = null;
+            String interestCategory = null;
+            var profileOpt = studentProfileRepository.findById(user.getUserId());
+            if (profileOpt.isPresent()) {
+                StudentProfile profile = profileOpt.get();
+                educationLevel = profile.getEducationLevel();
+                interestCategory = profile.getInterestCategory();
+            }
+
+            int enrollmentCount = enrollmentRepository.countByUserUserId(user.getUserId());
+
+            java.time.LocalDateTime lastActiveAt = enrollmentRepository
+                    .findTopByUserUserIdOrderByEnrolledAtDesc(user.getUserId())
+                    .map(enrollment -> enrollment.getEnrolledAt())
+                    .orElse(user.getUpdatedAt());
+
+            return new StudentDTO(
+                    user.getUserId(),
+                    user.getName(),
+                    user.getEmail(),
+                    user.getLoginId(),
+                    user.getRole().name(),
+                    user.getStatus().name(),
+                    educationLevel,
+                    interestCategory,
+                    enrollmentCount,
+                    user.getCreatedAt(),
+                    user.getUpdatedAt(),
+                    lastActiveAt);
+        });
+    }
+
+    // 통계 카드용: 전체 학생 수
+    public long getTotalStudentCount() {
+        return usersRepository.countByRole(UsersRole.STUDENT);
+    }
+
+    // 통계 카드용: 수강 경험이 있는 학생 수
+    public long getStudentsWithEnrollmentCount() {
+        return usersRepository.countByRoleWithEnrollment(UsersRole.STUDENT);
+    }
+
+    // 관리자 - 학생 목록 조회 (기존 전체 조회 - 하위 호환)
     public List<StudentDTO> getStudentList() {
         List<Users> students = usersRepository.findByRole(UsersRole.STUDENT);
 

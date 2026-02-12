@@ -177,7 +177,7 @@ function App() {
           <Route path="enrollment" element={<AdminEnrollmentManagement />} />
           <Route path="exams" element={<AdminExamList />} />
           <Route path="lectures" element={<AdminLectureList />} />
-          <Route path="students" element={<AdminStudentList />} />
+          <Route path="users/students" element={<AdminStudentList />} />
           <Route path="students/:studentId" element={<AdminStudentDetail />} />
           <Route path="users/instructors/:userId/courses" element={<AdminInstructorCourses />} />
         </Route>
