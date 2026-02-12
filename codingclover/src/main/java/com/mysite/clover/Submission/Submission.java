@@ -35,15 +35,17 @@ public class Submission {
   @JoinColumn(name = "problem_id", nullable = false)
   private Problem problem;
 
-  @Column(name = "code", columnDefinition = "TEXT", nullable = false)
-  private String code;
-
   // Shadow column to satisfy DB schema drift
   @Column(name = "source_code", columnDefinition = "TEXT", nullable = false)
   private String sourceCode;
 
+  // Getter for backward compatibility
+  public String getCode() {
+    return this.sourceCode;
+  }
+
+  // Setter for backward compatibility
   public void setCode(String code) {
-    this.code = code;
     this.sourceCode = code;
   }
 
