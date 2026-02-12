@@ -274,8 +274,6 @@ function Home() {
 
       </section>
 
-      {/* 챗봇 컴포넌트 */}
-      <ChatBot className="fixed bottom-8 right-8" />
       <Tail />
     </>
   );

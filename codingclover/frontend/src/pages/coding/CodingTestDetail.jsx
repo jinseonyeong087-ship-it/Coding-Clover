@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Toaster, toast } from 'sonner';
+import ChatBot from '../student/ChatBot';
 
 // --- Components ---
 
@@ -629,6 +630,7 @@ const CodingTestDetail = () => {
         </section>
       </main>
       <Tail />
+      <ChatBot className="fixed bottom-10 right-10 z-[9999]" />
     </div>
   );
 };

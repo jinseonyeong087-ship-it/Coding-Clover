@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Nav from '@/components/Nav';
 import Tail from '@/components/Tail';
+import ChatBot from '../student/ChatBot';
 import { Plus, Users, ChevronRight, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -163,6 +164,7 @@ const CodingTestList = () => {
         <div className="h-10" />
 
       </main>
+      <ChatBot className="fixed bottom-10 right-10 z-[9999]" />
       <Tail />
     </div>
   );
