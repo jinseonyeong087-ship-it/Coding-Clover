@@ -3,15 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import Tail from '../../components/Tail';
 import StudentSidebar from '@/components/StudentSidebar';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Badge } from "@/components/ui/badge";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { User, Edit, Coins, ChevronRight, BookOpen, MonitorPlay, Calendar, AlertCircle, Trash2, Code2 } from "lucide-react";
 import axios from 'axios';
-import coinImg from '../../img/coin.png';
 
 // 상수
 const EDUCATION_OPTIONS = [
@@ -54,8 +51,8 @@ function MyPage() {
   const [editForm, setEditForm] = useState({ name: '', educationLevel: '' });
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [points, setPoints] = useState(0);
-  const [pointsLoading, setPointsLoading] = useState(false);
-  const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [, setPointsLoading] = useState(false);
+  const [, setIsWithdrawing] = useState(false);
   const [courseProgress, setCourseProgress] = useState({}); // { courseId: { completed, total, percent } }
   const [cancelRequests, setCancelRequests] = useState({});
   const [cancelRequestLoadingId, setCancelRequestLoadingId] = useState(null);
