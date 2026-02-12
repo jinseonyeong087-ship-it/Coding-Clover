@@ -4,16 +4,15 @@ import Tail from '../components/Tail';
 import { Link, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/Card";
-import { ArrowRight, Code2, Terminal, Cpu, Search } from "lucide-react";
+import { ArrowRight, Code2, Terminal, Cpu } from "lucide-react";
 
 function Home() {
   const navigate = useNavigate();
   const [course, setCourse] = useState([]);
   const [recommendedCourses, setRecommendedCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [isStudent, setIsStudent] = useState(false);
-  const [activeTab, setActiveTab] = useState(1);
+  const [, setActiveTab] = useState(1);
 
   const tabs = [
     { id: 1, tablabel: "초급", desc: "코딩이 처음이신가요?" },

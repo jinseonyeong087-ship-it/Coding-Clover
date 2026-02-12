@@ -26,12 +26,12 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     // 승인 상태 및 레벨 필터링
     List<Course> findByProposalStatusAndLevel(CourseProposalStatus proposalStatus, int level);
 
-    // 강의가 있는 승인된 강좌
-    @Query("SELECT DISTINCT c FROM Course c JOIN Lecture l ON c.courseId = l.course.courseId WHERE c.proposalStatus = 'APPROVED'")
+    // 강좌 승인(APPROVED) + 강의 승인(APPROVED) + 강의 1개 이상인 강좌만 조회
+    @Query("SELECT DISTINCT c FROM Course c JOIN Lecture l ON c.courseId = l.course.courseId WHERE c.proposalStatus = 'APPROVED' AND l.approvalStatus = 'APPROVED'")
     List<Course> findApprovedCoursesWithLectures();
 
-    // 레벨별 강의가 있는 승인된 강좌
-    @Query("SELECT DISTINCT c FROM Course c JOIN Lecture l ON c.courseId = l.course.courseId WHERE c.proposalStatus = 'APPROVED' AND c.level = :level")
+    // 강좌 승인(APPROVED) + 강의 승인(APPROVED) + 강의 1개 이상인 강좌만 레벨별 조회
+    @Query("SELECT DISTINCT c FROM Course c JOIN Lecture l ON c.courseId = l.course.courseId WHERE c.proposalStatus = 'APPROVED' AND l.approvalStatus = 'APPROVED' AND c.level = :level")
     List<Course> findApprovedCoursesWithLecturesByLevel(@Param("level") int level);
 
     // 로그인 ID 기준 강사 강좌
