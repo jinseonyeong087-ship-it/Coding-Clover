@@ -312,7 +312,7 @@ function CourseCreateRequest() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label className="text-gray-700 text-sm font-bold">수강료 (원)</Label>
+                        <Label className="text-gray-700 text-sm font-bold">수강료 (P)</Label>
                         <Input
                           name="price"
                           type="number"

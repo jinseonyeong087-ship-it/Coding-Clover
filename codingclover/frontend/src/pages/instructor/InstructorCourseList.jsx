@@ -137,7 +137,7 @@ function InstructorCourseList() {
                                             </span>
                                         </TableCell>
                                         <TableCell className="font-mono text-muted-foreground">
-                                            {course.price?.toLocaleString()}원
+                                            {course.price?.toLocaleString()}P
                                         </TableCell>
                                         <TableCell>
                                             <span className={`px-2 py-1 rounded-full text-xs font-bold border ${course.proposalStatus === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :

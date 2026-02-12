@@ -365,7 +365,7 @@ function StudentCourseDetail() {
                             <div className="p-6 space-y-6">
                                 <div>
                                     <div className="text-sm text-muted-foreground font-medium mb-1">수강료</div>
-                                    <div className="text-3xl font-black">{course.price?.toLocaleString()}원</div>
+                                    <div className="text-3xl font-black">{course.price?.toLocaleString()}P</div>
                                 </div>
 
                                 {enrollmentStatus === 'COMPLETED' ? (

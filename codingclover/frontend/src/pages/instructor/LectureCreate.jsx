@@ -170,7 +170,7 @@ function LectureCreate() {
                             </div>
                             <div>
                                 <span className="font-semibold">가격: </span>
-                                {formData.price?.toLocaleString()}원
+                                {formData.price?.toLocaleString()}P
                                 <Input name="price" type="text" onChange={handleChange} value={formData.price} className="col-span-3" method="post" />
                             </div>
                             <div>
@@ -185,7 +185,7 @@ function LectureCreate() {
                             </div>
                             <div>
                                 <span className="font-semibold">가격: </span>
-                                {formData.price?.toLocaleString()}원
+                                {formData.price?.toLocaleString()}P
                             </div>
                             <div>
                                 <span className="font-semibold">설명: </span>

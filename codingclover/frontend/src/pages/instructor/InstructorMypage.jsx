@@ -532,7 +532,7 @@ function InstructorMypage() {
                                 <div className="flex items-center gap-3 text-xs font-medium">
                                   <span className="bg-purple-50 text-purple-600 px-2 py-1 rounded-md">Lv. {course.level}</span>
                                   <span className="bg-amber-50 text-amber-600 px-2 py-1 rounded-md">
-                                    {course.price.toLocaleString()}원
+                                    {course.price.toLocaleString()}P
                                   </span>
                                   <span className="text-gray-400">
                                     {new Date(course.createdAt).toLocaleDateString()}

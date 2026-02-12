@@ -136,7 +136,7 @@ function Enroll() {
 
               <div className="bg-primary/5 p-6 rounded-xl flex items-center justify-between mt-6">
                 <span className="font-bold text-lg">결제 금액</span>
-                <span className="text-3xl font-extrabold text-primary">{course.price?.toLocaleString()}원</span>
+                <span className="text-3xl font-extrabold text-primary">{course.price?.toLocaleString()}P</span>
               </div>
             </CardContent>
 

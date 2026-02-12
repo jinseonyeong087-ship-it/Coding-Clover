@@ -284,7 +284,7 @@ function InstructorCourseEdit() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label className="text-slate-600 text-sm font-medium">수강료 (원)</Label>
+                        <Label className="text-slate-600 text-sm font-medium">수강료 (P)</Label>
                         <Input
                           name="price"
                           type="number"

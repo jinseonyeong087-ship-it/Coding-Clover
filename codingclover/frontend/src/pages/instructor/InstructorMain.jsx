@@ -177,7 +177,7 @@ function InstructorMain() {
                                                     </span>
                                                 </TableCell>
                                                 <TableCell className="text-center font-mono text-muted-foreground">
-                                                    {course.price?.toLocaleString()}원
+                                                    {course.price?.toLocaleString()}P
                                                 </TableCell>
                                                 <TableCell className="text-center">
                                                     {course.proposalStatus === 'APPROVED' ? (
