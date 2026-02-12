@@ -20,8 +20,6 @@ import com.mysite.clover.Users.Users;
 import com.mysite.clover.CommunityPost.dto.PostCreateRequest;
 import com.mysite.clover.CommunityPost.dto.PostResponse;
 import com.mysite.clover.CommunityPost.dto.CommentRequest;
-import com.mysite.clover.CommunityPost.PostStatus;
-
 import jakarta.validation.Valid;
 
 // 커뮤니티 게시판 기능을 제공하는 컨트롤러
@@ -33,31 +31,37 @@ public class CommunityPostController {
     private final UsersRepository usersRepository;
 
     // 1. 게시글 목록 조회
-    // 누구나 조회 가능 (로그인 여부 무관)
     // 전체 게시글 조회
-    // GET /api/community/posts?page=0&size=10&keyword=...&myPostsOnly=true
     @GetMapping("/api/community/posts")
     public ResponseEntity<Page<PostResponse>> list(
+            // 페이징 파라미터
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
+            // 검색어
             @RequestParam(value = "keyword", required = false) String keyword,
+            // 내 게시글만 조회 여부
             @RequestParam(value = "myPostsOnly", defaultValue = "false") boolean myPostsOnly,
             Authentication authentication) {
+        // 로그인 정보 확인
         String currentUsername = (authentication != null) ? authentication.getName() : null;
+        // 로그인 정보를 이용한 권한 체크
         Users currentUser = null;
+        // 관리자 여부
         boolean isAdmin = false;
+        // 로그인 정보가 없으면 null, 관리자 아니면 false
         if (currentUsername != null) {
             currentUser = usersRepository.findByLoginId(currentUsername).orElse(null);
             isAdmin = currentUser != null && "ADMIN".equals(currentUser.getRole().name());
         }
 
+        // 게시글 목록 조회
         Page<PostResponse> posts = communityPostService.getVisiblePosts(page, size, keyword, myPostsOnly,
-            currentUsername, isAdmin);
+                currentUsername, isAdmin);
+        // 응답
         return ResponseEntity.ok(posts);
     }
 
-    // 2. 게시글 상세 조회
-    // 로그인 체크 : 수동
+    // 게시글 상세 조회
     @GetMapping("/api/community/posts/{id}")
     public ResponseEntity<PostResponse> detail(@PathVariable Long id, Authentication authentication) {
         Users currentUser = null;
@@ -69,8 +73,7 @@ public class CommunityPostController {
         return ResponseEntity.ok(post);
     }
 
-    // 3. 게시글 등록
-    // 로그인한 사용자만 가능
+    // 게시글 등록
     @PostMapping("/api/community/posts/new")
     public ResponseEntity<?> create(@Valid @RequestBody PostCreateRequest request,
             BindingResult bindingResult, Principal principal) {
@@ -79,9 +82,7 @@ public class CommunityPostController {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors().get(0).getDefaultMessage());
         }
 
-        // 로그인 체크
         if (principal == null) {
-            System.out.println("DEBUG: Create Post Failed - Principal is NULL");
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
 
@@ -95,7 +96,7 @@ public class CommunityPostController {
         return ResponseEntity.ok("등록 성공");
     }
 
-    // 4. 게시글 수정
+    // 게시글 수정
     @PutMapping("/api/community/posts/{id}/edit")
     public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody PostCreateRequest request,
             BindingResult bindingResult, Principal principal) {
@@ -112,7 +113,7 @@ public class CommunityPostController {
         return ResponseEntity.ok("수정 성공");
     }
 
-    // 5. 게시글 삭제
+    // 게시글 삭제
     @DeleteMapping("/api/community/posts/{id}/delete")
     public ResponseEntity<String> delete(@PathVariable Long id, Principal principal) {
         if (principal == null)
@@ -127,7 +128,7 @@ public class CommunityPostController {
     // 💬 댓글 Endpoints
     // ==========================================
 
-    // 6. 댓글 등록
+    // 댓글 등록
     @PostMapping("/api/community/posts/{postId}/comments")
     public ResponseEntity<?> createComment(@PathVariable Long postId,
             @Valid @RequestBody CommentRequest request,
@@ -141,7 +142,6 @@ public class CommunityPostController {
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         Users user = usersRepository.findByLoginId(principal.getName()).orElseThrow();
 
-        // 강사 제한 필요시 추가
         if ("INSTRUCTOR".equals(user.getRole().name())) {
             return ResponseEntity.status(403).body("강사는 댓글을 쓸 수 없습니다.");
         }
@@ -150,7 +150,7 @@ public class CommunityPostController {
         return ResponseEntity.ok("댓글 등록 성공");
     }
 
-    // 7. 댓글 수정
+    // 댓글 수정
     @PutMapping("/api/community/comments/{commentId}")
     public ResponseEntity<?> updateComment(@PathVariable Long commentId,
             @Valid @RequestBody CommentRequest request,
@@ -166,7 +166,7 @@ public class CommunityPostController {
         return ResponseEntity.ok("댓글 수정 성공");
     }
 
-    // 8. 댓글 삭제
+    // 댓글 삭제
     @DeleteMapping("/api/community/comments/{commentId}")
     public ResponseEntity<String> deleteComment(@PathVariable Long commentId, Principal principal) {
         if (principal == null)

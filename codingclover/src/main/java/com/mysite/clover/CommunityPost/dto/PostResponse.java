@@ -9,8 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// 게시글 상세 정보를 클라이언트로 응답할 때 사용하는 DTO
-// 게시글 정보뿐만 아니라 연관된 댓글 목록도 포함하여 전달
+// 게시글 정보 응답 DTO
 @Getter
 @Setter
 public class PostResponse {
@@ -36,7 +35,6 @@ public class PostResponse {
   // 작성일시
   private LocalDateTime createdAt;
 
-  // 조회수
   // 댓글 수 (목록 조회 시 사용)
   private long commentCount;
 
@@ -65,9 +63,7 @@ public class PostResponse {
     response.setStatus(post.getStatus());
     response.setCreatedAt(post.getCreatedAt());
 
-    // 댓글 수 설정 (지연 로딩 주의: BatchSize 혹은 Fetch Join 필요하지만, 일단 리스트 사이즈로)
-    // 리스트 조회 시에는 size() 호출이 쿼리를 유발할 수 있으므로 주의해야 함.
-    // 하지만 현재 구조상 comments 필드 접근 시 proxy 초기화됨.
+    // 댓글 수 설정
     if (post.getComments() != null) {
       response.setCommentCount(post.getComments().size());
     }

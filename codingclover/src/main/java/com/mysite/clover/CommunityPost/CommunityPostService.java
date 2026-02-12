@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 import com.mysite.clover.Users.Users;
 import com.mysite.clover.CommunityPost.dto.PostResponse;
 
-// 커뮤니티 게시글 관련 비즈니스 로직 처리 서비스
+// 게시글 비즈니스 로직
 @Service
 @RequiredArgsConstructor
 public class CommunityPostService {
@@ -17,7 +17,7 @@ public class CommunityPostService {
     private final CommunityCommentRepository communityCommentRepository;
     private final com.mysite.clover.Notification.NotificationService notificationService;
 
-    // 수강생 전용: 신규 게시글 등록
+    // 게시글 등록
     @Transactional
     public void create(String title, String content, Users user) {
         // 1. 게시글 엔티티 생성
@@ -34,27 +34,15 @@ public class CommunityPostService {
         communityPostRepository.save(post);
     }
 
-    // 게시글 목록 조회 (검색 + 페이징 + 필터링)
+    // 게시글 목록 조회 (검색/필터)
     @Transactional(readOnly = true)
-        public Page<PostResponse> getVisiblePosts(int page, int size, String keyword, boolean myPostsOnly,
+    public Page<PostResponse> getVisiblePosts(int page, int size, String keyword, boolean myPostsOnly,
             String currentUsername, boolean isAdmin) {
         Pageable pageable = PageRequest.of(page, size);
         Page<CommunityPost> postPage;
 
         if (myPostsOnly && currentUsername != null) {
-            // 내 글 보기: 사용자 ID로 조회 (로그인 ID -> User Entity -> ID)
-            // 여기서는 편의상 currentUsername(loginId)으로 User를 찾거나, 리포지토리에 loginId 기반 검색 추가 필요.
-            // 현재 리포지토리는 userId(PK)를 받으므로, userService 등을 통해 PK를 알아내거나,
-            // 리포지토리에 findByUserLoginId 메서드를 추가하는 것이 좋음.
-            // 일단 기존 findByUserUserLoginId 가 없으므로, User를 먼저 조회한다고 가정하거나 리포지토리 수정.
-            // 성능을 위해 리포지토리에 JOIN FETCH p.user WHERE p.user.loginId = :loginId 추가 권장.
-            // 임시로 User 조회 로직 생략하고 리포지토리 수정 없이 가려면 userService 필요.
-            // 하지만 Service 간 순환 참조 방지를 위해 Repository에 메서드 추가가 깔끔함.
-            // 여기서는 일단 단순화를 위해 userId 검색 로직 유지 (호출부에서 처리 필요할 수도 있음)
-            // -> Controller에서 Principal로 User 조회 후 ID 넘기는 게 정석.
-            // 하지만 메서드 시그니처가 String currentUsername이므로, 레포지토리에 메서드 추가.
-            // 기존 findByUser(SiteUser user, ...) 메서드가 있었으니 그걸 활용?
-            // 아까 리포지토리 수정에서 findByUser(Long userId, ...)로 바꿨음.
+            
             throw new UnsupportedOperationException("내 글 보기 기능은 컨트롤러에서 User 정보를 받아 처리해야 합니다.");
         } else if (keyword != null && !keyword.isBlank()) {
             if (isAdmin) {
@@ -90,7 +78,7 @@ public class CommunityPostService {
         return PostResponse.fromEntity(post, true, isAdmin);
     }
 
-    // 내부 조회용 (엔티티 반환 - 컨트롤러가 아닌 서비스 내부 로직용)
+    // 게시글 엔티티 단순 조회
     @Transactional(readOnly = true)
     public CommunityPost getPostEntity(Long id) {
         // ID로 게시글 엔티티 조회
@@ -98,7 +86,7 @@ public class CommunityPostService {
                 .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
     }
 
-    // 수강생 전용: 본인이 작성한 게시글 수정
+    // 게시글 수정
     @Transactional
     public void updatePost(Long id, String title, String content, String loginId) {
         // 1. 게시글 엔티티 조회
@@ -109,15 +97,11 @@ public class CommunityPostService {
             throw new RuntimeException("본인의 글만 수정할 수 있습니다.");
         }
 
-        // 3. 제목 및 내용 수정 (Setter -> Dirty Checking으로 자동 업데이트)
         post.setTitle(title);
         post.setContent(content);
-
-        // 4. 저장 (명시적 호출)
-        communityPostRepository.save(post);
     }
 
-    // 수강생(본인) 및 관리자(강제): 게시글 삭제 (실제 삭제가 아닌 숨김 처리)
+    // 게시글 숨김 (삭제 대체)
     @Transactional
     public void deletePost(Long id, Users user) {
         // 1. 삭제할 게시글 조회
@@ -132,8 +116,6 @@ public class CommunityPostService {
         if (isOwner || isAdmin) {
             // 5. 실제 삭제 대신 상태를 HIDDEN(숨김)으로 변경 (Soft Delete)
             post.setStatus(PostStatus.HIDDEN);
-            // 6. 변경사항 저장
-            communityPostRepository.save(post);
         } else {
             // 권한이 없으면 예외 발생
             throw new RuntimeException("삭제 권한이 없습니다.");
@@ -205,7 +187,7 @@ public class CommunityPostService {
         }
     }
 
-    // 관리자 전용: 게시글 숨김/복구
+    // 관리자: 게시글 상태 변경
     @Transactional
     public void setPostStatus(Long postId, Users user, PostStatus status) {
         if (!user.getRole().name().equals("ADMIN")) {
@@ -214,10 +196,9 @@ public class CommunityPostService {
 
         CommunityPost post = getPostEntity(postId);
         post.setStatus(status);
-        communityPostRepository.save(post);
     }
 
-    // 관리자 전용: 댓글 숨김/복구
+    // 관리자: 댓글 상태 변경
     @Transactional
     public void setCommentStatus(Long commentId, Users user, PostStatus status) {
         if (!user.getRole().name().equals("ADMIN")) {
@@ -227,6 +208,5 @@ public class CommunityPostService {
         CommunityComment comment = communityCommentRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("댓글이 존재하지 않습니다."));
         comment.setStatus(status);
-        communityCommentRepository.save(comment);
     }
 }

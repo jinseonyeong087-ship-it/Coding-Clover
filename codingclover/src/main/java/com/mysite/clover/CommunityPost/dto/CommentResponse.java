@@ -8,7 +8,6 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 // 댓글 정보를 클라이언트로 응답할 때 사용하는 DTO
-// 엔티티를 직접 노출하지 않고 필요한 데이터만 선별하여 전달
 @Getter
 @Setter
 public class CommentResponse {
