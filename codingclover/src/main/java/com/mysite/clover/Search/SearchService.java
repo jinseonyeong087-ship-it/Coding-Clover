@@ -53,6 +53,9 @@ public class SearchService {
                         .status(course.getProposalStatus().name())
                         .proposalStatus(course.getProposalStatus().name())
                         .category("COURSE")
+                        .instructorName(course.getInstructorName())
+                        .thumbnailUrl(course.getThumbnailUrl())
+                        .level(course.getLevel())
                         .build());
             // 강의 검색
             case "LECTURE":

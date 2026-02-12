@@ -24,4 +24,7 @@ public class SearchResultDto {
 
     // 추가 필드 (강좌 검색용)
     private String proposalStatus;
+    private String instructorName;
+    private String thumbnailUrl;
+    private Integer level;
 }

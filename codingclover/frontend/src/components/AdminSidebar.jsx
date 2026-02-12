@@ -33,27 +33,27 @@ const AdminSidebar = () => {
     {
       category: "메인",
       items: [
-        { icon: LayoutDashboard, label: "대시보드", path: "/admin" },
+        { icon: LayoutDashboard, label: "대시보드", path: "/admin/dashboard" },
       ]
     },
     {
       category: "회원 관리",
       items: [
-        { icon: Users, label: "학생 관리", path: "/admin/student" },
-        { icon: GraduationCap, label: "강사 관리", path: "/admin/instructor" },
+        { icon: Users, label: "학생 관리", path: "/admin/students" },
+        { icon: GraduationCap, label: "강사 관리", path: "/admin/users/instructors" },
       ]
     },
     {
       category: "콘텐츠 관리",
       items: [
         { icon: BookOpen, label: "강좌 관리", path: "/admin/course" },
-        { icon: Video, label: "강의 관리", path: "/admin/lecture" },
+        { icon: Video, label: "강의 관리", path: "/admin/lectures" },
       ]
     },
     {
       category: "운영 관리",
       items: [
-        { icon: CreditCard, label: "결제/정산 관리", path: "/admin/payment" },
+        { icon: CreditCard, label: "결제/정산 관리", path: "/admin/payments" },
       ]
     }
   ];

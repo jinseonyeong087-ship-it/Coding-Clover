@@ -65,7 +65,7 @@ function Search() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {items.map((item) => (
-          <Link to={`/course/${item.courseId}`} key={item.courseId} className="group block h-full">
+          <Link to={`/course/${item.id}`} key={item.id} className="group block h-full">
             <div className="h-full bg-white border border-gray-200 hover:border-primary transition-colors flex flex-col rounded-none">
               <div className="aspect-[16/9] bg-gray-100 relative overflow-hidden group-hover:bg-gray-50 transition-colors">
                 {item.thumbnailUrl ? (
