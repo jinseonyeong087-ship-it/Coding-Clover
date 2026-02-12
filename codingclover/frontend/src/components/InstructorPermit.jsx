@@ -13,8 +13,8 @@ const getLoginId = () => {
 };
 
 function InstructorPermit() {
-    const [instructorStatus, setInstructorStatus] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [, setInstructorStatus] = useState(null);
+    const [, setLoading] = useState(true);
 
     useEffect(() => {
         const loginId = getLoginId();

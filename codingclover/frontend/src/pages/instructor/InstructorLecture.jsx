@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Nav from "@/components/Nav";
 import Tail from "@/components/Tail";
-import InstructorSidebar from "@/components/InstructorSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,10 +16,7 @@ import {
     Clock,
     PlayCircle,
     CheckCircle2,
-    XCircle,
-    AlertCircle,
     LayoutGrid,
-    Search,
     GripVertical,
     Save
 } from "lucide-react";
@@ -96,7 +92,7 @@ function InstructorLecture() {
         e.target.classList.add("opacity-50");
     };
 
-    const handleDragEnter = (e, position) => {
+    const handleDragEnter = (_e, position) => {
         dragOverItem.current = position;
     };
 
@@ -391,7 +387,6 @@ function InstructorLecture() {
 
                         <LectureUpload
                             courseId={selectedCourse?.courseId}
-                            courseInfo={selectedCourse}
                             nextOrderNo={nextOrderNo}
                             onUploaded={handleUploaded}
                         />

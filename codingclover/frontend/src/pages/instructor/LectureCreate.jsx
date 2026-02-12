@@ -211,7 +211,7 @@ function LectureCreate() {
                         <Button onClick={() => setIsAdding(!isAdding)}>
                             {isAdding ? '취소' : '강의 추가'}
                         </Button>
-                        {isAdding && <LectureUpload courseInfo={formData} />}
+                        {isAdding && <LectureUpload />}
                     </>
                 ) : formData.proposalStatus === 'PENDING' ? (
                     <p className="text-yellow-600">

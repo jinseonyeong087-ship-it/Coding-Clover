@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
     Video,
@@ -15,10 +15,10 @@ import {
     AlertCircle,
     Loader2,
     Play,
-    CheckCircle2
+    
 } from "lucide-react";
 
-function LectureUpload({ courseInfo, courseId: courseIdProp, nextOrderNo, onUploaded }) {
+function LectureUpload({ courseId: courseIdProp, nextOrderNo, onUploaded }) {
     const params = useParams();
     const courseId = courseIdProp || params.courseId;
 

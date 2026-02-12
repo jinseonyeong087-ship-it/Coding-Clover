@@ -17,7 +17,7 @@ import axios from 'axios';
 import NotificationDropdown from './NotificationDropdown';
 
 function InstructorNav() {
-    const [loginId, setLoginId] = useState(false);
+    const [, setLoginId] = useState(false);
     const [users, setUsers] = useState({ name: '' });
     const [keyword, setKeyword] = useState("");
     const navigate = useNavigate();
