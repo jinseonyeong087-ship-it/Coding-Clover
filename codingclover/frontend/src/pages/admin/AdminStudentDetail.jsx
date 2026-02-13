@@ -412,13 +412,6 @@ function AdminStudentDetail() {
             {/* 헤더 */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
               <div>
-                <button
-                  onClick={() => navigate("/admin/users/students")}
-                  className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-2"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  학생 목록으로 돌아가기
-                </button>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
                   {summaryMetrics.name || "학생 상세 정보"}
                 </h1>

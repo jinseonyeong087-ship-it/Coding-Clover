@@ -184,9 +184,11 @@ function AdminInstructorList() {
                                     {currentItems && currentItems.length > 0 ? (
                                         currentItems.map((users, index) => {
                                             const uniqueKey = users.userId || `user-idx-${index}`;
+                                            // 역순 번호 계산 (1번부터 시작)
+                                            const displayNumber = filteredInstructors.length - (currentPage - 1) * itemsPerPage - index;
                                             return (
                                                 <TableRow key={uniqueKey} className="hover:bg-gray-50/50 transition-colors">
-                                                    <TableCell className="text-center font-mono text-xs text-gray-400">{users.userId}</TableCell>
+                                                    <TableCell className="text-center font-mono text-xs text-gray-600 font-medium">{displayNumber}</TableCell>
                                                     <TableCell className="text-center font-bold text-gray-900">
                                                         <Link to={`/admin/users/instructors/${users.userId}`} className="hover:text-primary transition-colors">
                                                             {users.name}
