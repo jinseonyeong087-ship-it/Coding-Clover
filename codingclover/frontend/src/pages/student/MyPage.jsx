@@ -497,6 +497,19 @@ function MyPage() {
     setIsEditing(false);
   };
 
+  // 진도율 기반 완료 상태 계산 헬퍼 함수
+  const getCoursesWithCompletionStatus = () => {
+    return enrollments.map(enrollment => {
+      const progress = courseProgress[enrollment.courseId] || { completed: 0, total: 0, percent: 0 };
+      const isCompleted = progress.percent === 100;
+      return { ...enrollment, isCompleted };
+    });
+  };
+
+  const coursesWithStatus = getCoursesWithCompletionStatus();
+  const enrolledCourses = coursesWithStatus.filter(course => !course.isCompleted && course.status === 'ENROLLED');
+  const completedCourses = coursesWithStatus.filter(course => course.isCompleted || course.status === 'COMPLETED');
+
   //화면
   return (
     <>
@@ -583,24 +596,6 @@ function MyPage() {
                               <span>{user.interestCategory || '설정되지 않음'}</span>
                             </div>
                           </div>
-
-                          {/* Right Side Stats in Profile */}
-                          <div className="mt-6 md:mt-0 flex gap-8 md:border-l md:border-gray-100 md:pl-8">
-                            <div className="text-center cursor-pointer group" onClick={() => navigate('/student/points')}>
-                              <div className="w-12 h-12 mx-auto bg-amber-50 rounded-full flex items-center justify-center mb-2 group-hover:bg-amber-100 transition-colors">
-                                <Coins className="w-6 h-6 text-amber-500" />
-                              </div>
-                              <p className="text-xs text-gray-500 mb-0.5">보유 포인트</p>
-                              <p className="text-lg font-bold text-gray-900">{points.toLocaleString()} P</p>
-                            </div>
-                            <div className="text-center">
-                              <div className="w-12 h-12 mx-auto bg-blue-50 rounded-full flex items-center justify-center mb-2">
-                                <BookOpen className="w-6 h-6 text-blue-500" />
-                              </div>
-                              <p className="text-xs text-gray-500 mb-0.5">수강중</p>
-                              <p className="text-lg font-bold text-gray-900">{enrollments.filter(e => e.status === 'ENROLLED').length} 개</p>
-                            </div>
-                          </div>
                         </div>
                       )}
                     </div>
@@ -611,15 +606,15 @@ function MyPage() {
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 grid grid-cols-3 divide-x divide-gray-100">
                   <div className="text-center">
                     <p className="text-sm text-gray-500 mb-1">수강중</p>
-                    <p className="text-2xl font-bold text-primary">{enrollments.filter(e => e.status === 'ENROLLED').length}</p>
+                    <p className="text-2xl font-bold text-primary">{enrolledCourses.length}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-sm text-gray-500 mb-1">수강완료</p>
-                    <p className="text-2xl font-bold text-gray-900">{enrollments.filter(e => e.status === 'COMPLETED').length}</p>
+                    <p className="text-2xl font-bold text-gray-900">{completedCourses.length}</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-sm text-gray-500 mb-1">취소/환불</p>
-                    <p className="text-2xl font-bold text-gray-400">{enrollments.filter(e => ['CANCELED', 'CANCELLED', 'CANCEL_REQUESTED'].includes(e.status)).length}</p>
+                  <div className="text-center cursor-pointer rounded-lg p-2 transition-colors" onClick={() => navigate('/student/points')}>
+                    <p className="text-sm text-gray-500 mb-1">보유포인트</p>
+                    <p className="text-2xl font-bold text-gray-900">{points.toLocaleString()}P</p>
                   </div>
                 </div>
 
@@ -634,6 +629,14 @@ function MyPage() {
                     {activeTab === 'courses' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary" />}
                   </button>
                   <button
+                    onClick={() => setActiveTab('completed')}
+                    className={`pb-4 text-sm font-bold transition-all relative ${activeTab === 'completed' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
+                      }`}
+                  >
+                    수강완료
+                    {activeTab === 'completed' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary" />}
+                  </button>
+                  <button
                     onClick={() => setActiveTab('codingtests')}
                     className={`pb-4 text-sm font-bold transition-all relative ${activeTab === 'codingtests' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
                       }`}
@@ -646,7 +649,7 @@ function MyPage() {
                 {/* 4. Tab Content */}
                 {activeTab === 'courses' ? (
                   <div>
-                    {enrollments.length === 0 ? (
+                    {enrolledCourses.length === 0 ? (
                       <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-gray-500">
                         <BookOpen className="w-12 h-12 mx-auto text-gray-300 mb-4" />
                         <p className="mb-4">수강 중인 강좌가 없습니다.</p>
@@ -654,7 +657,7 @@ function MyPage() {
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {enrollments.map((enrollment) => {
+                        {enrolledCourses.map((enrollment) => {
                           const isCanceled = enrollment.status === 'CANCELED' || enrollment.status === 'CANCELLED';
                           const requestKey = enrollment.enrollmentId ?? enrollment.courseId;
                           const isRequested = Boolean(cancelRequests[requestKey]);
@@ -721,6 +724,69 @@ function MyPage() {
                                     </Button>
                                   )}
                                 </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ) : activeTab === 'completed' ? (
+                  <div>
+                    {completedCourses.length === 0 ? (
+                      <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-gray-500">
+                        <BookOpen className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+                        <p className="mb-4">수강완료한 강좌가 없습니다.</p>
+                        <Button onClick={() => navigate('/lecture')}>강좌 보러가기</Button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {completedCourses.map((enrollment) => {
+                          const progress = courseProgress[enrollment.courseId] || { completed: 0, total: 0, percent: 0 };
+                          const thumbnail = enrollment.thumbnail || enrollment.courseThumbnail || enrollment.thumbnailUrl;
+
+                          return (
+                            <div key={enrollment.enrollmentId ?? enrollment.courseId} className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-primary/50 hover:shadow-md transition-all">
+                              {/* Thumbnail */}
+                              <div className="aspect-video bg-gray-100 relative">
+                                {thumbnail ? (
+                                  <img src={thumbnail} alt={enrollment.courseTitle} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                                ) : null}
+                                <div className={`w-full h-full items-center justify-center text-gray-400 bg-gray-50 ${thumbnail ? 'hidden' : 'flex'}`}>
+                                  <MonitorPlay className="w-10 h-10 opacity-20" />
+                                </div>
+
+                                {/* Completed Badge */}
+                                <div className="absolute top-3 left-3">
+                                  <span className="px-2 py-1 rounded text-[10px] font-bold text-white bg-green-600">
+                                    수강완료
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Content */}
+                              <div className="p-4">
+                                <h3 className="font-bold text-gray-900 text-sm mb-2 line-clamp-2">{enrollment.courseTitle}</h3>
+                                <p className="text-xs text-gray-500 mb-3 line-clamp-2">{enrollment.description || '강좌 설명이 없습니다.'}</p>
+
+                                {/* Progress - 100% */}
+                                <div className="mb-3">
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-xs text-gray-500">학습 진도</span>
+                                    <span className="text-xs font-bold text-green-600">100%</span>
+                                  </div>
+                                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                    <div className="bg-green-600 h-1.5 rounded-full w-full"></div>
+                                  </div>
+                                </div>
+
+                                {/* Action Button */}
+                                <button
+                                  onClick={() => navigate(`/student/course/${enrollment.courseId}/lectures`)}
+                                  className="w-full bg-gray-50 text-gray-700 py-2 px-4 rounded text-xs font-medium hover:bg-gray-100 transition-colors"
+                                >
+                                  복습하기
+                                </button>
                               </div>
                             </div>
                           );

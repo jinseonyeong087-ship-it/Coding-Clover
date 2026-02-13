@@ -31,7 +31,7 @@ function AdminStudentDetail() {
   const [loading, setLoading] = useState(true);
 
   const normalizeStatus = (status) => {
-    if (status === "CANCELLED") return "CANCELED";
+    if (status === "CANCELLED" || status === "CANCEL_REQUESTED") return "CANCELED";
     return status;
   };
 
@@ -306,15 +306,31 @@ function AdminStudentDetail() {
     const base = summary || {};
     const counts = { ENROLLED: 0, COMPLETED: 0, CANCELED: 0 };
 
+    // 진도율 맵 생성
+    const progressMap = {};
+    lectureProgress.forEach(progress => {
+      progressMap[progress.courseId] = progress.progressRate || 0;
+    });
+
     enrollments.forEach((enrollment) => {
       const normalized = normalizeStatus(enrollment.status);
-      if (counts[normalized] !== undefined) {
+      
+      // 진도율 100%인 강좌는 완료로 분류
+      if (normalized === 'ENROLLED') {
+        const progressRate = progressMap[enrollment.courseId] || 0;
+        if (progressRate === 100) {
+          counts.COMPLETED += 1;
+        } else {
+          counts.ENROLLED += 1;
+        }
+      } else if (counts[normalized] !== undefined) {
         counts[normalized] += 1;
       }
     });
 
-    const total = base.totalEnrollments ?? enrollments.length;
-    const canceled = base.canceledCount ?? counts.CANCELED;
+    // 총 수강신청은 현재 상태들의 합으로 계산 (백엔드 totalEnrollments는 전체 이력이므로 사용하지 않음)
+    const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
+    const canceled = counts.CANCELED;
     const cancelRate = total > 0 ? ((canceled / total) * 100).toFixed(1) : "0.0";
 
     return {
@@ -325,7 +341,7 @@ function AdminStudentDetail() {
       cancelRate,
       lastActiveAt: base.lastActiveAt
     };
-  }, [summary, enrollments]);
+  }, [summary, enrollments, lectureProgress]);
 
   const groupedProgress = useMemo(() => {
     // 이미 강좌별로 진도율이 계산되어 있는 상태이므로 그대로 사용
@@ -365,6 +381,8 @@ function AdminStudentDetail() {
       }
 
       setCancelRequests((prev) => prev.filter((item) => (item.requestId || item.id) !== requestId));
+      // 취소 승인 후 데이터 다시 로드
+      await fetchStudentData();
     } catch (error) {
       console.error("취소 승인 실패:", error);
       alert(error.message || "취소 승인 중 오류가 발생했습니다.");
@@ -392,6 +410,8 @@ function AdminStudentDetail() {
       }
 
       setCancelRequests((prev) => prev.filter((item) => (item.requestId || item.id) !== requestId));
+      // 취소 거절 후 데이터 다시 로드
+      await fetchStudentData();
     } catch (error) {
       console.error("취소 반려 실패:", error);
       alert(error.message || "취소 반려 중 오류가 발생했습니다.");
@@ -429,13 +449,11 @@ function AdminStudentDetail() {
             </div>
 
             {/* 통계 카드 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
               {[
                 { label: "총 수강 신청", value: summaryMetrics.totalEnrollments, color: "text-gray-900" },
                 { label: "수강 중", value: summaryMetrics.counts.ENROLLED, color: "text-emerald-600" },
-                { label: "수료 완료", value: summaryMetrics.counts.COMPLETED, color: "text-blue-600" },
-                { label: "수강 취소", value: summaryMetrics.counts.CANCELED, color: "text-rose-600" },
-                { label: "취소율", value: `${summaryMetrics.cancelRate}%`, sub: `최근 활동: ${formatDate(summaryMetrics.lastActiveAt)}`, color: "text-gray-900" }
+                { label: "수강 완료", value: summaryMetrics.counts.COMPLETED, color: "text-blue-600" }
               ].map((stat, i) => (
                 <Card key={i} className="p-4 bg-white border-gray-200 shadow-sm">
                   <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{stat.label}</div>
