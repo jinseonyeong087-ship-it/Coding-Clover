@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/Label';
 import { Badge } from "@/components/ui/badge";
 import {
   Search, MessageCircle, CheckCircle2, HelpCircle,
-  Plus, User, BookOpen, AlertCircle, ChevronLeft, ChevronRight
+  Plus, User, ChevronLeft, ChevronRight
 } from "lucide-react";
 import {
   Dialog,
@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
 
 const StudentQnaList = () => {
   const navigate = useNavigate();
@@ -198,6 +197,8 @@ const StudentQnaList = () => {
               >
                 전체 질문
               </button>
+
+              {(!user || user.role !== 'ADMIN') && (
               <button
                 onClick={() => {
                   if (!user) return alert('로그인이 필요합니다.');
@@ -209,7 +210,8 @@ const StudentQnaList = () => {
                   }`}
               >
                 내 질문
-              </button>
+              </button>)}
+
             </div>
 
             {/* List */}

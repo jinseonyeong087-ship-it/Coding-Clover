@@ -60,9 +60,6 @@ function AdminNav() {
                         <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/admin/payments') }}>결제관리</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>
-                        <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/admin/enrollment') }}>수강관리</MenubarTrigger>
-                    </MenubarMenu>
-                    <MenubarMenu>
                         <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/admin/users/students') }}>학생 관리</MenubarTrigger>
                     </MenubarMenu>
                     <MenubarMenu>

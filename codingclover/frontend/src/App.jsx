@@ -16,7 +16,6 @@ import ProtectedRoute from '@/components/ProtectdRoute'
 import Norole from '@/components/Norole'
 import CommunityPostList from './pages/student/CommunityPostList'
 import CommunityPostDetail from './pages/student/CommunityPostDetail'
-import ProposalDetail from '@/pages/public/ProposalDetail'
 import InstructorCourseDetail from '@/pages/instructor/InstructorCourseDetail'
 import InstructorCourseEdit from '@/pages/instructor/InstructorCourseEdit'
 import AdminApproch from '@/pages/admin/AdminApproch'
@@ -181,7 +180,6 @@ function App() {
           <Route path="lectures/:lectureId" element={<AdminLectureDetail />} />
           <Route path="users/instructors" element={<AdminInstructorList />} />
           <Route path="payments" element={<PaymentManagement />} />
-          <Route path="enrollment" element={<AdminEnrollmentManagement />} />
           <Route path="exams" element={<AdminExamList />} />
           <Route path="lectures" element={<AdminLectureList />} />
           <Route path="users/students" element={<AdminStudentList />} />
