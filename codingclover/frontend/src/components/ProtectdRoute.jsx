@@ -15,25 +15,9 @@ function ProtectedRoute({ allowedRoles }) {
         return <Navigate to="/norole" />;  // 접근권한 없으니 로그인부터 해라
     }
 
-    if (users?.role === 'INSTRUCTOR') {
-        const instructorStatus = localStorage.getItem('instructorStatus');
-        if (instructorStatus !== 'APPROVED') {
-            return <InstructorPermit />;
-        }
+    if (users?.role === 'INSTRUCTOR' && users?.status !== 'ACTIVE') {
+        return <InstructorPermit />;
     }
-
-    // if (role === 'ADMIN') {
-    //     return <Outlet />;
-    // }
-
-    if (role === 'INSTRUCTOR') {
-        return <Outlet />;
-    }
-
-    if (role === 'STUDENT') {
-        return <Outlet />;
-    }
-
 
     // children= /dashbord, 부모는 App.jsx
     // App.jsx에서 ProtectedRoute로 감싼 컴포넌트들은 위에 로직에서 통과하면 Outlet=접근권한 있는 페이지로 넘겨줌

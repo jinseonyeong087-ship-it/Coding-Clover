@@ -22,7 +22,6 @@ import {
     ChevronRight,
     Search
 } from 'lucide-react';
-import axios from 'axios';
 import {
     Pagination,
     PaginationContent,
