@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from "react";
+import Nav from "./Nav";
+import Tail from "./Tail";
+import { useNavigate } from "react-router-dom";
+import { Button } from "./ui/button";
 
 // 유틸리티 함수
 const getLoginId = () => {
@@ -15,6 +19,7 @@ const getLoginId = () => {
 function InstructorPermit() {
     const [, setInstructorStatus] = useState(null);
     const [, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const loginId = getLoginId();
@@ -40,7 +45,21 @@ function InstructorPermit() {
 
 
 
-    return (<p className="text-center py-16">마이페이지에서 강사이력을 추가하신 후,<br></br> 관리자 승인 후에 이용하실 수 있습니다.</p>)
+    return (
+        <>
+            <Nav />
+
+            <p className="text-center py-16">
+                이 페이지는 강사이력을 추가하신 후,<br></br>
+                관리자 승인 후에 이용하실 수 있습니다.</p>
+
+            <Button onClick={() => navigate('/instructor/mypage')}>강사 이력 추가하기</Button>
+
+            <Tail />
+
+
+        </>
+    )
 }
 
 export default InstructorPermit;

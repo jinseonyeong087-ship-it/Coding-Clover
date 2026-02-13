@@ -13,7 +13,7 @@ import PointsHistory from './pages/student/PointsHistory'
 import CourseCreateRequest from '@/pages/instructor/CourseCreateRequest'
 import FindAccount from '@/pages/FindAccount'
 import ProtectedRoute from '@/components/ProtectdRoute'
-import Noroll from '@/pages/Noroll'
+import Norole from '@/components/Norole'
 import CommunityPostList from './pages/student/CommunityPostList'
 import CommunityPostDetail from './pages/student/CommunityPostDetail'
 import ProposalDetail from '@/pages/public/ProposalDetail'
@@ -117,7 +117,7 @@ function App() {
         {/* <Route path="/auth/oauth element={FindAccount} /> 소셜 로그인 아이콘도 없음*/}
         {/* <Route path="/auth/oauth" element={<FindAccount />} /> 소셜 로그인 아이콘도 없음 */}
         {/* 권한 없음 페이지 */}
-        <Route path="/noroll" element={<Noroll />} />
+        <Route path="/norole" element={<Norole />} />
         {/* <Route path="/course" element={<Level />} /> */}
         <Route path="/course/level/:level" element={<Level />} />
         <Route path="/course/:courseId" element={<StudentCourseDetail />} />
