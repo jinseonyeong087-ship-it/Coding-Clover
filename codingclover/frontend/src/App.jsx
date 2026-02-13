@@ -26,7 +26,6 @@ import NoticeDetail from './pages/public/NoticeDetail';
 import AdminLectureDetail from '@/pages/admin/AdminLectureDetail'
 import AdminCourseList from '@/pages/admin/AdminCourseList'
 import AdminInstructorList from '@/pages/admin/AdminInstructorList'
-import AdminEnrollmentManagement from '@/pages/admin/AdminEnrollmentManagement'
 import StudentCourseDetail from '@/pages/student/StudentCourseDetail'
 import CodingTestDetail from './pages/coding/CodingTestDetail';
 import CodingTestList from './pages/coding/CodingTestList';
