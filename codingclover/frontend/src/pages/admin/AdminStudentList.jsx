@@ -209,7 +209,7 @@ function AdminStudentList() {
               <Table>
                 <TableHeader className="bg-gray-50 border-b border-gray-100">
                   <TableRow>
-                    <TableHead className="text-center w-[100px] text-gray-600 font-bold">ID</TableHead>
+                    <TableHead className="text-center w-[100px] text-gray-600 font-bold">번호</TableHead>
                     <TableHead className="text-center text-gray-600 font-bold">학생명</TableHead>
                     <TableHead className="text-center text-gray-600 font-bold">로그인 ID</TableHead>
                     <TableHead className="text-center w-[140px] text-gray-600 font-bold">총 수강</TableHead>
@@ -231,13 +231,18 @@ function AdminStudentList() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    students.map((student) => (
+                    students.map((student, index) => {
+                      // 1번부터 역순으로 번호 계산 (페이지당 10개씩 표시)
+                      const pageSize = 10;
+                      const sequenceNumber = totalElements - (currentPage * pageSize) - index;
+                      
+                      return (
                       <TableRow
                         key={student.studentId || student.userId || student.id}
                         className="hover:bg-gray-50/50 transition-colors"
                       >
-                        <TableCell className="text-center font-mono text-xs text-gray-400">
-                          {student.studentId || student.userId || student.id}
+                        <TableCell className="text-center font-mono text-xs text-gray-600 font-medium">
+                          {sequenceNumber}
                         </TableCell>
                         <TableCell className="text-center font-medium text-gray-900">
                           {student.name || "-"}
@@ -245,7 +250,7 @@ function AdminStudentList() {
                         <TableCell className="text-center text-sm text-gray-500">
                           {student.loginId || student.email || "-"}
                         </TableCell>
-                        <TableCell className="text-center text-gray-900 font-bold">
+                        <TableCell className="text-center text-sm text-gray-500">
                           {student.totalEnrollments ?? student.enrollmentCount ?? 0}
                         </TableCell>
                         <TableCell className="text-center text-sm text-gray-500">
@@ -262,7 +267,8 @@ function AdminStudentList() {
                           </Button>
                         </TableCell>
                       </TableRow>
-                    ))
+                      );
+                    })
                   )}
                 </TableBody>
               </Table>
