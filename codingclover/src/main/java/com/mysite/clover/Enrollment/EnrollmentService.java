@@ -136,7 +136,7 @@ public class EnrollmentService {
             admin,
             "CANCEL_REQUEST",
             notificationMessage,
-            "/admin/students/" + student.getUserId() // 관리자 학생 상세 페이지로 이동
+            "/admin/users/students/" + student.getUserId() // 관리자 학생 상세 페이지로 이동
         );
       }
     } catch (Exception e) {

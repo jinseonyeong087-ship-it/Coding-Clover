@@ -413,7 +413,7 @@ function AdminStudentDetail() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
               <div>
                 <button
-                  onClick={() => navigate("/admin/student")}
+                  onClick={() => navigate("/admin/users/students")}
                   className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-2"
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -428,7 +428,7 @@ function AdminStudentDetail() {
               </div>
               <Button
                 variant="outline"
-                onClick={() => navigate("/admin/student")}
+                onClick={() => navigate("/admin/users/students")}
                 className="bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
               >
                 목록으로

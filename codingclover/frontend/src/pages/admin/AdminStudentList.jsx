@@ -130,7 +130,7 @@ function AdminStudentList() {
   const handleOpenDetail = (student) => {
     const studentId = student.studentId || student.userId || student.id;
     if (!studentId) return;
-    navigate(`/admin/students/${studentId}`);
+    navigate(`/admin/users/students/${studentId}`);
   };
 
   return (
