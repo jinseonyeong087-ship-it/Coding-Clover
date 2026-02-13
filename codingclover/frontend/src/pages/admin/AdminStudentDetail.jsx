@@ -25,8 +25,7 @@ function AdminStudentDetail() {
   const [enrollments, setEnrollments] = useState([]);
   const [lectureProgress, setLectureProgress] = useState([]);
   const [cancelRequests, setCancelRequests] = useState([]);
-  const [activeTab, setActiveTab] = useState("enrollments");
-  const [reasonByRequest, setReasonByRequest] = useState({});
+  const [activeTab, setActiveTab] = useState("enrollments");  const [statusFilter, setStatusFilter] = useState("ALL");  const [reasonByRequest, setReasonByRequest] = useState({});
   const [processingRequestId, setProcessingRequestId] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -40,7 +39,7 @@ function AdminStudentDetail() {
       case "ENROLLED":
         return "수강중";
       case "COMPLETED":
-        return "완료";
+        return "수강완료";
       case "CANCEL_REQUESTED":
         return "취소요청";
       case "CANCELED":
@@ -49,6 +48,36 @@ function AdminStudentDetail() {
         return status || "-";
     }
   };
+
+  // 진도율 기반으로 실제 상태 결정
+  const getEnrollmentActualStatus = (enrollment) => {
+    const normalizedStatus = normalizeStatus(enrollment.status);
+    
+    // 진도율 맵 생성
+    const progressMap = {};
+    lectureProgress.forEach(progress => {
+      progressMap[progress.courseId] = progress.progressRate || 0;
+    });
+    
+    // 진도율 100%인 강좌는 완료로 분류
+    if (normalizedStatus === 'ENROLLED') {
+      const progressRate = progressMap[enrollment.courseId] || 0;
+      if (progressRate === 100) {
+        return 'COMPLETED';
+      }
+    }
+    
+    return normalizedStatus;
+  };
+
+  // 필터링된 enrollments 계산
+  const filteredEnrollments = useMemo(() => {
+    if (statusFilter === "ALL") return enrollments;
+    return enrollments.filter(enrollment => {
+      const actualStatus = getEnrollmentActualStatus(enrollment);
+      return actualStatus === statusFilter;
+    });
+  }, [enrollments, statusFilter, lectureProgress]);
 
   const statusBadgeClass = (status) => {
     switch (status) {
@@ -451,11 +480,17 @@ function AdminStudentDetail() {
             {/* 통계 카드 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
               {[
-                { label: "총 수강 신청", value: summaryMetrics.totalEnrollments, color: "text-gray-900" },
-                { label: "수강 중", value: summaryMetrics.counts.ENROLLED, color: "text-emerald-600" },
-                { label: "수강 완료", value: summaryMetrics.counts.COMPLETED, color: "text-blue-600" }
+                { label: "전체", value: summaryMetrics.totalEnrollments, color: "text-gray-900", filter: "ALL" },
+                { label: "수강 중", value: summaryMetrics.counts.ENROLLED, color: "text-emerald-600", filter: "ENROLLED" },
+                { label: "수강 완료", value: summaryMetrics.counts.COMPLETED, color: "text-blue-600", filter: "COMPLETED" },
               ].map((stat, i) => (
-                <Card key={i} className="p-4 bg-white border-gray-200 shadow-sm">
+                <Card 
+                  key={i} 
+                  className={`p-4 bg-white border-gray-200 shadow-sm cursor-pointer transition-all hover:shadow-md ${
+                    statusFilter === stat.filter ? 'ring-2 ring-primary border-primary' : ''
+                  }`}
+                  onClick={() => setStatusFilter(stat.filter)}
+                >
                   <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{stat.label}</div>
                   <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
                   {stat.sub && <div className="text-[10px] text-gray-400 mt-1">{stat.sub}</div>}
@@ -493,48 +528,38 @@ function AdminStudentDetail() {
                         <TableHead className="text-center text-gray-600 font-bold">강좌명</TableHead>
                         <TableHead className="text-center w-[120px] text-gray-600 font-bold">상태</TableHead>
                         <TableHead className="text-center w-[160px] text-gray-600 font-bold">신청일</TableHead>
-                        <TableHead className="text-center w-[180px] text-gray-600 font-bold">완료/취소일</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {loading ? (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center py-20">
+                          <TableCell colSpan={3} className="text-center py-20">
                             <div className="flex justify-center">
                               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                             </div>
                           </TableCell>
                         </TableRow>
-                      ) : enrollments.length === 0 ? (
+                      ) : filteredEnrollments.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center py-20 text-gray-400">
-                            수강 이력이 없습니다.
+                          <TableCell colSpan={3} className="text-center py-20 text-gray-400">
+                            {statusFilter === "ALL" ? "수강 이력이 없습니다." : `${statusLabel(statusFilter)} 상태의 강좌가 없습니다.`}
                           </TableCell>
                         </TableRow>
                       ) : (
-                        enrollments.map((enrollment) => {
-                          const normalized = normalizeStatus(enrollment.status);
-                          const completedOrCanceledAt =
-                            normalized === "COMPLETED"
-                              ? enrollment.completedAt
-                              : normalized === "CANCELED"
-                                ? enrollment.canceledAt
-                                : "-";
+                        filteredEnrollments.map((enrollment) => {
+                          const actualStatus = getEnrollmentActualStatus(enrollment);
                           return (
                             <TableRow key={enrollment.enrollmentId || enrollment.id} className="hover:bg-gray-50/50 transition-colors">
                               <TableCell className="text-center font-medium text-gray-900 border-r border-gray-50">
                                 {enrollment.courseTitle || enrollment.course?.title || "-"}
                               </TableCell>
                               <TableCell className="text-center">
-                                <Badge className={`${statusBadgeClass(normalized)} font-medium border-0`}>
-                                  {statusLabel(normalized)}
+                                <Badge className={`${statusBadgeClass(actualStatus)} font-medium border-0`}>
+                                  {statusLabel(actualStatus)}
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-center text-sm text-gray-500">
                                 {formatDate(enrollment.enrolledAt)}
-                              </TableCell>
-                              <TableCell className="text-center text-sm text-gray-500">
-                                {formatDate(completedOrCanceledAt)}
                               </TableCell>
                             </TableRow>
                           );
