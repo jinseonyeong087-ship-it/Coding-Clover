@@ -133,8 +133,7 @@ function App() {
         <Route path="/student/qna/:qnaId" element={<StudentQnaDetail />} />
         {/* <Route path="/student/lecture/:lectureId" element={<StudentCourseDetail />} /> */}
 
-        {/* 강사 허가 안 했을 때 집입가능하도록 */}
-        <Route path="/instructor/mypage" element={<InstructorMypage />} />
+        
 
         {/* 수강생 페이지 (로그인 필요) */}
         <Route path="/student/*" element={
@@ -148,6 +147,10 @@ function App() {
           <Route path="exam/course/:courseId" element={<StudentExamList />} />
           <Route path="exam/taking/:examId" element={<StudentExamTaking />} />
         </Route>
+
+        {/* 강사 허가 안 했을 때 집입가능하도록 */}
+        <Route path="/instructor/mypage" element={<InstructorMypage />} />
+        
         {/* 강사페이지 */}
         <Route path="/instructor/*" element={
           <ProtectedRoute allowedRoles={['INSTRUCTOR']} />

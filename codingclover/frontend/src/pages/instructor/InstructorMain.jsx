@@ -126,8 +126,8 @@ function InstructorMain() {
                         <h3 className="text-sm font-medium text-muted-foreground mb-2">총 수강생</h3>
                         <div className="text-3xl font-bold text-purple-500">{totalStudents} <span className="text-sm font-normal text-muted-foreground">명</span></div>
                     </div>
-                    <Link to="/instructor/course/new" className="bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/20 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex items-center justify-center">
-                        <span className="text-primary font-bold">강좌 개설 신청 →</span>
+                    <Link to="/instructor/lecture/upload" className="bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/20 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex items-center justify-center">
+                        <span className="text-primary font-bold">강의 업로드 →</span>
                     </Link>
                 </div>
 

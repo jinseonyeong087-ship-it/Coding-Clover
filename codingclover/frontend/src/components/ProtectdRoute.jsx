@@ -15,7 +15,7 @@ function ProtectedRoute({ allowedRoles }) {
         return <Navigate to="/norole" />;  // 접근권한 없으니 로그인부터 해라
     }
 
-    if (users?.role === 'INSTRUCTOR' && users?.status !== 'ACTIVE') {
+    if (users?.status === 'SUSPENDED') {
         return <InstructorPermit />;
     }
 
