@@ -124,7 +124,7 @@ const InstructorQnaDetail = () => {
   return (
     <div className="min-h-screen bg-white font-sans">
       <Nav />
-      <div className="h-16"></div>
+      <div className="h-0"></div>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Back Button */}
