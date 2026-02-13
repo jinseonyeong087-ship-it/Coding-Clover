@@ -1,6 +1,7 @@
 package com.mysite.clover.Enrollment;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -160,13 +161,16 @@ public class EnrollmentService {
 
   // === 강사용 메소드 ===
 
-  // 강사 - 내 모든 강좌의 수강생 조회
+  // 강사 - 강좌별 수강생 수 카운트 (강좌 목록에서 수강생 수 표시용)
   @Transactional(readOnly = true)
-  public List<InstructorEnrollmentDto> getMyAllCourseStudents(Users instructor) {
+  public Map<Long, Long> countStudentsByCourse(Users instructor) {
     List<Enrollment> enrollments = enrollmentRepository.findByInstructor(instructor);
     return enrollments.stream()
-        .map(e -> new InstructorEnrollmentDto(e.getStatus()))
-        .collect(Collectors.toList());
+        .filter(e -> e.getStatus() == EnrollmentStatus.ENROLLED)
+        .collect(Collectors.groupingBy(
+            e -> e.getCourse().getCourseId(),
+            Collectors.counting()
+        ));
   }
 
   // === 관리자용 메소드 ===

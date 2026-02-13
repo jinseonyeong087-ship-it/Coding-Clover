@@ -27,6 +27,7 @@ function InstructorCourseList() {
 
     const [courses, setCourses] = useState([]);
     const [, setInstructorStatus] = useState("");
+    const [studentCountMap, setStudentCountMap] = useState({});
 
     useEffect(() => {
         const userData = getUserData();
@@ -44,6 +45,15 @@ function InstructorCourseList() {
                 return res.json();
             })
             .then((data) => setCourses(data))
+            .catch((err) => console.error(err));
+
+        // 강좌별 수강생 수 조회
+        fetch('/instructor/enrollment', { method: 'GET', headers: { 'Content-Type': 'application/json', 'X-Login-Id': loginId }, credentials: 'include' })
+            .then((res) => {
+                if (!res.ok) throw new Error('수강생 수 조회 실패');
+                return res.json();
+            })
+            .then((data) => setStudentCountMap(data))
             .catch((err) => console.error(err));
 
     }, []);
@@ -147,7 +157,7 @@ function InstructorCourseList() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2">
-                                                {course.proposalStatus !== 'APPROVED' && (
+                                                {course.proposalStatus !== 'APPROVED' ? (
                                                     <>
                                                         <Link to={`/instructor/course/edit/${course.courseId}`}>
                                                             <Button variant="outline" size="sm">수정</Button>
@@ -160,6 +170,8 @@ function InstructorCourseList() {
                                                             삭제
                                                         </Button>
                                                     </>
+                                                ) : course.proposalStatus === 'APPROVED' && (
+                                                    <span>수강생 {studentCountMap[course.courseId] || 0}명</span>
                                                 )}
                                             </div>
                                         </TableCell>

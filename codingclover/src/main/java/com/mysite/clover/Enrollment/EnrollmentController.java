@@ -2,6 +2,7 @@ package com.mysite.clover.Enrollment;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -156,15 +157,15 @@ public class EnrollmentController {
     // 강사 영역
     // ==========================================
 
-    // 내 모든 강좌의 수강생 현황
+    // 강좌별 수강생 수 카운트 (강좌 목록에서 수강생 수 표시용)
     @PreAuthorize("hasRole('INSTRUCTOR')")
     @GetMapping("/instructor/enrollment")
-    public ResponseEntity<List<InstructorEnrollmentDto>> getMyAllCourseStudents(
+    public ResponseEntity<Map<Long, Long>> countStudentsByCourse(
             Principal principal) {
         Users instructor = usersRepository.findByLoginId(principal.getName())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        List<InstructorEnrollmentDto> students = enrollmentService.getMyAllCourseStudents(instructor);
-        return ResponseEntity.ok(students);
+        Map<Long, Long> countMap = enrollmentService.countStudentsByCourse(instructor);
+        return ResponseEntity.ok(countMap);
     }
 
     // ==========================================

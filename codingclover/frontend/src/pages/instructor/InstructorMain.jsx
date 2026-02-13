@@ -65,13 +65,13 @@ function InstructorMain() {
             .then((data) => setCourses(data))
             .catch((err) => console.error(err));
 
-        // 수강생 현황 조회
+        // 강좌별 수강생 수 조회 → 합산하여 총 수강생 계산
         fetch('/instructor/enrollment', { method: 'GET', headers: { 'Content-Type': 'application/json', 'X-Login-Id': loginId }, credentials: 'include' })
             .then((res) => {
                 if (!res.ok) throw new Error('인증 필요');
                 return res.json();
             })
-            .then((data) => setTotalStudents(data.filter(e => e.status === 'ENROLLED').length))
+            .then((data) => setTotalStudents(Object.values(data).reduce((sum, count) => sum + count, 0)))
             .catch((err) => console.error(err));
 
     }, []);
