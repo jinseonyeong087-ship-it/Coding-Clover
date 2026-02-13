@@ -14,20 +14,21 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Users, UserCheck, ShieldAlert, ChevronLeft, ChevronRight } from "lucide-react";
+import { BookOpen, Users, UserCheck, ShieldAlert, XCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import {
     Pagination,
     PaginationContent,
     PaginationItem,
     PaginationLink,
     PaginationPrevious,
-    PaginationNext,
+    PaginationNext, 
 } from "@/components/ui/pagination";
 
 function AdminInstructorList() {
 
     const [status, setStatus] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [filter, setFilter] = useState('ALL'); // 필터 상태 추가
     const itemsPerPage = 15;
 
     useEffect(() => {
@@ -51,8 +52,29 @@ function AdminInstructorList() {
             });
     }, [])
 
+    // 필터링 로직
+    const getFilteredInstructors = () => {
+        switch (filter) {
+            case 'APPROVED':
+                return status.filter(u => u.profileStatus === 'APPROVED');
+            case 'APPLIED':
+                return status.filter(u => u.profileStatus === 'APPLIED');
+            case 'REJECTED':
+                return status.filter(u => u.profileStatus === 'REJECTED');
+            default:
+                return status;
+        }
+    };
+
+    // 필터 변경 핸들러
+    const handleFilterChange = (newFilter) => {
+        setFilter(newFilter);
+        setCurrentPage(1); // 필터 변경 시 첫 페이지로 이동
+    };
+
     // Sorting and Pagination Logic
-    const sortedInstructors = [...status].sort((a, b) => (b.userId || 0) - (a.userId || 0));
+    const filteredInstructors = getFilteredInstructors();
+    const sortedInstructors = [...filteredInstructors].sort((a, b) => (b.userId || 0) - (a.userId || 0));
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = sortedInstructors.slice(indexOfFirstItem, indexOfLastItem);
@@ -83,8 +105,13 @@ function AdminInstructorList() {
                         </div>
 
                         {/* Quick Stats Summary */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <Card 
+                                className={`p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 cursor-pointer hover:shadow-md transition-all ${
+                                    filter === 'ALL' ? 'ring-2 ring-blue-500 shadow-lg' : ''
+                                }`}
+                                onClick={() => handleFilterChange('ALL')}
+                            >
                                 <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
                                     <Users className="h-6 w-6 text-blue-600" />
                                 </div>
@@ -93,26 +120,52 @@ function AdminInstructorList() {
                                     <div className="text-xs text-gray-500 font-medium">전체 강사</div>
                                 </div>
                             </Card>
-                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                            <Card 
+                                className={`p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 cursor-pointer hover:shadow-md transition-all ${
+                                    filter === 'APPROVED' ? 'ring-2 ring-emerald-500 shadow-lg' : ''
+                                }`}
+                                onClick={() => handleFilterChange('APPROVED')}
+                            >
                                 <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center">
                                     <UserCheck className="h-6 w-6 text-emerald-600" />
                                 </div>
                                 <div>
                                     <div className="text-2xl font-bold text-gray-900">
-                                        {status.filter(u => u.status === 'ACTIVE').length}
+                                        {status.filter(u => u.profileStatus === 'APPROVED').length}
                                     </div>
                                     <div className="text-xs text-gray-500 font-medium">승인 완료</div>
                                 </div>
                             </Card>
-                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 border-amber-100">
+                            <Card 
+                                className={`p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 border-amber-100 cursor-pointer hover:shadow-md transition-all ${
+                                    filter === 'APPLIED' ? 'ring-2 ring-amber-500 shadow-lg' : ''
+                                }`}
+                                onClick={() => handleFilterChange('APPLIED')}
+                            >
                                 <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center">
                                     <ShieldAlert className="h-6 w-6 text-amber-600" />
                                 </div>
                                 <div>
                                     <div className="text-2xl font-bold text-gray-900">
-                                        {status.filter(u => u.status === 'SUSPENDED').length}
+                                        {status.filter(u => u.profileStatus === 'APPLIED').length}
                                     </div>
                                     <div className="text-xs text-gray-500 font-medium">승인 대기</div>
+                                </div>
+                            </Card>
+                            <Card 
+                                className={`p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 border-rose-100 cursor-pointer hover:shadow-md transition-all ${
+                                    filter === 'REJECTED' ? 'ring-2 ring-rose-500 shadow-lg' : ''
+                                }`}
+                                onClick={() => handleFilterChange('REJECTED')}
+                            >
+                                <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center">
+                                    <XCircle className="h-6 w-6 text-rose-600" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-gray-900">
+                                        {status.filter(u => u.profileStatus === 'REJECTED').length}
+                                    </div>
+                                    <div className="text-xs text-gray-500 font-medium">반려됨</div>
                                 </div>
                             </Card>
                         </div>
@@ -140,12 +193,14 @@ function AdminInstructorList() {
                                                         </Link>
                                                     </TableCell>
                                                     <TableCell className="text-center">
-                                                        {users.status === 'ACTIVE' ? (
+                                                        {users.profileStatus === 'APPROVED' ? (
                                                             <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0">승인 완료</Badge>
-                                                        ) : users.status === 'SUSPENDED' ? (
+                                                        ) : users.profileStatus === 'APPLIED' ? (
                                                             <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-0">승인 대기</Badge>
+                                                        ) : users.profileStatus === 'REJECTED' ? (
+                                                            <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-200 border-0">반려됨</Badge>
                                                         ) : (
-                                                            <Badge variant="outline">{users.status}</Badge>
+                                                            <Badge variant="outline">미신청</Badge>
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-center">
@@ -162,7 +217,9 @@ function AdminInstructorList() {
                                     ) : (
                                         <TableRow>
                                             <TableCell colSpan={4} className="text-center py-20 text-gray-400">
-                                                등록된 강사가 없습니다.
+                                                {filter === 'ALL' 
+                                                    ? '등록된 강사가 없습니다.' 
+                                                    : `해당 조건에 맞는 강사가 없습니다.`}
                                             </TableCell>
                                         </TableRow>)}
                                 </TableBody>
