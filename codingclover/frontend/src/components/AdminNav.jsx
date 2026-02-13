@@ -33,9 +33,10 @@ function AdminNav() {
         }
     }, []);
     return (
-        <nav className="flex mx-auto w-full justify-between py-3 px-16 border-b border-border fixed bg-white z-50">
-            {/* 로고 + 메뉴바 */}
-            <div className="flex items-center gap-6">
+        <nav className="sticky top-0 z-50 w-full border-b border-border bg-white">
+            <div className="container mx-auto flex h-16 items-center justify-between px-6">
+                {/* 로고 + 메뉴바 */}
+                <div className="flex items-center gap-8">
                 <Link to="/admin/dashboard" className="text-2xl font-bold text-primary hover:opacity-80 transition-opacity no-underline">
                     Coding-Clover
                 </Link>
@@ -72,7 +73,7 @@ function AdminNav() {
                         </MenubarContent>
                     </MenubarMenu>
                 </Menubar>
-            </div>
+                </div>
 
             {/* 검색 & 로그인 */}
             <div className="flex items-center gap-3">
@@ -94,6 +95,7 @@ function AdminNav() {
                 <NotificationDropdown />
                 <Button variant="ghost" className="text-sm font-bold text-gray-700 rounded-none">{users.name}님</Button>
                 <Logout />
+            </div>
             </div>
         </nav>
     );
