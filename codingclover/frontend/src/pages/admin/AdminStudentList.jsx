@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Nav from "@/components/Nav";
 import AdminSidebar from "@/components/AdminSidebar";
 import Tail from "@/components/Tail";
@@ -127,12 +127,6 @@ function AdminStudentList() {
     });
   };
 
-  const handleOpenDetail = (student) => {
-    const studentId = student.studentId || student.userId || student.id;
-    if (!studentId) return;
-    navigate(`/admin/users/students/${studentId}`);
-  };
-
   return (
     <>
       <Nav />
@@ -214,19 +208,18 @@ function AdminStudentList() {
                     <TableHead className="text-center text-gray-600 font-bold">로그인 ID</TableHead>
                     <TableHead className="text-center w-[140px] text-gray-600 font-bold">총 수강</TableHead>
                     <TableHead className="text-center w-[160px] text-gray-600 font-bold">최근 활동</TableHead>
-                    <TableHead className="text-center w-[120px] text-gray-600 font-bold">관리</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-20 text-gray-400">
+                      <TableCell colSpan={5} className="text-center py-20 text-gray-400">
                         데이터를 불러오는 중입니다...
                       </TableCell>
                     </TableRow>
                   ) : students.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-20 text-gray-400">
+                      <TableCell colSpan={5} className="text-center py-20 text-gray-400">
                         검색 결과가 없습니다.
                       </TableCell>
                     </TableRow>
@@ -235,38 +228,33 @@ function AdminStudentList() {
                       // 1번부터 역순으로 번호 계산 (페이지당 10개씩 표시)
                       const pageSize = 10;
                       const sequenceNumber = totalElements - (currentPage * pageSize) - index;
-                      
+
                       return (
-                      <TableRow
-                        key={student.studentId || student.userId || student.id}
-                        className="hover:bg-gray-50/50 transition-colors"
-                      >
-                        <TableCell className="text-center font-mono text-xs text-gray-600 font-medium">
-                          {sequenceNumber}
-                        </TableCell>
-                        <TableCell className="text-center font-medium text-gray-900">
-                          {student.name || "-"}
-                        </TableCell>
-                        <TableCell className="text-center text-sm text-gray-500">
-                          {student.loginId || student.email || "-"}
-                        </TableCell>
-                        <TableCell className="text-center text-sm text-gray-500">
-                          {student.totalEnrollments ?? student.enrollmentCount ?? 0}
-                        </TableCell>
-                        <TableCell className="text-center text-sm text-gray-500">
-                          {formatDate(student.lastActiveAt)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleOpenDetail(student)}
-                            className="bg-white border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 h-8 px-3 rounded-lg text-xs"
-                          >
-                            상세 정보
-                          </Button>
-                        </TableCell>
-                      </TableRow>
+                        <TableRow
+                          key={student.studentId || student.userId || student.id}
+                          className="hover:bg-gray-50/50 transition-colors"
+                        >
+                          <TableCell className="text-center font-mono text-xs text-gray-600 font-medium">
+                            {sequenceNumber}
+                          </TableCell>
+                          <TableCell className="text-center font-bold text-gray-900">
+                            <Link
+                              to={`/admin/users/students/${student.studentId}`}
+                              className="hover:text-primary transition-colors"
+                            >
+                              {student.name || "-"}
+                            </Link>
+                          </TableCell>
+                          <TableCell className="text-center text-sm text-gray-500">
+                            {student.loginId || student.email || "-"}
+                          </TableCell>
+                          <TableCell className="text-center text-sm text-gray-500">
+                            {student.totalEnrollments ?? student.enrollmentCount ?? 0}
+                          </TableCell>
+                          <TableCell className="text-center text-sm text-gray-500">
+                            {formatDate(student.lastActiveAt)}
+                          </TableCell>
+                        </TableRow>
                       );
                     })
                   )}
