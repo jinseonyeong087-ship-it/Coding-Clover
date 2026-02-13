@@ -80,7 +80,7 @@ const CodingTestList = () => {
   return (
     <div className="min-h-screen flex flex-col bg-white font-sans">
       <Nav />
-      <div className="h-16"></div>
+      <div className="h-0"></div>
 
       {/* Header Section (Notice Style) */}
       <div className="border-b border-gray-200 bg-gray-50/50">

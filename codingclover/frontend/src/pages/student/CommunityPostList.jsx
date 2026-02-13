@@ -121,7 +121,7 @@ const CommunityPostList = () => {
     return (
         <div className="min-h-screen bg-white flex flex-col">
             <Nav />
-            <div className="h-16"></div>
+            <div className="h-0"></div>
             {/* Header Section (Notice Style) */}
             <div className="border-b border-gray-200 bg-gray-50/50">
                 <div className="container mx-auto px-6 py-12">

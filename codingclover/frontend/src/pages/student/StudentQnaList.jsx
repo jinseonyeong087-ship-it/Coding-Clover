@@ -145,7 +145,7 @@ const StudentQnaList = () => {
   return (
     <>
       <Nav />
-      <div className="h-16"></div>
+      <div className="h-0"></div>
       <div className="min-h-screen bg-white pb-20">
         <div className="container mx-auto px-4 max-w-7xl pt-12">
           <main className="min-w-0">

@@ -182,7 +182,7 @@ const Notice = () => {
     return (
         <div className="flex min-h-screen flex-col bg-white">
             <Nav />
-            <div className="h-16"></div>
+            <div className="h-0"></div>
             {/* Header Section */}
             <div className="border-b border-gray-200 bg-gray-50/50">
                 <div className="container mx-auto px-6 py-12">
