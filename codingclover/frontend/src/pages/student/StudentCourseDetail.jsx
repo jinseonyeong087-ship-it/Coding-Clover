@@ -29,7 +29,9 @@ function StudentCourseDetail() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogMessage, setDialogMessage] = useState({ title: '', description: '' });
     const [loginRequired, setLoginRequired] = useState(false);
+    const [, setRegister] = useState(false);
     const navigate = useNavigate();
+    const users = JSON.parse(localStorage.getItem('users'));
 
     // 강의 목록 & 선택된 강의
     const [lectureList, setLectureList] = useState([]);
@@ -172,6 +174,15 @@ function StudentCourseDetail() {
 
     // 수강 신청
     const handleSubmit = async () => {
+        if (users?.role === 'ADMIN' || users?.role === 'INSTRUCTOR') {
+            setDialogMessage({
+                title: '권한 없음',
+                description: '수강생 계정으로 수강신청 할 수 있습니다.'
+            });
+            setDialogOpen(true);
+            return;
+        }
+
         try {
             const res = await fetch(`/student/enrollment/${courseId}/enroll`, {
                 method: 'POST',
@@ -186,7 +197,7 @@ function StudentCourseDetail() {
                     description: '지금 바로 학습을 시작할 수 있습니다.'
                 });
             } else {
-                if (res.status === 401 || res.status === 403) {
+                if (res.status === 403) {
                     setLoginRequired(true);
                     setDialogMessage({
                         title: '로그인 필요',
@@ -380,9 +391,10 @@ function StudentCourseDetail() {
                                         className="w-full font-bold text-lg shadow-lg hover:shadow-primary/25 transition-all"
                                         onClick={() => navigate(`/student/lecture/${lastWatchedLectureId || lectureList[0]?.lectureId}`)}
                                     >
-                                        강의 시청
+                                        수강 중
                                     </Button>
                                 ) : (
+
                                     <Button
                                         size="lg"
                                         className="w-full font-bold text-lg shadow-lg hover:shadow-primary/25 transition-all"
