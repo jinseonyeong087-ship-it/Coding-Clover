@@ -1,6 +1,6 @@
 function Tail() {
     return (
-        <footer className="w-full py-10 mt-12 border-t border-border bg-gray-50 text-gray-600 sticky bottom-0">
+        <footer className="w-full py-10 mt-12 border-t border-border bg-gray-50 text-gray-600 bottom-0">
             <div className="container mx-auto px-6 max-w-screen-lg text-center">
                 <div className="mb-4">
                     <h5 className="text-lg font-bold text-gray-800 mb-2">사단법인 네잎 클로버</h5>

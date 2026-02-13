@@ -22,10 +22,16 @@ function ProtectedRoute({ allowedRoles }) {
         }
     }
 
-    if (role === 'ADMIN') {
-        if (adminStatus !== 'APPROVED') {
-            return <Norole />;
-        }
+    // if (role === 'ADMIN') {
+    //     return <Outlet />;
+    // }
+
+    if (role === 'INSTRUCTOR') {
+        return <Outlet />;
+    }
+
+    if (role === 'STUDENT') {
+        return <Outlet />;
     }
 
 
