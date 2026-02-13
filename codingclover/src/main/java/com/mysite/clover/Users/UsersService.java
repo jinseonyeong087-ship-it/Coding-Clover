@@ -157,12 +157,21 @@ public class UsersService {
     }
 
     // 강사 반려 처리
+    @Transactional
     public void rejectInstructor(Long userId, String reason) {
-        // InstructorProfile 상태만 REJECTED로 변경 (로그인은 여전히 안됨 - SUSPENDED 상태 유지)
+        // InstructorProfile 상태를 REJECTED로 변경
         instructorProfileRepository.findById(userId).ifPresent(profile -> {
             profile.setStatus(InstructorStatus.REJECTED);
             profile.setRejectReason(reason);
             instructorProfileRepository.save(profile);
+        });
+        
+        // Users 상태를 SUSPENDED로 변경 (승인된 강사를 반려하는 경우)
+        usersRepository.findById(userId).ifPresent(user -> {
+            if (user.getStatus() == UsersStatus.ACTIVE) {
+                user.setStatus(UsersStatus.SUSPENDED);
+                usersRepository.save(user);
+            }
         });
 
         // 사용자에게 반려 알림 전송
