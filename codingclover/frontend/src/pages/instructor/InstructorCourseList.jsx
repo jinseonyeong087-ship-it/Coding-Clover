@@ -26,7 +26,7 @@ const getUserData = () => {
 function InstructorCourseList() {
 
     const [courses, setCourses] = useState([]);
-    const [instructorStatus, setInstructorStatus] = useState("");
+    const [, setInstructorStatus] = useState("");
 
     useEffect(() => {
         const userData = getUserData();
