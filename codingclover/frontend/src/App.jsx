@@ -179,7 +179,7 @@ function App() {
           <Route path="exams" element={<AdminExamList />} />
           <Route path="lectures" element={<AdminLectureList />} />
           <Route path="users/students" element={<AdminStudentList />} />
-          <Route path="students/:studentId" element={<AdminStudentDetail />} />
+          <Route path="users/students/:studentId" element={<AdminStudentDetail />} />
           <Route path="users/instructors/:userId/courses" element={<AdminInstructorCourses />} />
         </Route>
         {/*관리자 프로필 <Route path="/api/admin/profile" element={<AdminProfile />} /> */}

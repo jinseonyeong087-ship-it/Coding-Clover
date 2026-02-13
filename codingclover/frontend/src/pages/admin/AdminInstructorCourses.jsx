@@ -160,7 +160,7 @@ function AdminInstructorCourses() {
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => navigate(`/admin/course/${course.courseId}/detail`)}
+                                                        onClick={() => navigate(`/admin/course/${course.courseId}`)}
                                                         className="h-8 px-3 rounded-lg text-xs font-bold border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                                                     >
                                                         상세보기

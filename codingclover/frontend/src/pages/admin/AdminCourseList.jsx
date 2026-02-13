@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Nav from '@/components/Nav';
 import AdminSidebar from "@/components/AdminSidebar";
 import Tail from "@/components/Tail";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
     Table,
     TableBody,
@@ -28,6 +28,7 @@ function AdminCourseList() {
     const [course, setCourse] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 15;
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetch('/admin/course', {
@@ -164,15 +165,15 @@ function AdminCourseList() {
                                                                 )}
                                                             </div>
                                                             <div className="flex flex-col min-w-0">
-                                                                <Link
-                                                                    to={`/admin/course/${item.courseId}`}
-                                                                    className="font-bold text-gray-900 hover:text-primary transition-colors truncate flex items-center gap-2"
+                                                                <button
+                                                                    onClick={() => navigate(`/admin/course/${item.courseId}`)}
+                                                                    className="font-bold text-gray-900 hover:text-primary transition-colors truncate flex items-center gap-2 text-left"
                                                                 >
                                                                     {item.title}
                                                                     {isNewCourse(item.createdAt) && (
                                                                         <Badge className="h-4 px-1.5 text-[8px] font-bold bg-amber-500 text-white border-0">NEW</Badge>
                                                                     )}
-                                                                </Link>
+                                                                </button>
                                                                 <span className="text-xs text-gray-500 truncate">{item.description}</span>
                                                             </div>
                                                         </div>
