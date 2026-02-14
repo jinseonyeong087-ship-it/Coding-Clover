@@ -38,7 +38,28 @@ const ExamCreate = () => {
             try {
                 // Using relative path for proxy
                 const response = await axios.get("/instructor/course");
-                setCourses(response.data);
+                const coursesData = response.data;
+                
+                // Check exam existence for each course
+                const coursesWithExamStatus = await Promise.all(
+                    coursesData.map(async (course) => {
+                        try {
+                            const examResponse = await axios.get(`/instructor/course/${course.courseId}/exam`);
+                            return {
+                                ...course,
+                                hasExam: examResponse.data && examResponse.data.length > 0
+                            };
+                        } catch (error) {
+                            // If error occurs, assume no exam exists
+                            return {
+                                ...course,
+                                hasExam: false
+                            };
+                        }
+                    })
+                );
+                
+                setCourses(coursesWithExamStatus);
             } catch (error) {
                 console.error("Error fetching courses:", error);
                 toast.error("강좌 목록을 불러오는데 실패했습니다.");
@@ -264,7 +285,12 @@ const ExamCreate = () => {
                                     >
                                         <option value="">강좌를 선택하세요</option>
                                         {courses.map(course => (
-                                            <option key={course.courseId} value={course.courseId}>
+                                            <option 
+                                                key={course.courseId} 
+                                                value={course.courseId}
+                                                disabled={course.hasExam}
+                                                style={course.hasExam ? { color: '#9ca3af', cursor: 'not-allowed' } : {}}
+                                            >
                                                 {course.title}
                                             </option>
                                         ))}
