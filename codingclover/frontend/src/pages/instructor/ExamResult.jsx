@@ -97,10 +97,10 @@ const ExamResult = () => {
                                             <TableCell>{attempt.attemptNo}회차</TableCell>
                                             <TableCell>{attempt.score}점</TableCell>
                                             <TableCell>
-                                                {attempt.status === "PASS" ? (
-                                                    <Badge className="bg-emerald-500 hover:bg-emerald-600">합격</Badge>
+                                                {attempt.passed ? (
+                                                    <Badge className="bg-emerald-500 hover:bg-emerald-600 min-w-[60px] justify-center">합격</Badge>
                                                 ) : (
-                                                    <Badge variant="destructive">불합격</Badge>
+                                                    <Badge variant="destructive" className="min-w-[60px] justify-center">불합격</Badge>
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-muted-foreground text-sm">

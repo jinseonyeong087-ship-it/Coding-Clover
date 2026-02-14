@@ -106,7 +106,7 @@ const StudentExamTaking = () => {
 
             // Navigate to list but maybe show simple alert first with score
             const result = response.data;
-            alert(`[결과 확인]\n점수: ${result.score}점\n합격 여부: ${result.status === "PASS" ? '합격' : '불합격'}`);
+            alert(`[결과 확인]\n점수: ${result.score}점\n합격 여부: ${result.passed ? '합격' : '불합격'}`);
 
             navigate("/student/exam");
         } catch (error) {
