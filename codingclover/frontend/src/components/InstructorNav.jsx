@@ -59,10 +59,7 @@ function InstructorNav() {
                             </MenubarContent>
                         </MenubarMenu>
                         <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/instructor/qna') }}>Q&A 답변관리</MenubarTrigger>
-                            <MenubarContent className="bg-white border-border rounded-none shadow-lg">
-                                <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => { navigate('/instructor/qna') }}>수강생 질문</MenubarItem>
-                            </MenubarContent>
+                            <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/instructor/qna') }}>Q&A</MenubarTrigger>
                         </MenubarMenu>
                         <MenubarMenu>
                             <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/notice') }}>공지사항</MenubarTrigger>
