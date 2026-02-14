@@ -165,13 +165,6 @@ public class CourseService {
             Enrollment enrollment = new Enrollment(user, course);
             enrollmentRepository.save(enrollment);
         }
-
-        // 강사 알림
-        notificationService.createNotification(
-                course.getCreatedBy(),
-                "NEW_ENROLLMENT",
-                "'" + course.getTitle() + "' 강좌에 " + user.getName() + "님이 수강 신청했습니다.",
-                "/instructor/course/" + courseId);
     }
 
     // 수강 학생 목록
