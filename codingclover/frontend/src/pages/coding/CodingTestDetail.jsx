@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import Editor from "@monaco-editor/react";
 import Nav from "@/components/Nav";
@@ -39,6 +39,8 @@ const DEFAULT_CODE = `public class main {
 
 const CodingTestDetail = () => {
   const { id } = useParams(); // URL의 id (초기 로드용)
+  const [searchParams] = useSearchParams();
+  const submissionId = searchParams.get('submissionId'); // submission ID 파라미터
   const navigate = useNavigate();
 
   // 사용자 권한 및 ID
@@ -95,6 +97,30 @@ const CodingTestDetail = () => {
     };
     fetchProblems();
   }, [id]);
+
+  // 2. submissionId가 있으면 해당 submission의 코드를 미리 로드
+  useEffect(() => {
+    const loadSubmissionCode = async () => {
+      if (submissionId && user.userId) {
+        try {
+          const response = await axios.get(`/api/submission/history?userId=${user.userId}`);
+          const submission = response.data.find(s => s.id === Number(submissionId));
+          
+          if (submission && submission.code) {
+            setCode(submission.code);
+          }
+        } catch (error) {
+          console.error('Submission 코드 로드 실패:', error);
+          toast.error("코드를 불러오는데 실패했습니다.");
+        }
+      }
+    };
+    
+    // 문제가 선택된 후에 실행되도록 약간의 지연 추가
+    if (selectedTask) {
+      loadSubmissionCode();
+    }
+  }, [submissionId, user.userId, selectedTask]);
 
   const fetchSubmissions = async (problemId) => {
     try {

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Badge } from "@/components/ui/badge";
-import { User, Edit, Coins, ChevronRight, BookOpen, MonitorPlay, Calendar, AlertCircle, Trash2, Code2 } from "lucide-react";
+import { User, Edit, Coins, ChevronRight, BookOpen, MonitorPlay, Calendar, AlertCircle, Trash2 } from "lucide-react";
 import axios from 'axios';
 
 // 상수
@@ -459,31 +459,6 @@ function MyPage() {
   };
 
   const [activeTab, setActiveTab] = useState('courses');
-  const [testHistory, setTestHistory] = useState([]);
-  const [testHistoryLoading, setTestHistoryLoading] = useState(false);
-
-  // 코딩 테스트 내역 조회
-  const fetchTestHistory = async () => {
-    try {
-      setTestHistoryLoading(true);
-      const currentIdentifier = getUserIdentifier();
-      if (!currentIdentifier) return;
-
-      const response = await axios.get('/api/student/coding-test/results', { withCredentials: true });
-      setTestHistory(response.data || []);
-    } catch (err) {
-      console.error('코딩 테스트 내역 조회 실패:', err);
-      setTestHistory([]);
-    } finally {
-      setTestHistoryLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (activeTab === 'codingtests') {
-      fetchTestHistory();
-    }
-  }, [activeTab]);
 
   //수정 취소
   const handleCancel = () => {
@@ -636,14 +611,6 @@ function MyPage() {
                     수강완료
                     {activeTab === 'completed' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary" />}
                   </button>
-                  <button
-                    onClick={() => setActiveTab('codingtests')}
-                    className={`pb-4 text-sm font-bold transition-all relative ${activeTab === 'codingtests' ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
-                      }`}
-                  >
-                    코딩 테스트 내역
-                    {activeTab === 'codingtests' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary" />}
-                  </button>
                 </div>
 
                 {/* 4. Tab Content */}
@@ -795,56 +762,10 @@ function MyPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                    {testHistoryLoading ? (
-                      <div className="h-64 flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      </div>
-                    ) : testHistory.length === 0 ? (
-                      <div className="p-12 text-center text-gray-500">
-                        <Code2 className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-                        <p>응시한 코딩 테스트 내역이 없습니다.</p>
-                        <Button onClick={() => navigate('/coding-test')} className="mt-4">테스트 도전하기</Button>
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                          <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
-                            <tr>
-                              <th className="px-6 py-4 font-bold">테스트 제목</th>
-                              <th className="px-6 py-4 font-bold text-center">결과</th>
-                              <th className="px-6 py-4 font-bold text-center">점수</th>
-                              <th className="px-6 py-4 font-bold text-center">응시일</th>
-                              <th className="px-6 py-4 font-bold text-right">상세보기</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-gray-100">
-                            {testHistory.map((result) => (
-                              <tr key={result.resultId} className="hover:bg-gray-50/50 transition-colors">
-                                <td className="px-6 py-4 font-bold text-gray-900">{result.title}</td>
-                                <td className="px-6 py-4 text-center">
-                                  <Badge variant={result.status === "PASS" ? "default" : "destructive"} className={result.status === "PASS" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0" : ""}>
-                                    {result.status === "PASS" ? '합격' : '불합격'}
-                                  </Badge>
-                                </td>
-                                <td className="px-6 py-4 text-center font-mono font-bold text-primary">{result.score}점</td>
-                                <td className="px-6 py-4 text-center text-gray-500">{new Date(result.createdAt).toLocaleDateString()}</td>
-                                <td className="px-6 py-4 text-right">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => navigate(`/student/coding-test/results/${result.resultId}`)}
-                                    className="text-gray-400 hover:text-primary"
-                                  >
-                                    <ChevronRight className="h-4 w-4" />
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
+                  <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-gray-500">
+                    <BookOpen className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+                    <p className="mb-4">수강 완료한 강좌가 없습니다.</p>
+                    <Button onClick={() => navigate('/lecture')}>강좌 보러가기</Button>
                   </div>
                 )}
               </div>

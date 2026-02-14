@@ -101,16 +101,25 @@ const StudentExamList = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="flex min-h-screen flex-col bg-white">
             <StudentNav />
-            <div className="container mx-auto py-10 max-w-5xl">
-                <div className="flex flex-col gap-2 mb-8">
-                    <h1 className="text-3xl font-bold tracking-tight">시험 응시 센터</h1>
-                    <p className="text-muted-foreground">
-                        수강 중인 강좌의 시험에 응시할 수 있습니다.
-                    </p>
+            <div className="h-0"></div>
+            {/* Header Section */}
+            <div className="border-b border-gray-200 bg-gray-50/50">
+                <div className="container mx-auto px-6 py-12">
+                    <div className="max-w-4xl">
+                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl mb-2">
+                            시험 응시 센터
+                        </h1>
+                        <p className="text-lg text-gray-500">
+                            수강 중인 강좌의 시험에 응시하고 결과를 확인할 수 있습니다.
+                        </p>
+                    </div>
                 </div>
+            </div>
 
+            <main className="flex-1 container mx-auto px-6 py-12">
+                <div className="max-w-5xl mx-auto">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-2 mb-8">
                         <TabsTrigger value="available">응시 가능한 시험</TabsTrigger>
@@ -291,7 +300,8 @@ const StudentExamList = () => {
                         </Card>
                     </TabsContent>
                 </Tabs>
-            </div>
+                </div>
+            </main>
         </div>
     );
 };

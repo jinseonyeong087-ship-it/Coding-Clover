@@ -44,6 +44,7 @@ import ExamCreate from './pages/instructor/ExamCreate';
 import ExamResult from './pages/instructor/ExamResult';
 import StudentExamList from './pages/student/StudentExamList';
 import StudentExamTaking from './pages/student/StudentExamTaking';
+import StudentCodingTestResults from './pages/student/StudentCodingTestResults';
 import AdminExamList from './pages/admin/AdminExamList';
 import AdminPropsalDetail from './pages/admin/AdminPropsalDetail';
 import AdminLectureList from '@/pages/admin/AdminLectureList';
@@ -144,6 +145,7 @@ function App() {
           <Route path="exam" element={<StudentExamList />} />
           <Route path="exam/course/:courseId" element={<StudentExamList />} />
           <Route path="exam/taking/:examId" element={<StudentExamTaking />} />
+          <Route path="coding-test/results" element={<StudentCodingTestResults />} />
         </Route>
 
         {/* 강사 허가 안 했을 때 집입가능하도록 */}
