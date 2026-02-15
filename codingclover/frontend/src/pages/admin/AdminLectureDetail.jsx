@@ -181,7 +181,7 @@ function AdminLectureDetail() {
     return (
         <>
             <Nav />
-            <div className="min-h-screen bg-gray-50 pt-20 pb-20">
+            <div className="min-h-screen bg-white pt-20 pb-20">
                 <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row gap-8">
 
                     <AdminSidebar />

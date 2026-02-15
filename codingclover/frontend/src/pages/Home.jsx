@@ -90,7 +90,7 @@ function Home() {
               <span className="font-semibold text-primary">Coding-Clover</span>에서 당신의 코드를 실행하세요.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            {/* <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 onClick={() => navigate('/course/level/0')}
                 className="h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white rounded-none transition-all flex items-center gap-2 shadow-sm"
@@ -105,7 +105,7 @@ function Home() {
               >
                 시작하기
               </Button>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>

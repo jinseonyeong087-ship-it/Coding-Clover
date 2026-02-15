@@ -98,7 +98,7 @@ const InstructorSidebar = () => {
     {
       category: "학습 지원",
       items: [
-        { icon: MessageCircle, label: "질의응답 관리", path: "/instructor/qna/list" }
+        { icon: MessageCircle, label: "질의응답 관리", path: "/instructor/qna" }
       ]
     },
   ];
