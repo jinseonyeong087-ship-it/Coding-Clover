@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LayoutGrid, BookCheck, ClipboardList } from "lucide-react";
+import { LayoutGrid, BookCheck, ClipboardList, XCircle } from "lucide-react";
 import {
     Pagination,
     PaginationContent,
@@ -27,6 +27,7 @@ function AdminCourseList() {
 
     const [course, setCourse] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [statusFilter, setStatusFilter] = useState(null); // null = 전체, 'APPROVED', 'PENDING', 'REJECTED'
     const itemsPerPage = 15;
     const navigate = useNavigate();
 
@@ -63,8 +64,11 @@ function AdminCourseList() {
         return (now - created) <= 1000 * 60 * 60 * 24;
     };
 
-    // Sorting and Pagination Logic
-    const sortedCourses = [...course].sort((a, b) => (b.courseId || 0) - (a.courseId || 0));
+    // Filtering, Sorting and Pagination Logic
+    const filteredCourses = statusFilter 
+        ? course.filter(item => item.proposalStatus === statusFilter)
+        : course;
+    const sortedCourses = [...filteredCourses].sort((a, b) => (b.courseId || 0) - (a.courseId || 0));
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = sortedCourses.slice(indexOfFirstItem, indexOfLastItem);
@@ -95,8 +99,16 @@ function AdminCourseList() {
                         </div>
 
                         {/* Quick Stats Summary */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <Card 
+                                className={`p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 cursor-pointer transition-all hover:shadow-md ${
+                                    statusFilter === null ? 'ring-2 ring-blue-500' : ''
+                                }`}
+                                onClick={() => {
+                                    setStatusFilter(null);
+                                    setCurrentPage(1);
+                                }}
+                            >
                                 <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
                                     <LayoutGrid className="h-6 w-6 text-blue-600" />
                                 </div>
@@ -105,7 +117,15 @@ function AdminCourseList() {
                                     <div className="text-xs text-gray-500 font-medium">전체 강좌</div>
                                 </div>
                             </Card>
-                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                            <Card 
+                                className={`p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 cursor-pointer transition-all hover:shadow-md ${
+                                    statusFilter === 'APPROVED' ? 'ring-2 ring-emerald-500' : ''
+                                }`}
+                                onClick={() => {
+                                    setStatusFilter('APPROVED');
+                                    setCurrentPage(1);
+                                }}
+                            >
                                 <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center">
                                     <BookCheck className="h-6 w-6 text-emerald-600" />
                                 </div>
@@ -116,7 +136,15 @@ function AdminCourseList() {
                                     <div className="text-xs text-gray-500 font-medium">승인 완료</div>
                                 </div>
                             </Card>
-                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 border-amber-100">
+                            <Card 
+                                className={`p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 border-amber-100 cursor-pointer transition-all hover:shadow-md ${
+                                    statusFilter === 'PENDING' ? 'ring-2 ring-amber-500' : ''
+                                }`}
+                                onClick={() => {
+                                    setStatusFilter('PENDING');
+                                    setCurrentPage(1);
+                                }}
+                            >
                                 <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center">
                                     <ClipboardList className="h-6 w-6 text-amber-600" />
                                 </div>
@@ -125,6 +153,25 @@ function AdminCourseList() {
                                         {course.filter(item => item.proposalStatus === 'PENDING').length}
                                     </div>
                                     <div className="text-xs text-gray-500 font-medium">승인 대기</div>
+                                </div>
+                            </Card>
+                            <Card 
+                                className={`p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 border-red-100 cursor-pointer transition-all hover:shadow-md ${
+                                    statusFilter === 'REJECTED' ? 'ring-2 ring-red-500' : ''
+                                }`}
+                                onClick={() => {
+                                    setStatusFilter('REJECTED');
+                                    setCurrentPage(1);
+                                }}
+                            >
+                                <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center">
+                                    <XCircle className="h-6 w-6 text-red-600" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-gray-900">
+                                        {course.filter(item => item.proposalStatus === 'REJECTED').length}
+                                    </div>
+                                    <div className="text-xs text-gray-500 font-medium">반려됨</div>
                                 </div>
                             </Card>
                         </div>

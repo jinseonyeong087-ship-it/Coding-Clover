@@ -20,7 +20,8 @@ import {
     Clock,
     ChevronLeft,
     ChevronRight,
-    Search
+    Search,
+    XCircle
 } from 'lucide-react';
 import {
     Pagination,
@@ -36,6 +37,7 @@ function AdminLectureList() {
     const [lectures, setLectures] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
+    const [statusFilter, setStatusFilter] = useState(null); // null = 전체, 'APPROVED', 'PENDING', 'REJECTED'
     const itemsPerPage = 15;
 
     const fetchLectures = () => {
@@ -76,7 +78,8 @@ function AdminLectureList() {
     const stats = {
         total: lectures.length,
         approved: lectures.filter(l => l.approvalStatus === 'APPROVED').length,
-        pending: lectures.filter(l => l.approvalStatus === 'PENDING').length
+        pending: lectures.filter(l => l.approvalStatus === 'PENDING').length,
+        rejected: lectures.filter(l => l.approvalStatus === 'REJECTED').length
     };
 
     const getApprovalBadge = (status) => {
@@ -99,8 +102,11 @@ function AdminLectureList() {
         return `${min}분 ${sec > 0 ? sec + '초' : ''}`.trim();
     };
 
-    // Sorting and Pagination Logic
-    const sortedLectures = [...lectures].sort((a, b) => (b.lectureId || 0) - (a.lectureId || 0));
+    // Filtering, Sorting and Pagination Logic
+    const filteredLectures = statusFilter 
+        ? lectures.filter(l => l.approvalStatus === statusFilter)
+        : lectures;
+    const sortedLectures = [...filteredLectures].sort((a, b) => (b.lectureId || 0) - (a.lectureId || 0));
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = sortedLectures.slice(indexOfFirstItem, indexOfLastItem);
@@ -128,8 +134,16 @@ function AdminLectureList() {
                         </div>
 
                         {/* 퀵 스탯 */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <Card 
+                                className={`p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 cursor-pointer transition-all hover:shadow-md ${
+                                    statusFilter === null ? 'ring-2 ring-blue-500' : ''
+                                }`}
+                                onClick={() => {
+                                    setStatusFilter(null);
+                                    setCurrentPage(1);
+                                }}
+                            >
                                 <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
                                     <Video className="h-6 w-6 text-blue-600" />
                                 </div>
@@ -138,7 +152,15 @@ function AdminLectureList() {
                                     <div className="text-xs text-gray-500 font-medium">전체 강의</div>
                                 </div>
                             </Card>
-                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                            <Card 
+                                className={`p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 cursor-pointer transition-all hover:shadow-md ${
+                                    statusFilter === 'APPROVED' ? 'ring-2 ring-emerald-500' : ''
+                                }`}
+                                onClick={() => {
+                                    setStatusFilter('APPROVED');
+                                    setCurrentPage(1);
+                                }}
+                            >
                                 <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center">
                                     <CheckCircle2 className="h-6 w-6 text-emerald-600" />
                                 </div>
@@ -147,13 +169,38 @@ function AdminLectureList() {
                                     <div className="text-xs text-gray-500 font-medium">승인 완료</div>
                                 </div>
                             </Card>
-                            <Card className="p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4">
+                            <Card 
+                                className={`p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 cursor-pointer transition-all hover:shadow-md ${
+                                    statusFilter === 'PENDING' ? 'ring-2 ring-amber-500' : ''
+                                }`}
+                                onClick={() => {
+                                    setStatusFilter('PENDING');
+                                    setCurrentPage(1);
+                                }}
+                            >
                                 <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center">
                                     <Clock className="h-6 w-6 text-amber-600" />
                                 </div>
                                 <div>
                                     <div className="text-2xl font-bold text-gray-900">{stats.pending}</div>
                                     <div className="text-xs text-gray-500 font-medium">승인 대기</div>
+                                </div>
+                            </Card>
+                            <Card 
+                                className={`p-5 bg-white border-gray-200 shadow-sm flex items-center gap-4 border-red-100 cursor-pointer transition-all hover:shadow-md ${
+                                    statusFilter === 'REJECTED' ? 'ring-2 ring-red-500' : ''
+                                }`}
+                                onClick={() => {
+                                    setStatusFilter('REJECTED');
+                                    setCurrentPage(1);
+                                }}
+                            >
+                                <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center">
+                                    <XCircle className="h-6 w-6 text-red-600" />
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-gray-900">{stats.rejected}</div>
+                                    <div className="text-xs text-gray-500 font-medium">반려됨</div>
                                 </div>
                             </Card>
                         </div>
