@@ -13,6 +13,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import Tail from '@/components/Tail';
 import { Code2, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
 
 const StudentCodingTestResults = () => {
@@ -224,6 +225,7 @@ const StudentCodingTestResults = () => {
                     </Card>
                 </div>
             </main>
+            <Tail />
         </div>
     );
 };

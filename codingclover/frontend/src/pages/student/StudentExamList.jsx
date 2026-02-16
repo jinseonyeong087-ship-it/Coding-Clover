@@ -13,6 +13,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import Tail from '@/components/Tail';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Play, Loader2, History, Trophy, ChevronLeft, ChevronRight } from "lucide-react";
@@ -73,7 +74,7 @@ const StudentExamList = () => {
     };
 
     const handleStartExam = (examId) => {
-        if (window.confirm("시험을 시작하시겠습니까?\n시험 도중 이탈하면 불이익이 있을 수 있습니다.")) {
+        if (window.confirm("시험을 시작하시겠습니까?\n시험 도중 이탈 시 응시내역은 저장되지 않습니다.")) {
             navigate(`/student/exam/taking/${examId}`);
         }
     };
@@ -324,6 +325,7 @@ const StudentExamList = () => {
                     </Tabs>
                 </div>
             </main>
+            <Tail />
         </div>
     );
 };

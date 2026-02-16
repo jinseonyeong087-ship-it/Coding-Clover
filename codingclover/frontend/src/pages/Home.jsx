@@ -4,7 +4,22 @@ import Tail from '../components/Tail';
 import { Link, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
-import { ArrowRight, Code2, Terminal, Cpu } from "lucide-react";
+import { ArrowRight, Code2, Terminal, Cpu, ChevronLeft, ChevronRight } from "lucide-react";
+
+const heroSlides = [
+  {
+    title: <>Developers <br />Grow Together.</>,
+    description: <>기초부터 실전까지, 개발자를 위한 모든 커리큘럼.<br /><span className="font-semibold text-primary">Coding-Clover</span>에서 당신의 코드를 실행하세요.</>,
+  },
+  {
+    title: <>Code, Learn,<br />Repeat.</>,
+    description: <>실습 중심의 코딩 강좌로 빠르게 성장하세요.<br />직접 코드를 작성하고 <span className="font-semibold text-primary">실시간 피드백</span>을 받아보세요.</>,
+  },
+  {
+    title: <>Your Path to<br />Better Code.</>,
+    description: <>초급부터 고급까지, 단계별 맞춤 커리큘럼.<br /><span className="font-semibold text-primary">AI 기반 학습</span>으로 효율적인 성장을 경험하세요.</>,
+  },
+];
 
 function Home() {
   const navigate = useNavigate();
@@ -13,6 +28,14 @@ function Home() {
   const [, setLoading] = useState(true);
   const [isStudent, setIsStudent] = useState(false);
   const [, setActiveTab] = useState(1);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const tabs = [
     { id: 1, tablabel: "초급", desc: "코딩이 처음이신가요?" },
@@ -77,35 +100,57 @@ function Home() {
     <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-primary/10 selection:text-primary">
       <Nav />
 
-      {/* Hero Section: Developer Focused */}
-      <section className="border-b border-gray-200">
+      {/* Hero Slider */}
+      <section className="border-b border-gray-200 relative overflow-hidden">
         <div className="container mx-auto px-6 py-20 lg:py-32">
-          <div className="max-w-4xl">
-            <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 leading-tight">
-              Developers <br />
-              Grow Together.
-            </h1>
-            <p className="text-xl text-gray-600 mb-10 max-w-2xl leading-relaxed">
-              기초부터 실전까지, 개발자를 위한 모든 커리큘럼.<br />
-              <span className="font-semibold text-primary">Coding-Clover</span>에서 당신의 코드를 실행하세요.
-            </p>
+          <div className="max-w-4xl relative">
+            {heroSlides.map((slide, index) => (
+              <div
+                key={index}
+                className={`transition-all duration-700 ease-in-out ${
+                  index === currentSlide
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 translate-y-4 absolute inset-0 pointer-events-none'
+                }`}
+              >
+                <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 leading-tight">
+                  {slide.title}
+                </h1>
+                <p className="text-xl text-gray-600 mb-10 max-w-2xl leading-relaxed">
+                  {slide.description}
+                </p>
+              </div>
+            ))}
 
-            {/* <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                onClick={() => navigate('/course/level/0')}
-                className="h-14 px-8 text-lg font-bold bg-primary hover:bg-primary/90 text-white rounded-none transition-all flex items-center gap-2 shadow-sm"
+            {/* Slide Controls */}
+            <div className="flex items-center gap-4 mt-4">
+              <button
+                onClick={() => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)}
+                className="p-2 border border-gray-300 hover:border-gray-900 text-gray-500 hover:text-gray-900 transition-colors"
+                aria-label="이전 슬라이드"
               >
-                <Terminal className="w-5 h-5" />
-                모든 강좌 보기
-              </Button>
-              <Button
-                onClick={() => navigate('/auth/register')}
-                variant="outline"
-                className="h-14 px-8 text-lg font-bold border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white rounded-none transition-all flex items-center gap-2"
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <div className="flex gap-2">
+                {heroSlides.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      index === currentSlide ? 'w-8 bg-primary' : 'w-2 bg-gray-300 hover:bg-gray-400'
+                    }`}
+                    aria-label={`슬라이드 ${index + 1}`}
+                  />
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length)}
+                className="p-2 border border-gray-300 hover:border-gray-900 text-gray-500 hover:text-gray-900 transition-colors"
+                aria-label="다음 슬라이드"
               >
-                시작하기
-              </Button>
-            </div> */}
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
       </section>

@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Plus, Trash2, Save, AlertCircle } from "lucide-react";
+import Tail from '@/components/Tail';
 
 const ExamCreate = () => {
     const navigate = useNavigate();
@@ -242,9 +243,9 @@ const ExamCreate = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen flex flex-col bg-white">
             <InstructorNav />
-            <div className="container mx-auto py-10 max-w-5xl">
+            <div className="container mx-auto py-10 max-w-5xl flex-1">
                 <div className="flex justify-between items-center mb-8">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">시험 문제 출제</h1>
@@ -420,6 +421,7 @@ const ExamCreate = () => {
                     </div>
                 </div>
             </div>
+            <Tail />
         </div>
     );
 };

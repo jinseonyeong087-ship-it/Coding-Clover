@@ -93,11 +93,10 @@ const InstructorQnaList = () => {
   const myPendingCount = myOwnedQnaList.filter(q => q.status !== 'ANSWERED' && (!q.answers || q.answers.length === 0)).length;
 
   return (
-    <div className="min-h-screen flex flex-col bg-white relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-white">
       <Nav />
-      <div className="h-0"></div>
 
-      <main className="container mx-auto px-4 py-8 max-w-[1600px] relative z-0">
+      <main className="container mx-auto px-4 py-8 max-w-[1600px] relative z-0 flex-1">
         <div className="flex flex-col lg:flex-row gap-8">
 
           {/* Sidebar */}

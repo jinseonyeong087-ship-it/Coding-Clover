@@ -16,6 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Plus, Trash2, Edit, FileText, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import Tail from '@/components/Tail';
 
 const ExamList = () => {
     const navigate = useNavigate();
@@ -87,9 +88,9 @@ const ExamList = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen flex flex-col bg-white">
             <InstructorNav />
-            <div className="container mx-auto py-10 max-w-6xl">
+            <div className="container mx-auto py-10 max-w-6xl flex-1">
                 {/* ... (Header) ... */}
                 <div className="flex justify-between items-center mb-8">
                     <div>
@@ -215,6 +216,7 @@ const ExamList = () => {
                     </CardContent>
                 </Card>
             </div>
+            <Tail />
         </div>
     );
 };

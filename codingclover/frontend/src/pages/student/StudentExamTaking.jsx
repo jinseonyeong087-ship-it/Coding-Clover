@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Clock, CheckCircle2, ChevronRight, ChevronLeft, AlertTriangle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import Tail from '@/components/Tail';
 
 const StudentExamTaking = () => {
     const { examId } = useParams();
@@ -131,7 +132,7 @@ const StudentExamTaking = () => {
     const totalCount = exam.questions.length;
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col">
+        <div className="min-h-screen flex flex-col">
             {/* Header */}
             <header className="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
                 <div>
@@ -265,6 +266,7 @@ const StudentExamTaking = () => {
                     </CardContent>
                 </Card>
             </main>
+            <Tail />
         </div>
     );
 };
