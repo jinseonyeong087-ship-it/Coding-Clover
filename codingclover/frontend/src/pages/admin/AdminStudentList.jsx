@@ -263,7 +263,7 @@ function AdminStudentList() {
             </Card>
 
             {/* 페이지네이션: 이전 <- 1, 2, 3, 4 -> 다음 */}
-            {totalPages > 1 && (
+            {totalPages >= 1 && (
               <div className="mt-6">
                 <Pagination>
                   <PaginationContent>

@@ -287,7 +287,7 @@ function AdminExamDetail() {
                                     </Card>
 
                                     {/* Pagination */}
-                                    {totalAttemptsPages > 1 && (
+                                    {totalAttemptsPages >= 1 && (
                                         <div className="flex justify-center items-center gap-2 pt-8">
                                             <Button
                                                 variant="outline"

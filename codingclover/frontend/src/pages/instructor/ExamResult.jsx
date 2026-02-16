@@ -132,7 +132,7 @@ const ExamResult = () => {
                 </Card>
 
                 {/* Pagination */}
-                {totalPages > 1 && (
+                {totalPages >= 1 && (
                     <div className="flex justify-center items-center gap-2 pt-8">
                         <Button
                             variant="outline"

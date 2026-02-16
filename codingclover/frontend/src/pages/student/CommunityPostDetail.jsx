@@ -525,7 +525,7 @@ const CommunityPostDetail = () => {
                                                             ))}
 
                                                             {/* 댓글 페이징 */}
-                                                            {totalCommentPages > 1 && (
+                                                            {totalCommentPages >= 1 && (
                                                                 <div className="flex justify-center items-center gap-2 p-4 border-t border-border/50">
                                                                     <Button
                                                                         variant="ghost"

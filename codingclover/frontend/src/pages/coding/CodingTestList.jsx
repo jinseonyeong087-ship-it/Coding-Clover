@@ -9,10 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-// ... (imports)
-// Select component removed to fix import error and align with Notice page design
-
-
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+} from "@/components/ui/pagination";
 import { toast } from "sonner";
 
 const CodingTestList = () => {
@@ -25,6 +29,10 @@ const CodingTestList = () => {
   const [problems, setProblems] = useState([]);
   const [submissionHistory, setSubmissionHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -85,6 +93,23 @@ const CodingTestList = () => {
 
     return matchesSearch && matchesDifficulty;
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredProblems.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentProblems = filteredProblems.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  // 필터 변경 시 페이지 리셋
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, difficultyFilter]);
 
   const getDifficultyColor = (level) => {
     switch (level) {
@@ -200,7 +225,7 @@ const CodingTestList = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProblems.map((problem) => (
+              {currentProblems.map((problem) => (
                 <Card
                   key={problem.problemId}
                   className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-gray-100 cursor-pointer overflow-hidden bg-white rounded-2xl"
@@ -249,6 +274,40 @@ const CodingTestList = () => {
                   </CardFooter>
                 </Card>
               ))}
+            </div>
+          )}
+
+          {totalPages >= 1 && (
+            <div className="mt-10">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        isActive={page === currentPage}
+                        onClick={() => handlePageChange(page)}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           )}
 

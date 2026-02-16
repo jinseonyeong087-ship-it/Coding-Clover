@@ -385,7 +385,7 @@ function PointsHistory() {
                                             </Table>
 
                                             {/* Pagination */}
-                                            {totalPages > 1 && (
+                                            {totalPages >= 1 && (
                                                 <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100">
                                                     <Button
                                                         variant="outline"

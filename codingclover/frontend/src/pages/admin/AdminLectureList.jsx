@@ -279,7 +279,7 @@ function AdminLectureList() {
                         </Card>
 
                         {/* Pagination */}
-                        {totalPages > 1 && (
+                        {totalPages >= 1 && (
                             <div className="mt-6">
                                 <Pagination>
                                     <PaginationContent>

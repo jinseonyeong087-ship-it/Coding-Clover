@@ -749,7 +749,7 @@ function PaymentManagement() {
                             </Table>
 
                             {/* 페이징 */}
-                            {totalPages > 1 && (
+                            {totalPages >= 1 && (
                                 <div className="flex justify-center items-center gap-2 py-6 border-t border-gray-100 bg-gray-50/30">
                                     <Button
                                         variant="outline"

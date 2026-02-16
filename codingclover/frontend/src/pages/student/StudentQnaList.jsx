@@ -280,7 +280,7 @@ const StudentQnaList = () => {
                     })}
                   </div>
 
-                  {totalPages > 1 && (
+                  {totalPages >= 1 && (
                     <div className="flex justify-center items-center gap-1 pt-8">
                       <Button variant="ghost" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
                         <ChevronLeft className="h-4 w-4" />

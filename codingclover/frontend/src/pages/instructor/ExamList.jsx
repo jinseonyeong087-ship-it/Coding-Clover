@@ -176,7 +176,7 @@ const ExamList = () => {
                                 </Table>
 
                                 {/* Pagination Controls */}
-                                {totalPages > 1 && (
+                                {totalPages >= 1 && (
                                     <div className="flex justify-center items-center gap-2 mt-8 border-t pt-8">
                                         <Button
                                             variant="outline"

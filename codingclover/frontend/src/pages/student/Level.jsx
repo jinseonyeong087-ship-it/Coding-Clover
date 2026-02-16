@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/Button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
 import { ArrowRight, Sparkles } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+} from "@/components/ui/pagination";
 
 const TABS = [
   { id: "0", tablabel: "전체보기" },
@@ -22,6 +30,8 @@ function Level() {
 
   const [course, setCourse] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   useEffect(() => {
     const url = level === "0" ? '/course' : `/course/level/${level}`;
@@ -38,11 +48,23 @@ function Level() {
         console.error(err);
         setLoading(false);
       });
+    setCurrentPage(1);
   }, [level]);
 
   // [level]의 배열이 바꼈을 때 = 초급에서 중급강좌로 이동했을 때
   // useEffect(리액트 훅)이 다시 목록을 불러옴
   // 훅이란 리액트에서 제공하는 (동적 변화)=(값이 바뀔 때) 고대로 바꿔줌
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentCourses = course.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(course.length / itemsPerPage);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   const handleTabChange = (value) => {
     navigate(`/course/level/${value}`);
@@ -108,7 +130,7 @@ function Level() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {course.map((item) =>
+                    {currentCourses.map((item) =>
                       <Card key={item.courseId} className="group border-0 shadow-lg bg-white ring-1 ring-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden">
                         <div className="p-6 h-full flex flex-col">
                           <CardHeader className="p-0 mb-4">
@@ -151,6 +173,40 @@ function Level() {
                         </div>
                       </Card>
                     )}
+                  </div>
+                )}
+
+                {totalPages >= 1 && (
+                  <div className="mt-10">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          />
+                        </PaginationItem>
+
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <PaginationItem key={page}>
+                            <PaginationLink
+                              isActive={page === currentPage}
+                              onClick={() => handlePageChange(page)}
+                              className="cursor-pointer"
+                            >
+                              {page}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))}
+
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
                   </div>
                 )}
               </TabsContent>

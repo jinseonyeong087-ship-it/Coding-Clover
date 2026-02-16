@@ -19,12 +19,12 @@ const heroSlides = [
   {
     title: <>Code, Learn,<br />Repeat.</>,
     description: <>실습 중심의 코딩 강좌로 빠르게 성장하세요.<br />직접 코드를 작성하고 <span className="font-semibold text-primary">실시간 피드백</span>을 받아보세요.</>,
-    animation: codeEditorAnim,
+    animation: growthPathAnim,
   },
   {
     title: <>Your Path to<br />Better Code.</>,
     description: <>초급부터 고급까지, 단계별 맞춤 커리큘럼.<br /><span className="font-semibold text-primary">AI 기반 학습</span>으로 효율적인 성장을 경험하세요.</>,
-    animation: growthPathAnim,
+    animation: codeEditorAnim,
   },
 ];
 

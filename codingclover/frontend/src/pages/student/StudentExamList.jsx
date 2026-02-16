@@ -185,7 +185,7 @@ const StudentExamList = () => {
                                             </Table>
 
                                             {/* Available Exams Pagination */}
-                                            {totalAvailablePages > 1 && (
+                                            {totalAvailablePages >= 1 && (
                                                 <div className="flex justify-center items-center gap-2 mt-8 border-t pt-8">
                                                     <Button
                                                         variant="outline"
@@ -282,7 +282,7 @@ const StudentExamList = () => {
                                             </Table>
 
                                             {/* History Pagination */}
-                                            {totalHistoryPages > 1 && (
+                                            {totalHistoryPages >= 1 && (
                                                 <div className="flex justify-center items-center gap-2 mt-8 border-t pt-8">
                                                     <Button
                                                         variant="outline"

@@ -194,7 +194,7 @@ const StudentCodingTestResults = () => {
                                     </Table>
 
                                     {/* Pagination */}
-                                    {codingTestHistory.length > itemsPerPage && (
+                                    {codingTestHistory.length >= 1 && (
                                         <div className="flex justify-center items-center gap-4 mt-6 border-t pt-4">
                                             <Button
                                                 variant="outline"
