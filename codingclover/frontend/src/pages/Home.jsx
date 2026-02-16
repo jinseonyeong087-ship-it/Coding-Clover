@@ -1,33 +1,38 @@
 import React, { useEffect, useState } from 'react';
+import Lottie from 'lottie-react';
 import Nav from '@/components/Nav';
 import Tail from '../components/Tail';
 import { Link, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, Code2, Terminal, Cpu, ChevronLeft, ChevronRight } from "lucide-react";
+import codingCommunityAnim from '@/assets/lottie/book.json';
+import codeEditorAnim from '@/assets/lottie/robot.json';
+import growthPathAnim from '@/assets/lottie/working.json';
 
 const heroSlides = [
   {
     title: <>Developers <br />Grow Together.</>,
     description: <>기초부터 실전까지, 개발자를 위한 모든 커리큘럼.<br /><span className="font-semibold text-primary">Coding-Clover</span>에서 당신의 코드를 실행하세요.</>,
+    animation: codingCommunityAnim,
   },
   {
     title: <>Code, Learn,<br />Repeat.</>,
     description: <>실습 중심의 코딩 강좌로 빠르게 성장하세요.<br />직접 코드를 작성하고 <span className="font-semibold text-primary">실시간 피드백</span>을 받아보세요.</>,
+    animation: codeEditorAnim,
   },
   {
     title: <>Your Path to<br />Better Code.</>,
     description: <>초급부터 고급까지, 단계별 맞춤 커리큘럼.<br /><span className="font-semibold text-primary">AI 기반 학습</span>으로 효율적인 성장을 경험하세요.</>,
+    animation: growthPathAnim,
   },
 ];
 
 function Home() {
-  const navigate = useNavigate();
   const [course, setCourse] = useState([]);
   const [recommendedCourses, setRecommendedCourses] = useState([]);
   const [, setLoading] = useState(true);
   const [isStudent, setIsStudent] = useState(false);
-  const [, setActiveTab] = useState(1);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -103,53 +108,78 @@ function Home() {
       {/* Hero Slider */}
       <section className="border-b border-gray-200 relative overflow-hidden">
         <div className="container mx-auto px-6 py-20 lg:py-32">
-          <div className="max-w-4xl relative">
-            {heroSlides.map((slide, index) => (
-              <div
-                key={index}
-                className={`transition-all duration-700 ease-in-out ${
-                  index === currentSlide
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-4 absolute inset-0 pointer-events-none'
-                }`}
-              >
-                <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 leading-tight">
-                  {slide.title}
-                </h1>
-                <p className="text-xl text-gray-600 mb-10 max-w-2xl leading-relaxed">
-                  {slide.description}
-                </p>
-              </div>
-            ))}
-
-            {/* Slide Controls */}
-            <div className="flex items-center gap-4 mt-4">
-              <button
-                onClick={() => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)}
-                className="p-2 border border-gray-300 hover:border-gray-900 text-gray-500 hover:text-gray-900 transition-colors"
-                aria-label="이전 슬라이드"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <div className="flex gap-2">
-                {heroSlides.map((_, index) => (
-                  <button
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left - Text Content */}
+            <div className="flex flex-col justify-between h-[320px] lg:h-[360px]">
+              <div className="relative flex-1">
+                {heroSlides.map((slide, index) => (
+                  <div
                     key={index}
-                    onClick={() => setCurrentSlide(index)}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      index === currentSlide ? 'w-8 bg-primary' : 'w-2 bg-gray-300 hover:bg-gray-400'
+                    className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                      index === currentSlide
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-4 pointer-events-none'
                     }`}
-                    aria-label={`슬라이드 ${index + 1}`}
-                  />
+                  >
+                    <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 leading-tight">
+                      {slide.title}
+                    </h1>
+                    <p className="text-xl text-gray-600 max-w-2xl leading-relaxed">
+                      {slide.description}
+                    </p>
+                  </div>
                 ))}
               </div>
-              <button
-                onClick={() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length)}
-                className="p-2 border border-gray-300 hover:border-gray-900 text-gray-500 hover:text-gray-900 transition-colors"
-                aria-label="다음 슬라이드"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
+
+              {/* Slide Controls */}
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)}
+                  className="p-2 border border-gray-300 hover:border-gray-900 text-gray-500 hover:text-gray-900 transition-colors"
+                  aria-label="이전 슬라이드"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <div className="flex gap-2">
+                  {heroSlides.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentSlide(index)}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        index === currentSlide ? 'w-8 bg-primary' : 'w-2 bg-gray-300 hover:bg-gray-400'
+                      }`}
+                      aria-label={`슬라이드 ${index + 1}`}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length)}
+                  className="p-2 border border-gray-300 hover:border-gray-900 text-gray-500 hover:text-gray-900 transition-colors"
+                  aria-label="다음 슬라이드"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Right - Lottie Animation */}
+            <div className="hidden lg:flex items-center justify-center h-[360px] relative">
+              {heroSlides.map((slide, index) => (
+                <div
+                  key={index}
+                  className={`absolute inset-0 flex items-center justify-center transition-all duration-700 ease-in-out ${
+                    index === currentSlide
+                      ? 'opacity-100 scale-100'
+                      : 'opacity-0 scale-95 pointer-events-none'
+                  }`}
+                >
+                  <Lottie
+                    animationData={slide.animation}
+                    loop
+                    className="w-full max-w-md h-auto"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>
