@@ -45,12 +45,13 @@ import ExamResult from './pages/instructor/ExamResult';
 import StudentExamList from './pages/student/StudentExamList';
 import StudentExamTaking from './pages/student/StudentExamTaking';
 import StudentCodingTestResults from './pages/student/StudentCodingTestResults';
-import AdminExamList from './pages/admin/AdminExamList';
 import AdminPropsalDetail from './pages/admin/AdminPropsalDetail';
 import AdminLectureList from '@/pages/admin/AdminLectureList';
 import AdminStudentList from '@/pages/admin/AdminStudentList';
 import AdminStudentDetail from '@/pages/admin/AdminStudentDetail';
 import AdminInstructorCourses from '@/pages/admin/AdminInstructorCourses';
+import AdminExamList from '@/pages/admin/AdminExamList';
+import AdminExamDetail from '@/pages/admin/AdminExamDetail';
 import Search from '@/pages/Search';
 
 
@@ -132,7 +133,7 @@ function App() {
         <Route path="/student/qna/:qnaId" element={<StudentQnaDetail />} />
         {/* <Route path="/student/lecture/:lectureId" element={<StudentCourseDetail />} /> */}
 
-        
+
 
         {/* 수강생 페이지 (로그인 필요) */}
         <Route path="/student/*" element={
@@ -150,7 +151,7 @@ function App() {
 
         {/* 강사 허가 안 했을 때 집입가능하도록 */}
         <Route path="/instructor/mypage" element={<InstructorMypage />} />
-        
+
         {/* 강사페이지 */}
         <Route path="/instructor/*" element={
           <ProtectedRoute allowedRoles={['INSTRUCTOR']} />
@@ -163,7 +164,7 @@ function App() {
           <Route path="course/:courseId/lectures" element={<StudentLectureDetail />} />
           <Route path="lecture/upload" element={<InstructorLecture />} />
           <Route path="lecture/:lectureId" element={<InstructorCourseDetail />} />
-          
+
           <Route path="qna" element={<InstructorQnaList />} />
           <Route path="qna/:qnaId" element={<InstructorQnaDetail />} />
           <Route path="exam/list" element={<ExamList />} />
@@ -181,7 +182,9 @@ function App() {
           <Route path="lectures/:lectureId" element={<AdminLectureDetail />} />
           <Route path="users/instructors" element={<AdminInstructorList />} />
           <Route path="payments" element={<PaymentManagement />} />
+          <Route path="coding-test" element={<CodingTestList />} />
           <Route path="exams" element={<AdminExamList />} />
+          <Route path="exam/:examId" element={<AdminExamDetail />} />
           <Route path="lectures" element={<AdminLectureList />} />
           <Route path="users/students" element={<AdminStudentList />} />
           <Route path="users/students/:studentId" element={<AdminStudentDetail />} />

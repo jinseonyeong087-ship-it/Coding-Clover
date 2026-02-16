@@ -2,11 +2,9 @@ package com.mysite.clover.Exam.dto;
 
 import com.mysite.clover.Exam.Exam;
 import lombok.Getter;
-import lombok.AllArgsConstructor;
 import java.util.List;
 
 @Getter
-@AllArgsConstructor
 public class AdminExamDto {
     private Long examId;
     private Long courseId;
@@ -16,9 +14,15 @@ public class AdminExamDto {
     private Integer timeLimit;
     private Integer level;
     private Integer passScore;
+    private java.time.LocalDateTime createdAt;
+    private boolean isReuploaded;
     private List<ExamQuestionDto> questions;
 
     public static AdminExamDto fromEntity(Exam exam) {
+        return fromEntity(exam, false);
+    }
+
+    public static AdminExamDto fromEntity(Exam exam, boolean isReuploaded) {
         List<ExamQuestionDto> questionDtos = exam.getQuestions().stream()
                 .map(q -> {
                     ExamQuestionDto dto = new ExamQuestionDto();
@@ -37,11 +41,29 @@ public class AdminExamDto {
                 exam.getExamId(),
                 exam.getCourse().getCourseId(),
                 exam.getCourse().getTitle(),
-                exam.getCreatedBy().getName(), // 강사 이름
+                exam.getCreatedBy().getName(),
                 exam.getTitle(),
                 exam.getTimeLimit(),
                 exam.getLevel(),
                 exam.getPassScore(),
+                null, // created_at not in DB, using null or we can omit
+                isReuploaded,
                 questionDtos);
+    }
+
+    public AdminExamDto(Long examId, Long courseId, String courseTitle, String instructorName, String title,
+            Integer timeLimit, Integer level, Integer passScore, java.time.LocalDateTime createdAt,
+            boolean isReuploaded, List<ExamQuestionDto> questions) {
+        this.examId = examId;
+        this.courseId = courseId;
+        this.courseTitle = courseTitle;
+        this.instructorName = instructorName;
+        this.title = title;
+        this.timeLimit = timeLimit;
+        this.level = level;
+        this.passScore = passScore;
+        this.createdAt = createdAt;
+        this.isReuploaded = isReuploaded;
+        this.questions = questions;
     }
 }

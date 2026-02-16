@@ -17,6 +17,7 @@ import com.mysite.clover.Enrollment.EnrollmentRepository;
 import com.mysite.clover.Enrollment.EnrollmentStatus;
 import com.mysite.clover.Exam.dto.ExamCreateRequest;
 import com.mysite.clover.Exam.dto.ExamResultDto;
+import com.mysite.clover.Exam.dto.AdminExamDto;
 import com.mysite.clover.ExamAttempt.ExamAttempt;
 import com.mysite.clover.ExamAttempt.ExamAttemptRepository;
 
@@ -39,8 +40,9 @@ public class ExamService {
     private final ExamAttemptRepository examAttemptRepository;
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
-
     private final ScoreHistoryRepository scoreHistoryRepository;
+    private final com.mysite.clover.Notification.NotificationRepository notificationRepository;
+    private final com.mysite.clover.Notification.NotificationService notificationService;
 
     // 시험 단건 조회 (ID로 조회, 없으면 예외 발생)
     public Exam getExam(Long examId) {
@@ -293,8 +295,58 @@ public class ExamService {
         return scoreHistoryRepository.findAll();
     }
 
-    // 관리자용: 시스템 전체 시험 목록 조회
-    public List<Exam> getAllExams() {
-        return examRepository.findAll();
+    // 관리자용: 시스템 전체 시험 목록 조회 (재업로드 상태 포함)
+    public List<AdminExamDto> getAllExamsForAdmin() {
+        List<Exam> exams = examRepository.findAll();
+        List<AdminExamDto> dtos = new ArrayList<>();
+
+        for (Exam exam : exams) {
+            boolean isReuploaded = false;
+            // 해당 강좌에 대해 이전에 삭제나 수정 요청 알림이 있었는지 확인
+            String linkUrlPart = "/course/" + exam.getCourse().getCourseId() + "/exam";
+
+            // 삭제(REMOVED)나 수정요청(REVISION) 알림이 있었는지 체크
+            long notificationCount = notificationRepository.findAll().stream()
+                    .filter(n -> n.getLinkUrl().contains(linkUrlPart) &&
+                            (n.getType().equals("EXAM_REMOVED") || n.getType().equals("EXAM_REVISION")))
+                    .count();
+
+            if (notificationCount > 0) {
+                isReuploaded = true;
+            }
+
+            dtos.add(AdminExamDto.fromEntity(exam, isReuploaded));
+        }
+        return dtos;
+    }
+
+    // 관리자용: 수정 요청
+    @Transactional
+    public void requestRevision(Long examId, String reason) {
+        Exam exam = getExam(examId);
+        Users instructor = exam.getCreatedBy();
+
+        String title = String.format("[시험 수정 요청] 강좌: %s, 사유: %s", exam.getCourse().getTitle(), reason);
+        String linkUrl = String.format("/instructor/exam/%d", exam.getExamId());
+
+        notificationService.createNotification(instructor, "EXAM_REVISION", title, linkUrl);
+    }
+
+    // 관리자용: 삭제 (사유 포함)
+    @Transactional
+    public void deleteExamWithReason(Long examId, String reason) {
+        Exam exam = getExam(examId);
+        Users instructor = exam.getCreatedBy();
+        Long courseId = exam.getCourse().getCourseId();
+        String courseTitle = exam.getCourse().getTitle();
+
+        // 1. 강사에게 삭제 알림 전송
+        String title = String.format("[시험 삭제 사유] 강좌: %s, 사유: %s", courseTitle, reason);
+        String linkUrl = String.format("/instructor/course/%d/exam", courseId); // 재업로드 가능한 페이지 링크
+
+        notificationService.createNotification(instructor, "EXAM_REMOVED", title, linkUrl);
+
+        // 2. 시험 삭제
+        examRepository.delete(exam);
     }
 }

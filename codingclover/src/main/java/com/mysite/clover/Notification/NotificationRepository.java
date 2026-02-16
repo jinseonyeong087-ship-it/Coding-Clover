@@ -12,4 +12,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
   List<Notification> findByUserAndCreatedAtAfterOrderByCreatedAtDesc(Users user, java.time.LocalDateTime date);
 
   long countByUserAndReadAtIsNull(Users user);
+
+  List<Notification> findByTypeAndLinkUrlContaining(String type, String linkUrlPart);
 }

@@ -57,7 +57,11 @@ function AdminNav() {
                             </MenubarContent>
                         </MenubarMenu>
                         <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent" onClick={() => { navigate('/coding-test') }}>코딩테스트</MenubarTrigger>
+                            <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent">문제관리</MenubarTrigger>
+                            <MenubarContent className="bg-white border-border rounded-none shadow-lg">
+                                <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => { navigate('/admin/coding-test') }}>코딩테스트</MenubarItem>
+                                <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => { navigate('/admin/exams') }}>시험 관리</MenubarItem>
+                            </MenubarContent>
                         </MenubarMenu>
                         <MenubarMenu>
                             <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent">커뮤니티</MenubarTrigger>

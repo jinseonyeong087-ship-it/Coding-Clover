@@ -65,7 +65,7 @@ public class ExamController {
 
                         // 3. 해당 강좌의 모든 시험 목록 조회 (공개 여부 무관)
                         List<Exam> exams = examRepository.findByCourse(course);
-                        
+
                         // 4. DTO로 변환하여 반환
                         return ResponseEntity.ok(exams.stream()
                                         .map(StudentExamDto::fromEntity)
@@ -241,16 +241,16 @@ public class ExamController {
                         // 강좌 조회
                         Course course = courseRepository.findById(courseId)
                                         .orElse(null);
-                        
+
                         if (course == null) {
                                 // 강좌가 없으면 false 반환
                                 return ResponseEntity.ok(false);
                         }
-                        
+
                         // 해당 강좌에 시험이 있는지 확인
                         List<Exam> exams = examRepository.findByCourse(course);
                         boolean examExists = !exams.isEmpty();
-                        
+
                         return ResponseEntity.ok(examExists);
                 } catch (Exception e) {
                         // 에러 발생시 false 반환
@@ -280,20 +280,34 @@ public class ExamController {
                                 .toList());
         }
 
-        // 관리자 : 전체 시험 목록 조회 (시험 관리용)
         @PreAuthorize("hasRole('ADMIN')")
         @GetMapping("/admin/exams")
         public ResponseEntity<List<com.mysite.clover.Exam.dto.AdminExamDto>> getAllExamsForAdmin() {
-                return ResponseEntity.ok(examService.getAllExams().stream()
-                                .map(com.mysite.clover.Exam.dto.AdminExamDto::fromEntity)
-                                .toList());
+                return ResponseEntity.ok(examService.getAllExamsForAdmin());
         }
 
-        // 관리자 : 시험 삭제 (강제 삭제)
+        // 관리자 : 시험 상세 조회 (문제 포함)
+        @PreAuthorize("hasRole('ADMIN')")
+        @GetMapping("/admin/exam/{examId}")
+        public ResponseEntity<com.mysite.clover.Exam.dto.AdminExamDto> getExamDetailForAdmin(
+                        @PathVariable Long examId) {
+                return ResponseEntity
+                                .ok(com.mysite.clover.Exam.dto.AdminExamDto.fromEntity(examService.getExam(examId)));
+        }
+
+        // 관리자 : 수정 요청
+        @PreAuthorize("hasRole('ADMIN')")
+        @PostMapping("/admin/exam/{examId}/revision")
+        public ResponseEntity<String> requestRevision(@PathVariable Long examId, @RequestBody String reason) {
+                examService.requestRevision(examId, reason);
+                return ResponseEntity.ok("수정 요청이 전송되었습니다.");
+        }
+
+        // 관리자 : 시험 삭제 (사유 포함)
         @PreAuthorize("hasRole('ADMIN')")
         @DeleteMapping("/admin/exam/{examId}")
-        public ResponseEntity<String> deleteExamByAdmin(@PathVariable Long examId) {
-                examService.deleteExam(examId);
+        public ResponseEntity<String> deleteExamByAdmin(@PathVariable Long examId, @RequestParam String reason) {
+                examService.deleteExamWithReason(examId, reason);
                 return ResponseEntity.ok("시험이 삭제되었습니다.");
         }
 }
