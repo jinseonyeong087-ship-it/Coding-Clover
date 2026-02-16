@@ -1,167 +1,257 @@
-# 🧑‍💻 준서(Junseo) 백엔드 시스템 흐름 및 구조 상세 (Backend System Architecture)
+# 🧑‍💻 준서(Junseo) 백엔드 시스템 심층 분석 (Deep Dive)
 
-이 문서는 **준서(wnstj999)**님이 구현한 백엔드 핵심 기능의 **데이터 흐름(Data Flow)**과 **파일 간 상호작용(Interaction)**을 중심으로, 시스템이 실제로 어떻게 동작하는지 면접관에게 설명할 수 있도록 구조화했습니다.
-모든 로직은 **Controller → Service → Repository**의 계층형 아키텍처를 따르며, 각 단계에서 전달되는 데이터(Entity, DTO)를 명시했습니다.
-
----
-
-## �️ 면접 대비: 시스템 동작 설명 가이드 (Script)
-
-면접관이 "이 기능은 어떻게 구현되었나요?"라고 물었을 때, **입력(Input) -> 처리(Process) -> 출력(Output)** 순서로 명확하게 답변할 수 있는 스크립트입니다.
-
-### 1. � Notice (공지사항) 시스템
-*   **Q: 공지사항은 어떻게 관리되나요?**
-*   **A:**
-    1.  사용자가 공지사항 목록을 요청하면, **NoticeController**가 요청을 받아 Service 계층을 호출합니다.
-    2.  **NoticeService**는 **DB에서 모든 공지를 가져온 뒤**, `VISIBLE` 상태인 것만 필터링(Stream API)하여 반환합니다.
-    3.  이를 통해 관리자는 공지사항을 미리 작성해두고, 원하는 시점에 `VISIBLE`로 변경하여 사용자에게 노출할 수 있습니다.
-
-### 2. ❓ QnA & Answer (질문과 답변) 시스템
-*   **Q: 질문 등록 시 알림 처리는 어떻게 되나요?**
-*   **A:**
-    1.  학생이 질문을 등록하면 **QnaService**가 질문을 DB에 저장합니다.
-    2.  저장이 완료되면 즉시 **NotificationService**를 호출하여 강좌 개설자(강사)에게 알림을 생성합니다.
-    3.  반대로 강사가 답변을 달면, **QnaAnswerService**가 답변을 저장함과 동시에 원본 질문의 상태를 `ANSWERED`로 변경하고, 학생에게 알림을 보냅니다.
-    4.  즉, **Service 간의 상호작용**을 통해 실시간 알림 시스템을 구현했습니다.
-
-### 3. 🔐 Users (인증 및 보안) 시스템
-*   **Q: 로그인 프로세스는 어떻게 동작하나요?**
-*   **A:**
-    1.  클라이언트가 ID/PW를 보내면, 제가 구현한 **ApiLoginFilter**가 JSON 데이터를 파싱하여 인증 토큰을 생성합니다.
-    2.  Spring Security의 **AuthenticationManager**가 DB에 저장된 비밀번호와 비교 검증합니다.
-    3.  검증에 성공하면 **ApiLoginSuccessHandler**가 실행되어 세션을 생성하고, **페이지 리다이렉트 없이 JSON 응답**만 프론트엔드에 전달합니다. (SPA 구조에 최적화)
-
-### 4. 💻 Problem & Submission (코딩 테스트 엔진)
-*   **Q: 사용자가 제출한 코드는 어떻게 실행되나요? (핵심 기능)**
-*   **A:**
-    1.  사용자가 코드를 제출하면 **ProblemController**가 받아서 **JavaNativeExecutor**라는 모듈을 호출합니다.
-    2.  Executor는 `Files.createTempDirectory()`로 **격리된 임시 폴더**를 생성합니다.
-    3.  `ProcessBuilder`를 사용해 외부 프로세스로 `javac`(컴파일)와 `java`(실행) 명령어를 실행합니다.
-    4.  이때 **무한 루프 방지**를 위해 10초의 타임아웃을 설정했습니다.
-    5.  실행 결과(표준 출력)를 캡처하여 문제의 정답과 비교하고, 그 결과를 채점하여 DB에 저장합니다.
-
-### 5. 💳 Payment & Wallet (결제 및 지갑) 시스템
-*   **Q: 결제 데이터 무결성은 어떻게 보장하나요?**
-*   **A:**
-    1.  프론트엔드에서 토스 결제 승인 후, 백엔드의 **PaymentService**가 토스 API를 호출하여 **결제 유효성(실제 승인 여부)**을 검증합니다.
-    2.  검증이 통과되면, **WalletIntegrationService**가 **트랜잭션(@Transactional)**을 시작합니다.
-    3.  이 트랜잭션 안에서 **[결제 기록 저장 + 사용자 포인트 충전 + 히스토리 생성]**이 원자적으로 수행됩니다.
-    4.  만약 하나라도 실패하면 전체가 롤백되어 데이터 불일치를 방지합니다.
-
-### 6. 🧠 AI Problem Generator (코딩 테스트 자동 생성) 시스템 🔥
-*   **Q: AI로 문제를 생성하는 기능은 어떻게 구현했나요?**
-*   **A:**
-    1.  **입력 단계**: 관리자가 문제 주제(예: "정렬")와 난이도를 입력하고 "생성" 버튼을 누릅니다.
-    2.  **프롬프트 엔지니어링**: React 프론트엔드에서 "너는 알고리즘 전문가다. 정답 코드를 포함해서 JSON으로 답해라"라는 **시스템 프롬프트**를 조립합니다.
-    3.  **AI 통신**: 백엔드(`ChatController`)의 `/ask` API로 프롬프트를 보냅니다.
-    4.  **Spring AI**: 백엔드는 **Spring AI** 라이브러리를 통해 LLM 모델과 통신하고 결과를 받아옵니다.
-    5.  **자동 완성**: 프론트엔드는 응답받은 JSON을 파싱하여, 문제 제목/설명뿐만 아니라 **실행 가능한 정답 코드**까지 에디터에 자동으로 채워 넣습니다.
-    6.  **검수**: 관리자는 AI가 짠 코드를 바로 실행해보고, 이상이 없으면 저장합니다. 이를 통해 **문제 출제 시간을 획기적으로 단축**했습니다.
+이 문서는 **준서(wnstj999)**님이 구현한 시스템의 **완전한 기술 명세**입니다. 단순한 요약이 아니라, **어떤 파일의 몇 번째 줄에서 어떤 코드가 실행되는지** 상세하게 분석하여, 면접이나 코드 리뷰 시 "이 코드는 이 줄에서 이렇게 동작합니다"라고 자신 있게 설명할 수 있도록 작성했습니다.
 
 ---
 
-## 📊 1. Notice (공지사항) 시스템 상세
+## 1. 📢 Notice (공지사항) 시스템 상세 분석
 
-### 🔄 시스템 흐름도 (Mermaid)
-```mermaid
-graph LR
-    User[사용자] -->|GET /api/notice| Controller[NoticeController]
-    Controller -->|getVisibleNotices()| Service[NoticeService]
-    Service -->|findAll()| Repo[NoticeRepository]
-    Repo -->|List&lt;Notice&gt;| DB[(Database)]
-    Service -- Filter(VISIBLE) --> Controller
-    Controller -- JSON --> User
+### 🎯 핵심 로직: 왜 서비스 단에서 필터링을 하나요?
+보통은 SQL `WHERE` 절로 거르지만, 여기서는 **자바 Stream API 활용 능력**을 보여주기 위해 서비스 계층에서 로직을 처리했습니다. `HIDDEN`(작성 중) 상태인 글을 제외하고 `VISIBLE`(공개) 글만 걸러냅니다.
+
+### 📂 코드 워크스루 (Code Walkthrough)
+
+#### 1️⃣ `NoticeService.java` (공지 필터링 로직)
+> **위치**: `src/main/java/com/mysite/clover/Notice/NoticeService.java`
+
+```java
+20: @Transactional(readOnly = true)
+21: public List<Notice> getVisibleNotices() {
+22:     // [Step 1] DB에서 일단 모든 공지사항을 가져옵니다.
+23:     List<Notice> all = noticeRepository.findAllByOrderByCreatedAtDesc();
+24: 
+25:     // [Step 2] 자바 8 Stream API를 사용하여 'VISIBLE' 상태인 것만 메모리에서 필터링합니다.
+26:     List<Notice> visible = all.stream()
+27:             .filter(notice -> {
+28:                 // 디버깅을 위해 로그를 출력하고 true/false를 반환합니다.
+29:                 return notice.getStatus() == NoticeStatus.VISIBLE;
+30:             })
+31:             .toList();
+32:     
+33:     return visible;
+34: }
 ```
-
-### 📂 파일 간 상호작용 상세
-1.  **NoticeController.java**
-    *   **역할**: 클라이언트의 요청(`GET`, `POST`)을 받음.
-    *   **동작**: 사용자가 목록을 요청하면 `NoticeService.getVisibleNotices()`를 호출합니다.
-2.  **NoticeService.java**
-    *   **로직**:
-        1.  `NoticeRepository.findAllByOrderByCreatedAtDesc()`를 호출하여 **모든 공지**를 DB에서 가져옵니다.
-        2.  가져온 목록 중 `status == NoticeStatus.VISIBLE`인 것만 **Stream API로 필터링**하여 반환합니다.
-        3.  (관리자라면 `getAllNotices()`로 필터링 없이 모두 반환)
+*   **Line 23**: `noticeRepository.findAll...`로 DB의 모든 데이터를 조회합니다.
+*   **Line 26-31**: **핵심 로직**입니다. `.filter()` 메서드 안에서 `getStatus() == VISIBLE` 조건을 검사하여, 참인 요소만 리스트로 다시 수집(`toList`)합니다.
 
 ---
 
-## 📊 4. Problem & Submission (코딩 테스트 엔진) 상세
+## 2. ❓ QnA & Notification (질문 및 알림) 상세 분석
 
-### 🔄 시스템 흐름도 (Mermaid)
-```mermaid
-graph TD
-    User -->|코드 제출| Controller[ProblemController]
-    Controller -->|run(code)| Executor[JavaNativeExecutor]
-    Executor -->|1. 임시폴더 생성| FS[File System]
-    Executor -->|2. javac 컴파일| Process[외부 프로세스]
-    Executor -->|3. java 실행| Process
-    Process -->|Output/Error| Executor
-    Executor -- 결과 반환 --> Controller
-    Controller -->|save()| SubService[SubmissionService]
-    SubService -->|저장| DB
+### 🎯 핵심 로직: 서비스 간의 책임 분리
+질문을 저장하는 `QnaService`가 알림을 전송하는 로직까지 구구절절 가지고 있으면 코드가 지저분해집니다. 따라서 **"질문 저장"**과 **"알림 전송"**을 명확히 분리하고, 필요한 시점에 **메서드 호출**로 연결했습니다.
+
+### 📂 코드 워크스루 (Code Walkthrough)
+
+#### 1️⃣ `QnaService.java` (질문 등록 및 알림 트리거)
+> **위치**: `src/main/java/com/mysite/clover/Qna/QnaService.java`
+
+```java
+43: @Transactional
+44: public void create(String title, String question, Users users, Course course) {
+45:     // [Step 1] 질문 엔티티 생성 및 데이터 세팅
+46:     Qna q = new Qna();
+47:     q.setTitle(title);
+        // ... (중략)
+52:     qnaRepository.save(q); // DB에 질문 저장 (Insert)
+53: 
+54:     // [Step 2] 저장이 완료되면 즉시 NotificationService를 호출합니다. (이벤트 발생)
+55:     notificationService.createNotification(
+56:         course.getCreatedBy(), // 수신자: 강좌 개설자(강사)
+57:         "NEW_QNA_QUESTION",    // 알림 타입
+58:         "'" + course.getTitle() + "' 강좌에 새로운 질문이..." // 내용
+59:         "/instructor/qna/" + q.getQnaId() // 클릭 시 이동할 링크
+60:     );
+61: }
 ```
+*   **Line 52**: 먼저 질문을 DB에 커밋합니다. 질문 ID가 생성되어야 알림 링크를 만들 수 있기 때문입니다.
+*   **Line 55**: 다른 서비스인 `NotificationService`의 메서드를 호출하여 책임을 넘깁니다.
 
-### 📂 파일 간 상호작용 상세
-1.  **ProblemController.java**
-    *   **입력**: `ExecutionRequest` (소스코드, 입력값)
-    *   **동작**: `JavaNativeExecutor.run()`을 호출해 코드를 실행합니다.
-2.  **JavaNativeExecutor.java** (채점 엔진)
-    *   **격리**: `Files.createTempDirectory()`로 **고유한 임시 폴더**를 만듭니다.
-    *   **실행**: `ProcessBuilder`로 `javac`와 `java` 명령어를 실행합니다. 이때 타임아웃(10초)을 걸어 무한 루프를 방지합니다.
-    *   **반환**: 실행 결과(표준 출력, 에러)를 `ExecutionResponse` 객체에 담아 반환합니다.
-3.  **Controller (채점 로직)**
-    *   `Executor`가 반환한 `output`과 문제의 `expectedOutput`을 비교합니다.
-    *   일치하면 `PASS`, 다르면 `FAIL` 또는 `ERROR` 상태로 판정합니다.
+#### 2️⃣ `NotificationService.java` (알림 실제 생성)
+> **위치**: `src/main/java/com/mysite/clover/Notification/NotificationService.java`
+
+```java
+21: public void createNotification(Users user, String type, String title, String linkUrl) {
+22:     Notification notification = new Notification();
+23:     notification.setUser(user); // 알림 받을 사람
+24:     notification.setType(type); // 알림 종류
+        // ...
+28:     notificationRepository.save(notification); // 알림 테이블에 저장
+29: }
+```
+*   **Line 21-29**: 이 메서드는 **누가 호출했는지 신경 쓰지 않습니다.** 오직 알림 데이터를 받아서 DB에 저장하는 역할만 수행합니다. 재사용성이 높습니다.
 
 ---
 
-## � 10. AI Problem Generator (코딩 테스트 자동 생성) 시스템 상세 🔥
+## 3. 🔐 Users (인증) - Custom JSON Login 상세 분석
 
-### 🔄 시스템 흐름도 (Mermaid)
+### 🎯 핵심 로직: SPA(React)를 위한 JSON 통신
+Spring Security의 기본 `UsernamePasswordAuthenticationFilter`는 `x-www-form-urlencoded` 방식만 처리하고, 로그인 성공 시 리다이렉트를 수행합니다. 우리는 **JSON (`application/json`)**으로 ID/PW를 받고, **JSON으로 응답**해야 하므로 필터와 핸들러를 커스터마이징했습니다.
 
-```mermaid
-graph TD
-    Admin[관리자] -- 주제/난이도 입력 --> React[CodingTestCreate.jsx]
-    React -- 프롬프트 구성 (JSON 포맷 강제 + 정답 포함 지시) --> Controller[ChatController]
-    Controller -- GET /ask (Prompt) --> AI[Spring AI ChatClient]
-    AI -- LLM API Call --> Cloud[LLM Provider]
-    Cloud -- JSON Response --> AI
-    AI -- ChatDto --> Controller
-    Controller -- JSON String --> React
-    React -- Parsing & Auto-Fill --> Editor[Monaco Editor]
+### 📂 코드 워크스루 (Code Walkthrough)
+
+#### 1️⃣ `ApiLoginFilter.java` (JSON 요청 가로채기)
+> **위치**: `src/main/java/com/mysite/clover/Users/ApiLoginFilter.java`
+
+```java
+41: Map<String, String> loginData = objectMapper.readValue(request.getInputStream(),
+42:     new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {});
+43: 
+45: String loginId = loginData.get("loginId");
+46: String password = loginData.get("password");
+52: UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(loginId, password);
 ```
+*   **Line 41**: `request.getParameter()` 대신 `request.getInputStream()`을 통해 HTTP Body의 원본 데이터를 읽어옵니다. Jackson(`objectMapper`)을 사용해 JSON을 Map으로 변환합니다.
+*   **Line 52**: 추출한 ID/PW로 인증 토큰을 만들어서 매니저에게 넘깁니다.
 
-### 📂 파일 및 데이터 흐름 상세
+#### 2️⃣ `ApiLoginSuccess.java` (JSON 응답 보내기)
+> **위치**: `src/main/java/com/mysite/clover/Users/ApiLoginSuccess.java`
 
-1.  **Frontend (React) - `CodingTestCreate.jsx`**
-    *   **Role**: **프롬프트 엔지니어링 수행**. AI에게 전달할 명령어를 여기서 조립합니다.
-    *   **System Prompt 구성**:
-        *   "너는 알고리즘 출제 전문가다."
-        *   **제약 조건**: `Scanner` 사용 금지, `main` 메서드 내 테스트 케이스 하드코딩, 클래스명 `main` 고정.
-        *   **Output Format**: 엄격한 **JSON 포맷**으로 제목, 설명, 정답 코드를 요구합니다.
-    *   **Action**: 사용자가 "생성" 버튼을 누르면 `/ask` API를 호출합니다.
-    *   **Post-Process**: 응답받은 JSON 문자열을 파싱하여, 문제 제목/설명/코드 에디터에 값을 **자동으로 채워 넣습니다**.
+```java
+36: Map<String, Object> responseData = Map.of(
+37:     "message", "로그인 성공",
+38:     "userId", user.getUserId(),
+        // ...
+43:     "status", user.getStatus());
+44: 
+45: objectMapper.writeValue(response.getWriter(), responseData);
+```
+*   **Line 36-43**: 프론트엔드가 필요한 사용자 정보를 `Map`에 담습니다.
+*   **Line 45**: `response.sendRedirect(...)`를 하지 않고, `response.getWriter()`에 직접 JSON 문자열을 써서 응답합니다. 이를 통해 페이지 새로고침 없는 로그인이 가능합니다.
 
-2.  **Backend (Spring Boot) - `ChatController.java`**
-    *   **Role**: **LLM Gateway**. 프론트엔드의 요청을 받아 AI 모델과 통신합니다.
-    *   **Endpoint**: `@GetMapping("/ask")`
-    *   **Logic**:
-        ```java
-        // ChatController.java
-        public ChatDto ask(@RequestParam String message) {
-            String answer = chatClient.prompt().user(message).call().content();
-            return new ChatDto(answer); // AI의 응답을 DTO로 포장하여 반환
-        }
-        ```
-    *   **특징**: 이 컨트롤러는 "채팅" 기능뿐만 아니라, 프롬프트 내용에 따라 문제를 생성하는 등 **다목적 AI 인터페이스**로 활용됩니다.
+---
 
-3.  **Data Flow (데이터 흐름)**
-    *   **Request**: `message="주제: 정렬, 난이도: 중급, 조건: 정답 코드 포함..."`
-    *   **Response**:
-        ```json
-        {
-          "title": "버블 정렬 구현하기",
-          "baseCode": "public class main { ... solution() ... }", // 정답이 포함된 실행 가능한 코드
-          "expectedOutput": "1 2 3 4 5"
-        }
-        ```
+## 4. 💻 Problem & Executor (코딩 테스트 엔진) 상세 분석 🔥
+
+### 🎯 핵심 로직: 격리된 샌드박스 (Sandbox)
+사용자 코드를 메인 서버 프로세스에서 직접 실행하면 위험합니다. 따라서 **'파일 생성 -> 프로세스 분리 -> 타임아웃 감시'**의 3단계 안전장치를 `JavaNativeExecutor`에 구현했습니다.
+
+### 📂 코드 워크스루 (Code Walkthrough)
+
+#### 1️⃣ `ProblemController.java` (실행 요청)
+> **위치**: `src/main/java/com/mysite/clover/Problem/ProblemController.java`
+
+```java
+79: ExecutionResponse response = codeExecutor.run(request);
+```
+*   **Line 79**: 컨트롤러는 복잡한 실행 과정을 모릅니다. 단지 `request`(코드)를 주고 `response`(결과)를 받을 뿐입니다.
+
+#### 2️⃣ `JavaNativeExecutor.java` (실행 엔진)
+> **위치**: `src/main/java/com/mysite/clover/Problem/JavaNativeExecutor.java`
+
+```java
+23: try {
+24:   // [Step 1] 격리: 임시 폴더 생성
+25:   tempDir = Files.createTempDirectory("java-exec-");
+26: 
+27:   // [Step 2] 파일화: 메모리의 코드를 main.java 파일로 저장
+28:   File sourceFile = new File(tempDir.toFile(), "main.java");
+30:   Files.write(sourceFile.toPath(), request.getCode().getBytes(StandardCharsets.UTF_8));
+31: 
+33:   // [Step 3] 컴파일: javac 명령 실행
+34:   ProcessBuilder compileBuilder = new ProcessBuilder("javac", "-encoding", "UTF-8", sourceFile.getAbsolutePath());
+35:   Process compileProcess = compileBuilder.start();
+37:   boolean compiled = compileProcess.waitFor(5, TimeUnit.SECONDS); // 5초 컴파일 제한
+53: 
+57:   // [Step 4] 실행: java 명령 실행
+58:   ProcessBuilder runBuilder = new ProcessBuilder("java", "-cp", ".", "main");
+59:   Process runProcess = runBuilder.start();
+60: 
+74:   // [Step 5] 감시: 10초 타임아웃 (무한루프 방지)
+75:   boolean finished = runProcess.waitFor(10, TimeUnit.SECONDS);
+76: 
+77:   if (!finished) {
+78:     runProcess.destroyForcibly(); // [중요] 시간 초과 시 강제 종료
+79:     return ExecutionResponse.builder().error("시간 초과 (10초)").build();
+80:   }
+```
+*   **Line 25**: `java-exec-293848` 같은 랜덤 이름의 폴더를 만듭니다. 동시 접속자가 있어도 파일이 섞이지 않습니다.
+*   **Line 57-59**: `ProcessBuilder`를 통해 JVM을 새로 띄웁니다.
+*   **Line 74**: 이 줄이 핵심입니다. 코드가 끝날 때까지 무작정 기다리지 않고, **최대 10초까지만** 기다립니다.
+
+---
+
+## 5. 💳 Payment (결제) 상세 분석
+
+### 🎯 핵심 로직: 트랜잭션과 교차 검증
+결제는 돈이 오가는 민감한 기능입니다. **(1) 토스 서버 검증 (2) 포인트 지급 (3) 기록 저장** 이 세 가지가 한 치의 오차도 없이 동시에 성공하거나, 동시에 실패해야 합니다.
+
+### 📂 코드 워크스루 (Code Walkthrough)
+
+#### 1️⃣ `PaymentService.java` (토스 검증)
+> **위치**: `src/main/java/com/mysite/clover/Payment/PaymentService.java`
+
+```java
+65: @Transactional
+66: public Payment confirmPayment(String orderId, String paymentKey, Integer amount, Long userId) {
+67:     
+68:     // [Step 1] 토스 서버에 승인 요청 (검증)
+69:     confirmTossPayment(paymentKey, orderId, amount);
+70: 
+71:     // ... 유저 확인 ...
+76:     Payment payment = new Payment();
+        // ... 데이터 세팅 ...
+85:     Payment savedPayment = paymentRepository.save(payment); // 결제 기록 저장
+87:     return savedPayment;
+88: }
+```
+*   **Line 69**: `confirmTossPayment` 내부에서 `RestTemplate`으로 토스 API를 호출합니다. 여기서 예외가 터지면(`throw Exception`) 아래 로직은 실행되지 않고 롤백됩니다.
+
+#### 2️⃣ `WalletIntegrationService.java` (포인트 지급 트랜잭션)
+> **위치**: `src/main/java/com/mysite/clover/UserWallet/WalletIntegrationService.java`
+
+```java
+19: @Transactional
+20: public UserWallet chargePoints(Long userId, Integer amount, Long paymentId) {
+21:     // [Step 2] 사용자 지갑 잔액 증가 (UPDATE)
+22:     UserWallet wallet = userWalletService.chargePoints(userId, amount);
+23:     
+24:     // [Step 3] 충전 내역 히스토리 저장 (INSERT)
+25:     walletHistoryService.recordCharge(userId, amount, paymentId);
+26:     
+27:     return wallet;
+28: }
+```
+*   **Line 19**: `@Transactional`이 선언되어 있어, Line 22가 성공하고 Line 25가 실패하면 Line 22의 잔액 증가도 **자동으로 취소(Rollback)** 됩니다. 데이터 무결성의 핵심입니다.
+
+---
+
+## 6. 🧠 AI Problem Generator (자동 출제) 상세 분석
+
+### 🎯 핵심 로직: 시스템 프롬프트 엔지니어링
+AI는 지시 사항이 구체적일수록 좋은 결과를 냅니다. 프론트엔드에서 **"JSON 포맷을 지켜라"**, **"Scanner 쓰지 마라"**, **"클래스명은 main으로 해라"** 등의 강력한 제약 조건을 문자열로 조합하여 백엔드로 보냅니다.
+
+### 📂 코드 워크스루 (Code Walkthrough)
+
+#### 1️⃣ `CodingTestCreate.jsx` (프롬프트 조립)
+> **위치**: `frontend/src/pages/coding/CodingTestCreate.jsx`
+
+```javascript
+134: const systemPrompt = `
+135:   당신은 알고리즘 문제 출제 전문가입니다. 다음 조건에 맞춰 Java 코딩 테스트 문제를 하나 만들어주세요.
+136:   ...
+144:   1. Scanner나 BufferedReader 같은 입력 클래스를 사용하지 마십시오.
+145:   2. 테스트에 필요한 입력값은 main 메서드 내부에 변수로 직접 선언(하드코딩)하십시오.
+150:   [JSON 응답 형식 (엄격 준수)]
+151:   {
+152:     "title": "문제 제목",
+154:     "baseCode": "...",
+155:     "expectedOutput": "..."
+156:   }
+157: `;
+```
+*   **Line 134-157**: 여기가 AI의 뇌를 제어하는 부분입니다. 특히 **Line 150-156**에서 JSON 스키마를 예시로 명확히 보여주어 파싱 가능한 응답을 유도했습니다.
+
+#### 2️⃣ `ChatController.java` (AI 호출 게이트웨이)
+> **위치**: `src/main/java/com/mysite/clover/ChatBot/ChatController.java`
+
+```java
+19: @GetMapping("/ask")
+20: public ChatDto ask(@RequestParam(value="message") String message) {
+23:     String Chatanswer = chatClient.prompt()
+24:         .user(message)
+25:         .call()
+26:         .content();
+28:     return new ChatDto(Chatanswer);
+```
+*   **Line 23-26**: Spring AI의 `ChatClient`를 체이닝 메서드(`prompt().user().call().content()`)로 호출하여 간결하게 통신합니다. 백엔드는 내용을 해석하지 않고 토스만 합니다.
