@@ -105,7 +105,7 @@ const CodingTestDetail = () => {
         try {
           const response = await axios.get(`/api/submission/history?userId=${user.userId}`);
           const submission = response.data.find(s => s.id === Number(submissionId));
-          
+
           if (submission && submission.code) {
             setCode(submission.code);
           }
@@ -115,7 +115,7 @@ const CodingTestDetail = () => {
         }
       }
     };
-    
+
     // 문제가 선택된 후에 실행되도록 약간의 지연 추가
     if (selectedTask) {
       loadSubmissionCode();
@@ -241,8 +241,9 @@ const CodingTestDetail = () => {
     setResult(null);
 
     try {
+      const userId = user?.userId || user?.id;
       const res = await axios.post(`/api/problems/${selectedTask.problemId}/submit`, {
-        userId: user.userId,
+        userId,
         code
       });
       const data = res.data;

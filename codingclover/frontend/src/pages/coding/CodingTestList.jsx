@@ -5,7 +5,7 @@ import Nav from '@/components/Nav';
 import Tail from '@/components/Tail';
 import ChatBot from '../student/ChatBot';
 import { Plus, Search, Code2, Trophy, Clock, CheckCircle2, ChevronRight, BarChart3, Filter } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +23,7 @@ const CodingTestList = () => {
   });
 
   const [problems, setProblems] = useState([]);
+  const [submissionHistory, setSubmissionHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Filters
@@ -34,15 +35,41 @@ const CodingTestList = () => {
     const fetchProblems = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/api/problems');
-        setProblems(Array.isArray(response.data) ? response.data : []);
+        const [problemsRes, historyRes] = await Promise.all([
+          axios.get('/api/problems'),
+          fetchUserHistory()
+        ]);
+        setProblems(Array.isArray(problemsRes.data) ? problemsRes.data : []);
       } catch (error) {
         console.error("데이터 로드 실패:", error);
-        toast.error("문제 목록을 불러오지 못했습니다.");
+        toast.error("데이터를 불러오지 못했습니다.");
       } finally {
         setLoading(false);
       }
     };
+
+    const fetchUserHistory = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem('users'));
+        const userId = user?.userId || user?.id || user?.loginId;
+        console.log("Current User from Storage:", user);
+        console.log("Extracted User ID:", userId);
+
+        if (!userId) {
+          console.warn("No User ID found in localStorage");
+          return { data: [] };
+        }
+
+        const response = await axios.get(`/api/submission/history?userId=${userId}`);
+        console.log("Submission History Loaded:", response.data);
+        setSubmissionHistory(response.data || []);
+        return response;
+      } catch (error) {
+        console.error("제출 내역 로드 실패:", error);
+        return { data: [] };
+      }
+    };
+
     fetchProblems();
   }, []);
 
@@ -75,6 +102,26 @@ const CodingTestList = () => {
       case 'HARD': return "Lev.3 고급";
       default: return "Lev.0";
     }
+  };
+
+  const getProblemStatus = (problemId) => {
+    if (!submissionHistory || submissionHistory.length === 0) return null;
+
+    // Ensure both IDs are numbers for reliable comparison and check both naming conventions
+    const attempts = submissionHistory.filter(h => {
+      const hId = h.problemId || h.problem_id || h.id;
+      return Number(hId) === Number(problemId);
+    });
+
+    if (attempts.length === 0) return null;
+
+    // Check for any successful attempt
+    const isPassed = attempts.some(h => {
+      const s = String(h.status || "").toUpperCase();
+      return s === 'PASS' || s === 'SOLVE' || s === 'SOLVED' || s === 'SUCCESS' || s === 'ACCEPTED';
+    });
+
+    return isPassed ? 'PASS' : 'FAIL';
   };
 
   return (
@@ -164,11 +211,17 @@ const CodingTestList = () => {
                       <Badge variant="outline" className={`rounded-md px-2.5 py-1 font-bold border ${getDifficultyColor(problem.difficulty)}`}>
                         {getDifficultyLabel(problem.difficulty)}
                       </Badge>
-                      {/* {problem.status === 'PASS' && (
-                      <Badge className="bg-emerald-500 text-white border-0">
-                        <CheckCircle2 className="w-3 h-3 mr-1" /> 성공
-                      </Badge>
-                    )} */}
+                      {getProblemStatus(problem.problemId) === 'PASS' ? (
+                        <div className="flex items-center text-emerald-500 font-bold text-xs gap-1 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100 shadow-sm animate-in fade-in zoom-in duration-300">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>성공</span>
+                        </div>
+                      ) : getProblemStatus(problem.problemId) === 'FAIL' ? (
+                        <div className="flex items-center text-rose-500 font-bold text-xs gap-1 bg-rose-50 px-2 py-1 rounded-full border border-rose-100 shadow-sm animate-in fade-in zoom-in duration-300">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>도전 중</span>
+                        </div>
+                      ) : null}
                     </div>
                     <CardTitle className="text-xl font-bold text-gray-900 line-clamp-1 group-hover:text-primary transition-colors">
                       {problem.title}

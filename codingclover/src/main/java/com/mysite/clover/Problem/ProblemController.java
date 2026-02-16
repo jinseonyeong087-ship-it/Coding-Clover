@@ -91,36 +91,33 @@ public class ProblemController {
     String status = "FAIL";
     int totalCases = 1;
     int passedCases = 0;
+    String message = "";
 
     // 2. 코드 실행
     ExecutionResponse res = codeExecutor.run(request);
     totalTime = res.getExecutionTime();
 
-    // 3. 에러 처리
+    // 3. 상태 결정 (PASS, FAIL, ERROR)
     if (res.getError() != null && !res.getError().isEmpty()) {
-      return ResponseEntity.ok(GradingResult.builder()
-          .status("ERROR")
-          .totalCases(1)
-          .passedCases(0)
-          .message("실행 중 에러: " + res.getError())
-          .executionTime(totalTime)
-          .build());
+      status = "ERROR";
+      message = "실행 중 에러: " + res.getError();
+    } else {
+      String actual = res.getOutput() != null ? res.getOutput().trim() : "";
+      String expected = problem.getExpectedOutput() != null ? problem.getExpectedOutput().trim() : "";
+
+      if (!expected.isEmpty() && actual.equals(expected)) {
+        status = "PASS";
+        passedCases = 1;
+        message = "정답입니다!";
+      } else {
+        status = "FAIL";
+        message = "오답입니다.\n[예상]\n" + expected + "\n[실행결과]\n" + actual;
+      }
     }
 
-    // 4. 결과 비교
-    String actual = res.getOutput() != null ? res.getOutput().trim() : "";
-    String expected = problem.getExpectedOutput() != null ? problem.getExpectedOutput().trim() : "";
-
-    if (!expected.isEmpty() && actual.equals(expected)) {
-      status = "PASS";
-      passedCases = 1;
-    }
-
-    String message = "PASS".equals(status) ? "정답입니다!" : "오답입니다.\n[예상]\n" + expected + "\n[실행결과]\n" + actual;
-
-    // 5. 제출 이력 저장 (회원일 경우에만)
+    // 4. 제출 이력 저장 (회원일 경우에만)
     if (request.getUserId() != null) {
-      log.info("Saving submission for User ID: {}", request.getUserId());
+      log.info("Saving submission for User ID: {}, Status: {}", request.getUserId(), status);
       final long finalTotalTime = totalTime;
       final String finalStatus = status;
       try {
