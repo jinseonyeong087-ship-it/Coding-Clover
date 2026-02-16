@@ -310,4 +310,13 @@ public class ExamController {
                 examService.deleteExamWithReason(examId, reason);
                 return ResponseEntity.ok("시험이 삭제되었습니다.");
         }
+
+        // 관리자 : 특정 시험에 대한 학생들의 응시 이력 조회
+        @PreAuthorize("hasRole('ADMIN')")
+        @GetMapping("/admin/exam/{examId}/attempts")
+        public ResponseEntity<List<ExamAttemptDto>> getExamAttemptsForAdmin(@PathVariable Long examId) {
+                return ResponseEntity.ok(examService.getAttemptsByExam(examId).stream()
+                                .map(ExamAttemptDto::fromEntity)
+                                .toList());
+        }
 }

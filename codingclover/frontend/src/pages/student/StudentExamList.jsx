@@ -79,9 +79,10 @@ const StudentExamList = () => {
     };
 
     // Pagination Logic - Available Exams
-    const totalAvailablePages = Math.ceil(availableExams.length / itemsPerPage);
+    const sortedAvailableExams = [...availableExams].sort((a, b) => (b.examId || 0) - (a.examId || 0));
+    const totalAvailablePages = Math.ceil(sortedAvailableExams.length / itemsPerPage);
     const availableStartIndex = (availablePage - 1) * itemsPerPage;
-    const currentAvailableExams = availableExams.slice(availableStartIndex, availableStartIndex + itemsPerPage);
+    const currentAvailableExams = sortedAvailableExams.slice(availableStartIndex, availableStartIndex + itemsPerPage);
 
     const handleAvailablePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalAvailablePages) {
@@ -90,9 +91,10 @@ const StudentExamList = () => {
     };
 
     // Pagination Logic - History
-    const totalHistoryPages = Math.ceil(scoreHistory.length / itemsPerPage);
+    const sortedScoreHistory = [...scoreHistory].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const totalHistoryPages = Math.ceil(sortedScoreHistory.length / itemsPerPage);
     const historyStartIndex = (historyPage - 1) * itemsPerPage;
-    const currentScoreHistory = scoreHistory.slice(historyStartIndex, historyStartIndex + itemsPerPage);
+    const currentScoreHistory = sortedScoreHistory.slice(historyStartIndex, historyStartIndex + itemsPerPage);
 
     const handleHistoryPageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalHistoryPages) {
@@ -120,186 +122,206 @@ const StudentExamList = () => {
 
             <main className="flex-1 container mx-auto px-6 py-12">
                 <div className="max-w-5xl mx-auto">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-8">
-                        <TabsTrigger value="available">응시 가능한 시험</TabsTrigger>
-                        <TabsTrigger value="history">나의 시험 결과</TabsTrigger>
-                    </TabsList>
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 mb-8">
+                            <TabsTrigger value="available">응시 가능한 시험</TabsTrigger>
+                            <TabsTrigger value="history">나의 시험 결과</TabsTrigger>
+                        </TabsList>
 
-                    <TabsContent value="available">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Play className="w-5 h-5 text-primary" />
-                                    응시 가능한 시험 목록
-                                </CardTitle>
-                                <CardDescription>
-                                    현재 응시 가능한 시험은 총 {availableExams.length}개입니다.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                {loading ? (
-                                    <div className="flex justify-center py-10">
-                                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                                    </div>
-                                ) : availableExams.length === 0 ? (
-                                    <div className="text-center py-20 text-muted-foreground">
-                                        현재 응시 가능한 시험이 없습니다.
-                                    </div>
-                                ) : (
-                                    <>
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>강좌명</TableHead>
-                                                    <TableHead>시험 제목</TableHead>
-                                                    <TableHead>난이도</TableHead>
-                                                    <TableHead>제한시간</TableHead>
-                                                    <TableHead>합격기준</TableHead>
-                                                    <TableHead className="text-right">응시</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {currentAvailableExams.map((exam) => (
-                                                    <TableRow key={exam.examId}>
-                                                        <TableCell className="text-muted-foreground">{exam.courseTitle}</TableCell>
-                                                        <TableCell className="font-semibold">{exam.title}</TableCell>
-                                                        <TableCell>{getLevelBadge(exam.courseLevel || exam.level)}</TableCell>
-                                                        <TableCell>{exam.timeLimit}분</TableCell>
-                                                        <TableCell>{exam.passScore}점</TableCell>
-                                                        <TableCell className="text-right">
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() => handleStartExam(exam.examId)}
-                                                                className="bg-primary hover:bg-primary/90"
-                                                            >
-                                                                시험 시작
-                                                            </Button>
-                                                        </TableCell>
+                        <TabsContent value="available">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Play className="w-5 h-5 text-primary" />
+                                        응시 가능한 시험 목록
+                                    </CardTitle>
+                                    <CardDescription>
+                                        현재 응시 가능한 시험은 총 {availableExams.length}개입니다.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {loading ? (
+                                        <div className="flex justify-center py-10">
+                                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                        </div>
+                                    ) : availableExams.length === 0 ? (
+                                        <div className="text-center py-20 text-muted-foreground">
+                                            현재 응시 가능한 시험이 없습니다.
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>강좌명</TableHead>
+                                                        <TableHead>시험 제목</TableHead>
+                                                        <TableHead>난이도</TableHead>
+                                                        <TableHead>제한시간</TableHead>
+                                                        <TableHead>합격기준</TableHead>
+                                                        <TableHead className="text-right">응시</TableHead>
                                                     </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {currentAvailableExams.map((exam) => (
+                                                        <TableRow key={exam.examId}>
+                                                            <TableCell className="text-muted-foreground">{exam.courseTitle}</TableCell>
+                                                            <TableCell className="font-semibold">{exam.title}</TableCell>
+                                                            <TableCell>{getLevelBadge(exam.courseLevel || exam.level)}</TableCell>
+                                                            <TableCell>{exam.timeLimit}분</TableCell>
+                                                            <TableCell>{exam.passScore}점</TableCell>
+                                                            <TableCell className="text-right">
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={() => handleStartExam(exam.examId)}
+                                                                    className="bg-primary hover:bg-primary/90"
+                                                                >
+                                                                    시험 시작
+                                                                </Button>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
 
-                                        {/* Available Exams Pagination */}
-                                        {availableExams.length > itemsPerPage && (
-                                            <div className="flex justify-center items-center gap-4 mt-6 border-t pt-4">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleAvailablePageChange(availablePage - 1)}
-                                                    disabled={availablePage === 1}
-                                                >
-                                                    <ChevronLeft className="w-4 h-4" />
-                                                    이전
-                                                </Button>
-                                                <span className="text-sm text-muted-foreground">
-                                                    {availablePage} / {totalAvailablePages}
-                                                </span>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleAvailablePageChange(availablePage + 1)}
-                                                    disabled={availablePage === totalAvailablePages}
-                                                >
-                                                    다음
-                                                    <ChevronRight className="w-4 h-4" />
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
+                                            {/* Available Exams Pagination */}
+                                            {totalAvailablePages > 1 && (
+                                                <div className="flex justify-center items-center gap-2 mt-8 border-t pt-8">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleAvailablePageChange(availablePage - 1)}
+                                                        disabled={availablePage === 1}
+                                                        className="h-9 px-3 rounded-none border-gray-300"
+                                                    >
+                                                        <ChevronLeft className="w-4 h-4" />
+                                                    </Button>
 
-                    <TabsContent value="history">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Trophy className="w-5 h-5 text-yellow-500" />
-                                    나의 시험 결과
-                                </CardTitle>
-                                <CardDescription>
-                                    최근 응시한 시험 결과입니다.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                {loading ? (
-                                    <div className="flex justify-center py-10">
-                                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                                    </div>
-                                ) : scoreHistory.length === 0 ? (
-                                    <div className="text-center py-20 text-muted-foreground">
-                                        아직 응시한 시험 기록이 없습니다.
-                                    </div>
-                                ) : (
-                                    <>
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>강좌명</TableHead>
-                                                    <TableHead>시험 제목</TableHead>
-                                                    <TableHead>응시 차수</TableHead>
-                                                    <TableHead>점수</TableHead>
-                                                    <TableHead>결과</TableHead>
-                                                    <TableHead className="text-right">응시 일시</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {currentScoreHistory.map((history) => (
-                                                    <TableRow key={history.historyId}>
-                                                        <TableCell className="text-muted-foreground text-sm">{history.courseTitle || '강좌 정보 없음'}</TableCell>
-                                                        <TableCell className="font-medium">{history.examTitle}</TableCell>
-                                                        <TableCell>{history.attemptNo}회차</TableCell>
-                                                        <TableCell>{history.score}점</TableCell>
-                                                        <TableCell>
-                                                            {history.passed ? (
-                                                                <Badge className="bg-emerald-500 hover:bg-emerald-600 min-w-[60px] justify-center">합격</Badge>
-                                                            ) : (
-                                                                <Badge variant="destructive" className="min-w-[60px] justify-center">불합격</Badge>
-                                                            )}
-                                                        </TableCell>
-                                                        <TableCell className="text-right text-muted-foreground text-sm">
-                                                            {new Date(history.createdAt).toLocaleString()}
-                                                        </TableCell>
+                                                    {Array.from({ length: totalAvailablePages }, (_, i) => i + 1).map(page => (
+                                                        <Button
+                                                            key={page}
+                                                            variant={availablePage === page ? "default" : "outline"}
+                                                            size="sm"
+                                                            onClick={() => handleAvailablePageChange(page)}
+                                                            className={`h-9 w-9 rounded-none border ${availablePage === page ? "bg-primary text-white border-primary" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
+                                                        >
+                                                            {page}
+                                                        </Button>
+                                                    ))}
+
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleAvailablePageChange(availablePage + 1)}
+                                                        disabled={availablePage === totalAvailablePages}
+                                                        className="h-9 px-3 rounded-none border-gray-300"
+                                                    >
+                                                        <ChevronRight className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        <TabsContent value="history">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Trophy className="w-5 h-5 text-yellow-500" />
+                                        나의 시험 결과
+                                    </CardTitle>
+                                    <CardDescription>
+                                        최근 응시한 시험 결과입니다.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {loading ? (
+                                        <div className="flex justify-center py-10">
+                                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                        </div>
+                                    ) : scoreHistory.length === 0 ? (
+                                        <div className="text-center py-20 text-muted-foreground">
+                                            아직 응시한 시험 기록이 없습니다.
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>강좌명</TableHead>
+                                                        <TableHead>시험 제목</TableHead>
+                                                        <TableHead>응시 차수</TableHead>
+                                                        <TableHead>점수</TableHead>
+                                                        <TableHead>결과</TableHead>
+                                                        <TableHead className="text-right">응시 일시</TableHead>
                                                     </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {currentScoreHistory.map((history) => (
+                                                        <TableRow key={history.historyId}>
+                                                            <TableCell className="text-muted-foreground text-sm">{history.courseTitle || '강좌 정보 없음'}</TableCell>
+                                                            <TableCell className="font-medium">{history.examTitle}</TableCell>
+                                                            <TableCell>{history.attemptNo}회차</TableCell>
+                                                            <TableCell>{history.score}점</TableCell>
+                                                            <TableCell>
+                                                                {history.passed ? (
+                                                                    <Badge className="bg-emerald-500 hover:bg-emerald-600 min-w-[60px] justify-center">합격</Badge>
+                                                                ) : (
+                                                                    <Badge variant="destructive" className="min-w-[60px] justify-center">불합격</Badge>
+                                                                )}
+                                                            </TableCell>
+                                                            <TableCell className="text-right text-muted-foreground text-sm">
+                                                                {new Date(history.createdAt).toLocaleString()}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
 
-                                        {/* History Pagination */}
-                                        {scoreHistory.length > itemsPerPage && (
-                                            <div className="flex justify-center items-center gap-4 mt-6 border-t pt-4">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleHistoryPageChange(historyPage - 1)}
-                                                    disabled={historyPage === 1}
-                                                >
-                                                    <ChevronLeft className="w-4 h-4" />
-                                                    이전
-                                                </Button>
-                                                <span className="text-sm text-muted-foreground">
-                                                    {historyPage} / {totalHistoryPages}
-                                                </span>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleHistoryPageChange(historyPage + 1)}
-                                                    disabled={historyPage === totalHistoryPages}
-                                                >
-                                                    다음
-                                                    <ChevronRight className="w-4 h-4" />
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                </Tabs>
+                                            {/* History Pagination */}
+                                            {totalHistoryPages > 1 && (
+                                                <div className="flex justify-center items-center gap-2 mt-8 border-t pt-8">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleHistoryPageChange(historyPage - 1)}
+                                                        disabled={historyPage === 1}
+                                                        className="h-9 px-3 rounded-none border-gray-300"
+                                                    >
+                                                        <ChevronLeft className="w-4 h-4" />
+                                                    </Button>
+
+                                                    {Array.from({ length: totalHistoryPages }, (_, i) => i + 1).map(page => (
+                                                        <Button
+                                                            key={page}
+                                                            variant={historyPage === page ? "default" : "outline"}
+                                                            size="sm"
+                                                            onClick={() => handleHistoryPageChange(page)}
+                                                            className={`h-9 w-9 rounded-none border ${historyPage === page ? "bg-primary text-white border-primary" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
+                                                        >
+                                                            {page}
+                                                        </Button>
+                                                    ))}
+
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleHistoryPageChange(historyPage + 1)}
+                                                        disabled={historyPage === totalHistoryPages}
+                                                        className="h-9 px-3 rounded-none border-gray-300"
+                                                    >
+                                                        <ChevronRight className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </main>
         </div>

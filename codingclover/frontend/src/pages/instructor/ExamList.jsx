@@ -75,9 +75,10 @@ const ExamList = () => {
     };
 
     // Pagination Logic
-    const totalPages = Math.ceil(exams.length / itemsPerPage);
+    const sortedExams = [...exams].sort((a, b) => b.examId - a.examId);
+    const totalPages = Math.ceil(sortedExams.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentExams = exams.slice(startIndex, startIndex + itemsPerPage);
+    const currentExams = sortedExams.slice(startIndex, startIndex + itemsPerPage);
 
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalPages) {
@@ -174,28 +175,38 @@ const ExamList = () => {
                                 </Table>
 
                                 {/* Pagination Controls */}
-                                {exams.length > itemsPerPage && (
-                                    <div className="flex justify-center items-center gap-4 mt-6 border-t pt-4">
+                                {totalPages > 1 && (
+                                    <div className="flex justify-center items-center gap-2 mt-8 border-t pt-8">
                                         <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={() => handlePageChange(currentPage - 1)}
                                             disabled={currentPage === 1}
+                                            className="h-9 px-3 rounded-none border-gray-300"
                                         >
-                                            <ChevronLeft className="w-4 h-4" />
-                                            이전
+                                            <ChevronLeft className="h-4 w-4" />
                                         </Button>
-                                        <span className="text-sm text-muted-foreground">
-                                            {currentPage} / {totalPages}
-                                        </span>
+
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                            <Button
+                                                key={page}
+                                                variant={currentPage === page ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => handlePageChange(page)}
+                                                className={`h-9 w-9 rounded-none border ${currentPage === page ? "bg-primary text-white border-primary" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
+                                            >
+                                                {page}
+                                            </Button>
+                                        ))}
+
                                         <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={() => handlePageChange(currentPage + 1)}
                                             disabled={currentPage === totalPages}
+                                            className="h-9 px-3 rounded-none border-gray-300"
                                         >
-                                            다음
-                                            <ChevronRight className="w-4 h-4" />
+                                            <ChevronRight className="h-4 w-4" />
                                         </Button>
                                     </div>
                                 )}

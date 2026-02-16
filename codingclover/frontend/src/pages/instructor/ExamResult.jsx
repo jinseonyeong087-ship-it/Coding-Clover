@@ -6,13 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { toast } from "sonner";
 
 const ExamResult = () => {
     const { examId } = useParams();
     const navigate = useNavigate();
     const [attempts, setAttempts] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
     const [examTitle, setExamTitle] = useState("");
     const [loading, setLoading] = useState(true);
 
@@ -45,6 +47,18 @@ const ExamResult = () => {
             hour: '2-digit',
             minute: '2-digit'
         });
+    };
+
+    // Sorting and Pagination Logic
+    const sortedAttempts = [...attempts].sort((a, b) => new Date(b.attemptedAt) - new Date(a.attemptedAt));
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentAttempts = sortedAttempts.slice(startIndex, startIndex + itemsPerPage);
+    const totalPages = Math.ceil(sortedAttempts.length / itemsPerPage);
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
     };
 
     return (
@@ -90,9 +104,11 @@ const ExamResult = () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {attempts.map((attempt, index) => (
-                                        <TableRow key={attempt.attemptId}>
-                                            <TableCell>{index + 1}</TableCell>
+                                    {currentAttempts.map((attempt, index) => (
+                                        <TableRow key={attempt.attemptId} className="hover:bg-gray-50/50 transition-colors">
+                                            <TableCell className="text-gray-400 font-mono text-xs">
+                                                {sortedAttempts.length - (startIndex + index)}
+                                            </TableCell>
                                             <TableCell className="font-medium">{attempt.userName}</TableCell>
                                             <TableCell>{attempt.attemptNo}회차</TableCell>
                                             <TableCell>{attempt.score}점</TableCell>
@@ -113,6 +129,43 @@ const ExamResult = () => {
                         )}
                     </CardContent>
                 </Card>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-2 pt-8">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="h-9 px-3 rounded-none border-gray-300"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                            <Button
+                                key={page}
+                                variant={currentPage === page ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => handlePageChange(page)}
+                                className={`h-9 w-9 rounded-none border ${currentPage === page ? "bg-primary text-white border-primary" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
+                            >
+                                {page}
+                            </Button>
+                        ))}
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="h-9 px-3 rounded-none border-gray-300"
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )}
             </div>
         </div>
     );

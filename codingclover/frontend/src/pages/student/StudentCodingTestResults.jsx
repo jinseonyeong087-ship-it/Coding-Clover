@@ -31,7 +31,7 @@ const StudentCodingTestResults = () => {
     const fetchCodingTestHistory = async () => {
         try {
             setLoading(true);
-            
+
             // 사용자 정보 가져오기
             const storedUsers = localStorage.getItem("users");
             if (!storedUsers) {
@@ -39,19 +39,19 @@ const StudentCodingTestResults = () => {
                 setCodingTestHistory([]);
                 return;
             }
-            
+
             const userData = JSON.parse(storedUsers);
             const userId = userData.userId;
-            
+
             if (!userId) {
                 console.error('사용자 ID가 없습니다.');
                 setCodingTestHistory([]);
                 return;
             }
-            
+
             // submission 테이블에서 코딩테스트 내역 조회
             const response = await axios.get(`/api/submission/history?userId=${userId}`, { withCredentials: true });
-            
+
             // submission 데이터를 코딩테스트 형태로 변환
             const formattedData = response.data.map(submission => ({
                 resultId: submission.id,
@@ -62,7 +62,7 @@ const StudentCodingTestResults = () => {
                 code: submission.code, // 사용자가 입력한 코드
                 createdAt: submission.createdAt
             }));
-            
+
             setCodingTestHistory(formattedData || []);
         } catch (err) {
             console.error('코딩 테스트 내역 조회 실패:', err);

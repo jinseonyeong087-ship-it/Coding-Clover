@@ -14,8 +14,24 @@ import {
     Clock,
     Trophy,
     AlertTriangle,
-    ClipboardList
+    ClipboardList,
+    Users as UsersIcon,
+    Calendar,
+    CheckCircle2,
+    XCircle,
+    ChevronDown,
+    ChevronUp,
+    ChevronLeft,
+    ChevronRight
 } from "lucide-react";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { toast } from "sonner";
 import {
     Dialog,
@@ -32,7 +48,11 @@ function AdminExamDetail() {
     const { examId } = useParams();
     const navigate = useNavigate();
     const [exam, setExam] = useState(null);
+    const [attempts, setAttempts] = useState([]);
+    const [attemptsPage, setAttemptsPage] = useState(1);
+    const attemptsPerPage = 10;
     const [loading, setLoading] = useState(true);
+    const [isQuestionsExpanded, setIsQuestionsExpanded] = useState(false);
 
     // Modals
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -40,21 +60,26 @@ function AdminExamDetail() {
     const [reason, setReason] = useState("");
 
     useEffect(() => {
-        fetch(`/admin/exam/${examId}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include'
-        })
-            .then(res => res.json())
-            .then(data => {
-                setExam(data);
-                setLoading(false);
-            })
-            .catch(err => {
+        const fetchExamData = async () => {
+            try {
+                const examRes = await fetch(`/admin/exam/${examId}`, { credentials: 'include' });
+                const examData = await examRes.json();
+                setExam(examData);
+
+                const attemptsRes = await fetch(`/admin/exam/${examId}/attempts`, { credentials: 'include' });
+                if (attemptsRes.ok) {
+                    const attemptsData = await attemptsRes.json();
+                    setAttempts(attemptsData);
+                }
+            } catch (err) {
                 console.error(err);
-                toast.error("시험 정보를 불러오는데 실패했습니다.");
+                toast.error("데이터를 불러오는데 실패했습니다.");
+            } finally {
                 setLoading(false);
-            });
+            }
+        };
+
+        fetchExamData();
     }, [examId]);
 
     const handleAction = (type) => {
@@ -91,6 +116,17 @@ function AdminExamDetail() {
             .catch(() => toast.error("서버 오류가 발생했습니다."));
     }
 
+    // Sorting and Pagination logic for attempts
+    const sortedAttempts = [...attempts].sort((a, b) => new Date(b.attemptedAt) - new Date(a.attemptedAt));
+    const indexOfLastAttempt = attemptsPage * attemptsPerPage;
+    const indexOfFirstAttempt = indexOfLastAttempt - attemptsPerPage;
+    const currentAttempts = sortedAttempts.slice(indexOfFirstAttempt, indexOfLastAttempt);
+    const totalAttemptsPages = Math.ceil(sortedAttempts.length / attemptsPerPage);
+
+    const handleAttemptsPageChange = (page) => {
+        if (page >= 1 && page <= totalAttemptsPages) setAttemptsPage(page);
+    };
+
     if (loading) return <div className="pt-20 text-center">Loading...</div>;
     if (!exam) return <div className="pt-20 text-center">시험을 찾을 수 없습니다.</div>;
 
@@ -112,54 +148,181 @@ function AdminExamDetail() {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             {/* Left: Questions List */}
                             <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
-                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
-                                    <ClipboardList className="h-5 w-5 text-primary" />
-                                    문제 목록
-                                    <span className="text-sm font-normal text-gray-400 ml-1">({exam.questions?.length || 0}문항)</span>
-                                </h2>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                        <ClipboardList className="h-5 w-5 text-primary" />
+                                        문제 목록
+                                        <span className="text-sm font-normal text-gray-400 ml-1">({exam.questions?.length || 0}문항)</span>
+                                    </h2>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="rounded-none border-gray-200 text-gray-600 hover:bg-gray-50 h-8 gap-1.5"
+                                        onClick={() => setIsQuestionsExpanded(!isQuestionsExpanded)}
+                                    >
+                                        {isQuestionsExpanded ? (
+                                            <>
+                                                접기 <ChevronUp className="h-3.5 w-3.5" />
+                                            </>
+                                        ) : (
+                                            <>
+                                                전체보기 <ChevronDown className="h-3.5 w-3.5" />
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
 
-                                {exam.questions && exam.questions.length > 0 ? (
-                                    exam.questions.map((q, idx) => (
-                                        <Card key={idx} className="relative transition-all hover:shadow-md border border-border rounded-none shadow-none overflow-hidden">
-                                            <div className="bg-muted/30 p-4 border-b border-border">
-                                                <div className="flex items-center gap-3">
-                                                    <span className="bg-primary text-primary-foreground w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">
-                                                        {idx + 1}
-                                                    </span>
-                                                    <span className="font-bold text-gray-900 leading-none">문제 #{idx + 1}</span>
-                                                </div>
-                                            </div>
-                                            <div className="p-8 space-y-6">
-                                                <div className="flex-1">
-                                                    <h3 className="text-lg font-medium text-gray-900 mb-6 leading-relaxed">
-                                                        {q.questionText}
-                                                    </h3>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-                                                        {[q.option1, q.option2, q.option3, q.option4, q.option5].filter(Boolean).map((opt, i) => (
-                                                            <div
-                                                                key={i}
-                                                                className={`p-4 rounded-none border text-sm transition-all ${(i + 1) === q.correctAnswer
-                                                                    ? "bg-emerald-50 border-emerald-200 text-emerald-700 font-semibold ring-1 ring-emerald-500/20"
-                                                                    : "bg-slate-50 border-slate-100 text-gray-600"
-                                                                    }`}
-                                                            >
-                                                                <span className="mr-3 text-current opacity-50">{i + 1}.</span>
-                                                                {opt}
-                                                            </div>
-                                                        ))}
+                                {isQuestionsExpanded && (
+                                    <div className="space-y-6 animate-in fade-in duration-300">
+                                        {exam.questions && exam.questions.length > 0 ? (
+                                            exam.questions.map((q, idx) => (
+                                                <Card key={idx} className="relative transition-all hover:shadow-md border border-border rounded-none shadow-none overflow-hidden">
+                                                    <div className="bg-muted/30 p-4 border-b border-border">
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="bg-primary text-primary-foreground w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">
+                                                                {idx + 1}
+                                                            </span>
+                                                            <span className="font-bold text-gray-900 leading-none">문제 #{idx + 1}</span>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-emerald-600 font-medium pt-4 border-t border-border">
-                                                    정답: {q.correctAnswer}번
-                                                </div>
+                                                    <div className="p-8 space-y-6">
+                                                        <div className="flex-1">
+                                                            <h3 className="text-lg font-medium text-gray-900 mb-6 leading-relaxed">
+                                                                {q.questionText}
+                                                            </h3>
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                                                                {[q.option1, q.option2, q.option3, q.option4, q.option5].filter(Boolean).map((opt, i) => (
+                                                                    <div
+                                                                        key={i}
+                                                                        className={`p-4 rounded-none border text-sm transition-all ${(i + 1) === q.correctAnswer
+                                                                            ? "bg-emerald-50 border-emerald-200 text-emerald-700 font-semibold ring-1 ring-emerald-500/20"
+                                                                            : "bg-slate-50 border-slate-100 text-gray-600"
+                                                                            }`}
+                                                                    >
+                                                                        <span className="mr-3 text-current opacity-50">{i + 1}.</span>
+                                                                        {opt}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 text-sm text-emerald-600 font-medium pt-4 border-t border-border">
+                                                            정답: {q.correctAnswer}번
+                                                        </div>
+                                                    </div>
+                                                </Card>
+                                            ))
+                                        ) : (
+                                            <div className="py-20 text-center bg-white border border-dashed border-gray-200 text-gray-400">
+                                                등록된 문제가 없습니다.
                                             </div>
-                                        </Card>
-                                    ))
-                                ) : (
-                                    <div className="py-20 text-center bg-white border border-dashed border-gray-200 text-gray-400">
-                                        등록된 문제가 없습니다.
+                                        )}
                                     </div>
                                 )}
+
+                                {/* Student Submission Status */}
+                                <div className="pt-8">
+                                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-6">
+                                        <UsersIcon className="h-5 w-5 text-primary" />
+                                        학생 응시 현황
+                                        <span className="text-sm font-normal text-gray-400 ml-1">({attempts.length}건)</span>
+                                    </h2>
+
+                                    <Card className="rounded-none border-border shadow-none overflow-hidden bg-white">
+                                        <Table>
+                                            <TableHeader className="bg-gray-50/50 border-b border-gray-100">
+                                                <TableRow className="hover:bg-transparent">
+                                                    <TableHead className="w-[150px] text-gray-600 font-bold">학생명</TableHead>
+                                                    <TableHead className="text-center w-[100px] text-gray-600 font-bold">시도</TableHead>
+                                                    <TableHead className="text-center w-[100px] text-gray-600 font-bold">점수</TableHead>
+                                                    <TableHead className="text-center w-[120px] text-gray-600 font-bold">상태</TableHead>
+                                                    <TableHead className="text-right text-gray-600 font-bold">응시 일시</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {currentAttempts.length > 0 ? (
+                                                    currentAttempts.map((attempt) => (
+                                                        <TableRow key={attempt.attemptId} className="hover:bg-gray-50/50 transition-colors">
+                                                            <TableCell className="font-medium text-gray-900">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-500 font-bold">
+                                                                        {attempt.userName.substring(0, 1)}
+                                                                    </div>
+                                                                    {attempt.userName}
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className="text-center text-gray-500">
+                                                                {attempt.attemptNo}회차
+                                                            </TableCell>
+                                                            <TableCell className="text-center font-bold text-gray-900">
+                                                                {attempt.score}점
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                {attempt.passed ? (
+                                                                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 font-medium hover:bg-emerald-50 shadow-none">
+                                                                        <CheckCircle2 className="w-3 h-3 mr-1" /> 합격
+                                                                    </Badge>
+                                                                ) : (
+                                                                    <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-100 font-medium hover:bg-rose-50 shadow-none">
+                                                                        <XCircle className="w-3 h-3 mr-1" /> 불합격
+                                                                    </Badge>
+                                                                )}
+                                                            </TableCell>
+                                                            <TableCell className="text-right text-xs text-gray-400">
+                                                                <div className="flex items-center justify-end gap-1">
+                                                                    <Calendar className="h-3 w-3" />
+                                                                    {new Date(attempt.attemptedAt).toLocaleString()}
+                                                                </div>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))
+                                                ) : (
+                                                    <TableRow>
+                                                        <TableCell colSpan={5} className="text-center py-10 text-gray-400 text-sm">
+                                                            아직 응시한 학생이 없습니다.
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </Card>
+
+                                    {/* Pagination */}
+                                    {totalAttemptsPages > 1 && (
+                                        <div className="flex justify-center items-center gap-2 pt-8">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleAttemptsPageChange(attemptsPage - 1)}
+                                                disabled={attemptsPage === 1}
+                                                className="h-9 px-3 rounded-none border-gray-300"
+                                            >
+                                                <ChevronLeft className="h-4 w-4" />
+                                            </Button>
+
+                                            {Array.from({ length: totalAttemptsPages }, (_, i) => i + 1).map(page => (
+                                                <Button
+                                                    key={page}
+                                                    variant={attemptsPage === page ? "default" : "outline"}
+                                                    size="sm"
+                                                    onClick={() => handleAttemptsPageChange(page)}
+                                                    className={`h-9 w-9 rounded-none border ${attemptsPage === page ? "bg-primary text-white border-primary" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
+                                                >
+                                                    {page}
+                                                </Button>
+                                            ))}
+
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleAttemptsPageChange(attemptsPage + 1)}
+                                                disabled={attemptsPage === totalAttemptsPages}
+                                                className="h-9 px-3 rounded-none border-gray-300"
+                                            >
+                                                <ChevronRight className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Right: Info & Actions Sidebar */}

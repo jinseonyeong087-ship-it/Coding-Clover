@@ -199,18 +199,18 @@ const StudentQnaList = () => {
               </button>
 
               {(!user || user.role !== 'ADMIN') && (
-              <button
-                onClick={() => {
-                  if (!user) return alert('로그인이 필요합니다.');
-                  setViewMode('my');
-                }}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap border ${viewMode === 'my'
-                  ? 'bg-[#4a6fa5] text-white border-[#4a6fa5]'
-                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
-                  }`}
-              >
-                내 질문
-              </button>)}
+                <button
+                  onClick={() => {
+                    if (!user) return alert('로그인이 필요합니다.');
+                    setViewMode('my');
+                  }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap border ${viewMode === 'my'
+                    ? 'bg-[#4a6fa5] text-white border-[#4a6fa5]'
+                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                    }`}
+                >
+                  내 질문
+                </button>)}
 
             </div>
 

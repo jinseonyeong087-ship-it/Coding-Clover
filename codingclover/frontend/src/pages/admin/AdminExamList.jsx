@@ -13,16 +13,9 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ClipboardList, User, BookOpen, AlertCircle, Search, LayoutGrid, Activity, Zap, Trophy } from "lucide-react";
+import { ClipboardList, User, BookOpen, AlertCircle, Search, LayoutGrid, Activity, Zap, Trophy, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationLink,
-    PaginationPrevious,
-    PaginationNext,
-} from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
 
 function AdminExamList() {
     const [exams, setExams] = useState([]);
@@ -219,26 +212,38 @@ function AdminExamList() {
 
                         {/* Pagination */}
                         {totalPages > 1 && (
-                            <div className="mt-6 flex justify-center">
-                                <Pagination>
-                                    <PaginationContent>
-                                        <PaginationItem>
-                                            <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)}
-                                                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"} />
-                                        </PaginationItem>
-                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                                            <PaginationItem key={page}>
-                                                <PaginationLink isActive={page === currentPage} onClick={() => handlePageChange(page)} className="cursor-pointer">
-                                                    {page}
-                                                </PaginationLink>
-                                            </PaginationItem>
-                                        ))}
-                                        <PaginationItem>
-                                            <PaginationNext onClick={() => handlePageChange(currentPage + 1)}
-                                                className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"} />
-                                        </PaginationItem>
-                                    </PaginationContent>
-                                </Pagination>
+                            <div className="flex justify-center items-center gap-2 pt-8">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="h-9 px-3 rounded-none border-gray-300"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                    <Button
+                                        key={page}
+                                        variant={currentPage === page ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={() => handlePageChange(page)}
+                                        className={`h-9 w-9 rounded-none border ${currentPage === page ? "bg-primary text-white border-primary" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
+                                    >
+                                        {page}
+                                    </Button>
+                                ))}
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className="h-9 px-3 rounded-none border-gray-300"
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
                             </div>
                         )}
                     </main>
