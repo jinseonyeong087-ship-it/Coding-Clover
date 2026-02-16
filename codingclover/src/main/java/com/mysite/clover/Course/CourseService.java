@@ -25,6 +25,7 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final com.mysite.clover.Lecture.LectureRepository lectureRepository;
+    private final com.mysite.clover.Lecture.LectureService lectureService;
     private final com.mysite.clover.Exam.ExamRepository examRepository;
     private final UsersRepository usersRepository;
     private final com.mysite.clover.Notification.NotificationService notificationService;
@@ -42,14 +43,18 @@ public class CourseService {
         return courseRepository.findByProposalStatus(CourseProposalStatus.PENDING);
     }
 
-    // 공개 강좌 목록 (강의 1개 이상)
+    // 공개 강좌 목록 (강의 1개 이상 + 순차 검증 통과한 경우만)
     public List<Course> getPublicList() {
-        return courseRepository.findApprovedCoursesWithLectures();
+        return courseRepository.findApprovedCoursesWithLectures().stream()
+                .filter(course -> !lectureService.getLecturesForStudent(course).isEmpty())
+                .collect(Collectors.toList());
     }
 
-    // 레벨별 공개 강좌 목록
+    // 레벨별 공개 강좌 목록 (순차 검증 통과한 경우만)
     public List<Course> getPublicListByLevel(int level) {
-        return courseRepository.findApprovedCoursesWithLecturesByLevel(level);
+        return courseRepository.findApprovedCoursesWithLecturesByLevel(level).stream()
+                .filter(course -> !lectureService.getLecturesForStudent(course).isEmpty())
+                .collect(Collectors.toList());
     }
 
     // 강사별 강좌 목록

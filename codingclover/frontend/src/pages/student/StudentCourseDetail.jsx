@@ -174,10 +174,22 @@ function StudentCourseDetail() {
 
     // 수강 신청
     const handleSubmit = async () => {
+        // 1. 비로그인 상태 체크
+        if (!users) {
+            setLoginRequired(true);
+            setDialogMessage({
+                title: '로그인 필요',
+                description: '수강 신청을 위해서는 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?'
+            });
+            setDialogOpen(true);
+            return;
+        }
+
+        // 2. 관리자/강사 권한 체크
         if (users?.role === 'ADMIN' || users?.role === 'INSTRUCTOR') {
             setDialogMessage({
                 title: '권한 없음',
-                description: '수강생 계정으로 수강신청 할 수 있습니다.'
+                description: '수강생 계정으로만 수강신청 할 수 있습니다.'
             });
             setDialogOpen(true);
             return;

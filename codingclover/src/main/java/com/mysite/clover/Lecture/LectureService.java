@@ -277,10 +277,30 @@ public class LectureService {
                 .orElseThrow(() -> new IllegalArgumentException("강의를 찾을 수 없습니다."));
     }
 
-    // 학생용: 특정 강좌의 '공개 가능한' 강의만 순서대로 조회
+    // 학생용: 특정 강좌의 '공개 가능한' 강의만 순서대로 조회 (순차 검증 로직 추가)
     public List<Lecture> getLecturesForStudent(Course course) {
-        // 학생에게는 '공개 가능한' 강의만 필터링해서 반환
-        return lectureRepository.findVisibleLecturesByCourseId(course.getCourseId());
+        // 1. 학생에게는 '공개 가능한' 강의만 DB에서 조회 (오름차순 정렬되어 있다고 가정)
+        List<Lecture> lectures = lectureRepository.findVisibleLecturesByCourseId(course.getCourseId());
+
+        // 2. 순차 검증 (Strict Sequential Visibility)
+        // 1강부터 시작해서 끊기지 않고 이어지는 강의만 리스트에 담음
+        List<Lecture> filteredLectures = new java.util.ArrayList<>();
+        int expectedOrder = 1;
+
+        for (Lecture lecture : lectures) {
+            // 강의 순서가 예상 순서와 일치하는 경우
+            if (lecture.getOrderNo() == expectedOrder) {
+                filteredLectures.add(lecture);
+                expectedOrder++;
+            } else if (lecture.getOrderNo() > expectedOrder) {
+                // 강의 순서가 건너뛰어진 경우 (예: 1강 다음에 3강) -> 더 이상 탐색하지 않고 중단
+                break;
+            }
+            // lecture.getOrderNo() < expectedOrder 인 경우는 중복이거나 순서가 꼬인 경우인데,
+            // 이미 오름차순 정렬된 쿼리라면 발생하지 않아야 함. 무시하고 진행.
+        }
+
+        return filteredLectures;
     }
 
     // 강의 재제출 (반려된 강의 수정 후 재요청)
