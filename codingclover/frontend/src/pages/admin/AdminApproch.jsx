@@ -26,16 +26,27 @@ function AdminApproch() {
         }
 
         try {
-            const response = await fetch(`/api/instructor/download-resume?filePath=${encodeURIComponent(instructor.resumeFilePath)}`, {
+            // filePath 대신 userId를 사용하여 중복 문제 해결 및 정확한 타겟팅
+            const response = await fetch(`/api/instructor/download-resume?userId=${instructor.userId}`, {
                 credentials: 'include'
             });
 
             if (response.ok) {
+                // Content-Disposition 헤더에서 파일명 추출 (가능하다면)
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = `resume_${instructor.userId}.pdf`;
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+                    if (filenameMatch && filenameMatch.length === 2) {
+                        filename = filenameMatch[1];
+                    }
+                }
+
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `resume_${instructor.userId}.pdf`;
+                a.download = filename; // 서버에서 받은 파일명 사용
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);

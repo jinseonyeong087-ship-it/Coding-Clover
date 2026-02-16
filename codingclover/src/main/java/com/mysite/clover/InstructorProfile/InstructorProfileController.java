@@ -49,10 +49,18 @@ public class InstructorProfileController {
 
     // 이력서 다운로드
     @GetMapping("/download-resume")
-    public ResponseEntity<Resource> downloadResume(@RequestParam("filePath") String filePath) {
+    public ResponseEntity<Resource> downloadResume(
+            @RequestParam(value = "filePath", required = false) String filePath,
+            @RequestParam(value = "userId", required = false) Long userId) {
         try {
-            // DB에서 파일 정보 조회
-            InstructorProfile profile = instructorProfileService.findByResumeFilePath(filePath);
+            InstructorProfile profile = null;
+
+            if (userId != null) {
+                profile = instructorProfileService.getInstructorProfileByUserId(String.valueOf(userId));
+            } else if (filePath != null) {
+                profile = instructorProfileService.findByResumeFilePath(filePath);
+            }
+
             if (profile == null) {
                 return ResponseEntity.notFound().build();
             }
@@ -67,13 +75,18 @@ public class InstructorProfileController {
 
             String contentType = profile.getResumeContentType();
             if (contentType == null) {
-                contentType = "application/application/octet-stream";
+                contentType = "application/octet-stream"; // 오타 수정: application/application -> application
             }
+
+            // 파일명이 한글일 경우 인코딩 처리 (선택 사항이나 권장)
+            String filename = profile.getResumeFilePath();
+            // String encodedFilename = URLEncoder.encode(filename,
+            // StandardCharsets.UTF_8).replaceAll("\\+", "%20");
 
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + profile.getResumeFilePath() + "\"")
+                            "attachment; filename=\"" + filename + "\"")
                     .body(resource);
 
         } catch (Exception e) {
