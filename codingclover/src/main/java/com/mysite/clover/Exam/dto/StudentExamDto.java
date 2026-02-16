@@ -47,7 +47,7 @@ public class StudentExamDto {
                 exam.getCourse().getCourseId(),
                 exam.getTitle(),
                 exam.getTimeLimit(),
-                exam.getLevel(),
+                exam.getCourse().getLevel(),
                 exam.getPassScore(),
                 exam.getCourse().getTitle(),
                 questionDtos);
