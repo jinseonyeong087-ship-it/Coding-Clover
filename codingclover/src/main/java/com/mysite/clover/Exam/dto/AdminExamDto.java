@@ -13,6 +13,7 @@ public class AdminExamDto {
     private String title;
     private Integer timeLimit;
     private Integer level;
+    private Integer courseLevel; // 강좌 난이도
     private Integer passScore;
     private java.time.LocalDateTime createdAt;
     private boolean isReuploaded;
@@ -45,6 +46,7 @@ public class AdminExamDto {
                 exam.getTitle(),
                 exam.getTimeLimit(),
                 exam.getLevel(),
+                exam.getCourse().getLevel(), // 강좌 난이도
                 exam.getPassScore(),
                 null, // created_at not in DB, using null or we can omit
                 isReuploaded,
@@ -52,7 +54,7 @@ public class AdminExamDto {
     }
 
     public AdminExamDto(Long examId, Long courseId, String courseTitle, String instructorName, String title,
-            Integer timeLimit, Integer level, Integer passScore, java.time.LocalDateTime createdAt,
+            Integer timeLimit, Integer level, Integer courseLevel, Integer passScore, java.time.LocalDateTime createdAt,
             boolean isReuploaded, List<ExamQuestionDto> questions) {
         this.examId = examId;
         this.courseId = courseId;
@@ -61,6 +63,7 @@ public class AdminExamDto {
         this.title = title;
         this.timeLimit = timeLimit;
         this.level = level;
+        this.courseLevel = courseLevel;
         this.passScore = passScore;
         this.createdAt = createdAt;
         this.isReuploaded = isReuploaded;

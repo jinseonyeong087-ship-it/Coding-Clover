@@ -44,7 +44,7 @@ function AdminExamList() {
 
     // Filtering Logic
     const filteredExams = exams.filter(exam => {
-        const matchesLevel = levelFilter === null || exam.level === levelFilter;
+        const matchesLevel = levelFilter === null || exam.courseLevel === levelFilter;
         const searchLower = searchQuery.toLowerCase();
         const matchesSearch =
             exam.title.toLowerCase().includes(searchLower) ||
@@ -104,7 +104,7 @@ function AdminExamList() {
                                     <Activity className="h-5 w-5 text-emerald-600" />
                                 </div>
                                 <div className="min-w-0">
-                                    <div className="text-lg font-bold text-gray-900 leading-none">{exams.filter(e => e.level === 1).length}</div>
+                                    <div className="text-lg font-bold text-gray-900 leading-none">{exams.filter(e => e.courseLevel === 1).length}</div>
                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">초급</div>
                                 </div>
                             </Card>
@@ -116,7 +116,7 @@ function AdminExamList() {
                                     <Zap className="h-5 w-5 text-blue-600" />
                                 </div>
                                 <div className="min-w-0">
-                                    <div className="text-lg font-bold text-gray-900 leading-none">{exams.filter(e => e.level === 2).length}</div>
+                                    <div className="text-lg font-bold text-gray-900 leading-none">{exams.filter(e => e.courseLevel === 2).length}</div>
                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">중급</div>
                                 </div>
                             </Card>
@@ -128,7 +128,7 @@ function AdminExamList() {
                                     <Trophy className="h-5 w-5 text-rose-600" />
                                 </div>
                                 <div className="min-w-0">
-                                    <div className="text-lg font-bold text-gray-900 leading-none">{exams.filter(e => e.level === 3).length}</div>
+                                    <div className="text-lg font-bold text-gray-900 leading-none">{exams.filter(e => e.courseLevel === 3).length}</div>
                                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">고급</div>
                                 </div>
                             </Card>
@@ -190,8 +190,8 @@ function AdminExamList() {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-center">
-                                                    {item.level === 1 ? <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">초급</Badge> :
-                                                        item.level === 2 ? <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">중급</Badge> :
+                                                    {item.courseLevel === 1 ? <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">초급</Badge> :
+                                                        item.courseLevel === 2 ? <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">중급</Badge> :
                                                             <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">고급</Badge>}
                                                 </TableCell>
                                                 <TableCell className="text-center text-gray-500 text-sm">
