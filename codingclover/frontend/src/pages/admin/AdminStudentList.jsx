@@ -23,10 +23,9 @@ import {
   PaginationNext,
   PaginationEllipsis
 } from "@/components/ui/pagination";
-import { Search, RefreshCw, UserCheck, GraduationCap, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, RefreshCw, UserCheck, GraduationCap } from "lucide-react";
 
 function AdminStudentList() {
-  const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(true);
@@ -135,7 +134,7 @@ function AdminStudentList() {
 
           <AdminSidebar />
 
-          <main className="flex-1 min-w-0">
+          <main className="flex-1 min-w-0 pb-16">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">

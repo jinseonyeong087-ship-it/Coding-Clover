@@ -23,7 +23,7 @@ import {
     TabsList,
     TabsTrigger
 } from "@/components/ui/tabs";
-import { Search, Filter, RefreshCw, AlertCircle } from 'lucide-react';
+import { Search, Filter, RefreshCw, AlertCircle, AlertTriangle, CreditCard, XCircle } from 'lucide-react';
 import {
     Pagination,
     PaginationContent,
@@ -318,37 +318,6 @@ function PaymentManagement() {
         setFilteredPayments(filtered);
     };
 
-    // 상태 배지 색상 (Premium Styling)
-    const getPaymentStatusColor = (status, statusLabel) => {
-        // 라벨에 따른 색상 설정
-        if (statusLabel === '수강신청') {
-            return 'bg-amber-100 text-amber-700 border-amber-200';
-        }
-        if (statusLabel === '수강취소') {
-            return 'bg-orange-100 text-orange-700 border-orange-200';
-        }
-        if (statusLabel === '환불완료') {
-            return 'bg-indigo-100 text-indigo-700 border-indigo-200';
-        }
-
-        switch (status) {
-            case 'PAID': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-            case 'CANCELLED': return 'bg-slate-100 text-slate-700 border-slate-200';
-            case 'REFUNDED': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
-            default: return 'bg-slate-100 text-slate-700 border-slate-200';
-        }
-    };
-
-    const getRefundStatusColor = (status) => {
-        switch (status) {
-            case 'REQUESTED': return 'bg-rose-100 text-rose-700 border-rose-200 animate-pulse';
-            case 'APPROVED': return 'bg-indigo-100 text-indigo-700 border-indigo-200'; // 환불완료는 파란색
-            case 'REJECTED': return 'bg-slate-100 text-slate-700 border-slate-200';
-            case 'NONE': return 'bg-slate-50 text-slate-400 border-transparent';
-            default: return 'bg-slate-100 text-slate-700 border-slate-200';
-        }
-    };
-
     const getPaymentStatusLabel = (status, type, orderId) => {
         // 수강취소인 경우 (orderId가 COURSE_CANCEL_로 시작)
         if (orderId && orderId.startsWith('COURSE_CANCEL_')) {
@@ -494,6 +463,62 @@ function PaymentManagement() {
                             <p className="text-gray-500">
                                 모든 결제 내역과 환불 요청을 한눈에 관리하고 처리할 수 있습니다.
                             </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                            {/* 미처리 환불 요청 */}
+                            <Card className="border-gray-200 bg-white shadow-sm">
+                                <CardContent className="p-5 flex items-center gap-4">
+                                    <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-amber-50">
+                                        <AlertTriangle className="w-5 h-5 text-amber-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-400 font-bold mb-0.5">신규 환불 요청</p>
+                                        <p className="text-2xl font-extrabold text-gray-900">
+                                            {refundRequestCount}<span className="text-sm font-bold text-gray-400 ml-1">건</span>
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* 총 포인트 충전 합계 */}
+                            <Card className="border-gray-200 bg-white shadow-sm">
+                                <CardContent className="p-5 flex items-center gap-4">
+                                    <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-emerald-50">
+                                        <CreditCard className="w-5 h-5 text-emerald-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-400 font-bold mb-0.5">포인트 충전 합계</p>
+                                        <p className="text-2xl font-extrabold text-gray-900">
+                                            {payments.filter(p => p.type === 'CHARGE' && !p.orderId?.startsWith('COURSE_CANCEL_')).reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                                            <span className="text-sm font-bold text-gray-400 ml-1">P</span>
+                                            <span className="text-xs text-gray-300 ml-2">
+                                                ({payments.filter(p => p.type === 'CHARGE' && !p.orderId?.startsWith('COURSE_CANCEL_')).length}건)
+                                            </span>
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* 최근 1주일 수강 취소 */}
+                            <Card className="border-gray-200 bg-white shadow-sm">
+                                <CardContent className="p-5 flex items-center gap-4">
+                                    <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-red-50">
+                                        <XCircle className="w-5 h-5 text-red-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-400 font-bold mb-0.5">최근 수강 취소 (7일)</p>
+                                        <p className="text-2xl font-extrabold text-gray-900">
+                                            {payments.filter(p => {
+                                                if (!p.orderId?.startsWith('COURSE_CANCEL_')) return false;
+                                                const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                                                return new Date(p.paymentDate) >= weekAgo;
+                                            }).length}
+                                            <span className="text-sm font-bold text-gray-400 ml-1">건</span>
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </div>
 
                         {/* 탭 & 필터 카드 */}
@@ -758,7 +783,7 @@ function PaymentManagement() {
 
                             {/* 페이징 */}
                             {totalPages >= 1 && (
-                                <div className="mt-10">
+                                <div className="mt-10 mb-6">
                                     <Pagination>
                                         <PaginationContent>
                                             <PaginationItem>
