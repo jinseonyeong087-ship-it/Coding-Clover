@@ -473,9 +473,20 @@ function PaymentManagement() {
                                         <AlertTriangle className="w-5 h-5 text-amber-500" />
                                     </div>
                                     <div>
-                                        <p className="text-xs text-gray-400 font-bold mb-0.5">신규 환불 요청</p>
+                                        <p className="text-xs text-gray-400 font-bold mb-0.5">환불 진행 금액(30일)</p>
                                         <p className="text-2xl font-extrabold text-gray-900">
-                                            {refundRequestCount}<span className="text-sm font-bold text-gray-400 ml-1">건</span>
+                                            {payments.filter(p => {
+                                                if (p.type !== 'REFUND') return false;
+                                                const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+                                                return new Date(p.paymentDate) >= monthAgo;
+                                            }).reduce((sum, p) => sum + p.amount, 0).toLocaleString()}<span className="text-sm font-bold text-gray-400 ml-1">P</span>
+                                            <span className="text-xs text-gray-300 ml-2">
+                                                ({payments.filter(p => {
+                                                    if (p.type !== 'REFUND') return false;
+                                                    const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+                                                    return new Date(p.paymentDate) >= monthAgo;
+                                                }).length}건)
+                                            </span>
                                         </p>
                                     </div>
                                 </CardContent>
