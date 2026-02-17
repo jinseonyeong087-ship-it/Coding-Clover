@@ -95,7 +95,7 @@ const StudentSidebar = () => {
       category: "나의 활동",
       items: [
         { icon: BookOpen, label: "시험 응시 내역", path: "/student/exam?tab=history" },
-        { icon: Code2, label: "코딩테스트 내역", path: "/student/coding-test/results" },
+        { icon: Code2, label: "코딩테스트 내역", path: "/student/problems/results" },
         { icon: Coins, label: "포인트 현황", path: "/student/points" }
       ]
     },

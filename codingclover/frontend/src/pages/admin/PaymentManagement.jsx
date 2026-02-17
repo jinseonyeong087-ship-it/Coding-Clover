@@ -24,6 +24,14 @@ import {
     TabsTrigger
 } from "@/components/ui/tabs";
 import { Search, Filter, RefreshCw, AlertCircle } from 'lucide-react';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationPrevious,
+    PaginationNext,
+} from "@/components/ui/pagination";
 
 function PaymentManagement() {
     const navigate = useNavigate();
@@ -750,48 +758,36 @@ function PaymentManagement() {
 
                             {/* 페이징 */}
                             {totalPages >= 1 && (
-                                <div className="flex justify-center items-center gap-2 py-6 border-t border-gray-100 bg-gray-50/30">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handlePageChange(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                        className="h-8 w-8 p-0 border-gray-200"
-                                    >
-                                        &lt;
-                                    </Button>
+                                <div className="mt-10">
+                                    <Pagination>
+                                        <PaginationContent>
+                                            <PaginationItem>
+                                                <PaginationPrevious
+                                                    onClick={() => handlePageChange(currentPage - 1)}
+                                                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                                />
+                                            </PaginationItem>
 
-                                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                        let pageNumber;
-                                        if (totalPages <= 5) {
-                                            pageNumber = i + 1;
-                                        } else {
-                                            const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
-                                            pageNumber = start + i;
-                                        }
+                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                                <PaginationItem key={page}>
+                                                    <PaginationLink
+                                                        isActive={page === currentPage}
+                                                        onClick={() => handlePageChange(page)}
+                                                        className="cursor-pointer"
+                                                    >
+                                                        {page}
+                                                    </PaginationLink>
+                                                </PaginationItem>
+                                            ))}
 
-                                        return (
-                                            <Button
-                                                key={pageNumber}
-                                                variant={currentPage === pageNumber ? "default" : "outline"}
-                                                size="sm"
-                                                onClick={() => handlePageChange(pageNumber)}
-                                                className={`w-8 h-8 p-0 ${currentPage === pageNumber ? "font-bold" : "border-gray-200 text-gray-500"}`}
-                                            >
-                                                {pageNumber}
-                                            </Button>
-                                        );
-                                    })}
-
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handlePageChange(currentPage + 1)}
-                                        disabled={currentPage === totalPages}
-                                        className="h-8 w-8 p-0 border-gray-200"
-                                    >
-                                        &gt;
-                                    </Button>
+                                            <PaginationItem>
+                                                <PaginationNext
+                                                    onClick={() => handlePageChange(currentPage + 1)}
+                                                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                                />
+                                            </PaginationItem>
+                                        </PaginationContent>
+                                    </Pagination>
                                 </div>
                             )}
                         </Card>

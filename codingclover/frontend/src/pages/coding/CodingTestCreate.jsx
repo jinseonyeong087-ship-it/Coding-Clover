@@ -35,7 +35,7 @@ const CodingTestCreate = () => {
   useEffect(() => {
     if (userRole !== "ADMIN") {
       alert("관리자 권한이 필요합니다.");
-      navigate("/coding-test");
+      navigate("/problems");
     }
   }, [userRole, navigate]);
 
@@ -113,7 +113,7 @@ const CodingTestCreate = () => {
       });
 
       toast.success("문제가 등록되었습니다.");
-      setTimeout(() => navigate("/coding-test"), 1000);
+      setTimeout(() => navigate("/problems"), 1000);
     } catch (error) {
       console.error("문제 등록 실패:", error);
       toast.error("문제 등록 실패");

@@ -171,7 +171,7 @@ function Search() {
           <>
             <TableCell className="text-center text-gray-400">{item.id || item.problemId}</TableCell>
             <TableCell className="text-left font-medium">
-              <Link to={`/coding-test/${item.id || item.problemId}`} className="hover:text-primary hover:underline transition-colors block py-1">
+              <Link to={`/problems/${item.id || item.problemId}`} className="hover:text-primary hover:underline transition-colors block py-1">
                 {item.title}
               </Link>
             </TableCell>

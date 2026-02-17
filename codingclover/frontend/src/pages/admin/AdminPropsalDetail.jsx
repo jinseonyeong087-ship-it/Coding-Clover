@@ -83,7 +83,7 @@ function AdminPropsalDetail() {
         axios.post(`/admin/course/${courseId}/approve`, { withCredentials: true })
             .then((response) => {
                 alert("강좌 승인이 완료되었습니다.");
-                navigate("/admin/dashboard"); // 승인 후 목록으로 이동
+                navigate("/admin/course"); // 승인 후 목록으로 이동
             })
             .catch((err) => {
                 console.error('승인 실패', err);

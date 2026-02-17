@@ -196,7 +196,7 @@ const CodingTestDetail = () => {
       }
 
       // URL 업데이트 (페이지 이동 없이)
-      navigate(`/coding-test/${task.problemId}`, { replace: true });
+      navigate(`/problems/${task.problemId}`, { replace: true });
 
     } catch (e) {
       console.error("상세 정보 로드 실패", e);

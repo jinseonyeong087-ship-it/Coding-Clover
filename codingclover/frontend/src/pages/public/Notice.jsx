@@ -10,7 +10,15 @@ import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Edit, Trash2, Send, Search, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Eye, EyeOff, Plus, FileText } from "lucide-react";
+import { Edit, Trash2, Send, Search, ChevronUp, ChevronDown, Eye, EyeOff, Plus, FileText } from "lucide-react";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationPrevious,
+    PaginationNext,
+} from "@/components/ui/pagination";
 
 const Notice = () => {
     const navigate = useNavigate();
@@ -314,38 +322,36 @@ const Notice = () => {
 
                             {/* 페이징 */}
                             {totalPages >= 1 && (
-                                <div className="flex justify-center items-center gap-2 pt-8">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handlePageChange(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                        className="h-9 px-3 rounded-none border-gray-300"
-                                    >
-                                        <ChevronLeft className="h-4 w-4" />
-                                    </Button>
+                                <div className="mt-10">
+                                    <Pagination>
+                                        <PaginationContent>
+                                            <PaginationItem>
+                                                <PaginationPrevious
+                                                    onClick={() => handlePageChange(currentPage - 1)}
+                                                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                                />
+                                            </PaginationItem>
 
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                        <Button
-                                            key={page}
-                                            variant={currentPage === page ? "default" : "outline"}
-                                            size="sm"
-                                            onClick={() => handlePageChange(page)}
-                                            className={`h-9 w-9 rounded-none border ${currentPage === page ? "bg-primary text-white border-primary" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}
-                                        >
-                                            {page}
-                                        </Button>
-                                    ))}
+                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                                <PaginationItem key={page}>
+                                                    <PaginationLink
+                                                        isActive={page === currentPage}
+                                                        onClick={() => handlePageChange(page)}
+                                                        className="cursor-pointer"
+                                                    >
+                                                        {page}
+                                                    </PaginationLink>
+                                                </PaginationItem>
+                                            ))}
 
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handlePageChange(currentPage + 1)}
-                                        disabled={currentPage === totalPages}
-                                        className="h-9 px-3 rounded-none border-gray-300"
-                                    >
-                                        <ChevronRight className="h-4 w-4" />
-                                    </Button>
+                                            <PaginationItem>
+                                                <PaginationNext
+                                                    onClick={() => handlePageChange(currentPage + 1)}
+                                                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                                />
+                                            </PaginationItem>
+                                        </PaginationContent>
+                                    </Pagination>
                                 </div>
                             )}
                         </div>

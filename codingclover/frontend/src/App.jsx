@@ -99,9 +99,9 @@ function App() {
         <Route path="/notice/detail/:noticeId" element={<NoticeDetail />} />
 
         {/* 코딩 테스트 */}
-        <Route path="/coding-test/:id" element={<CodingTestDetail />} />
-        <Route path="/coding-test" element={<CodingTestList />} />
-        <Route path="/coding-test/new" element={<CodingTestCreate />} />
+        <Route path="/problems/:id" element={<CodingTestDetail />} />
+        <Route path="/problems" element={<CodingTestList />} />
+        <Route path="/problems/new" element={<CodingTestCreate />} />
 
         {/* 챗봇 ui확인용 라우터 */}
         <Route path="/ask" element={<ChatBot />} />
@@ -146,7 +146,7 @@ function App() {
           <Route path="exam" element={<StudentExamList />} />
           <Route path="exam/course/:courseId" element={<StudentExamList />} />
           <Route path="exam/taking/:examId" element={<StudentExamTaking />} />
-          <Route path="coding-test/results" element={<StudentCodingTestResults />} />
+          <Route path="api/problems/results" element={<StudentCodingTestResults />} />
         </Route>
 
         {/* 강사 허가 안 했을 때 집입가능하도록 */}
@@ -164,7 +164,6 @@ function App() {
           <Route path="course/:courseId/lectures" element={<StudentLectureDetail />} />
           <Route path="lecture/upload" element={<InstructorLecture />} />
           <Route path="lecture/:lectureId" element={<InstructorCourseDetail />} />
-
           <Route path="qna" element={<InstructorQnaList />} />
           <Route path="qna/:qnaId" element={<InstructorQnaDetail />} />
           <Route path="exam/list" element={<ExamList />} />
@@ -182,7 +181,7 @@ function App() {
           <Route path="lectures/:lectureId" element={<AdminLectureDetail />} />
           <Route path="users/instructors" element={<AdminInstructorList />} />
           <Route path="payments" element={<PaymentManagement />} />
-          <Route path="coding-test" element={<CodingTestList />} />
+          <Route path="api/problems" element={<CodingTestList />} />
           <Route path="exams" element={<AdminExamList />} />
           <Route path="exam/:examId" element={<AdminExamDetail />} />
           <Route path="lectures" element={<AdminLectureList />} />

@@ -86,7 +86,7 @@ const StudentCodingTestResults = () => {
 
     const handleViewProblem = (result) => {
         // 문제 페이지로 이동하면서 submission ID를 전달
-        navigate(`/coding-test/${result.problemId}?submissionId=${result.submissionId}`);
+        navigate(`/problems/${result.problemId}?submissionId=${result.submissionId}`);
     };
 
     const getStatusBadge = (status) => {
@@ -150,7 +150,7 @@ const StudentCodingTestResults = () => {
                                     <p className="text-gray-500 mb-6">
                                         코딩테스트에 도전해보세요!
                                     </p>
-                                    <Button onClick={() => navigate('/coding-test')}>
+                                    <Button onClick={() => navigate('/problems')}>
                                         테스트 도전하기
                                     </Button>
                                 </div>

@@ -37,7 +37,6 @@ const CodingTestList = () => {
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState("ALL");
-  const [statusFilter, setStatusFilter] = useState("ALL"); // ALL, SOLVED, UNSOLVED (Mock logic for now)
 
   useEffect(() => {
     const fetchProblems = async () => {
@@ -199,7 +198,7 @@ const CodingTestList = () => {
 
             {userRole === "ADMIN" && (
               <Button
-                onClick={() => navigate("/coding-test/new")}
+                onClick={() => navigate("/problems/new")}
                 className="h-10 rounded-none bg-primary hover:bg-primary/90 text-white font-bold px-6"
               >
                 <Plus className="mr-2 h-4 w-4" /> 새 문제 등록
@@ -229,7 +228,7 @@ const CodingTestList = () => {
                 <Card
                   key={problem.problemId}
                   className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-gray-100 cursor-pointer overflow-hidden bg-white rounded-2xl"
-                  onClick={() => navigate(`/coding-test/${problem.problemId}`)}
+                  onClick={() => navigate(`/problems/${problem.problemId}`)}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start mb-2">
