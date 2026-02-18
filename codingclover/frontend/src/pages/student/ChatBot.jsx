@@ -178,16 +178,16 @@ function ChatBot({ className }) {
                         )}
                       </div>
                       {msg.role === 'user' && (
-                        <div className="w-7 h-7 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0 mt-0.5">
-                          <User className="w-3.5 h-3.5 text-gray-500" />
+                        <div className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center shrink-0 mt-0.5">
+                          <User className="w-7 h-7 text-gray-500" />
                         </div>
                       )}
                     </div>
                   ))}
                   {isLoading && (
                     <div className="flex gap-2.5 justify-start">
-                      <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <Bot className="w-3.5 h-3.5 text-primary" />
+                      <div className="w-7 h-7 rounded-lgflex items-center justify-center shrink-0 mt-0.5">
+                        <Bot className="w-7 h-7 text-primary" />
                       </div>
                       <div className="bg-gray-100 border border-gray-200 rounded-2xl rounded-bl-md px-4 py-3">
                         <div className="flex gap-1.5">

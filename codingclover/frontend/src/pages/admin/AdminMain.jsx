@@ -11,8 +11,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { BookOpen, UserPlus, Upload } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 
 function AdminMain() {
@@ -121,19 +122,48 @@ function AdminMain() {
                         </div>
 
                         {/* Stats Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">개설된 강좌</h3>
-                                <div className="text-3xl font-bold text-gray-900">{course.length} <span className="text-sm font-normal text-gray-500">개</span></div>
-                            </div>
-                            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">신규 강사 신청</h3>
-                                <div className="text-3xl font-bold text-amber-500">{status.filter(u => u.status === 'SUSPENDED' && u.profileStatus !== 'REJECTED').length} <span className="text-sm font-normal text-gray-500">명</span></div>
-                            </div>
-                            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                                <h3 className="text-sm font-medium text-gray-500 mb-2">강의 업로드 대기</h3>
-                                <div className="text-3xl font-bold text-blue-600">{lecture.filter(l => l.approvalStatus === 'PENDING').length} <span className="text-sm font-normal text-gray-500">건</span></div>
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                            <Card className="border-gray-200 bg-white shadow-sm">
+                                <CardContent className="p-5 flex items-center gap-4">
+                                    <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-blue-50">
+                                        <BookOpen className="w-5 h-5 text-blue-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-400 font-bold mb-0.5">개설된 강좌</p>
+                                        <p className="text-2xl font-extrabold text-gray-900">
+                                            {course.length}<span className="text-sm font-bold text-gray-400 ml-1">개</span>
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border-gray-200 bg-white shadow-sm">
+                                <CardContent className="p-5 flex items-center gap-4">
+                                    <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-amber-50">
+                                        <UserPlus className="w-5 h-5 text-amber-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-400 font-bold mb-0.5">신규 강사 신청</p>
+                                        <p className="text-2xl font-extrabold text-gray-900">
+                                            {status.filter(u => u.status === 'SUSPENDED' && u.profileStatus !== 'REJECTED').length}<span className="text-sm font-bold text-gray-400 ml-1">명</span>
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border-gray-200 bg-white shadow-sm">
+                                <CardContent className="p-5 flex items-center gap-4">
+                                    <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-blue-50">
+                                        <Upload className="w-5 h-5 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-400 font-bold mb-0.5">강의 업로드 대기</p>
+                                        <p className="text-2xl font-extrabold text-gray-900">
+                                            {lecture.filter(l => l.approvalStatus === 'PENDING').length}<span className="text-sm font-bold text-gray-400 ml-1">건</span>
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </div>
 
                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">

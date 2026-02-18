@@ -303,8 +303,11 @@ function PointsHistory() {
 
                             {/* Page Header */}
                             <div>
+                            <div>
                                 <h1 className="text-2xl font-bold text-gray-900 mb-2">포인트 현황</h1>
                                 <p className="text-gray-500">보유하신 포인트와 사용 내역을 확인하세요.</p>
+                            </div>
+                            <Button>포인트 충전</Button>
                             </div>
 
                             {/* Current Points Card */}

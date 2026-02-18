@@ -181,7 +181,7 @@ function App() {
           <Route path="lectures/:lectureId" element={<AdminLectureDetail />} />
           <Route path="users/instructors" element={<AdminInstructorList />} />
           <Route path="payments" element={<PaymentManagement />} />
-          <Route path="api/problems" element={<CodingTestList />} />
+          {/* <Route path="problems/new" element={<CodingTestCreate />} /> */}
           <Route path="exams" element={<AdminExamList />} />
           <Route path="exam/:examId" element={<AdminExamDetail />} />
           <Route path="lectures" element={<AdminLectureList />} />

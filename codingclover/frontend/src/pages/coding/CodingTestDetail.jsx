@@ -7,7 +7,7 @@ import Tail from '@/components/Tail';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import {
   Play, Send, Code2, Terminal,
-  ChevronRight, Check, X,
+  ChevronRight, ChevronLeft, ChevronDown, Check, X,
   RotateCcw, BookOpen, LayoutDashboard, ListTodo, AlertCircle, Sparkles,
   Save, Trash2, Edit, History, ArrowLeft // Admin Icons
 } from 'lucide-react';
@@ -61,6 +61,12 @@ const CodingTestDetail = () => {
   // UI 상태
   const [isRunning, setIsRunning] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // 필터 & 페이지네이션
+  const [difficultyFilter, setDifficultyFilter] = useState('ALL');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 15;
 
   // 관리자 모드 상태
   const [isEditing, setIsEditing] = useState(false);
@@ -323,36 +329,100 @@ const CodingTestDetail = () => {
               </div>
               문제 목록
             </h3>
+            {/* 난이도 드롭다운 */}
+            <div className="relative mt-3">
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="w-full flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors"
+              >
+                <span className="text-gray-700 font-medium">
+                  {difficultyFilter === 'ALL' ? '전체 난이도' : getDifficultyLabel(difficultyFilter)}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {dropdownOpen && (
+                <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                  {[
+                    { value: 'ALL', label: '전체 난이도' },
+                    { value: 'EASY', label: '초급' },
+                    { value: 'MEDIUM', label: '중급' },
+                    { value: 'HARD', label: '고급' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => { setDifficultyFilter(opt.value); setDropdownOpen(false); setCurrentPage(1); }}
+                      className={`w-full text-left px-3 py-2 text-sm transition-colors ${difficultyFilter === opt.value ? 'bg-gray-100 font-bold text-gray-900' : 'text-gray-600 hover:bg-gray-50'}`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <ScrollArea className="flex-1">
             <div className="p-3 space-y-1">
-              {tasks.map((task, idx) => (
-                <button
-                  key={task.problemId}
-                  onClick={() => handleTaskSelect(task)}
-                  className={`w-full text-left px-4 py-3.5 rounded-xl text-sm transition-all duration-200 flex items-start gap-3 group border border-transparent
+              {(() => {
+                const filtered = difficultyFilter === 'ALL' ? tasks : tasks.filter(t => t.difficulty === difficultyFilter);
+                const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+                return paginated.map((task) => {
+                  const originalIdx = tasks.findIndex(t => t.problemId === task.problemId);
+                  return (
+                    <button
+                      key={task.problemId}
+                      onClick={() => handleTaskSelect(task)}
+                      className={`w-full text-left px-4 py-3.5 rounded-xl text-sm transition-all duration-200 flex items-start gap-3 group border border-transparent
                                 ${selectedTask?.problemId === task.problemId
-                      ? 'bg-gray-100 font-bold text-black border-gray-200'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}
+                          ? 'bg-gray-100 font-bold text-black border-gray-200'
+                          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}
                             `}
-                >
-                  <div className={`mt-0.5 ${selectedTask?.problemId === task.problemId ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>
-                    <StatusIcon status={task.status || (task.passRate > 0 ? 'PASS' : null)} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="line-clamp-1">
-                      {idx + 1}. {task.title}
-                    </div>
-                    {task.difficulty && <span className={`inline-block mt-1.5 px-2 py-0.5 rounded text-[10px] font-medium border ${task.difficulty === 'EASY' ? 'bg-gray-50 text-gray-600 border-gray-200' :
-                      task.difficulty === 'MEDIUM' ? 'bg-gray-50 text-gray-800 border-gray-300' : 'bg-black text-white border-black'
-                      }`}>
-                      {getDifficultyLabel(task.difficulty)}
-                    </span>}
-                  </div>
-                </button>
-              ))}
+                    >
+                      <div className={`mt-0.5 ${selectedTask?.problemId === task.problemId ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>
+                        <StatusIcon status={task.status || (task.passRate > 0 ? 'PASS' : null)} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="line-clamp-1">
+                          {originalIdx + 1}. {task.title}
+                        </div>
+                        {task.difficulty && <span className={`inline-block mt-1.5 px-2 py-0.5 rounded text-[10px] font-medium border ${task.difficulty === 'EASY' ? 'bg-gray-50 text-gray-600 border-gray-200' :
+                          task.difficulty === 'MEDIUM' ? 'bg-gray-50 text-gray-800 border-gray-300' : 'bg-black text-white border-black'
+                          }`}>
+                          {getDifficultyLabel(task.difficulty)}
+                        </span>}
+                      </div>
+                    </button>
+                  );
+                });
+              })()}
             </div>
           </ScrollArea>
+          {/* 페이지네이션 */}
+          {(() => {
+            const filtered = difficultyFilter === 'ALL' ? tasks : tasks.filter(t => t.difficulty === difficultyFilter);
+            const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+            if (totalPages <= 1) return null;
+            return (
+              <div className="p-3 border-t border-gray-100 flex items-center justify-between">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4 text-gray-600" />
+                </button>
+                <span className="text-xs font-medium text-gray-500">
+                  {currentPage} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+            );
+          })()}
         </aside>
 
         {/* Center: Coding Workspace */}

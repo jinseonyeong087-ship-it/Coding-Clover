@@ -10,8 +10,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { BookOpen, Clock, Users, Upload } from "lucide-react";
 
 const getUserData = () => {
     const storedUsers = localStorage.getItem("users");
@@ -76,15 +77,6 @@ function InstructorMain() {
 
     }, []);
 
-    const getStatusText = (status) => {
-        switch (status) {
-            case 'PENDING': return '승인 대기';
-            case 'APPROVED': return '승인 완료';
-            case 'REJECTED': return '반려';
-            default: return status;
-        }
-    };
-
     const getLevelText = (level) => {
         switch (level) {
             case 1: return '초급';
@@ -113,21 +105,61 @@ function InstructorMain() {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-                    <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2">내 강좌</h3>
-                        <div className="text-3xl font-bold">{courses.length} <span className="text-sm font-normal text-muted-foreground">개</span></div>
-                    </div>
-                    <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2">승인 대기 강좌</h3>
-                        <div className="text-3xl font-bold text-amber-500">{courses.filter(c => c.proposalStatus === 'PENDING').length} <span className="text-sm font-normal text-muted-foreground">건</span></div>
-                    </div>
-                    <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2">총 수강생</h3>
-                        <div className="text-3xl font-bold text-purple-500">{totalStudents} <span className="text-sm font-normal text-muted-foreground">명</span></div>
-                    </div>
-                    <Link to="/instructor/lecture/upload" className="bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/20 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex items-center justify-center">
-                        <span className="text-primary font-bold">강의 업로드 →</span>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <Card className="border-gray-200 bg-white shadow-sm">
+                        <CardContent className="p-5 flex items-center gap-4">
+                            <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-blue-50">
+                                <BookOpen className="w-5 h-5 text-blue-500" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400 font-bold mb-0.5">내 강좌</p>
+                                <p className="text-2xl font-extrabold text-gray-900">
+                                    {courses.length}<span className="text-sm font-bold text-gray-400 ml-1">개</span>
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-gray-200 bg-white shadow-sm">
+                        <CardContent className="p-5 flex items-center gap-4">
+                            <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-amber-50">
+                                <Clock className="w-5 h-5 text-amber-500" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400 font-bold mb-0.5">승인 대기 강좌</p>
+                                <p className="text-2xl font-extrabold text-gray-900">
+                                    {courses.filter(c => c.proposalStatus === 'PENDING').length}<span className="text-sm font-bold text-gray-400 ml-1">건</span>
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-gray-200 bg-white shadow-sm">
+                        <CardContent className="p-5 flex items-center gap-4">
+                            <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-purple-50">
+                                <Users className="w-5 h-5 text-purple-500" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400 font-bold mb-0.5">총 수강생</p>
+                                <p className="text-2xl font-extrabold text-gray-900">
+                                    {totalStudents}<span className="text-sm font-bold text-gray-400 ml-1">명</span>
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Link to="/instructor/lecture/upload">
+                        <Card className="border-gray-200 bg-white shadow-sm h-full">
+                            <CardContent className="p-5 flex items-center gap-4 h-full">
+                                <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-primary/10">
+                                    <Upload className="w-5 h-5 text-primary" />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-400 font-bold mb-0.5">강의 업로드</p>
+                                    <p className="text-2xl font-extrabold text-primary">→</p>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </Link>
                 </div>
 
