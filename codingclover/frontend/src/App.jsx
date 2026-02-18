@@ -146,7 +146,7 @@ function App() {
           <Route path="exam" element={<StudentExamList />} />
           <Route path="exam/course/:courseId" element={<StudentExamList />} />
           <Route path="exam/taking/:examId" element={<StudentExamTaking />} />
-          <Route path="api/problems/results" element={<StudentCodingTestResults />} />
+          <Route path="problems/results" element={<StudentCodingTestResults />} />
         </Route>
 
         {/* 강사 허가 안 했을 때 집입가능하도록 */}
