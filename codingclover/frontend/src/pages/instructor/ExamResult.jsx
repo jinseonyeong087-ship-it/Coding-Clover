@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { ArrowLeft, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import Tail from '@/components/Tail';
 import { toast } from "sonner";
 

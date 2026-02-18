@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import Nav from "@/components/Nav";
 import AdminSidebar from "@/components/AdminSidebar";
 import Tail from "@/components/Tail";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
     TableHead,
     TableHeader,
@@ -15,7 +14,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, BookOpen, CheckCircle2, Clock } from "lucide-react";
+import { BookOpen, CheckCircle2, Clock } from "lucide-react";
 
 function AdminInstructorCourses() {
     const { userId } = useParams();

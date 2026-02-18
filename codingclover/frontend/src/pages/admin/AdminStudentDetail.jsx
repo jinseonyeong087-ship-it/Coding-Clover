@@ -16,7 +16,7 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 
 function AdminStudentDetail() {
   const { studentId } = useParams();
@@ -103,16 +103,6 @@ function AdminStudentDetail() {
     });
   };
 
-  const formatDateTime = (dateString) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
-  };
 
   const fetchStudentData = async () => {
     if (!studentId) return;

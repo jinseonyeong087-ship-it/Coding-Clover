@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
-import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 
 const UsersRole = {

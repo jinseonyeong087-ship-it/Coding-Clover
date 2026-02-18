@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import { Save, ArrowLeft, Code2, Terminal, Sparkles, BookOpen, Play, Bot, Loader2 } from "lucide-react";
-import Tail from '@/components/Tail';
 import Editor from "@monaco-editor/react";
 import axios from 'axios';
 import { Button } from '@/components/ui/button';

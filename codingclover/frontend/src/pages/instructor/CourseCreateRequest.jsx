@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Nav from '@/components/Nav';
 import Tail from '@/components/Tail';
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/Card"
+import { Card, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Checkbox } from "@/components/ui/checkbox"

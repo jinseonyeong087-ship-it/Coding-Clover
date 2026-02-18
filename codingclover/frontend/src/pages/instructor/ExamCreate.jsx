@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Plus, Trash2, Save, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Save } from "lucide-react";
 import Tail from '@/components/Tail';
 
 const ExamCreate = () => {

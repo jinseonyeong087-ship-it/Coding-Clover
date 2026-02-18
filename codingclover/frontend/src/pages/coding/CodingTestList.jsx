@@ -4,7 +4,7 @@ import axios from 'axios';
 import Nav from '@/components/Nav';
 import Tail from '@/components/Tail';
 import ChatBot from '../student/ChatBot';
-import { Plus, Search, Code2, Trophy, Clock, CheckCircle2, ChevronRight, BarChart3, Filter } from "lucide-react";
+import { Plus, Search, Code2, Clock, CheckCircle2, ChevronRight, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

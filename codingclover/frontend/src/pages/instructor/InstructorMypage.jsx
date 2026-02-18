@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/textarea";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { FileText, Clock, CheckCircle, XCircle, Upload, Edit, User, ChevronDown, Trash2, AlertCircle, Calendar, BookOpen } from "lucide-react";
+import { FileText, Clock, CheckCircle, XCircle, Upload, Edit, User, ChevronDown, AlertCircle, BookOpen } from "lucide-react";
 import InstructorSidebar from '@/components/InstructorSidebar';
 
 const getLoginId = () => {

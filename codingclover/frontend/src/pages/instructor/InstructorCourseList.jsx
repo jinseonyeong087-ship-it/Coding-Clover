@@ -11,7 +11,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import InstructorPermit from "@/components/InstructorPermit"
 
 const getUserData = () => {
     const storedUsers = localStorage.getItem("users");

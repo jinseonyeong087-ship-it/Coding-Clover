@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
     Menubar,
     MenubarContent,
     MenubarGroup,
     MenubarItem,
     MenubarMenu,
-    MenubarSeparator,
     MenubarTrigger,
 } from "@/components/ui/Menubar"
-import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Search } from "lucide-react"
 import Logout from "@/components/Logout"
-import axios from 'axios';
 import NotificationDropdown from './NotificationDropdown';
 
 function InstructorNav() {

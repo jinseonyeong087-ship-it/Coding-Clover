@@ -1,6 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import InstructorPermit from './InstructorPermit';
-import Norole from './Norole';
 
 function ProtectedRoute({ allowedRoles }) {
     const loginId = localStorage.getItem('loginId');

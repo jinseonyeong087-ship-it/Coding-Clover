@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Nav from '@/components/Nav';
 import Tail from '@/components/Tail';
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/Card"
+import { Card, CardContent } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -10,16 +10,6 @@ import { Label } from "@/components/ui/label"
 import { useNavigate, useParams } from "react-router-dom"; // useParams 추가
 import axios from 'axios';
 import { BookOpen, CheckCircle2, ChevronRight, AlertCircle, Sparkles } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
 
 import ImageUpload from '@/components/common/ImageUpload';
 

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import { User, Lock, Mail, ShieldCheck, ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Mail, ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import axios from 'axios';
 
 function FindAccount() {

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/Button";
 
 const ImageUpload = ({ onUploadSuccess, initialImage }) => {

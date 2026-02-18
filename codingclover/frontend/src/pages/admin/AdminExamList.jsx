@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Nav from '@/components/Nav';
 import AdminSidebar from "@/components/AdminSidebar";
 import Tail from "@/components/Tail";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
     Table,
     TableBody,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ClipboardList, User, BookOpen, AlertCircle, Search, LayoutGrid, Activity, Zap, Trophy } from "lucide-react";
+import { ClipboardList, User, BookOpen, Search, LayoutGrid, Activity, Zap, Trophy } from "lucide-react";
 import {
     Pagination,
     PaginationContent,
@@ -23,7 +23,6 @@ import {
     PaginationNext,
 } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
 function AdminExamList() {
     const [exams, setExams] = useState([]);

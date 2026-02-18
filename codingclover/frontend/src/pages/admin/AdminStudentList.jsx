@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Nav from "@/components/Nav";
 import AdminSidebar from "@/components/AdminSidebar";
 import Tail from "@/components/Tail";

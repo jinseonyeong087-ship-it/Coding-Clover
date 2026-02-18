@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Nav from '@/components/Nav';
 import AdminSidebar from '@/components/AdminSidebar';
 import Tail from '../../components/Tail';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +18,6 @@ import {
 
 import {
     Tabs,
-    TabsContent,
     TabsList,
     TabsTrigger
 } from "@/components/ui/tabs";
@@ -34,8 +32,6 @@ import {
 } from "@/components/ui/pagination";
 
 function PaymentManagement() {
-    const navigate = useNavigate();
-
     // 상태 관리
     const [payments, setPayments] = useState([]);
     const [filteredPayments, setFilteredPayments] = useState([]);

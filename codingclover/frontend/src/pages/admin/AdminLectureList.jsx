@@ -11,14 +11,13 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
     Video,
     CheckCircle2,
     Clock,
-    ChevronLeft,
     ChevronRight,
     Search,
     XCircle
@@ -30,7 +29,6 @@ import {
     PaginationLink,
     PaginationPrevious,
     PaginationNext,
-    PaginationEllipsis
 } from "@/components/ui/pagination";
 
 function AdminLectureList() {

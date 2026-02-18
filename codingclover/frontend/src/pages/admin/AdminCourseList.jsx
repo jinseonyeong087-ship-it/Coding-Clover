@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Nav from '@/components/Nav';
 import AdminSidebar from "@/components/AdminSidebar";
 import Tail from "@/components/Tail";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
     Table,
     TableBody,
