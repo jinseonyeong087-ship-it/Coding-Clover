@@ -310,14 +310,14 @@ function LectureUpload({ courseId: courseIdProp, nextOrderNo, onUploaded }) {
             <Separator className="bg-gray-200" />
 
             <div className="flex flex-col sm:flex-row gap-3 justify-end pt-2">
-                <Button
+                {/* <Button
                     variant="outline"
                     onClick={handleSaveDraft}
                     className="h-12 px-6 font-bold border-gray-200 hover:bg-gray-50 text-gray-600"
                 >
                     <Save className="w-4 h-4 mr-2" />
                     임시 저장
-                </Button>
+                </Button> */}
                 <Button
                     onClick={handleAddLecture}
                     className="h-12 px-8 font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-200"
