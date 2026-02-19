@@ -201,7 +201,7 @@ function InstructorLecture() {
                                     </div>
                                     <h2 className="text-xl font-bold text-gray-900 mb-2">승인된 강좌가 없습니다.</h2>
                                     <p className="text-gray-500 mb-6 font-medium">강의를 추가하려면 먼저 강좌가 승인되어야 합니다.</p>
-                                    <Button onClick={() => window.location.href = '/instructor/course/new'} className="rounded-xl px-8 h-12">강좌 신청하러 가기</Button>
+                                    <Button onClick={() => window.location.href = '/instructor/course/new'} className="rounded-xl px-8 h-12">강좌 개설 신청</Button>
                                 </div>
                             </Card>
                         ) : (
