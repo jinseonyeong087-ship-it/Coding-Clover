@@ -130,21 +130,6 @@ function FindAccount() {
                     </div>
                 </div>
 
-                <div className="relative z-10 space-y-4">
-                    <div className="flex items-center gap-3">
-                        <CheckCircle2 className="w-6 h-6 text-primary" />
-                        <span className="text-lg font-medium text-gray-300">간편한 아이디 찾기</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <CheckCircle2 className="w-6 h-6 text-primary" />
-                        <span className="text-lg font-medium text-gray-300">안전한 비밀번호 재설정</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <CheckCircle2 className="w-6 h-6 text-primary" />
-                        <span className="text-lg font-medium text-gray-300">개인정보 보호</span>
-                    </div>
-                </div>
-
                 {/* Decorative Pattern */}
                 <div className="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none">
                     <div className="absolute right-0 top-1/4 w-96 h-96 bg-primary rounded-full blur-[150px]"></div>
