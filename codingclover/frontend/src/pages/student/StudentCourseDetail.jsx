@@ -197,10 +197,19 @@ function StudentCourseDetail() {
             return;
         }
 
-        // 3. 유료 강좌 결제 확인
+        // 3. 유료 강좌 포인트 잔액 확인
         if (course?.price > 0) {
-            setPaymentConfirmOpen(true);
-            return;
+            try {
+                const balanceRes = await fetch('/api/wallet/balance', { credentials: 'include' });
+                const balanceData = await balanceRes.json();
+                if (balanceData.balance < course.price) {
+                    setPaymentConfirmOpen(true);
+                    return;
+                }
+            } catch {
+                setPaymentConfirmOpen(true);
+                return;
+            }
         }
 
         try {

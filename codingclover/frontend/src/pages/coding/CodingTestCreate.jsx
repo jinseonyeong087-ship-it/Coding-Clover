@@ -54,6 +54,7 @@ const CodingTestCreate = () => {
 
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // AI 생성 관련 상태
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -95,11 +96,13 @@ const CodingTestCreate = () => {
 
   // 문제 저장
   const handleSubmit = async () => {
+    if (isSaving) return;
     if (!problem.title || !problem.description) {
       toast.error("제목과 내용을 모두 입력해주세요.");
       return;
     }
 
+    setIsSaving(true);
     try {
       const levelMapping = { "초급": "EASY", "중급": "MEDIUM", "고급": "HARD" };
 
@@ -116,6 +119,7 @@ const CodingTestCreate = () => {
     } catch (error) {
       console.error("문제 등록 실패:", error);
       toast.error("문제 등록 실패");
+      setIsSaving(false);
     }
   };
 
@@ -259,9 +263,11 @@ const CodingTestCreate = () => {
               <Button
                 size="sm"
                 onClick={handleSubmit}
-                className="bg-black hover:bg-gray-800 text-white gap-2 h-9 px-4 font-bold rounded-lg shadow-md transition-all active:scale-95"
+                disabled={isSaving}
+                className="bg-black hover:bg-gray-800 text-white gap-2 h-9 px-4 font-bold rounded-lg shadow-md transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
               >
-                <Save className="w-4 h-4" /> 저장
+                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                {isSaving ? "제출 중..." : "문제 제출"}
               </Button>
             </div>
           </div>

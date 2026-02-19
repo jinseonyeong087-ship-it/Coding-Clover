@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,10 +30,10 @@ public class ProblemController {
   private final com.mysite.clover.Submission.SubmissionService submissionService;
   private final com.mysite.clover.Users.UsersRepository usersRepository;
 
-  // 문제 목록 조회
+  // 문제 목록 조회 (최근 작성 순)
   @GetMapping
   public List<Problem> list() {
-    return problemRepository.findAll();
+    return problemRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
   }
 
   // 문제 상세 조회
