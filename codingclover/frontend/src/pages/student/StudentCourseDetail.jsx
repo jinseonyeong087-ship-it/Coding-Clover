@@ -19,6 +19,7 @@ import {
     AlertDialogTitle,
     AlertDialogDescription,
     AlertDialogAction,
+    AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import LectureDetail from "@/pages/student/StudentLectureDetail";
 
@@ -30,6 +31,7 @@ function StudentCourseDetail() {
     const [dialogMessage, setDialogMessage] = useState({ title: '', description: '' });
     const [loginRequired, setLoginRequired] = useState(false);
     const [, setRegister] = useState(false);
+    const [paymentConfirmOpen, setPaymentConfirmOpen] = useState(false);
     const navigate = useNavigate();
     const users = JSON.parse(localStorage.getItem('users'));
 
@@ -192,6 +194,12 @@ function StudentCourseDetail() {
                 description: '수강생 계정으로만 수강신청 할 수 있습니다.'
             });
             setDialogOpen(true);
+            return;
+        }
+
+        // 3. 유료 강좌 결제 확인
+        if (course?.price > 0) {
+            setPaymentConfirmOpen(true);
             return;
         }
 
@@ -431,6 +439,25 @@ function StudentCourseDetail() {
                     </div>
                 </div>
             </main>
+
+            {/* 유료 강좌 결제 확인 다이얼로그 */}
+            <AlertDialog open={paymentConfirmOpen} onOpenChange={setPaymentConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>수강료 결제 확인</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            이 강좌는 <strong>{course?.price?.toLocaleString()}P</strong>가 필요합니다.{"\n"}
+                            결제 페이지로 이동하시겠습니까?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setPaymentConfirmOpen(false)}>취소</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => { setPaymentConfirmOpen(false); navigate('/payment'); }}>
+                            확인
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <AlertDialogContent>

@@ -128,6 +128,7 @@ function LectureUpload({ courseId: courseIdProp, nextOrderNo, onUploaded }) {
             }
             alert('강의 정보가 제출되었습니다.');
             if (onUploaded) onUploaded();
+            window.location.reload();
         } catch (err) {
             alert(err.message || '강의 추가에 실패했습니다.');
         }
