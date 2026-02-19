@@ -205,7 +205,7 @@ function AdminLectureDetail() {
                                     <CardHeader className="bg-gray-50 border-b border-gray-100 py-4">
                                         <CardTitle className="text-sm font-bold flex items-center gap-2">
                                             <PlayCircle className="w-4 h-4 text-primary" />
-                                            해당 강좌 타 강의 목록
+                                            강의 목록
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="p-0">
