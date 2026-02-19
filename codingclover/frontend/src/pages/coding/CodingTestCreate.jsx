@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 // PanelGroup, PanelResizeHandle이 아닌 Group, Separator로 import (버전 호환성)
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -204,7 +204,6 @@ const CodingTestCreate = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-white font-sans text-gray-900">
-      <Toaster position="top-right" richColors />
       <Nav />
       {/* 70px Spacer for fixed Nav - 정확한 높이 계산 필요 */}
       <div className="h-[80px] shrink-0"></div>
