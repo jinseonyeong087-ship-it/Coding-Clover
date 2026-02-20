@@ -266,7 +266,7 @@ const CodingTestCreate = () => {
                 className="bg-black hover:bg-gray-800 text-white gap-2 h-9 px-4 font-bold rounded-lg shadow-md transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
               >
                 {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {isSaving ? "제출 중..." : "문제 제출"}
+                {isSaving ? "출제 중..." : "문제 출제"}
               </Button>
             </div>
           </div>

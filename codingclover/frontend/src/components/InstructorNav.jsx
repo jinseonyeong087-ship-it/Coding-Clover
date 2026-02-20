@@ -49,10 +49,10 @@ function InstructorNav() {
                             </MenubarContent>
                         </MenubarMenu>
                         <MenubarMenu>
-                            <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent">시험 제출</MenubarTrigger>
+                            <MenubarTrigger className="cursor-pointer font-bold text-gray-700 hover:text-primary data-[state=open]:bg-transparent focus:bg-transparent">시험 출제</MenubarTrigger>
                             <MenubarContent className="bg-white border-border rounded-none shadow-lg">
                                 <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => navigate('/instructor/exam/list')}>시험 목록</MenubarItem>
-                                <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => navigate('/instructor/exam/new')}>시험 제출하기</MenubarItem>
+                                <MenubarItem className="focus:bg-gray-50 focus:text-primary rounded-none cursor-pointer" onClick={() => navigate('/instructor/exam/new')}>시험 출제하기</MenubarItem>
                             </MenubarContent>
                         </MenubarMenu>
                         <MenubarMenu>
