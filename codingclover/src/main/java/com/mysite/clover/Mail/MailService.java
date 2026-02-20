@@ -19,7 +19,7 @@ public class MailService {
 
   public int sendMail(String mail) {
     // 랜덤 인증번호 생성
-    int number = (int) (Math.random() * (90000)) + 100000; // 100000 ~ 199999
+    int number = (int) (Math.random() * (900000)) + 100000; // 100000 ~ 999999
 
     MimeMessage message = javaMailSender.createMimeMessage();
 
