@@ -27,4 +27,6 @@ public interface LectureProgressRepository extends JpaRepository<LectureProgress
   // 최근 시청한 강의 조회 (시청 시간 기준 내림차순)
   List<LectureProgress> findByEnrollmentAndLastWatchedAtIsNotNullOrderByLastWatchedAtDesc(Enrollment enrollment);
 
+  // 강의 삭제 시 해당 강의의 모든 진도 내역 삭제
+  void deleteByLecture(Lecture lecture);
 }

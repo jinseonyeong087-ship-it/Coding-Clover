@@ -66,12 +66,34 @@ function InstructorCourseList() {
         }
     };
 
+
     const getLevelText = (level) => {
         switch (level) {
             case 1: return '초급';
             case 2: return '중급';
             case 3: return '고급';
             default: return level;
+        }
+    };
+
+    const handleDelete = (courseId) => {
+        if (window.confirm("정말로 이 강좌를 삭제하시겠습니까? 삭제된 강좌는 복구할 수 없습니다.")) {
+            fetch(`/instructor/course/${courseId}/delete`, {
+                method: 'DELETE',
+                credentials: 'include',
+            })
+                .then((res) => {
+                    if (res.ok) {
+                        alert("강좌가 삭제되었습니다.");
+                        setCourses((prev) => prev.filter((c) => c.courseId !== courseId));
+                    } else {
+                        res.text().then((text) => alert(text || "삭제에 실패했습니다."));
+                    }
+                })
+                .catch((err) => {
+                    console.error(err);
+                    alert("오류가 발생했습니다.");
+                });
         }
     };
 

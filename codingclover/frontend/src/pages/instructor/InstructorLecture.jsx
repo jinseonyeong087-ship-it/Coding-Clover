@@ -165,6 +165,34 @@ function InstructorLecture() {
 
     const totalDuration = lectureList.reduce((acc, curr) => acc + (curr.duration || 0), 0);
 
+    const handleDeleteLecture = async (lectureId) => {
+        if (!window.confirm("정말로 이 강의를 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.")) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/instructor/lecture/${lectureId}/delete`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || "삭제 실패");
+            }
+
+            toast.success("강의가 삭제되었습니다.");
+
+            // 목록에서 제거
+            setLectureList(prev => prev.filter(l => l.lectureId !== lectureId));
+
+            // 필요하다면 강의 순서 재저장을 위해 상태 업데이트 로직 추가 가능
+            // 하지만 단순히 목록에서 빼는 것으로 충분함
+        } catch (err) {
+            toast.error(err.message || "삭제 중 오류가 발생했습니다.");
+        }
+    };
+
     return (
         <>
             <Nav />
@@ -339,7 +367,14 @@ function InstructorLecture() {
                                                                     </div>
                                                                     <div className="flex items-center gap-2 shrink-0 md:opacity-0 group-hover:opacity-100 transition-opacity">
                                                                         <Button variant="ghost" size="sm" className="h-8 text-[11px] font-bold hover:bg-white border border-transparent hover:border-gray-200 rounded-lg">수정</Button>
-                                                                        <Button variant="ghost" size="sm" className="h-8 text-[11px] font-bold text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg">삭제</Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            className="h-8 text-[11px] font-bold text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
+                                                                            onClick={() => handleDeleteLecture(lecture.lectureId)}
+                                                                        >
+                                                                            삭제
+                                                                        </Button>
                                                                     </div>
                                                                 </div>
                                                             ))

@@ -22,6 +22,7 @@ public class LectureService {
     private final com.mysite.clover.Notification.NotificationService notificationService;
     private final com.mysite.clover.Enrollment.EnrollmentRepository enrollmentRepository;
     private final YoutubeService youtubeService;
+    private final com.mysite.clover.LectureProgress.LectureProgressRepository lectureProgressRepository;
 
     // 해당 강좌에 속한 모든 강의를 순서대로 조회 (강사용/관리자용, 상태 불문)
     public List<Lecture> getListByCourse(Course course) {
@@ -259,6 +260,23 @@ public class LectureService {
         lecture.setApprovalStatus(LectureApprovalStatus.INACTIVE);
         // 2. 변경사항 저장
         lectureRepository.save(lecture);
+    }
+
+    // 강사용: 강의 삭제 (완전 삭제)
+    @Transactional
+    public void deleteLecture(Long lectureId, String loginId) {
+        Lecture lecture = lectureRepository.findById(lectureId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다."));
+
+        if (!lecture.getCreatedBy().getLoginId().equals(loginId)) {
+            throw new SecurityException("본인의 강의만 삭제할 수 있습니다.");
+        }
+
+        // 연관된 수강 진도 정보 삭제
+        lectureProgressRepository.deleteByLecture(lecture);
+
+        // 강의 삭제
+        lectureRepository.delete(lecture);
     }
 
     // 승인 대기(PENDING) 상태인 강의 목록 조회 (관리자가 확인 후 승인하기 위해)

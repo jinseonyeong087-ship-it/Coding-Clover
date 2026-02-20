@@ -155,6 +155,14 @@ public class LectureController {
         return ResponseEntity.ok("강의 수정 및 재승인 요청 완료");
     }
 
+    // 강사용: 강의 삭제
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @DeleteMapping("/instructor/lecture/{lectureId}/delete")
+    public ResponseEntity<String> deleteLecture(@PathVariable("lectureId") Long lectureId, Principal principal) {
+        lectureService.deleteLecture(lectureId, principal.getName());
+        return ResponseEntity.ok("강의가 삭제되었습니다.");
+    }
+
     // 강사용: 유튜브 재생 시간 조회 (강의 업로드 시 자동 입력을 위해)
     @PreAuthorize("hasRole('INSTRUCTOR')")
     @GetMapping("/api/youtube/duration")
