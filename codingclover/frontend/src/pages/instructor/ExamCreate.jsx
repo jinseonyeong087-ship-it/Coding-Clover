@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import { YoutubeTranscript } from 'youtube-transcript';
 import InstructorNav from '../../components/InstructorNav';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Plus, Trash2, Save } from "lucide-react";
+import { Plus, Trash2, Save, Bot } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog";
 import Tail from '@/components/Tail';
 
 const ExamCreate = () => {
@@ -28,6 +37,13 @@ const ExamCreate = () => {
     const [passScore, setPassScore] = useState(60);
     const [isLoading, setIsLoading] = useState(false);
 
+    // AI Generation
+    const [courseLectures, setCourseLectures] = useState([]);
+    const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+    const [youtubeUrl, setYoutubeUrl] = useState("");
+    const [questionCount, setQuestionCount] = useState(3);
+    const [isAiLoading, setIsAiLoading] = useState(false);
+
     // Questions list
     const [questions, setQuestions] = useState([
         { id: 1, questionText: "", option1: "", option2: "", option3: "", option4: "", option5: "", correctAnswer: 1 }
@@ -40,7 +56,7 @@ const ExamCreate = () => {
                 // Using relative path for proxy
                 const response = await axios.get("/instructor/course");
                 const coursesData = response.data;
-                
+
                 // Check exam existence for each course
                 const coursesWithExamStatus = await Promise.all(
                     coursesData.map(async (course) => {
@@ -59,7 +75,7 @@ const ExamCreate = () => {
                         }
                     })
                 );
-                
+
                 setCourses(coursesWithExamStatus);
             } catch (error) {
                 console.error("Error fetching courses:", error);
@@ -68,6 +84,24 @@ const ExamCreate = () => {
         };
         fetchCourses();
     }, []);
+
+    // Fetch lectures when course is selected for AI modal
+    useEffect(() => {
+        if (selectedCourseId) {
+            const fetchLectures = async () => {
+                try {
+                    const response = await axios.get(`/instructor/course/${selectedCourseId}/lectures`);
+                    // Use only valid lectures that have a videoUrl
+                    setCourseLectures(response.data.filter(l => l.videoUrl));
+                } catch (error) {
+                    console.error("Error fetching lectures for AI:", error);
+                }
+            };
+            fetchLectures();
+        } else {
+            setCourseLectures([]);
+        }
+    }, [selectedCourseId]);
 
     // Check for duplicate exam when course is selected
     const handleCourseChange = async (courseId) => {
@@ -128,6 +162,67 @@ const ExamCreate = () => {
         setQuestions(questions.map(q =>
             q.id === id ? { ...q, [field]: value } : q
         ));
+    };
+
+    // Handle AI Quiz Generation from Youtube URL
+    const handleAiGenerate = async () => {
+        if (!youtubeUrl.trim()) {
+            toast.error("유튜브 URL을 선택해주세요.");
+            return;
+        }
+
+        try {
+            setIsAiLoading(true);
+            toast.info("오디오 다운로드 및 AI 분석 중입니다 (최대 1~2분 이상 소요될 수 있습니다)...");
+
+            // Send youtubeUrl directly to the backend bypassing browser CORS limitations
+            const response = await axios.post("/instructor/exam/ai-generate", {
+                script: "", // 백엔드에서 null 방지
+                youtubeUrl: youtubeUrl,
+                questionCount: questionCount
+            });
+
+            if (response.data && response.data.questions && response.data.questions.length > 0) {
+                // map to existing state format
+                const newQuestions = response.data.questions.map((aiQ, index) => ({
+                    id: Date.now() + index, // unique id
+                    questionText: aiQ.questionText || "",
+                    option1: aiQ.option1 || "",
+                    option2: aiQ.option2 || "",
+                    option3: aiQ.option3 || "",
+                    option4: aiQ.option4 || "",
+                    option5: aiQ.option5 || "",
+                    correctAnswer: aiQ.correctAnswer || 1
+                }));
+
+                // Add nicely
+                if (questions.length === 1 && !questions[0].questionText.trim()) {
+                    // if it is the default empty question, replace it
+                    setQuestions(newQuestions);
+                } else {
+                    setQuestions(prev => {
+                        const next = [...prev, ...newQuestions];
+                        if (next.length > 20) {
+                            toast.warning("20개를 초과한 문제는 제외되었습니다.");
+                            return next.slice(0, 20);
+                        }
+                        return next;
+                    });
+                }
+
+                toast.success("AI가 문제를 성공적으로 생성했습니다!");
+                setIsAiModalOpen(false);
+                setYoutubeUrl(""); // Reset
+            } else {
+                toast.error("문제 데이터를 받아오지 못했습니다.");
+            }
+        } catch (error) {
+            console.error("Error generating AI quiz:", error);
+            const errMsg = error.response?.data?.message || error.response?.data || error.message || "오류가 발생했습니다.";
+            toast.error("AI 문제 생성 실패: " + errMsg);
+        } finally {
+            setIsAiLoading(false);
+        }
     };
 
     // Fetch exam data if in edit mode
@@ -286,13 +381,11 @@ const ExamCreate = () => {
                                     >
                                         <option value="">강좌를 선택하세요</option>
                                         {courses.map(course => (
-                                            <option 
-                                                key={course.courseId} 
+                                            <option
+                                                key={course.courseId}
                                                 value={course.courseId}
-                                                disabled={course.hasExam}
-                                                style={course.hasExam ? { color: '#9ca3af', cursor: 'not-allowed' } : {}}
                                             >
-                                                {course.title}
+                                                {course.hasExam ? `[시험등록됨] ${course.title}` : course.title}
                                             </option>
                                         ))}
                                     </select>
@@ -331,11 +424,28 @@ const ExamCreate = () => {
                     {/* Questions List */}
                     <div className="space-y-6">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-semibold">문제 목록 ({questions.length} / 20)</h2>
-                            <Button variant="outline" onClick={addQuestion} disabled={questions.length >= 20} className="gap-2">
-                                <Plus className="w-4 h-4" />
-                                문제 추가
-                            </Button>
+                            <h2 className="text-xl font-semibold flex items-center gap-2">문제 목록 ({questions.length} / 20)</h2>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    className="gap-2 border-primary text-primary hover:bg-primary/10"
+                                    onClick={() => {
+                                        if (!selectedCourseId) {
+                                            toast.error("AI 출제를 위해 먼저 강좌를 선택해주세요.");
+                                            return;
+                                        }
+                                        setIsAiModalOpen(true);
+                                    }}
+                                    disabled={questions.length >= 20}
+                                >
+                                    <Bot className="w-4 h-4" />
+                                    AI 자동 출제
+                                </Button>
+                                <Button variant="outline" onClick={addQuestion} disabled={questions.length >= 20} className="gap-2">
+                                    <Plus className="w-4 h-4" />
+                                    문제 추가
+                                </Button>
+                            </div>
                         </div>
 
                         {questions.map((q, index) => (
@@ -421,6 +531,91 @@ const ExamCreate = () => {
                     </div>
                 </div>
             </div>
+
+            {/* AI Modal */}
+            <Dialog open={isAiModalOpen} onOpenChange={setIsAiModalOpen}>
+                <DialogContent className="sm:max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+                            <Bot className="w-6 h-6 text-primary" />
+                            AI 시험 문제 자동 출제 (현재 강좌 기반)
+                        </DialogTitle>
+                        <DialogDescription className="text-base mt-2">
+                            문제를 출제할 <strong>강의</strong>를 선택해주세요.<br />
+                            선택된 강의의 영상 음성을 자동으로 분석한 자막(자동생성) 데이터를 읽어와서 출제합니다.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="lecture-select">출제 대상 강의 선택 (유튜브 연동)</Label>
+                            {courseLectures.length > 0 ? (
+                                <select
+                                    id="lecture-select"
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    value={youtubeUrl}
+                                    onChange={(e) => setYoutubeUrl(e.target.value)}
+                                >
+                                    <option value="">강의를 선택하세요</option>
+                                    {courseLectures.map(lecture => (
+                                        <option key={lecture.lectureId} value={lecture.videoUrl}>
+                                            {lecture.orderNo}강 - {lecture.title}
+                                        </option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <div className="p-3 text-sm text-amber-600 bg-amber-50 rounded-md border border-amber-200">
+                                    해당 강좌에 등록된 (유튜브 링크가 포함된) 강의가 없습니다. 먼저 강의를 등록해주세요.
+                                </div>
+                            )}
+                        </div>
+
+                        {youtubeUrl && (
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label>선택된 유튜브 영상 URL</Label>
+                                    <Input
+                                        value={youtubeUrl}
+                                        disabled
+                                        className="bg-muted text-muted-foreground"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="question-count">출제할 문제 개수 (1~10)</Label>
+                                    <select
+                                        id="question-count"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                        value={questionCount}
+                                        onChange={(e) => setQuestionCount(Number(e.target.value))}
+                                    >
+                                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                                            <option key={num} value={num}>{num}개 출제</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        )}
+
+                        <p className="text-sm text-muted-foreground mt-2">
+                            * 주의: 영상 전체 음성을 다운로드하여 STT 변환 과정을 거치므로 <b>최대 1~2분 정도 소요</b>될 수 있습니다.
+                        </p>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsAiModalOpen(false)}>취소</Button>
+                        <Button onClick={handleAiGenerate} disabled={isAiLoading || !youtubeUrl.trim()} className="gap-2">
+                            {isAiLoading ? (
+                                <>
+                                    <span className="animate-spin">⏳</span> AI가 고민하는 중...
+                                </>
+                            ) : (
+                                "자동 생성하기"
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             <Tail />
         </div>
     );
