@@ -8,6 +8,13 @@
 
 기존 코딩 교육 플랫폼들이 단순한 강의 제공에 머무르는 한계를 극복하고자, **체계적인 학습 관리**와 **실전 코딩 능력 검증**을 통합한 종합 교육 플랫폼을 기획했습니다.
 
+<p align="center">
+<img src="img/login.png" width="200" alt="login">
+<img src="img/main.png" width="200" alt="main">
+<img src="img/coding-test.png" width="200" alt="coding-test">
+</p>
+
+
 **핵심 문제 의식:**
 - 강의 수강과 실무 능력 간의 괴리 해소 필요
 - 개별 학습자의 진도와 성취도를 체계적으로 관리하는 시스템 부재
