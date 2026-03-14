@@ -1,0 +1,262 @@
+package com.mysite.clover.Enrollment;
+
+import java.security.Principal;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.mysite.clover.Course.Course;
+import com.mysite.clover.Course.CourseRepository;
+import com.mysite.clover.Course.CourseService;
+import com.mysite.clover.Users.Users;
+import com.mysite.clover.Users.UsersRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequiredArgsConstructor
+public class EnrollmentController {
+
+    private final EnrollmentService enrollmentService;
+    private final EnrollmentRepository enrollmentRepository;
+    private final CourseRepository courseRepository;
+    private final UsersRepository usersRepository;
+    private final CourseService courseService;
+
+    // ==========================================
+    // 수강생 영역
+    // ==========================================
+
+    // 학생 - 내 수강(enrollment) 목록 조회
+    @GetMapping("/student/enrollment")
+    // 로그인한 학생의 수강 목록을 조회
+    public ResponseEntity<List<StudentEnrollmentDto>> getMyEnrollments(Principal principal) {
+
+        try {
+            // 로그인(인증) 여부 확인
+            if (principal == null) {
+                return ResponseEntity.ok(new java.util.ArrayList<>());
+            }
+
+            // 로그인 ID로 사용자 조회
+            Users student = usersRepository.findByLoginId(principal.getName())
+                    .orElse(null);
+
+            // DB에 사용자 정보가 없는 경우(성공 응답(200)을 주되, 데이터는 비어 있다고 처리)
+            if (student == null) {
+                return ResponseEntity.ok(new java.util.ArrayList<>());
+            }
+
+            // 학생의 수강 목록 조회
+            List<StudentEnrollmentDto> enrollments = enrollmentService.getMyEnrollmentsForStudent(student);
+
+            return ResponseEntity.ok(enrollments);
+
+        } catch (Exception e) {
+            // 조회 중 예외 발생 시에도 빈 리스트 반환
+            e.printStackTrace();
+            return ResponseEntity.ok(new java.util.ArrayList<>());
+        }
+    }
+
+    // 수강 신청
+    @PreAuthorize("hasRole('STUDENT')")
+    @PostMapping("/student/enrollment/{courseId}/enroll")
+    public ResponseEntity<String> enrollCourse(
+            @PathVariable("courseId") Long courseId,
+            Principal principal) {
+        try {
+            // 로그인한 사용자 정보 조회
+            Users student = usersRepository.findByLoginId(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            // CourseService의 enroll 메서드 사용 (포인트 차감 포함)
+            courseService.enroll(courseId, student.getLoginId());
+
+            return ResponseEntity.ok("수강 신청이 완료되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // 수강 취소(학생 취소는 이력 보존을 위한 상태 변경이므로 POST로 처리)
+    @PreAuthorize("hasRole('STUDENT')")
+    @PostMapping("/student/enrollment/{courseId}/cancel")
+    public ResponseEntity<String> cancelMyEnrollment(
+            @PathVariable("courseId") Long courseId,
+            Principal principal) {
+        try {
+            // 로그인한 사용자 정보 조회
+            Users student = usersRepository.findByLoginId(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            Course course = courseRepository.findById(courseId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
+            enrollmentService.cancelMyEnrollment(student, course);
+            return ResponseEntity.ok("수강이 취소되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // 수강 취소 요청
+    @PreAuthorize("hasRole('STUDENT')")
+    @PostMapping("/student/enrollment/{enrollmentId}/cancel-request")
+    public ResponseEntity<?> requestCancel(
+            @PathVariable("enrollmentId") Long enrollmentId,
+            Principal principal) {
+        System.out.println("=== 수강 취소 요청 수신 ===");
+        System.out.println("요청된 enrollmentId: " + enrollmentId);
+        System.out.println("요청자: " + (principal != null ? principal.getName() : "null"));
+
+        try {
+            Users student = usersRepository.findByLoginId(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                    .orElseThrow(() -> new IllegalArgumentException("수강 정보를 찾을 수 없습니다."));
+
+            System.out.println("조회된 Enrollment ID: " + enrollment.getEnrollmentId());
+            System.out.println("조회된 Enrollment User: " + enrollment.getUser().getUserId());
+
+            CancelRequestDto result = enrollmentService.requestCancel(student, enrollment);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            System.out.println("수강 취소 요청 실패 (잘못된 요청): " + e.getMessage());
+            // 수강 정보를 찾을 수 없는 경우 명확하게 404로 응답 (또는 사용자 정의 에러 메시지 포함 400)
+            if ("수강 정보를 찾을 수 없습니다.".equals(e.getMessage())) {
+                return ResponseEntity.status(404).body(e.getMessage());
+            }
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            System.out.println("수강 취소 요청 실패 (기타 에러): " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // 내 취소 요청 목록 조회
+    @PreAuthorize("hasRole('STUDENT')")
+    @GetMapping("/student/cancel-requests")
+    public ResponseEntity<List<CancelRequestDto>> getMyCancelRequests(Principal principal) {
+        Users student = usersRepository.findByLoginId(principal.getName())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        return ResponseEntity.ok(enrollmentService.getMyCancelRequests(student));
+    }
+
+    // ==========================================
+    // 강사 영역
+    // ==========================================
+
+    // 강좌별 수강생 수 카운트 (강좌 목록에서 수강생 수 표시용)
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    @GetMapping("/instructor/enrollment")
+    public ResponseEntity<Map<Long, Long>> countStudentsByCourse(
+            Principal principal) {
+        Users instructor = usersRepository.findByLoginId(principal.getName())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        Map<Long, Long> countMap = enrollmentService.countStudentsByCourse(instructor);
+        return ResponseEntity.ok(countMap);
+    }
+
+    // ==========================================
+    // 관리자 영역
+    // ==========================================
+
+    // 전체 수강 내역 관리
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/enrollment")
+    public ResponseEntity<List<AdminEnrollmentDto>> getAllEnrollments() {
+        List<AdminEnrollmentDto> enrollments = enrollmentService.getAllEnrollments();
+        return ResponseEntity.ok(enrollments);
+    }
+
+    // 특정 강좌의 수강생 조회 (관리자 권한)
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/course/{courseId}/enrollment")
+    public ResponseEntity<List<AdminEnrollmentDto>> getAdminCourseStudents(
+            @PathVariable("courseId") Long courseId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강좌입니다."));
+        List<AdminEnrollmentDto> students = enrollmentService.getAdminCourseStudents(course);
+        return ResponseEntity.ok(students);
+    }
+
+    // 수강 강제 취소 (관리자의 강제 취소는 관리 행위이기 때문에 DELETE)
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/admin/enrollment/{enrollmentId}/cancel")
+    public ResponseEntity<String> adminCancelEnrollment(
+            @PathVariable("enrollmentId") Long enrollmentId,
+            Principal principal) {
+        try {
+            Users admin = usersRepository.findByLoginId(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            enrollmentService.adminCancelEnrollment(admin, enrollmentId);
+            return ResponseEntity.ok("수강이 취소되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // 취소 요청 목록 조회 (관리자)
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/cancel-requests")
+    public ResponseEntity<List<CancelRequestDto>> getCancelRequests(
+            @RequestParam(value = "studentId", required = false) Long studentId) {
+        Users student = null;
+        if (studentId != null) {
+            student = usersRepository.findById(studentId)
+                    .orElseThrow(() -> new RuntimeException("학생을 찾을 수 없습니다."));
+        }
+
+        return ResponseEntity.ok(enrollmentService.getCancelRequestsForAdmin(student));
+    }
+
+    // 취소 요청 승인 (관리자)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/cancel-requests/{enrollmentId}/approve")
+    public ResponseEntity<?> approveCancelRequest(
+            @PathVariable("enrollmentId") Long enrollmentId,
+            Principal principal) {
+        try {
+            Users admin = usersRepository.findByLoginId(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            enrollmentService.approveCancelRequest(admin, enrollmentId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // 취소 요청 반려 (관리자)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/cancel-requests/{enrollmentId}/reject")
+    public ResponseEntity<?> rejectCancelRequest(
+            @PathVariable("enrollmentId") Long enrollmentId,
+            @RequestBody(required = false) java.util.Map<String, Object> request,
+            Principal principal) {
+        try {
+            Users admin = usersRepository.findByLoginId(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            String reason = "";
+            if (request != null && request.containsKey("reason")) {
+                reason = (String) request.get("reason");
+            }
+
+            enrollmentService.rejectCancelRequest(admin, enrollmentId, reason);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+}
